@@ -1,4 +1,4 @@
-import { useState } from 'react'
+﻿import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import ServiceCard from '../components/ServiceCard'
@@ -23,9 +23,9 @@ export default function ServicesPage({ services, cartItems, addToCart, removeFro
   const handleResendEmail = async () => {
     const result = await resendVerificationEmail()
     if (result.success) {
-      setVerificationMessage('✅ Verification email sent! Check your inbox.')
+      setVerificationMessage(' Verification email sent! Check your inbox.')
     } else {
-      setVerificationMessage('❌ ' + result.error)
+      setVerificationMessage(' ' + result.error)
     }
     setTimeout(() => setVerificationMessage(''), 5000)
   }
@@ -34,12 +34,12 @@ export default function ServicesPage({ services, cartItems, addToCart, removeFro
     <section className="section services" id="services">
       <p className="eyebrow">Services</p>
       <h2 className="section-title">Choose your plan</h2>
-      <p className="section-subtitle">Pick a package or mix-and-match—every card is a tappable add to cart.</p>
+      <p className="section-subtitle">Pick a package or mix-and-matchevery card is a tappable add to cart.</p>
 
       {user && !emailVerified && (
         <div className="verification-banner">
           <div className="verification-content">
-            <span className="verification-icon">📧</span>
+            <span className="verification-icon"></span>
             <div className="verification-text">
               <strong>Please verify your email</strong>
               <p>Check your inbox for a verification link to access all features.</p>
@@ -61,29 +61,23 @@ export default function ServicesPage({ services, cartItems, addToCart, removeFro
               <button className="primary-btn" onClick={() => navigate('/login')}>Login</button>
               <button className="ghost-btn" onClick={() => navigate('/signup')}>Sign up</button>
             </div>
-            <button className="close-btn" onClick={() => setShowAuthPrompt(false)}>✕</button>
+            <button className="close-btn" onClick={() => setShowAuthPrompt(false)}></button>
           </div>
         </div>
       )}
 
-      <div className="services-toolbar">
-        <button className="ghost-btn" onClick={() => setShowCart(false)}>Services</button>
-        <button className="primary-btn" onClick={() => setShowCart(true)}>Cart ({cartItems.length})</button>
-      </div>
-
-      {showCart ? (
-        <Cart items={cartItems} onRemove={removeFromCart} onUpdateQuantity={updateQuantity} />
-      ) : (
-        <main className="services-grid">
-          {services.map(service => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              onAddToCart={handleAddToCart}
-            />
-          ))}
-        </main>
-      )}
+      <main className="services-grid">
+        {services.map(service => (
+          <ServiceCard
+            key={service.id}
+            service={service}
+            onAddToCart={handleAddToCart}
+            cartItems={cartItems}
+            onUpdateQuantity={updateQuantity}
+            onRemoveFromCart={removeFromCart}
+          />
+        ))}
+      </main>
     </section>
   )
 }

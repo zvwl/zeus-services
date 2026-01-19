@@ -1,13 +1,37 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import './ServiceCard.css'
 
-export default function ServiceCard({ service, onAddToCart }) {
+export default function ServiceCard({ service, onAddToCart, cartItems, onUpdateQuantity, onRemoveFromCart }) {
   const [platform, setPlatform] = useState('')
+
+  // Find if this service with selected platform is in cart
+  const cartItem = useMemo(() => {
+    if (!platform) return null
+    return cartItems.find(item => 
+      item.id === service.id && item.platform === platform
+    )
+  }, [cartItems, service.id, platform])
 
   const handleAdd = () => {
     if (!platform) return
     onAddToCart(service, platform)
-    setPlatform('')
+  }
+
+  const handleIncrement = () => {
+    if (cartItem) {
+      onUpdateQuantity(cartItem.cartId, cartItem.quantity + 1)
+    }
+  }
+
+  const handleDecrement = () => {
+    if (cartItem) {
+      if (cartItem.quantity === 1) {
+        onRemoveFromCart(cartItem.cartId)
+        setPlatform('')
+      } else {
+        onUpdateQuantity(cartItem.cartId, cartItem.quantity - 1)
+      }
+    }
   }
 
   return (
@@ -37,13 +61,21 @@ export default function ServiceCard({ service, onAddToCart }) {
 
       <div className="card-footer">
         <span className="card-price">${service.price}</span>
-        <button
-          className="add-to-cart-btn"
-          onClick={handleAdd}
-          disabled={!platform}
-        >
-          Add to Cart
-        </button>
+        {cartItem ? (
+          <div className="quantity-controls">
+            <button className="qty-btn" onClick={handleDecrement}>−</button>
+            <span className="qty-display">{cartItem.quantity}</span>
+            <button className="qty-btn" onClick={handleIncrement}>+</button>
+          </div>
+        ) : (
+          <button
+            className="add-to-cart-btn"
+            onClick={handleAdd}
+            disabled={!platform}
+          >
+            Add to Cart
+          </button>
+        )}
       </div>
     </div>
   )

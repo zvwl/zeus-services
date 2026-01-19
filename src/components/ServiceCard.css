@@ -163,6 +163,51 @@
   }
 }
 
+/* Quantity Controls */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(10, 14, 26, 0.6);
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.qty-btn {
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #0a0e1a;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 1.25rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
+.qty-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.5);
+}
+
+.qty-btn:active {
+  transform: scale(0.95);
+}
+
+.qty-display {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fbbf24;
+  min-width: 32px;
+  text-align: center;
+}
+
 /* Tablet */
 @media (max-width: 1024px) {
   .service-card {
@@ -185,6 +230,17 @@
   .add-to-cart-btn {
     padding: 0.7rem 1rem;
     font-size: 0.9rem;
+  }
+
+  .qty-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 1.15rem;
+  }
+
+  .qty-display {
+    font-size: 1rem;
+    min-width: 28px;
   }
 }
 
@@ -215,6 +271,17 @@
   .add-to-cart-btn {
     padding: 0.65rem 0.9rem;
     font-size: 0.85rem;
+  }
+
+  .qty-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 1.1rem;
+  }
+
+  .qty-display {
+    font-size: 0.95rem;
+    min-width: 26px;
   }
 }
 
@@ -253,6 +320,17 @@
     padding: 0.6rem 0.8rem;
     font-size: 0.8rem;
   }
+
+  .qty-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 1rem;
+  }
+
+  .qty-display {
+    font-size: 0.9rem;
+    min-width: 24px;
+  }
 }
 
 /* Mobile - Small */
@@ -289,5 +367,22 @@
     width: 100%;
     padding: 0.5rem 0.6rem;
     font-size: 0.75rem;
+  }
+
+  .quantity-controls {
+    width: 100%;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+
+  .qty-btn {
+    width: 24px;
+    height: 24px;
+    font-size: 0.95rem;
+  }
+
+  .qty-display {
+    font-size: 0.85rem;
+    min-width: 22px;
   }
 }
