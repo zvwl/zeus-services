@@ -61,7 +61,7 @@ export default function ServicesPage({ services, cartItems, addToCart, removeFro
               <button className="primary-btn" onClick={() => navigate('/login')}>Login</button>
               <button className="ghost-btn" onClick={() => navigate('/signup')}>Sign up</button>
             </div>
-            <button className="close-btn" onClick={() => setShowAuthPrompt(false)}></button>
+            <button className="close-btn" onClick={() => setShowAuthPrompt(false)}>X</button>
           </div>
         </div>
       )}
