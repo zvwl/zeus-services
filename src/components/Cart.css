@@ -1,0 +1,234 @@
+.cart-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.cart-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  color: #f1f5f9;
+  text-shadow: 0 2px 10px rgba(124, 58, 237, 0.2);
+}
+
+.empty-cart {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  border: 2px solid rgba(251, 191, 36, 0.25);
+  border-radius: 15px;
+  animation: slide-up 0.5s ease-out;
+}
+
+.empty-icon {
+  font-size: 4rem;
+  display: block;
+  margin-top: 1rem;
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-cart p {
+  font-size: 1.3rem;
+  color: #94a3b8;
+}
+
+.cart-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.cart-item {
+  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  border: 2px solid rgba(251, 191, 36, 0.25);
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto auto auto;
+  gap: 1.5rem;
+  align-items: center;
+  transition: all 0.3s ease;
+}
+
+.cart-item:hover {
+  border-color: rgba(251, 191, 36, 0.5);
+  background: linear-gradient(135deg, #1e2a47 0%, #1a1f35 100%);
+  box-shadow: 0 8px 20px rgba(251, 191, 36, 0.2);
+}
+
+.item-info {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.item-icon {
+  font-size: 2rem;
+}
+
+.item-info h4 {
+  font-size: 1.1rem;
+  color: #f1f5f9;
+  margin-bottom: 0.25rem;
+}
+
+.item-info p {
+  color: #94a3b8;
+  font-size: 0.95rem;
+}
+
+.item-quantity {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(251, 191, 36, 0.1);
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.item-quantity button {
+  background: #fbbf24;
+  border: none;
+  color: #0a0e1a;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item-quantity button:hover {
+  background: #f59e0b;
+  transform: scale(1.1);
+}
+
+.item-quantity span {
+  min-width: 40px;
+  text-align: center;
+  font-weight: 600;
+  color: #f1f5f9;
+}
+
+.item-subtotal {
+  text-align: right;
+  min-width: 100px;
+}
+
+.item-subtotal p {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fbbf24;
+}
+
+.remove-btn {
+  background: rgba(239, 68, 68, 0.2);
+  border: 2px solid #ef4444;
+  color: #ef4444;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1.1rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remove-btn:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.1);
+}
+
+.cart-total {
+  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  padding: 2rem;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+  animation: slide-up 0.5s ease-out 0.2s backwards;
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cart-total h3 {
+  font-size: 1.8rem;
+  color: white;
+}
+
+.checkout-btn {
+  background: #fbbf24;
+  color: #0a0e1a;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+.checkout-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4);
+}
+
+.checkout-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 768px) {
+  .cart-item {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .item-info {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .item-quantity,
+  .item-subtotal,
+  .remove-btn {
+    width: 100%;
+  }
+
+  .item-subtotal {
+    text-align: left;
+  }
+
+  .remove-btn {
+    width: 100%;
+  }
+
+  .cart-total {
+    flex-direction: column;
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .checkout-btn {
+    width: 100%;
+  }
+}

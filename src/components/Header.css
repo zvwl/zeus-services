@@ -1,0 +1,265 @@
+.header {
+  background: linear-gradient(90deg, #1e40af 0%, #0c2461 100%);
+  padding: 1rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  backdrop-filter: blur(6px);
+}
+
+.header-content {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: transparent;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: white;
+}
+
+.logo-icon {
+  animation: float 3s ease-in-out infinite;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 0.4rem;
+}
+
+.logo-icon img {
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
+}
+
+.brand-name {
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: 0.3px;
+}
+
+.nav {
+  display: flex;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.nav-link {
+  color: #e2e8f0;
+  text-decoration: none;
+  font-weight: 600;
+  padding: 0.55rem 0.9rem;
+  border-radius: 12px;
+  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.nav-link:hover {
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.nav-link.active {
+  background: rgba(255, 255, 255, 0.2);
+  color: #fff;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-left: auto;
+}
+
+.user-greeting {
+  color: #fbbf24;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.logout-btn {
+  background: transparent;
+  cursor: pointer;
+}
+
+.discord-link,
+.ghost-link,
+.primary-link {
+  text-decoration: none;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.6rem 1rem;
+  transition: all 0.2s ease;
+}
+
+.discord-link {
+  color: #e2e8f0;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  background: rgba(255, 255, 255, 0.08);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.discord-link:hover {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.discord-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.ghost-link {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.ghost-link:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.primary-link {
+  background: #fbbf24;
+  color: #0a0e1a;
+  box-shadow: 0 10px 25px rgba(251, 191, 36, 0.3);
+}
+
+.primary-link:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.3);
+}
+
+.cart-button {
+  background: #fbbf24;
+  color: #0a0e1a;
+  border: none;
+  padding: 0.75rem 1.1rem;
+  border-radius: 14px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+.cart-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+}
+
+.cart-button:active {
+  transform: translateY(0);
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  .header-content {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .logo-icon img {
+    width: 120px;
+    height: 120px;
+  }
+
+  .nav {
+    margin-left: 0;
+  }
+}
+
+/* Mobile - Large phones */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .brand {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .nav {
+    width: 100%;
+    flex-wrap: wrap;
+  }
+
+  .nav-actions {
+    width: 100%;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .logo-icon img {
+    width: 100px;
+    height: 100px;
+  }
+}
+
+/* Mobile - Medium phones */
+@media (max-width: 600px) {
+  .logo-icon img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .brand-name {
+    font-size: 1.2rem;
+  }
+
+  .nav-link,
+  .ghost-link,
+  .primary-link,
+  .cart-button {
+    font-size: 0.9rem;
+    padding: 0.55rem 0.9rem;
+  }
+}
+
+/* Mobile - Small phones */
+@media (max-width: 480px) {
+  .logo-icon img {
+    width: 70px;
+    height: 70px;
+  }
+
+  .brand-name {
+    font-size: 1rem;
+  }
+
+  .nav-link,
+  .ghost-link,
+  .primary-link,
+  .cart-button {
+    font-size: 0.85rem;
+    padding: 0.5rem 0.8rem;
+  }
+}
