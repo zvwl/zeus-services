@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Routes, Route, useNavigate } from 'react-router-dom'
+import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import './App.css'
 import { supabase } from './supabaseClient'
@@ -22,6 +22,7 @@ function App() {
   const [paymentMethod, setPaymentMethod] = useState('stripe')
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
 
@@ -56,7 +57,7 @@ function App() {
 
   // Check for successful payment return from Stripe
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
+    const params = new URLSearchParams(location.search)
     const success = params.get('success')
     const orderId = params.get('orderId')
     
@@ -72,7 +73,7 @@ function App() {
         setCheckoutStatus({ state: 'idle', message: '' })
       }, 10000)
     }
-  }, [])
+  }, [location])
 
   const services = [
     {
