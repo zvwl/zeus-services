@@ -62,7 +62,7 @@ function App() {
     const orderId = params.get('orderId')
     
     if (success === 'true' && orderId) {
-      setCheckoutStatus({ state: 'success', message: '✅ Payment successful! Your order has been confirmed.' })
+      setCheckoutStatus({ state: 'success', message: 'Payment successful! Your order has been confirmed.' })
       setCartItems([])
       
       // Clear the URL parameters
