@@ -58,7 +58,7 @@ function App() {
     {
       id: 1,
       name: 'Web Development',
-      price: 499,
+      price: 0.20,
       description: 'Build your professional website',
       icon: '⚡',
       platforms: ['Web', 'Mobile Web', 'Landing Page', 'E-commerce']
@@ -66,7 +66,7 @@ function App() {
     {
       id: 2,
       name: 'SEO Optimization',
-      price: 299,
+      price: 0.20,
       description: 'Boost your search rankings',
       icon: '🔍',
       platforms: ['Google', 'Bing', 'Local SEO', 'App Store']
@@ -74,7 +74,7 @@ function App() {
     {
       id: 3,
       name: 'Mobile App',
-      price: 699,
+      price: 0.20,
       description: 'Custom iOS & Android apps',
       icon: '📱',
       platforms: ['iOS', 'Android', 'Cross-platform']
@@ -82,7 +82,7 @@ function App() {
     {
       id: 4,
       name: 'Branding',
-      price: 399,
+      price: 0.20,
       description: 'Create your brand identity',
       icon: '🎨',
       platforms: ['Logo', 'Guidelines', 'Pitch Deck', 'Social Kit']
@@ -90,7 +90,7 @@ function App() {
     {
       id: 5,
       name: 'Cloud Migration',
-      price: 599,
+      price: 0.20,
       description: 'Secure cloud solutions',
       icon: '☁️',
       platforms: ['AWS', 'Azure', 'GCP', 'Hybrid']
@@ -98,7 +98,7 @@ function App() {
     {
       id: 6,
       name: 'Support Package',
-      price: 199,
+      price: 0.20,
       description: '24/7 technical support',
       icon: '🛠️',
       platforms: ['Web', 'Mobile', 'Cloud', 'On-prem']
