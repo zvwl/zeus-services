@@ -40,6 +40,60 @@
   margin-bottom: 2rem;
 }
 
+.payment-section {
+  background: linear-gradient(135deg, #0f172a 0%, #0b1223 100%);
+  border: 2px solid rgba(251, 191, 36, 0.25);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.75rem;
+}
+
+.payment-section h3 {
+  color: #f1f5f9;
+  margin-bottom: 0.85rem;
+}
+
+.payment-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.payment-option {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.payment-option input {
+  margin-top: 4px;
+}
+
+.option-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.option-title {
+  color: #f8fafc;
+  font-weight: 700;
+}
+
+.option-desc {
+  color: #cbd5e1;
+  font-size: 0.9rem;
+}
+
+.dev-option {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.08);
+}
+
 .cart-item {
   background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
   border: 2px solid rgba(251, 191, 36, 0.25);
@@ -159,6 +213,12 @@
   animation: slide-up 0.5s ease-out 0.2s backwards;
 }
 
+.cart-total-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
 @keyframes slide-up {
   from {
     opacity: 0;
@@ -195,6 +255,26 @@
 
 .checkout-btn:active {
   transform: translateY(0);
+}
+
+.checkout-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.checkout-message {
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+
+.checkout-message.success {
+  color: #bbf7d0;
+}
+
+.checkout-message.error {
+  color: #fecdd3;
 }
 
 @media (max-width: 768px) {

@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react'
 import './ServiceCard.css'
 
-export default function ServiceCard({ service, onAddToCart, cartItems, onUpdateQuantity, onRemoveFromCart }) {
+export default function ServiceCard({ service, onAddToCart, cartItems, onUpdateQuantity, onRemoveFromCart, currency, formatPrice }) {
   const [platform, setPlatform] = useState('')
 
   // Find if this service with selected platform is in cart
@@ -60,7 +60,7 @@ export default function ServiceCard({ service, onAddToCart, cartItems, onUpdateQ
       </select>
 
       <div className="card-footer">
-        <span className="card-price">${service.price}</span>
+        <span className="card-price">{formatPrice ? formatPrice(service.price) : `$${service.price}`}</span>
         {cartItem ? (
           <div className="quantity-controls">
             <button className="qty-btn" onClick={handleDecrement}>−</button>

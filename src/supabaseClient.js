@@ -5,9 +5,17 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
+// Debug logging
+console.log('Supabase Client Config:', {
+  url: supabaseUrl,
+  keyPrefix: supabaseAnonKey?.substring(0, 20) + '...',
+  keyLength: supabaseAnonKey?.length
+});
+
 // Validate that environment variables are set
 if (!supabaseUrl || !supabaseAnonKey) {
   console.error('Missing Supabase environment variables. Please check your .env file.');
+  console.error('URL:', supabaseUrl, 'Key:', supabaseAnonKey);
 }
 
 // Create and export the Supabase client

@@ -5,7 +5,7 @@ import ServiceCard from '../components/ServiceCard'
 import Cart from '../components/Cart'
 import '../App.css'
 
-export default function ServicesPage({ services, cartItems, addToCart, removeFromCart, updateQuantity }) {
+export default function ServicesPage({ services, cartItems, addToCart, removeFromCart, updateQuantity, currency, formatPrice }) {
   const [showCart, setShowCart] = useState(false)
   const [showAuthPrompt, setShowAuthPrompt] = useState(false)
   const [verificationMessage, setVerificationMessage] = useState('')
@@ -75,6 +75,8 @@ export default function ServicesPage({ services, cartItems, addToCart, removeFro
             cartItems={cartItems}
             onUpdateQuantity={updateQuantity}
             onRemoveFromCart={removeFromCart}
+            currency={currency}
+            formatPrice={formatPrice}
           />
         ))}
       </main>

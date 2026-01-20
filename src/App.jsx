@@ -1,7 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Routes, Route, useNavigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import './App.css'
+import { supabase } from './supabaseClient'
 import Header from './components/Header'
 import Home from './pages/Home'
 import ServicesPage from './pages/Services'
@@ -16,8 +17,42 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 
 function App() {
   const [cartItems, setCartItems] = useState([])
+  const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
+  const [currency, setCurrency] = useState('GBP')
+  const [paymentMethod, setPaymentMethod] = useState('stripe')
   const { user } = useAuth()
   const navigate = useNavigate()
+
+  const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
+
+  const currencyRates = {
+    USD: 1,
+    GBP: 0.79,
+    EUR: 0.92
+  }
+
+  const currencySymbols = {
+    USD: '$',
+    GBP: '£',
+    EUR: '€'
+  }
+
+  const formatPrice = (amountUsd) => {
+    const rate = currencyRates[currency] ?? 1
+    const symbol = currencySymbols[currency] ?? '$'
+    return `${symbol}${(amountUsd * rate).toFixed(2)}`
+  }
+
+  const convertAmount = (amountUsd) => {
+    const rate = currencyRates[currency] ?? 1
+    return Number((amountUsd * rate).toFixed(2))
+  }
+
+  useEffect(() => {
+    if (!isDevUser && paymentMethod === 'dev_skip') {
+      setPaymentMethod('stripe')
+    }
+  }, [isDevUser, paymentMethod])
 
   const services = [
     {
@@ -98,9 +133,119 @@ function App() {
     }
   }
 
+  const handleCheckout = async () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+
+    if (!cartItems.length) return
+
+    setCheckoutStatus({ state: 'loading', message: 'Placing order...' })
+
+    try {
+      const { data: userResult } = await supabase.auth.getUser()
+      const authedUser = userResult?.user
+
+      const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+      const totalConverted = convertAmount(totalUsd)
+
+      const orderPayload = {
+        user_id: authedUser?.id ?? null,
+        customer_email: authedUser?.email ?? user.email,
+        customer_name: authedUser?.user_metadata?.name ?? user.name ?? null,
+        items: cartItems.map(({ id, name, platform, quantity, price }) => ({
+          id,
+          name,
+          platform,
+          quantity,
+          price_usd: price,
+          price_converted: convertAmount(price),
+          currency
+        })),
+        total_amount: totalConverted,
+        currency,
+        status: 'created',
+        payment_status: paymentMethod === 'dev_skip' ? 'skipped' : 'pending',
+        payment_method: paymentMethod === 'stripe' ? 'stripe_checkout' : paymentMethod,
+        notes: paymentMethod === 'dev_skip'
+          ? 'Dev payment bypassed'
+          : paymentMethod === 'stripe'
+            ? 'Stripe checkout initiated'
+            : 'Payment pending (invoice/manual)'
+      }
+
+      const { data: orderRow, error } = await supabase
+        .from('orders')
+        .insert([orderPayload])
+        .select()
+        .single()
+
+      if (error) {
+        setCheckoutStatus({ state: 'error', message: error.message })
+        return
+      }
+
+      if (paymentMethod === 'stripe') {
+        // Call the Edge Function via fetch to avoid sending Authorization header
+        const fnRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ orderId: orderRow.id })
+        })
+
+        let fnData = null
+        try { fnData = await fnRes.json() } catch (e) { /* ignore */ }
+
+        console.log('Function response:', { status: fnRes.status, fnData })
+
+        if (!fnRes.ok) {
+          setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData?.error || fnRes.statusText || 'Request failed'}` })
+          return
+        }
+        
+        // Also log if there's an error in the response data
+        if (fnData?.error) {
+          console.error('Function returned error:', fnData.error)
+          setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData.error}` })
+          return
+        }
+
+        const url = fnData?.url
+        if (!url) {
+          setCheckoutStatus({ state: 'error', message: 'Stripe checkout URL missing' })
+          return
+        }
+
+        setCheckoutStatus({ state: 'loading', message: 'Redirecting to Stripe...' })
+        window.location.assign(url)
+        return
+      }
+
+      const successMessage = paymentMethod === 'dev_skip'
+        ? 'Order placed. Payment was skipped (dev).'
+        : 'Order placed. Payment pending (invoice/manual).'
+
+      setCheckoutStatus({ state: 'success', message: successMessage })
+      setCartItems([])
+      navigate('/cart')
+    } catch (err) {
+      setCheckoutStatus({ state: 'error', message: err.message || 'Checkout failed' })
+    }
+  }
+
   return (
     <div className="app">
-      <Header cartCount={cartItems.length} user={user} />
+      <Header
+        cartCount={cartItems.length}
+        user={user}
+        currency={currency}
+        onCurrencyChange={setCurrency}
+      />
 
       <Routes>
         <Route
@@ -120,6 +265,8 @@ function App() {
               addToCart={addToCart}
               removeFromCart={removeFromCart}
               updateQuantity={updateQuantity}
+              currency={currency}
+              formatPrice={formatPrice}
             />
           )}
         />
@@ -139,6 +286,13 @@ function App() {
               cartItems={cartItems}
               removeFromCart={removeFromCart}
               updateQuantity={updateQuantity}
+              onCheckout={handleCheckout}
+              checkoutStatus={checkoutStatus}
+              currency={currency}
+              formatPrice={formatPrice}
+              paymentMethod={paymentMethod}
+              onPaymentMethodChange={setPaymentMethod}
+              isDevUser={isDevUser}
             />
           )}
         />

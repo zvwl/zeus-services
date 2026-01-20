@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './Header.css'
 
-export default function Header({ cartCount }) {
+export default function Header({ cartCount, currency, onCurrencyChange }) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
 
@@ -31,6 +31,19 @@ export default function Header({ cartCount }) {
         </nav>
 
         <div className="nav-actions">
+          <div className="currency-switcher">
+            <label htmlFor="currency-select">Currency</label>
+            <select
+              id="currency-select"
+              value={currency}
+              onChange={(e) => onCurrencyChange(e.target.value)}
+            >
+              <option value="USD">USD ($)</option>
+              <option value="GBP">GBP (£)</option>
+              <option value="EUR">EUR (€)</option>
+            </select>
+          </div>
+
           <a
             href="https://discord.gg/NSNSmmaA"
             className="discord-link"
