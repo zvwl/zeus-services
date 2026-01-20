@@ -54,6 +54,26 @@ function App() {
     }
   }, [isDevUser, paymentMethod])
 
+  // Check for successful payment return from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const success = params.get('success')
+    const orderId = params.get('orderId')
+    
+    if (success === 'true' && orderId) {
+      setCheckoutStatus({ state: 'success', message: '✅ Payment successful! Your order has been confirmed.' })
+      setCartItems([])
+      
+      // Clear the URL parameters
+      window.history.replaceState({}, '', '/cart')
+      
+      // Auto-clear the success message after 10 seconds
+      setTimeout(() => {
+        setCheckoutStatus({ state: 'idle', message: '' })
+      }, 10000)
+    }
+  }, [])
+
   const services = [
     {
       id: 1,
