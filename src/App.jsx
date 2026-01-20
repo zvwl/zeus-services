@@ -68,10 +68,10 @@ function App() {
       // Clear the URL parameters
       window.history.replaceState({}, '', '/cart')
       
-      // Auto-clear the success message after 10 seconds
+      // Auto-clear the success message after 15 seconds
       setTimeout(() => {
         setCheckoutStatus({ state: 'idle', message: '' })
-      }, 10000)
+      }, 15000)
     }
   }, [location])
 

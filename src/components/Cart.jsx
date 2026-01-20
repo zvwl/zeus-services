@@ -13,6 +13,13 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
   if (items.length === 0) {
     return (
       <div className="cart-container">
+        {hasMessage && checkoutStatus.state === 'success' && (
+          <div className="success-banner">
+            <p className={`checkout-message ${checkoutStatus.state}`}>
+              {checkoutStatus.message}
+            </p>
+          </div>
+        )}
         <div className="empty-cart">
           <p>Your cart is empty</p>
           <span className="empty-icon">🛒</span>
