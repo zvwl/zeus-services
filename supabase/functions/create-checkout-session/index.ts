@@ -24,14 +24,23 @@ Deno.serve(async (req) => {
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
-    const FRONTEND_URL = Deno.env.get("FRONTEND_URL") ?? "http://localhost:5173";
+    
+    // Determine frontend URL based on environment
+    // For local development, always use localhost
+    // For production, use the FRONTEND_URL or default to production domain
+    const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "http://localhost:5173";
+    
+    // If FRONTEND_URL is not explicitly set and we're not in production, use localhost
+    const isProduction = FRONTEND_URL && !FRONTEND_URL.includes("localhost");
+    const finalFrontendUrl = isProduction ? FRONTEND_URL : "http://localhost:5173";
     
     console.log("Env check:", {
       hasStripeKey: !!STRIPE_SECRET_KEY,
       hasServiceRole: !!SUPABASE_SERVICE_ROLE_KEY,
       hasAnonKey: !!SUPABASE_ANON_KEY,
       hasUrl: !!SUPABASE_URL,
-      frontendUrl: FRONTEND_URL
+      frontendUrl: finalFrontendUrl,
+      isProduction
     });
     
     if (!STRIPE_SECRET_KEY) {
@@ -150,8 +159,8 @@ Deno.serve(async (req) => {
       metadata: {
         order_id: order.id,
       },
-      success_url: `${FRONTEND_URL}/cart?success=true&orderId=${order.id}`,
-      cancel_url: `${FRONTEND_URL}/cart?canceled=true&orderId=${order.id}`,
+      success_url: `${finalFrontendUrl}/cart?success=true&orderId=${order.id}`,
+      cancel_url: `${finalFrontendUrl}/cart?canceled=true&orderId=${order.id}`,
     });
 
     await supabaseAdmin

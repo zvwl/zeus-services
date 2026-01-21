@@ -14,6 +14,7 @@ import VerifyEmailPage from './pages/VerifyEmailPage'
 import SettingsPage from './pages/SettingsPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import OrdersPage from './pages/OrdersPage'
 
 function App() {
   const [cartItems, setCartItems] = useState([])
@@ -314,6 +315,7 @@ function App() {
               paymentMethod={paymentMethod}
               onPaymentMethodChange={setPaymentMethod}
               isDevUser={isDevUser}
+              clearCart={() => setCartItems([])}
             />
           )}
         />
@@ -332,6 +334,10 @@ function App() {
         <Route
           path="/settings"
           element={<SettingsPage />}
+        />
+        <Route
+          path="/orders"
+          element={<OrdersPage />}
         />
         <Route
           path="/forgot-password"

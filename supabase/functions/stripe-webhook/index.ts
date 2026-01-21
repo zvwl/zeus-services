@@ -45,6 +45,7 @@ Deno.serve(async (req) => {
           .from("orders")
           .update({
             payment_status: "paid",
+            status: "processing",
             payment_intent_id: session.payment_intent ?? null,
             paid_at: new Date().toISOString(),
           })

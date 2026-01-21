@@ -1,10 +1,13 @@
+import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import UserMenu from './UserMenu'
 import './Header.css'
 
 export default function Header({ cartCount, currency, onCurrencyChange }) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
 
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`
 
@@ -54,23 +57,17 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
             Discord
           </a>
           
-          {user ? (
-            <>
-              <span className="user-greeting">Hey, {user.name}!</span>
-              <button className="ghost-link logout-btn" onClick={handleLogout}>Logout</button>
-            </>
-          ) : (
-            <>
-              <NavLink to="/login" className="ghost-link">Login</NavLink>
-              <NavLink to="/signup" className="primary-link">Sign up</NavLink>
-            </>
-          )}
-          
           <button className="cart-button" onClick={() => navigate('/cart')}>
             🛒 Cart ({cartCount})
           </button>
+
+          <button className="menu-button" onClick={() => setIsMenuOpen(true)}>
+            <span className="menu-icon">☰</span>
+          </button>
         </div>
       </div>
+
+      <UserMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </header>
   )
 }
