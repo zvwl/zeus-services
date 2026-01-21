@@ -1,6 +1,8 @@
 import './Cart.css'
+import { useAuth } from '../contexts/AuthContext'
 
 export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser }) {
+  const { emailVerified } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const isLoading = checkoutStatus?.state === 'loading'
   const hasMessage = checkoutStatus?.message
@@ -9,6 +11,14 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
     if (paymentMethod === 'invoice') return isLoading ? 'Placing order...' : 'Place order (invoice)'
     return isLoading ? 'Redirecting to Stripe...' : 'Pay with Stripe'
   })()
+
+  const handleCheckout = () => {
+    if (!emailVerified) {
+      alert('Please verify your email before checking out')
+      return
+    }
+    onCheckout()
+  }
 
   if (items.length === 0) {
     return (
@@ -119,10 +129,11 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
         </div>
         <button
           className="checkout-btn"
-          onClick={onCheckout}
-          disabled={!items.length || isLoading}
+          onClick={handleCheckout}
+          disabled={!items.length || isLoading || !emailVerified}
+          title={!emailVerified ? 'Please verify your email to checkout' : ''}
         >
-          {buttonLabel}
+          {!emailVerified ? '✉️ Verify email to checkout' : buttonLabel}
         </button>
       </div>
     </div>

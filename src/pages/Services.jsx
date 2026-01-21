@@ -17,6 +17,11 @@ export default function ServicesPage({ services, cartItems, addToCart, removeFro
       setShowAuthPrompt(true)
       return
     }
+    if (!emailVerified) {
+      setVerificationMessage('⚠️ Please verify your email before adding items to cart')
+      setTimeout(() => setVerificationMessage(''), 5000)
+      return
+    }
     addToCart(service, platform)
   }
 

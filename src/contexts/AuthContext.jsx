@@ -18,16 +18,24 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for existing Supabase session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user) {
-        setUser({
-          email: session.user.email,
-          name: session.user.user_metadata?.name || session.user.email.split('@')[0]
-        })
-        setEmailVerified(session.user.email_confirmed_at !== null)
+    const checkSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session?.user) {
+          setUser({
+            email: session.user.email,
+            name: session.user.user_metadata?.name || session.user.email.split('@')[0]
+          })
+          setEmailVerified(session.user.email_confirmed_at !== null)
+        }
+      } catch (err) {
+        console.error('Session check error:', err)
+      } finally {
+        setLoading(false)
       }
-      setLoading(false)
-    })
+    }
+
+    checkSession()
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -37,9 +45,11 @@ export const AuthProvider = ({ children }) => {
           name: session.user.user_metadata?.name || session.user.email.split('@')[0]
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
+        setLoading(false)
       } else {
         setUser(null)
         setEmailVerified(false)
+        setLoading(false)
       }
     })
 
