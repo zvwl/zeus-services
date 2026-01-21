@@ -61,9 +61,38 @@ export const AuthProvider = ({ children }) => {
         email: data.user.email,
         name: data.user.user_metadata?.name || data.user.email.split('@')[0]
       })
+
+      // Create session record
+      await createSessionRecord(data.user.id)
+
       return { success: true }
     } catch (err) {
       return { success: false, error: 'An error occurred during login' }
+    }
+  }
+
+  const createSessionRecord = async (userId) => {
+    try {
+      // Get device info
+      const userAgent = navigator.userAgent
+      
+      // Try to get IP (note: this is limited on client-side, better done server-side)
+      // For now we'll just use null and let the server/webhook populate it
+      
+      const { error } = await supabase.from('sessions').insert([
+        {
+          user_id: userId,
+          user_agent: userAgent,
+          ip_address: null, // Can't reliably get client IP on client-side
+          last_activity: new Date().toISOString()
+        }
+      ])
+
+      if (error) {
+        console.warn('Failed to create session record:', error)
+      }
+    } catch (err) {
+      console.warn('Session record creation error:', err)
     }
   }
 
@@ -89,6 +118,10 @@ export const AuthProvider = ({ children }) => {
           email: data.user.email,
           name: name
         })
+
+        // Create session record for new user
+        await createSessionRecord(data.user.id)
+
         return { success: true }
       }
       
@@ -99,6 +132,18 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = async () => {
+    try {
+      // Get current user to delete their sessions
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (user) {
+        // Delete all sessions for this user (optional - or just delete active one)
+        await supabase.from('sessions').delete().eq('user_id', user.id)
+      }
+    } catch (err) {
+      console.warn('Session cleanup error:', err)
+    }
+
     await supabase.auth.signOut()
     setUser(null)
     setEmailVerified(false)
