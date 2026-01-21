@@ -106,7 +106,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const signup = async (name, email, password) => {
+  const signup = async (name, email, password, captchaToken) => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -114,7 +114,9 @@ export const AuthProvider = ({ children }) => {
         options: {
           data: {
             name: name
-          }
+          },
+          // hCaptcha token is required when captcha is enabled in Supabase Auth settings
+          captchaToken
         }
       })
       

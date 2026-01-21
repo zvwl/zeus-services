@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
 import './AuthPages.css'
 
@@ -8,6 +9,8 @@ export default function SignupPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
   const { signup } = useAuth()
   const navigate = useNavigate()
 
@@ -25,11 +28,20 @@ export default function SignupPage() {
       return
     }
 
-    const result = await signup(name, email, password)
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA')
+      return
+    }
+
+    const result = await signup(name, email, password, captchaToken)
     if (result.success) {
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
       navigate('/services')
     } else {
       setError(result.error)
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
     }
   }
 
@@ -75,6 +87,20 @@ export default function SignupPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
+              />
+            </div>
+
+            <div className="form-group">
+              <label>Security check</label>
+              <HCaptcha
+                sitekey={import.meta.env.VITE_HCAPTCHA_SITEKEY}
+                onVerify={(token) => {
+                  setCaptchaToken(token)
+                  setError('')
+                }}
+                onExpire={() => setCaptchaToken(null)}
+                onError={() => setCaptchaToken(null)}
+                ref={captchaRef}
               />
             </div>
 
