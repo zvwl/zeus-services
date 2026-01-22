@@ -4,9 +4,8 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
 interface EmailRequest {
   to: string
-  subject: string
-  html: string
-  text?: string
+  template_id: string
+  variables: Record<string, string>
 }
 
 serve(async (req) => {
@@ -20,13 +19,16 @@ serve(async (req) => {
   }
 
   try {
-    const { to, subject, html, text } = (await req.json()) as EmailRequest
+    const { to, template_id, variables } = (await req.json()) as EmailRequest
 
-    if (!to || !subject || !html) {
-      return new Response(JSON.stringify({ error: 'Missing required fields: to, subject, html' }), {
-        status: 400,
-        headers: { 'Content-Type': 'application/json' }
-      })
+    if (!to || !template_id || !variables) {
+      return new Response(
+        JSON.stringify({ error: 'Missing required fields: to, template_id, variables' }),
+        {
+          status: 400,
+          headers: { 'Content-Type': 'application/json' }
+        }
+      )
     }
 
     if (!RESEND_API_KEY) {
@@ -36,7 +38,7 @@ serve(async (req) => {
       })
     }
 
-    // Call Resend API
+    // Call Resend API with template
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
       headers: {
@@ -46,9 +48,8 @@ serve(async (req) => {
       body: JSON.stringify({
         from: 'no-reply@zeuservices.com',
         to,
-        subject,
-        html,
-        text: text || html.replace(/<[^>]*>/g, '') // Strip HTML if no text provided
+        template_id,
+        variables
       })
     })
 

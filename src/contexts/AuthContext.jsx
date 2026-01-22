@@ -207,15 +207,11 @@ export const AuthProvider = ({ children }) => {
             },
             body: JSON.stringify({
               to: email,
-              subject: 'Verify your Zeus Services email',
-              html: `
-                <h2>Welcome to Zeus Services!</h2>
-                <p>Hi ${name},</p>
-                <p>Thanks for signing up. Please verify your email to get started:</p>
-                <p><a href="${confirmationUrl}">Verify Email</a></p>
-                <p>Or copy this link: ${confirmationUrl}</p>
-                <p>Best regards,<br>The Zeus Team</p>
-              `
+              template_id: import.meta.env.VITE_RESEND_CONFIRMATION_TEMPLATE_ID,
+              variables: {
+                name,
+                confirmationUrl
+              }
             })
           })
 
