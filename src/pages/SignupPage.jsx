@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import './AuthPages.css'
 
 export default function SignupPage() {
+  const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -25,6 +26,11 @@ export default function SignupPage() {
 
     if (password.length < 6) {
       setError('Password must be at least 6 characters')
+      return
+    }
+
+    if (!siteKey) {
+      setError('Captcha is unavailable. Please contact support.')
       return
     }
 
@@ -92,16 +98,20 @@ export default function SignupPage() {
 
             <div className="form-group">
               <label>Security check</label>
-              <HCaptcha
-                sitekey={import.meta.env.VITE_HCAPTCHA_SITEKEY}
-                onVerify={(token) => {
-                  setCaptchaToken(token)
-                  setError('')
-                }}
-                onExpire={() => setCaptchaToken(null)}
-                onError={() => setCaptchaToken(null)}
-                ref={captchaRef}
-              />
+              {siteKey ? (
+                <HCaptcha
+                  sitekey={siteKey}
+                  onVerify={(token) => {
+                    setCaptchaToken(token)
+                    setError('')
+                  }}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => setCaptchaToken(null)}
+                  ref={captchaRef}
+                />
+              ) : (
+                <div className="error-message">Captcha key missing. Please contact support.</div>
+              )}
             </div>
 
             <button type="submit" className="auth-btn">
