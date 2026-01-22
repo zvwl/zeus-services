@@ -19,32 +19,16 @@ Deno.serve(async (req) => {
   }
 
   try {
-    console.log("=== Function invoked ===");
     const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
     
     // Determine frontend URL based on environment
-    // For local development, always use localhost
-    // For production, use the FRONTEND_URL or default to production domain
-    const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "http://localhost:5173";
-    
-    // If FRONTEND_URL is not explicitly set and we're not in production, use localhost
-    const isProduction = FRONTEND_URL && !FRONTEND_URL.includes("localhost");
-    const finalFrontendUrl = isProduction ? FRONTEND_URL : "http://localhost:5173";
-    
-    console.log("Env check:", {
-      hasStripeKey: !!STRIPE_SECRET_KEY,
-      hasServiceRole: !!SUPABASE_SERVICE_ROLE_KEY,
-      hasAnonKey: !!SUPABASE_ANON_KEY,
-      hasUrl: !!SUPABASE_URL,
-      frontendUrl: finalFrontendUrl,
-      isProduction
-    });
+    const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://zeuservices.com";
+    const finalFrontendUrl = FRONTEND_URL;
     
     if (!STRIPE_SECRET_KEY) {
-      console.error("Missing STRIPE_SECRET_KEY");
       return new Response(JSON.stringify({ error: "Server configuration error: Missing Stripe key" }), { 
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -53,8 +37,6 @@ Deno.serve(async (req) => {
 
     // Try to read the authorization header (case-insensitive)
     const authHeader = req.headers.get('Authorization') ?? req.headers.get('authorization') ?? ''
-    console.log("Auth header present:", !!authHeader);
-    console.log("Anon key present:", !!SUPABASE_ANON_KEY);
 
     let userId: string | null = null
     if (authHeader && SUPABASE_ANON_KEY) {
@@ -70,15 +52,10 @@ Deno.serve(async (req) => {
         const { data: { user }, error: userError } = await supabaseClient.auth.getUser()
         if (user) {
           userId = user.id
-          console.log("Authenticated user:", user.id)
-        } else if (userError) {
-          console.warn("User verification failed:", userError?.message)
         }
       } catch (e) {
-        console.warn("Auth verification threw:", (e as any)?.message)
+        // Auth verification failed silently
       }
-    } else {
-      console.warn("Proceeding without Authorization header")
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY, {
@@ -99,7 +76,6 @@ Deno.serve(async (req) => {
     )
 
     const { orderId } = await req.json();
-    console.log("Received orderId:", orderId);
     
     if (!orderId) {
       return new Response(JSON.stringify({ error: "orderId is required" }), { 
@@ -109,14 +85,11 @@ Deno.serve(async (req) => {
     }
 
     // Fetch order
-    console.log("Fetching order from Supabase...");
     const { data: order, error: orderError } = await supabaseAdmin
       .from("orders")
       .select("id, items, total_amount, currency, customer_email")
       .eq("id", orderId)
       .single();
-
-    console.log("Order fetch result:", { order, orderError });
 
     if (orderError || !order) {
       return new Response(JSON.stringify({ error: orderError?.message ?? "Order not found" }), { 

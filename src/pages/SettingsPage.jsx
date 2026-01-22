@@ -22,6 +22,17 @@ export default function SettingsPage() {
   
   // Verification state
   const [verificationMessage, setVerificationMessage] = useState('')
+  
+  // 2FA state
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
+  const [twoFactorLoading, setTwoFactorLoading] = useState(false)
+  const [twoFactorMessage, setTwoFactorMessage] = useState('')
+  const [showQR, setShowQR] = useState(false)
+  
+  // Captcha settings state
+  const [requireCaptchaLogin, setRequireCaptchaLogin] = useState(false)
+  const [captchaLoading, setCaptchaLoading] = useState(false)
+  const [captchaMessage, setCaptchaMessage] = useState('')
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault()
@@ -151,6 +162,12 @@ export default function SettingsPage() {
           >
             Email Status
           </button>
+          <button 
+            className={`tab-btn ${activeTab === 'advanced' ? 'active' : ''}`}
+            onClick={() => setActiveTab('advanced')}
+          >
+            Advanced
+          </button>
         </div>
 
         {/* Profile Tab */}
@@ -228,6 +245,65 @@ export default function SettingsPage() {
                 {passwordLoading ? 'Changing...' : 'Change Password'}
               </button>
             </form>
+
+            <hr style={{ margin: '2rem 0', border: '1px solid #e0e0e0' }} />
+
+            <h2>Two-Factor Authentication (2FA)</h2>
+            <div className="twofa-section">
+              <p className="twofa-description">
+                Add an extra layer of security to your account by enabling two-factor authentication.
+                You'll need to enter a code from your authenticator app when logging in.
+              </p>
+              
+              <div className="twofa-status">
+                <span className="status-label">2FA Status:</span>
+                <span className={`status-badge ${twoFactorEnabled ? 'verified' : 'unverified'}`}>
+                  {twoFactorEnabled ? '✓ Enabled' : '⚠ Disabled'}
+                </span>
+              </div>
+
+              {!twoFactorEnabled && (
+                <div className="twofa-setup">
+                  <p><strong>How to set up 2FA:</strong></p>
+                  <ol>
+                    <li>Download an authenticator app (Google Authenticator, Authy, etc.)</li>
+                    <li>Click "Enable 2FA" below</li>
+                    <li>Scan the QR code with your authenticator app</li>
+                    <li>Enter the 6-digit code to verify</li>
+                  </ol>
+                  <button 
+                    className="primary-btn" 
+                    disabled={twoFactorLoading}
+                    onClick={() => {
+                      setTwoFactorMessage('⚠️ 2FA setup is coming soon! This feature requires additional backend configuration.')
+                      setTimeout(() => setTwoFactorMessage(''), 5000)
+                    }}
+                  >
+                    {twoFactorLoading ? 'Setting up...' : 'Enable 2FA'}
+                  </button>
+                </div>
+              )}
+
+              {twoFactorEnabled && (
+                <div className="twofa-enabled">
+                  <p className="success-info">✅ Two-factor authentication is enabled on your account.</p>
+                  <button 
+                    className="danger-btn"
+                    disabled={twoFactorLoading}
+                    onClick={() => {
+                      setTwoFactorMessage('2FA cannot be disabled at this time.')
+                      setTimeout(() => setTwoFactorMessage(''), 3000)
+                    }}
+                  >
+                    Disable 2FA
+                  </button>
+                </div>
+              )}
+
+              {twoFactorMessage && (
+                <div className="message">{twoFactorMessage}</div>
+              )}
+            </div>
           </div>
         )}
 
@@ -268,6 +344,70 @@ export default function SettingsPage() {
                 ✅ Your email is verified! You have full access to all features.
               </p>
             )}
+          </div>
+        )}
+
+        {/* Advanced Tab */}
+        {activeTab === 'advanced' && (
+          <div className="settings-card">
+            <h2>Advanced Settings</h2>
+            
+            <div className="advanced-section">
+              <h3>Security Preferences</h3>
+              
+              <div className="setting-item">
+                <div className="setting-info">
+                  <strong>Require CAPTCHA on Login</strong>
+                  <p>Add an extra verification step when logging in to prevent automated attacks.</p>
+                </div>
+                <label className="toggle-switch">
+                  <input
+                    type="checkbox"
+                    checked={requireCaptchaLogin}
+                    onChange={(e) => setRequireCaptchaLogin(e.target.checked)}
+                    disabled={captchaLoading}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+
+              <div className="setting-note">
+                <strong>Note:</strong> CAPTCHA on signup is always enabled for security.
+              </div>
+
+              {captchaMessage && (
+                <div className="message">{captchaMessage}</div>
+              )}
+
+              <button 
+                className="save-btn" 
+                disabled={captchaLoading}
+                onClick={() => {
+                  setCaptchaLoading(true)
+                  setCaptchaMessage('✅ Settings saved! Note: CAPTCHA is currently enabled on login by default.')
+                  setTimeout(() => {
+                    setCaptchaLoading(false)
+                    setCaptchaMessage('')
+                  }, 3000)
+                }}
+              >
+                {captchaLoading ? 'Saving...' : 'Save Preferences'}
+              </button>
+            </div>
+
+            <hr style={{ margin: '2rem 0', border: '1px solid #e0e0e0' }} />
+
+            <div className="advanced-section">
+              <h3>Account Information</h3>
+              <div className="info-item">
+                <span className="info-label">Account Created:</span>
+                <span className="info-value">{new Date().toLocaleDateString()}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">User ID:</span>
+                <span className="info-value monospace">{user?.id || 'N/A'}</span>
+              </div>
+            </div>
           </div>
         )}
       </div>

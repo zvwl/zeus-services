@@ -1,12 +1,16 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
 import './AuthPages.css'
 
 export default function LoginPage() {
+  const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
   const { login } = useAuth()
   const navigate = useNavigate()
 
@@ -19,11 +23,25 @@ export default function LoginPage() {
       return
     }
 
-    const result = await login(email, password)
+    if (!siteKey) {
+      setError('Captcha is unavailable. Please contact support.')
+      return
+    }
+
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA')
+      return
+    }
+
+    const result = await login(email, password, captchaToken)
     if (result.success) {
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
       navigate('/services')
     } else {
       setError(result.error)
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
     }
   }
 
@@ -62,6 +80,24 @@ export default function LoginPage() {
               <div className="password-footer">
                 <a href="/forgot-password" className="forgot-link">Forgot password?</a>
               </div>
+            </div>
+
+            <div className="form-group">
+              <label>Security check</label>
+              {siteKey ? (
+                <HCaptcha
+                  sitekey={siteKey}
+                  onVerify={(token) => {
+                    setCaptchaToken(token)
+                    setError('')
+                  }}
+                  onExpire={() => setCaptchaToken(null)}
+                  onError={() => setCaptchaToken(null)}
+                  ref={captchaRef}
+                />
+              ) : (
+                <div className="error-message">Captcha key missing. Please contact support.</div>
+              )}
             </div>
 
             <button type="submit" className="auth-btn">

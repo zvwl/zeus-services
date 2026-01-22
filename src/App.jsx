@@ -223,16 +223,12 @@ function App() {
         let fnData = null
         try { fnData = await fnRes.json() } catch (e) { /* ignore */ }
 
-        console.log('Function response:', { status: fnRes.status, fnData })
-
         if (!fnRes.ok) {
           setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData?.error || fnRes.statusText || 'Request failed'}` })
           return
         }
         
-        // Also log if there's an error in the response data
         if (fnData?.error) {
-          console.error('Function returned error:', fnData.error)
           setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData.error}` })
           return
         }

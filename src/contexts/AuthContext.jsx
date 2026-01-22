@@ -56,8 +56,14 @@ export const AuthProvider = ({ children }) => {
     return () => subscription.unsubscribe()
   }, [])
 
-  const login = async (email, password) => {
+  const login = async (email, password, captchaToken) => {
     try {
+      // Note: captchaToken validation would ideally be done server-side
+      // For now, we just require it to be present
+      if (!captchaToken) {
+        return { success: false, error: 'Please complete the CAPTCHA' }
+      }
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
