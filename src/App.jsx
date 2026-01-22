@@ -11,6 +11,7 @@ import PlaceholderPage from './pages/PlaceholderPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
+import PendingVerificationPage from './pages/PendingVerificationPage'
 import SettingsPage from './pages/SettingsPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
@@ -326,6 +327,10 @@ function App() {
         <Route
           path="/verify-email"
           element={<VerifyEmailPage />}
+        />
+        <Route
+          path="/pending-verification"
+          element={<PendingVerificationPage />}
         />
         <Route
           path="/settings"

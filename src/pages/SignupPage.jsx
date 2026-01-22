@@ -43,7 +43,8 @@ export default function SignupPage() {
     if (result.success) {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
-      navigate('/services')
+      // Redirect to pending verification page
+      navigate('/pending-verification', { state: { email } })
     } else {
       setError(result.error)
       captchaRef.current?.resetCaptcha()
