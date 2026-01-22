@@ -46,10 +46,12 @@ serve(async (req) => {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        from: 'no-reply@zeuservices.com',
+        from: 'Zeus Services <no-reply@zeuservices.com>',
         to,
-        template_id,
-        variables
+        template: {
+          id: template_id,
+          variables
+        }
       })
     })
 

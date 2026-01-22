@@ -195,7 +195,29 @@ export const AuthProvider = ({ children }) => {
         // Create session record for new user
         await createSessionRecord(data.user.id)
 
-        // Supabase will handle sending confirmation email via Auth → Email Templates
+        // Send confirmation email via send-email Edge Function (Resend)
+        try {
+          const confirmationUrl = `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`
+          
+          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+              to: email,
+              template_id: 'confirmation-email',
+              variables: {
+                name,
+                confirmationUrl
+              }
+            })
+          })
+        } catch (err) {
+          console.warn('Error sending confirmation email:', err)
+        }
+
         return { success: true }
       }
       
