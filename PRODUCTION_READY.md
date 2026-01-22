@@ -81,13 +81,14 @@ Live Keys:
 Webhook:
 - `STRIPE_WEBHOOK_SECRET=whsec_...` ⚠️ **GET THIS**
 
-### 3. **hCaptcha Keys (INCOMPLETE!)**
+### 3. **hCaptcha Keys**
 📍 Get from: https://dashboard.hcaptcha.com/sites
 
-⚠️ **YOUR CURRENT KEY IS INCOMPLETE**: `7970cac8-c508-4818-974e-95ecb08b58e`
+Current sitekey to use: `9342fb48-1750-4ca6-90bc-31b840108d18`
+Make sure allowed hostnames include `zeuservices.com`, `www.zeuservices.com`, and `localhost`.
 
 You need:
-- `VITE_HCAPTCHA_SITEKEY` (complete version)
+- `VITE_HCAPTCHA_SITEKEY` (the above sitekey)
 - `HCAPTCHA_SECRET` (for server validation)
 
 ### 4. **Vercel Environment Variables**

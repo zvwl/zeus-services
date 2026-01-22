@@ -80,9 +80,9 @@ STRIPE_WEBHOOK_SECRET=whsec_[GET FROM STRIPE WEBHOOKS]
 
 ## 3️⃣ HCAPTCHA KEYS 🤖
 
-### ⚠️ YOUR CURRENT KEY IS INCOMPLETE!
-Current key in .env: `7970cac8-c508-4818-974e-95ecb08b58e`
-This is **missing the last character(s)**!
+### hCaptcha Sitekey
+Current key to use: `9342fb48-1750-4ca6-90bc-31b840108d18`
+Make sure hostnames include `zeuservices.com`, `www.zeuservices.com`, and `localhost`.
 
 ### Where to get them:
 https://dashboard.hcaptcha.com/sites

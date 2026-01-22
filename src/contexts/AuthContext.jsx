@@ -72,7 +72,31 @@ export const AuthProvider = ({ children }) => {
       if (error) {
         return { success: false, error: error.message }
       }
-      
+
+      // If the user has verified MFA factors, force a challenge before completing login
+      const { data: factors, error: factorError } = await supabase.auth.mfa.listFactors()
+      if (factorError) {
+        return { success: false, error: factorError.message }
+      }
+
+      const verifiedTotp = factors?.totp?.filter(f => f.status === 'verified') || []
+
+      if (verifiedTotp.length > 0) {
+        const factorId = verifiedTotp[0].id
+        const { data: challengeData, error: challengeError } = await supabase.auth.mfa.challenge({ factorId })
+        if (challengeError) {
+          return { success: false, error: challengeError.message }
+        }
+
+        // Return an MFA-required state so the UI can prompt for the 6-digit code
+        return {
+          success: false,
+          mfaRequired: true,
+          factorId,
+          challengeId: challengeData.id
+        }
+      }
+
       setUser({
         email: data.user.email,
         name: data.user.user_metadata?.name || data.user.email.split('@')[0]
@@ -84,6 +108,37 @@ export const AuthProvider = ({ children }) => {
       return { success: true }
     } catch (err) {
       return { success: false, error: 'An error occurred during login' }
+    }
+  }
+
+  const verifyMfaChallenge = async ({ factorId, challengeId, code }) => {
+    try {
+      const { data, error } = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId,
+        code
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      // Refresh session/user after successful MFA to ensure state is updated to AAL2
+      const { data: sessionData } = await supabase.auth.getSession()
+      const authedUser = sessionData?.session?.user
+
+      if (authedUser) {
+        setUser({
+          email: authedUser.email,
+          name: authedUser.user_metadata?.name || authedUser.email.split('@')[0]
+        })
+
+        await createSessionRecord(authedUser.id)
+      }
+
+      return { success: true }
+    } catch (err) {
+      return { success: false, error: 'Failed to verify MFA code' }
     }
   }
 
@@ -241,7 +296,8 @@ export const AuthProvider = ({ children }) => {
       emailVerified, 
       resendVerificationEmail,
       updateProfile,
-      changePassword
+      changePassword,
+      verifyMfaChallenge
     }}>
       {children}
     </AuthContext.Provider>

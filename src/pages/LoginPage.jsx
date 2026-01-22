@@ -9,14 +9,25 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [mfaError, setMfaError] = useState('')
+  const [mfaCode, setMfaCode] = useState('')
+  const [mfaRequired, setMfaRequired] = useState(false)
+  const [mfaFactorId, setMfaFactorId] = useState(null)
+  const [mfaChallengeId, setMfaChallengeId] = useState(null)
+  const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
   const captchaRef = useRef(null)
-  const { login } = useAuth()
+  const { login, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setMfaError('')
+    setMfaRequired(false)
+    setMfaFactorId(null)
+    setMfaChallengeId(null)
+    setMfaCode('')
 
     if (!email || !password) {
       setError('Please fill in all fields')
@@ -38,10 +49,47 @@ export default function LoginPage() {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
       navigate('/services')
-    } else {
-      setError(result.error)
+      return
+    }
+
+    if (result.mfaRequired) {
+      setMfaRequired(true)
+      setMfaFactorId(result.factorId)
+      setMfaChallengeId(result.challengeId)
+      setError('Enter your 6-digit authentication code to finish signing in.')
+      return
+    }
+
+    setError(result.error)
+    captchaRef.current?.resetCaptcha()
+    setCaptchaToken(null)
+  }
+
+  const handleVerifyMfa = async (e) => {
+    e.preventDefault()
+    setMfaError('')
+
+    if (!mfaCode || mfaCode.length !== 6) {
+      setMfaError('Please enter the 6-digit code from your authenticator app')
+      return
+    }
+
+    setIsVerifyingMfa(true)
+    const result = await verifyMfaChallenge({
+      factorId: mfaFactorId,
+      challengeId: mfaChallengeId,
+      code: mfaCode
+    })
+    setIsVerifyingMfa(false)
+
+    if (result.success) {
+      setMfaRequired(false)
+      setMfaCode('')
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
+      navigate('/services')
+    } else {
+      setMfaError(result.error)
     }
   }
 
@@ -99,6 +147,31 @@ export default function LoginPage() {
                 <div className="error-message">Captcha key missing. Please contact support.</div>
               )}
             </div>
+
+            {mfaRequired && (
+              <div className="form-group">
+                <label>Two-Factor Code</label>
+                <input
+                  type="text"
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="123456"
+                  maxLength="6"
+                  style={{ textAlign: 'center', letterSpacing: '0.3rem' }}
+                />
+                <small>Enter the code from your authenticator app.</small>
+                {mfaError && <div className="error-message">{mfaError}</div>}
+                <button 
+                  type="button" 
+                  className="auth-btn" 
+                  onClick={handleVerifyMfa}
+                  disabled={isVerifyingMfa || mfaCode.length !== 6}
+                  style={{ marginTop: '0.75rem' }}
+                >
+                  {isVerifyingMfa ? 'Verifying...' : 'Verify and continue'}
+                </button>
+              </div>
+            )}
 
             <button type="submit" className="auth-btn">
               Sign in

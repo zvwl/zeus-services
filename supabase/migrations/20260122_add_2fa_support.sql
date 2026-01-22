@@ -12,7 +12,7 @@
 \-\-
 \-\- If you already ran the old custom tables, you can drop them:
 
-\-\- DROP TABLE IF EXISTS user_2fa_logs CASCADE;
-\-\- DROP TABLE IF EXISTS user_2fa CASCADE;
+ DROP TABLE IF EXISTS user_2fa_logs CASCADE;
+DROP TABLE IF EXISTS user_2fa CASCADE;
 
 \-\- No migration needed - MFA is already enabled in Supabase Auth settings!
