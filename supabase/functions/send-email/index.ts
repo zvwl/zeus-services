@@ -2,55 +2,56 @@ import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
 
 const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS'
-}
-
-interface EmailRequest {
-  to: string
-  template_id: string
-  variables: Record<string, string>
+interface AuthHookEvent {
+  user: {
+    id: string
+    email: string
+    user_metadata?: {
+      name?: string
+    }
+  }
+  event: string
+  invocation_id: string
 }
 
 serve(async (req) => {
-  // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
-  }
-
   if (req.method !== 'POST') {
-    return new Response('Method not allowed', { status: 405, headers: corsHeaders })
+    return new Response('Method not allowed', { status: 405 })
   }
 
   try {
-    const body = await req.json()
-    console.log('Received request body:', JSON.stringify(body, null, 2))
-    
-    const { to, template_id, variables } = body as EmailRequest
+    const body = (await req.json()) as AuthHookEvent
+    console.log('Auth Hook Event:', JSON.stringify(body, null, 2))
 
-    if (!to || !template_id || !variables) {
-      console.log('Missing fields check - to:', to, 'template_id:', template_id, 'variables:', variables)
+    const { user, event } = body
+
+    if (!user || !user.email) {
       return new Response(
-        JSON.stringify({ error: 'Missing required fields: to, template_id, variables' }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
+        JSON.stringify({ error: 'Missing user or user email' }),
+        { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
-    if (!RESEND_API_KEY) {
-      console.log('ERROR: RESEND_API_KEY not configured')
-      return new Response(JSON.stringify({ error: 'RESEND_API_KEY not configured' }), {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    // Only handle signup events
+    if (event !== 'validate_signup') {
+      return new Response(JSON.stringify({ success: true }), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' }
       })
     }
 
-    console.log('Calling Resend API with template:', template_id)
-    
+    if (!RESEND_API_KEY) {
+      console.error('ERROR: RESEND_API_KEY not configured')
+      return new Response(JSON.stringify({ error: 'RESEND_API_KEY not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    const userName = user.user_metadata?.name || user.email.split('@')[0]
+
+    console.log('Sending welcome email to:', user.email)
+
     // Call Resend API with template
     const resendRes = await fetch('https://api.resend.com/emails', {
       method: 'POST',
@@ -60,10 +61,12 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         from: 'Zeus Services <no-reply@zeuservices.com>',
-        to,
+        to: user.email,
         template: {
-          id: template_id,
-          variables
+          id: 'confirmation-email',
+          variables: {
+            name: userName
+          }
         }
       })
     })
@@ -72,21 +75,22 @@ serve(async (req) => {
     console.log('Resend API response:', JSON.stringify(resendData, null, 2))
 
     if (!resendRes.ok) {
+      console.error('Resend error:', resendData)
       return new Response(JSON.stringify({ error: resendData }), {
         status: resendRes.status,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' }
       })
     }
 
     return new Response(JSON.stringify({ success: true, id: resendData.id }), {
       status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' }
     })
   } catch (error) {
-    console.error('Edge Function error:', error)
+    console.error('Auth Hook error:', error)
     return new Response(JSON.stringify({ error: error.message }), {
       status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' }
     })
   }
 })
