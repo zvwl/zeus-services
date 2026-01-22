@@ -185,18 +185,14 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: error.message }
       }
 
-      // Auto login after signup
+      // Don't auto-login - require email verification first
       if (data.user) {
-        setUser({
-          email: data.user.email,
-          name: name
-        })
-
-        // Create session record for new user
-        await createSessionRecord(data.user.id)
+        // Clear any session to force verification
+        setUser(null)
+        setEmailVerified(false)
 
         // Supabase will send confirmation email via SMTP settings
-        return { success: true }
+        return { success: true, requiresVerification: true, message: 'Please check your email to verify your account' }
       }
       
       return { success: false, error: 'Signup failed' }

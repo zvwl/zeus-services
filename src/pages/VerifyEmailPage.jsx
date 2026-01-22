@@ -67,6 +67,16 @@ export default function VerifyEmailPage() {
             setStatus('success')
             setMessage('Email verified successfully! Redirecting...')
             
+            // Create session record after email verification
+            try {
+              await supabase.from('sessions').insert({
+                user_id: session.user.id,
+                last_activity: new Date().toISOString()
+              })
+            } catch (err) {
+              console.warn('Session record creation error:', err)
+            }
+            
             // Redirect to services page after 2 seconds
             setTimeout(() => {
               navigate('/services')
