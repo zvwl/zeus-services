@@ -173,9 +173,11 @@ export default function LoginPage() {
               </div>
             )}
 
-            <button type="submit" className="auth-btn">
-              Sign in
-            </button>
+            {!mfaRequired && (
+              <button type="submit" className="auth-btn">
+                Sign in
+              </button>
+            )}
           </form>
 
           <div className="auth-footer">
