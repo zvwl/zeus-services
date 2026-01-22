@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'
@@ -23,16 +23,105 @@ export default function SettingsPage() {
   // Verification state
   const [verificationMessage, setVerificationMessage] = useState('')
   
-  // 2FA state
+  // 2FA state (using Supabase native MFA)
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false)
   const [twoFactorLoading, setTwoFactorLoading] = useState(false)
   const [twoFactorMessage, setTwoFactorMessage] = useState('')
-  const [showQR, setShowQR] = useState(false)
+  const [qrCode, setQrCode] = useState(null)
+  const [factorId, setFactorId] = useState(null)
+  const [verifyCode, setVerifyCode] = useState('')
   
   // Captcha settings state
   const [requireCaptchaLogin, setRequireCaptchaLogin] = useState(false)
   const [captchaLoading, setCaptchaLoading] = useState(false)
   const [captchaMessage, setCaptchaMessage] = useState('')
+
+  // Check if user has MFA enabled
+  useEffect(() => {
+    const checkMFAStatus = async () => {
+      try {
+        const { data, error } = await supabase.auth.mfa.listFactors()
+        if (!error && data?.totp?.length > 0) {
+          setTwoFactorEnabled(true)
+          setFactorId(data.totp[0].id)
+        }
+      } catch (err) {
+        console.error('Error checking MFA status:', err)
+      }
+    }
+    if (user) checkMFAStatus()
+  }, [user])
+
+  const handleEnableMFA = async () => {
+    setTwoFactorLoading(true)
+    setTwoFactorMessage('')
+
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({
+        factorType: 'totp',
+        friendlyName: 'Authenticator App'
+      })
+
+      if (error) throw error
+
+      setQrCode(data.totp.qr_code)
+      setFactorId(data.id)
+      setTwoFactorMessage('📱 Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.)')
+    } catch (error) {
+      setTwoFactorMessage('❌ ' + error.message)
+    } finally {
+      setTwoFactorLoading(false)
+    }
+  }
+
+  const handleVerifyMFA = async () => {
+    if (!verifyCode || verifyCode.length !== 6) {
+      setTwoFactorMessage('❌ Please enter a valid 6-digit code')
+      return
+    }
+
+    setTwoFactorLoading(true)
+    try {
+      const challenge = await supabase.auth.mfa.challenge({ factorId })
+      if (challenge.error) throw challenge.error
+
+      const verify = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challenge.data.id,
+        code: verifyCode
+      })
+
+      if (verify.error) throw verify.error
+
+      setTwoFactorEnabled(true)
+      setQrCode(null)
+      setVerifyCode('')
+      setTwoFactorMessage('✅ Two-factor authentication enabled successfully!')
+    } catch (error) {
+      setTwoFactorMessage('❌ Invalid code: ' + error.message)
+    } finally {
+      setTwoFactorLoading(false)
+    }
+  }
+
+  const handleDisableMFA = async () => {
+    if (!confirm('Are you sure you want to disable two-factor authentication?')) return
+
+    setTwoFactorLoading(true)
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId })
+      if (error) throw error
+
+      setTwoFactorEnabled(false)
+      setFactorId(null)
+      setQrCode(null)
+      setTwoFactorMessage('✅ Two-factor authentication disabled')
+    } catch (error) {
+      setTwoFactorMessage('❌ ' + error.message)
+    } finally {
+      setTwoFactorLoading(false)
+    }
+  }
 
   const handleProfileUpdate = async (e) => {
     e.preventDefault()
@@ -246,7 +335,7 @@ export default function SettingsPage() {
               </button>
             </form>
 
-            <hr style={{ margin: '2rem 0', border: '1px solid #e0e0e0' }} />
+            <hr style={{ margin: '2rem 0', border: '1px solid rgba(251, 191, 36, 0.2)' }} />
 
             <h2>Two-Factor Authentication (2FA)</h2>
             <div className="twofa-section">
@@ -262,7 +351,7 @@ export default function SettingsPage() {
                 </span>
               </div>
 
-              {!twoFactorEnabled && (
+              {!twoFactorEnabled && !qrCode && (
                 <div className="twofa-setup">
                   <p><strong>How to set up 2FA:</strong></p>
                   <ol>
@@ -274,12 +363,62 @@ export default function SettingsPage() {
                   <button 
                     className="primary-btn" 
                     disabled={twoFactorLoading}
-                    onClick={() => {
-                      setTwoFactorMessage('⚠️ 2FA setup is coming soon! This feature requires additional backend configuration.')
-                      setTimeout(() => setTwoFactorMessage(''), 5000)
-                    }}
+                    onClick={handleEnableMFA}
                   >
                     {twoFactorLoading ? 'Setting up...' : 'Enable 2FA'}
+                  </button>
+                </div>
+              )}
+
+              {!twoFactorEnabled && qrCode && (
+                <div className="twofa-setup">
+                  <p><strong>Scan this QR code with your authenticator app:</strong></p>
+                  <div style={{ textAlign: 'center', margin: '1.5rem 0' }}>
+                    <img 
+                      src={qrCode} 
+                      alt="2FA QR Code" 
+                      style={{ 
+                        maxWidth: '250px', 
+                        border: '2px solid #fbbf24', 
+                        borderRadius: '12px', 
+                        padding: '1rem', 
+                        background: 'white' 
+                      }} 
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label htmlFor="verifyCode">Enter 6-digit code from your app:</label>
+                    <input
+                      type="text"
+                      id="verifyCode"
+                      value={verifyCode}
+                      onChange={(e) => setVerifyCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                      placeholder="123456"
+                      maxLength="6"
+                      style={{ 
+                        textAlign: 'center', 
+                        fontSize: '1.5rem', 
+                        letterSpacing: '0.5rem' 
+                      }}
+                    />
+                  </div>
+                  <button 
+                    className="primary-btn" 
+                    disabled={twoFactorLoading || verifyCode.length !== 6}
+                    onClick={handleVerifyMFA}
+                  >
+                    {twoFactorLoading ? 'Verifying...' : 'Verify and Enable'}
+                  </button>
+                  <button 
+                    className="save-btn" 
+                    onClick={() => {
+                      setQrCode(null)
+                      setVerifyCode('')
+                      setTwoFactorMessage('')
+                    }}
+                    style={{ marginTop: '0.5rem' }}
+                  >
+                    Cancel
                   </button>
                 </div>
               )}
@@ -290,12 +429,9 @@ export default function SettingsPage() {
                   <button 
                     className="danger-btn"
                     disabled={twoFactorLoading}
-                    onClick={() => {
-                      setTwoFactorMessage('2FA cannot be disabled at this time.')
-                      setTimeout(() => setTwoFactorMessage(''), 3000)
-                    }}
+                    onClick={handleDisableMFA}
                   >
-                    Disable 2FA
+                    {twoFactorLoading ? 'Disabling...' : 'Disable 2FA'}
                   </button>
                 </div>
               )}
@@ -395,7 +531,7 @@ export default function SettingsPage() {
               </button>
             </div>
 
-            <hr style={{ margin: '2rem 0', border: '1px solid #e0e0e0' }} />
+            <hr style={{ margin: '2rem 0', border: '1px solid rgba(251, 191, 36, 0.2)' }} />
 
             <div className="advanced-section">
               <h3>Account Information</h3>
