@@ -43,9 +43,11 @@ export default function SignupPage() {
     if (result.success) {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
+      console.log('Signup success, navigating to pending-verification')
       // Redirect to pending verification page
       navigate('/pending-verification', { state: { email } })
     } else {
+      console.log('Signup failed:', result.error)
       setError(result.error)
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)

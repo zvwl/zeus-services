@@ -185,14 +185,21 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: error.message }
       }
 
-      // Sign out the user - they must verify email first
-      await supabase.auth.signOut()
+      // Explicitly sign out - require email verification before allowing access
+      console.log('Signing out user after signup...')
+      const { error: signOutError } = await supabase.auth.signOut()
+      if (signOutError) {
+        console.error('Signout error:', signOutError)
+      }
+      
       setUser(null)
       setEmailVerified(false)
 
+      console.log('Signup successful, user must verify email')
       // Supabase will send confirmation email via SMTP settings
       return { success: true, requiresVerification: true, message: 'Please check your email to verify your account' }
     } catch (err) {
+      console.error('Signup error:', err)
       return { success: false, error: 'An error occurred during signup' }
     }
   }
