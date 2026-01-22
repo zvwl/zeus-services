@@ -199,21 +199,32 @@ export const AuthProvider = ({ children }) => {
         try {
           const confirmationUrl = `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`
           
-          await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
+          const emailPayload = {
+            to: email,
+            template_id: 'confirmation-email',
+            variables: {
+              name,
+              confirmationUrl
+            }
+          }
+          
+          console.log('Sending email with payload:', emailPayload)
+          
+          const emailResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
             },
-            body: JSON.stringify({
-              to: email,
-              template_id: 'confirmation-email',
-              variables: {
-                name,
-                confirmationUrl
-              }
-            })
+            body: JSON.stringify(emailPayload)
           })
+          
+          const emailResult = await emailResponse.json()
+          console.log('Email function response:', emailResult)
+          
+          if (!emailResponse.ok) {
+            console.error('Email sending failed:', emailResult)
+          }
         } catch (err) {
           console.warn('Error sending confirmation email:', err)
         }

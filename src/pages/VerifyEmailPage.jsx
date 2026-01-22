@@ -12,12 +12,48 @@ export default function VerifyEmailPage() {
     // Handle the email verification callback
     const handleEmailVerification = async () => {
       try {
-        // Check if there's a hash in the URL (Supabase auth token)
+        // Check hash parameters first (Supabase magic link format)
         const hashParams = new URLSearchParams(window.location.hash.substring(1))
-        const accessToken = hashParams.get('access_token')
-        const type = hashParams.get('type')
+        const hashToken = hashParams.get('access_token')
+        const hashType = hashParams.get('type')
+        
+        // Also check query parameters (alternative format)
+        const queryParams = new URLSearchParams(window.location.search)
+        const token = queryParams.get('token')
+        const tokenHash = queryParams.get('token_hash')
+        const type = queryParams.get('type') || hashType
+        
+        console.log('Verification params:', {
+          hashToken,
+          hashType,
+          token,
+          tokenHash,
+          type,
+          fullHash: window.location.hash,
+          fullSearch: window.location.search
+        })
 
-        if (type === 'signup' || type === 'email' || type === 'magiclink') {
+        // Handle token_hash format (email confirmation)
+        if (tokenHash && type) {
+          const { error } = await supabase.auth.verifyOtp({
+            token_hash: tokenHash,
+            type: type
+          })
+          
+          if (error) {
+            console.error('Verification error:', error)
+            setStatus('error')
+            setMessage('Verification failed: ' + error.message)
+            return
+          }
+          
+          setStatus('success')
+          setMessage('Email verified successfully! Redirecting...')
+          setTimeout(() => navigate('/services'), 2000)
+          return
+        }
+
+        if (type === 'signup' || type === 'email' || type === 'magiclink' || hashToken) {
           // Get the current session to verify
           const { data: { session }, error } = await supabase.auth.getSession()
           
