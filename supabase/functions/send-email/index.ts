@@ -1,0 +1,74 @@
+import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+
+const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
+
+interface EmailRequest {
+  to: string
+  subject: string
+  html: string
+  text?: string
+}
+
+serve(async (req) => {
+  // CORS headers
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: { 'Access-Control-Allow-Origin': '*' } })
+  }
+
+  if (req.method !== 'POST') {
+    return new Response('Method not allowed', { status: 405 })
+  }
+
+  try {
+    const { to, subject, html, text } = (await req.json()) as EmailRequest
+
+    if (!to || !subject || !html) {
+      return new Response(JSON.stringify({ error: 'Missing required fields: to, subject, html' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    if (!RESEND_API_KEY) {
+      return new Response(JSON.stringify({ error: 'RESEND_API_KEY not configured' }), {
+        status: 500,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    // Call Resend API
+    const resendRes = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: 'no-reply@zeuservices.com',
+        to,
+        subject,
+        html,
+        text: text || html.replace(/<[^>]*>/g, '') // Strip HTML if no text provided
+      })
+    })
+
+    const resendData = await resendRes.json()
+
+    if (!resendRes.ok) {
+      return new Response(JSON.stringify({ error: resendData }), {
+        status: resendRes.status,
+        headers: { 'Content-Type': 'application/json' }
+      })
+    }
+
+    return new Response(JSON.stringify({ success: true, id: resendData.id }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  } catch (error) {
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { 'Content-Type': 'application/json' }
+    })
+  }
+})

@@ -195,6 +195,37 @@ export const AuthProvider = ({ children }) => {
         // Create session record for new user
         await createSessionRecord(data.user.id)
 
+        // Send confirmation email via Resend Edge Function
+        try {
+          const confirmationUrl = `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`
+          
+          const emailRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-email`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+              to: email,
+              subject: 'Verify your Zeus Services email',
+              html: `
+                <h2>Welcome to Zeus Services!</h2>
+                <p>Hi ${name},</p>
+                <p>Thanks for signing up. Please verify your email to get started:</p>
+                <p><a href="${confirmationUrl}">Verify Email</a></p>
+                <p>Or copy this link: ${confirmationUrl}</p>
+                <p>Best regards,<br>The Zeus Team</p>
+              `
+            })
+          })
+
+          if (!emailRes.ok) {
+            console.warn('Failed to send confirmation email via Resend:', await emailRes.json())
+          }
+        } catch (emailErr) {
+          console.warn('Error sending confirmation email:', emailErr)
+        }
+
         return { success: true }
       }
       
