@@ -142,6 +142,26 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const loginWithGoogle = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: import.meta.env.VITE_FRONTEND_URL || window.location.origin
+        }
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      // Supabase will redirect; return URL for completeness in case caller wants to use it
+      return { success: true, url: data?.url }
+    } catch (err) {
+      return { success: false, error: 'Could not start Google sign-in' }
+    }
+  }
+
   const createSessionRecord = async (userId) => {
     try {
       // Get device info
@@ -290,6 +310,7 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider value={{ 
       user, 
       login, 
+      loginWithGoogle,
       signup, 
       logout, 
       loading, 

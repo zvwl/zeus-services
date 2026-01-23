@@ -17,7 +17,7 @@ export default function LoginPage() {
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
   const captchaRef = useRef(null)
-  const { login, verifyMfaChallenge } = useAuth()
+  const { login, loginWithGoogle, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -65,6 +65,18 @@ export default function LoginPage() {
     setCaptchaToken(null)
   }
 
+  const handleGoogleSignIn = async () => {
+    setError('')
+    try {
+      const result = await loginWithGoogle()
+      if (!result.success && result.error) {
+        setError(result.error)
+      }
+    } catch (err) {
+      setError('Could not start Google sign-in')
+    }
+  }
+
   const handleVerifyMfa = async (e) => {
     e.preventDefault()
     setMfaError('')
@@ -103,6 +115,14 @@ export default function LoginPage() {
           </div>
 
           {error && <div className="error-message">{error}</div>}
+
+          <div className="oauth-block">
+            <button type="button" className="oauth-btn" onClick={handleGoogleSignIn}>
+              <span className="oauth-icon" aria-hidden="true">G</span>
+              Continue with Google
+            </button>
+            <div className="oauth-divider"><span>or</span></div>
+          </div>
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
