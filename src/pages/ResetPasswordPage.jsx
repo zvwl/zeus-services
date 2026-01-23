@@ -9,17 +9,34 @@ export default function ResetPasswordPage() {
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [session, setSession] = useState(null)
+  const [canReset, setCanReset] = useState(false)
   const navigate = useNavigate()
 
   useEffect(() => {
     // Check if user came from password reset link
     const checkSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
-      if (!session) {
+      if (session) {
+        setSession(session)
+        setCanReset(true)
+        setError('')
+      } else {
         setError('Invalid or expired reset link. Please request a new one.')
       } else {
         // If user has MFA enabled, we need to handle AAL2 requirement
         // Password reset links bypass MFA requirement as they are already verified via email
+
+    // Listen for password recovery event which upgrades the session
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || session) {
+        setSession(session)
+        setCanReset(true)
+        setError('')
+      }
+    })
+
+    return () => subscription.unsubscribe()
         const currentAAL = session.aal
         if (currentAAL !== 'aal2') {
           console.log('AAL1 session detected, password reset will proceed without MFA')
@@ -34,6 +51,12 @@ export default function ResetPasswordPage() {
     setError('')
     setMessage('')
     setLoading(true)
+
+    if (!canReset || !session) {
+      setError('Your reset link is invalid or expired. Please request a new reset email.')
+      setLoading(false)
+      return
+    }
 
     if (!newPassword || !confirmPassword) {
       setError('Please fill in all fields')
@@ -61,7 +84,7 @@ export default function ResetPasswordPage() {
       if (error) {
         // If AAL2 is required, provide helpful message
         if (error.message.includes('AAL2')) {
-          setError('For security, please log in with your current password and change it from Settings instead.')
+          setError('For security, please log in with your current password, complete MFA, and change it from Settings.')
         } else {
           setError(error.message)
         }

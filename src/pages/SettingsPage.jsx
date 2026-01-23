@@ -19,6 +19,7 @@ export default function SettingsPage() {
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
   const [passwordLoading, setPasswordLoading] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
   
   // Verification state
   const [verificationMessage, setVerificationMessage] = useState('')
@@ -169,6 +170,49 @@ export default function SettingsPage() {
       return
     }
 
+    // If MFA is enabled, require TOTP code to elevate session to AAL2
+    if (twoFactorEnabled) {
+      if (!mfaCode || mfaCode.length !== 6) {
+        setPasswordMessage('❌ Enter the 6-digit code from your authenticator app')
+        setPasswordLoading(false)
+        return
+      }
+
+      // Challenge + verify to elevate session
+      const { data: factors, error: factorError } = await supabase.auth.mfa.listFactors()
+      if (factorError) {
+        setPasswordMessage('❌ Unable to check MFA factors: ' + factorError.message)
+        setPasswordLoading(false)
+        return
+      }
+
+      const verifiedTotp = factors?.totp?.find(f => f.status === 'verified')
+      if (!verifiedTotp) {
+        setPasswordMessage('❌ No verified authenticator found. Please re-enroll 2FA.')
+        setPasswordLoading(false)
+        return
+      }
+
+      const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: verifiedTotp.id })
+      if (challengeError) {
+        setPasswordMessage('❌ MFA challenge failed: ' + challengeError.message)
+        setPasswordLoading(false)
+        return
+      }
+
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: verifiedTotp.id,
+        challengeId: challenge.id,
+        code: mfaCode
+      })
+
+      if (verifyError) {
+        setPasswordMessage('❌ Invalid code: ' + verifyError.message)
+        setPasswordLoading(false)
+        return
+      }
+    }
+
     const result = await changePassword(newPassword)
     
     if (result.success) {
@@ -176,6 +220,7 @@ export default function SettingsPage() {
       setNewPassword('')
       setConfirmPassword('')
       setCurrentPassword('')
+      setMfaCode('')
     } else {
       setPasswordMessage('❌ ' + result.error)
     }
@@ -325,6 +370,22 @@ export default function SettingsPage() {
                   placeholder="Confirm new password"
                 />
               </div>
+
+              {twoFactorEnabled && (
+                <div className="form-group">
+                  <label htmlFor="mfaCode">Authenticator Code</label>
+                  <input
+                    type="text"
+                    id="mfaCode"
+                    value={mfaCode}
+                    onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                    placeholder="123456"
+                    maxLength="6"
+                    style={{ textAlign: 'center', letterSpacing: '0.4rem' }}
+                  />
+                  <small>Enter the 6-digit code from your authenticator app to change your password.</small>
+                </div>
+              )}
 
               {passwordMessage && (
                 <div className="message">{passwordMessage}</div>
