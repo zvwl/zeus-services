@@ -100,12 +100,12 @@ export const AuthProvider = ({ children }) => {
           challengeId: challengeData.id
         }
       }
-id: data.user.id,
+
+      setUser({
+        id: data.user.id,
         email: data.user.email,
         name: data.user.user_metadata?.name || data.user.email.split('@')[0],
         created_at: data.user.created_at
-        email: data.user.email,
-        name: data.user.user_metadata?.name || data.user.email.split('@')[0]
       })
 
       // Create session record
