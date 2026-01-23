@@ -129,6 +129,7 @@ Deno.serve(async (req) => {
       currency,
       customer_email: order.customer_email ?? undefined,
       line_items: lineItems,
+      payment_method_types: ['card'],
       metadata: {
         order_id: order.id,
       },
