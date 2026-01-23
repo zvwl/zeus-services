@@ -12,10 +12,13 @@ export default function UserMenu({ isOpen, onClose }) {
     onClose()
   }
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
-    onClose()
+  const handleLogout = async () => {
+    await logout()
+    // Small delay to allow auth state to propagate
+    setTimeout(() => {
+      navigate('/')
+      onClose()
+    }, 100)
   }
 
   const isActive = (path) => location.pathname === path

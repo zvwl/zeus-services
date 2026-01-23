@@ -31,13 +31,17 @@ export const AuthProvider = ({ children }) => {
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
           
-          // Check admin status
-          const { data: adminData } = await supabase
-            .from('admin_users')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .single()
-          setIsAdmin(!!adminData)
+          // Check admin status (ignore errors safely)
+          try {
+            const { data: adminData } = await supabase
+              .from('admin_users')
+              .select('*')
+              .eq('user_id', session.user.id)
+              .single()
+            setIsAdmin(!!adminData)
+          } catch {
+            setIsAdmin(false)
+          }
         }
       } catch (err) {
         console.error('Session check error:', err)
@@ -59,13 +63,17 @@ export const AuthProvider = ({ children }) => {
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
         
-        // Check admin status
-        const { data: adminData } = await supabase
-          .from('admin_users')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single()
-        setIsAdmin(!!adminData)
+        // Check admin status (ignore errors safely)
+        try {
+          const { data: adminData } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .single()
+          setIsAdmin(!!adminData)
+        } catch {
+          setIsAdmin(false)
+        }
         
         setLoading(false)
       } else {
@@ -253,20 +261,18 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      // Get current user to delete their sessions
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      if (user) {
-        // Delete all sessions for this user (optional - or just delete active one)
-        await supabase.from('sessions').delete().eq('user_id', user.id)
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.error('Logout error:', error)
       }
     } catch (err) {
-      console.warn('Session cleanup error:', err)
+      console.error('Logout exception:', err)
+    } finally {
+      // Always clear local state even if signOut fails
+      setUser(null)
+      setEmailVerified(false)
+      setIsAdmin(false)
     }
-
-    await supabase.auth.signOut()
-    setUser(null)
-    setEmailVerified(false)
   }
 
   const resendVerificationEmail = async () => {
