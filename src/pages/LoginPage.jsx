@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
+import googleLogo from '../assets/google-logo.svg'
 import './AuthPages.css'
 
 export default function LoginPage() {
@@ -118,7 +119,7 @@ export default function LoginPage() {
 
           <div className="oauth-block">
             <button type="button" className="oauth-btn" onClick={handleGoogleSignIn}>
-              <span className="oauth-icon" aria-hidden="true">G</span>
+              <img className="oauth-icon" src={googleLogo} alt="Google logo" />
               Continue with Google
             </button>
             <div className="oauth-divider"><span>or</span></div>

@@ -83,15 +83,9 @@
 }
 
 .oauth-icon {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #f1f5f9;
-  color: #0f172a;
-  font-weight: 800;
+  width: 24px;
+  height: 24px;
+  display: inline-block;
 }
 
 .oauth-divider {
