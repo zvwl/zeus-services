@@ -11,6 +11,8 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false)
   const [session, setSession] = useState(null)
   const [canReset, setCanReset] = useState(false)
+  const [requiresMfa, setRequiresMfa] = useState(false)
+  const [mfaCode, setMfaCode] = useState('')
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -21,6 +23,7 @@ export default function ResetPasswordPage() {
         setSession(session)
         setCanReset(true)
         setError('')
+        await checkFactors()
       } else {
         setError('Invalid or expired reset link. Please request a new one.')
       }
@@ -32,11 +35,23 @@ export default function ResetPasswordPage() {
         setSession(session)
         setCanReset(true)
         setError('')
+        checkFactors()
       }
     })
 
     return () => subscription.unsubscribe()
   }, [])
+
+  const checkFactors = async () => {
+    try {
+      const { data, error } = await supabase.auth.mfa.listFactors()
+      if (error) return
+      const verifiedTotp = data?.totp?.find(f => f.status === 'verified')
+      setRequiresMfa(Boolean(verifiedTotp))
+    } catch (_) {
+      // ignore
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -66,6 +81,47 @@ export default function ResetPasswordPage() {
       setError('Passwords do not match')
       setLoading(false)
       return
+    }
+
+    // If user has MFA, require TOTP to elevate to AAL2 before updating password
+    if (requiresMfa) {
+      if (!mfaCode || mfaCode.length !== 6) {
+        setError('Enter the 6-digit code from your authenticator app')
+        setLoading(false)
+        return
+      }
+
+      const { data: factors, error: factorError } = await supabase.auth.mfa.listFactors()
+      if (factorError) {
+        setError(factorError.message)
+        setLoading(false)
+        return
+      }
+      const verifiedTotp = factors?.totp?.find(f => f.status === 'verified')
+      if (!verifiedTotp) {
+        setError('No verified authenticator found. Please re-enroll 2FA or contact support.')
+        setLoading(false)
+        return
+      }
+
+      const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: verifiedTotp.id })
+      if (challengeError) {
+        setError(challengeError.message)
+        setLoading(false)
+        return
+      }
+
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId: verifiedTotp.id,
+        challengeId: challenge.id,
+        code: mfaCode
+      })
+
+      if (verifyError) {
+        setError(verifyError.message)
+        setLoading(false)
+        return
+      }
     }
 
     try {
@@ -132,6 +188,22 @@ export default function ResetPasswordPage() {
                 autoComplete="new-password"
               />
             </div>
+
+            {requiresMfa && (
+              <div className="form-group">
+                <label htmlFor="mfaCode">Authenticator Code</label>
+                <input
+                  type="text"
+                  id="mfaCode"
+                  value={mfaCode}
+                  onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="123456"
+                  maxLength="6"
+                  style={{ textAlign: 'center', letterSpacing: '0.3rem' }}
+                />
+                <small>Enter the 6-digit code to confirm this password reset.</small>
+              </div>
+            )}
 
             <button type="submit" className="auth-btn" disabled={loading}>
               {loading ? 'Updating...' : 'Reset Password'}
