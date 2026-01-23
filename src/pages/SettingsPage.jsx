@@ -240,9 +240,9 @@ export default function SettingsPage() {
     }
 
     try {
-      // Add 10-second timeout to prevent hanging
+      // Add 30-second timeout to prevent hanging (password updates can be slow)
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout - password may have changed')), 10000)
+        setTimeout(() => reject(new Error('Request timeout - password may have changed')), 30000)
       )
       
       const result = await Promise.race([
@@ -261,8 +261,9 @@ export default function SettingsPage() {
       }
     } catch (error) {
       if (error.message.includes('timeout')) {
-        setPasswordMessage('⚠️ Request timed out - your password may have been changed. Try logging out and back in with the new password.')
-          setPasswordMessage('❌ Error: ' + error.message)
+        setPasswordMessage('⚠️ Request timed out, but your password was likely changed successfully. Log out and try logging in with your new password.')
+      } else {
+        setPasswordMessage('❌ Error: ' + error.message)
       }
     } finally {
       setPasswordLoading(false)
