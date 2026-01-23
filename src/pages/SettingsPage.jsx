@@ -31,6 +31,8 @@ export default function SettingsPage() {
   const [qrCode, setQrCode] = useState(null)
   const [factorId, setFactorId] = useState(null)
   const [verifyCode, setVerifyCode] = useState('')
+  const [disableCode, setDisableCode] = useState('')
+  const [showDisablePrompt, setShowDisablePrompt] = useState(false)
 
   // Check if user has MFA enabled
   useEffect(() => {
@@ -101,16 +103,34 @@ export default function SettingsPage() {
   }
 
   const handleDisableMFA = async () => {
-    if (!confirm('Are you sure you want to disable two-factor authentication?')) return
+    if (!disableCode || disableCode.length !== 6) {
+      setTwoFactorMessage('❌ Please enter your 6-digit authenticator code to disable 2FA')
+      return
+    }
 
     setTwoFactorLoading(true)
     try {
-      const { error } = await supabase.auth.mfa.unenroll({ factorId })
-      if (error) throw error
+      // Challenge and verify the code before disabling
+      const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId })
+      if (challengeError) throw challengeError
+
+      const { error: verifyError } = await supabase.auth.mfa.verify({
+        factorId,
+        challengeId: challenge.id,
+        code: disableCode
+      })
+
+      if (verifyError) throw verifyError
+
+      // Only after successful verification, unenroll
+      const { error: unenrollError } = await supabase.auth.mfa.unenroll({ factorId })
+      if (unenrollError) throw unenrollError
 
       setTwoFactorEnabled(false)
       setFactorId(null)
       setQrCode(null)
+      setDisableCode('')
+      setShowDisablePrompt(false)
       setTwoFactorMessage('✅ Two-factor authentication disabled')
     } catch (error) {
       setTwoFactorMessage('❌ ' + error.message)
@@ -482,13 +502,57 @@ export default function SettingsPage() {
               {twoFactorEnabled && (
                 <div className="twofa-enabled">
                   <p className="success-info">✅ Two-factor authentication is enabled on your account.</p>
-                  <button 
-                    className="danger-btn"
-                    disabled={twoFactorLoading}
-                    onClick={handleDisableMFA}
-                  >
-                    {twoFactorLoading ? 'Disabling...' : 'Disable 2FA'}
-                  </button>
+                  
+                  {!showDisablePrompt ? (
+                    <button 
+                      className="danger-btn"
+                      disabled={twoFactorLoading}
+                      onClick={() => setShowDisablePrompt(true)}
+                    >
+                      Disable 2FA
+                    </button>
+                  ) : (
+                    <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
+                      <p style={{ color: '#fca5a5', marginBottom: '1rem' }}>
+                        <strong>⚠️ Enter your 6-digit authenticator code to confirm disabling 2FA:</strong>
+                      </p>
+                      <div className="form-group">
+                        <input
+                          type="text"
+                          value={disableCode}
+                          onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                          placeholder="123456"
+                          maxLength="6"
+                          style={{ 
+                            textAlign: 'center', 
+                            fontSize: '1.5rem', 
+                            letterSpacing: '0.5rem' 
+                          }}
+                        />
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button 
+                          className="danger-btn"
+                          disabled={twoFactorLoading || disableCode.length !== 6}
+                          onClick={handleDisableMFA}
+                          style={{ flex: 1 }}
+                        >
+                          {twoFactorLoading ? 'Disabling...' : 'Confirm Disable'}
+                        </button>
+                        <button 
+                          className="save-btn"
+                          onClick={() => {
+                            setShowDisablePrompt(false)
+                            setDisableCode('')
+                            setTwoFactorMessage('')
+                          }}
+                          style={{ flex: 1 }}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 
