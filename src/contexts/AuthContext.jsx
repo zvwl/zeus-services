@@ -102,6 +102,20 @@ export const AuthProvider = ({ children }) => {
           console.warn('Admin check skipped:', adminCheckError)
           // Silently continue - admin check is optional
         }
+        try {
+          const { data: adminData, error: adminError } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+          
+          if (!adminError && adminData) {
+            setIsAdmin(true)
+          }
+        } catch (adminCheckError) {
+          console.warn('Admin check skipped:', adminCheckError)
+          // Silently continue - admin check is optional
+        }
         
         setLoading(false)
       } else {
@@ -324,6 +338,9 @@ export const AuthProvider = ({ children }) => {
       } catch (storageErr) {
         console.warn('LocalStorage clear failed:', storageErr)
       }
+      
+      // Force page reload to clear all state
+      window.location.reload()
     }
   }
 

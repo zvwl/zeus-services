@@ -239,20 +239,35 @@ export default function SettingsPage() {
       }
     }
 
-    const result = await changePassword(newPassword)
-    
-    if (result.success) {
-      setPasswordMessage('✅ Password changed successfully!')
-      setNewPassword('')
-      setConfirmPassword('')
-      setCurrentPassword('')
-      setMfaCode('')
-    } else {
-      setPasswordMessage('❌ ' + result.error)
+    try {
+      // Add 10-second timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout - password may have changed')), 10000)
+      )
+      
+      const result = await Promise.race([
+        changePassword(newPassword),
+        timeoutPromise
+      ])
+      
+      if (result.success) {
+        setPasswordMessage('✅ Password changed successfully!')
+        setNewPassword('')
+        setConfirmPassword('')
+        setCurrentPassword('')
+        setMfaCode('')
+      } else {
+        setPasswordMessage('❌ ' + result.error)
+      }
+    } catch (error) {
+      if (error.message.includes('timeout')) {
+        setPasswordMessage('⚠️ Request timed out - your password may have been changed. Try logging out and back in with the new password.')
+          setPasswordMessage('❌ Error: ' + error.message)
+      }
+    } finally {
+      setPasswordLoading(false)
+      setTimeout(() => setPasswordMessage(''), 10000)
     }
-    
-    setPasswordLoading(false)
-    setTimeout(() => setPasswordMessage(''), 5000)
   }
 
   const handleResendVerification = async () => {
