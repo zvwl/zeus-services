@@ -45,16 +45,21 @@ export const AuthProvider = ({ children }) => {
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
           
-          // Check admin status (ignore errors safely)
+          // Check admin status (fully optional - don't block on errors)
+          setIsAdmin(false) // Default to false
           try {
-            const { data: adminData } = await supabase
+            const { data: adminData, error: adminError } = await supabase
               .from('admin_users')
               .select('*')
               .eq('user_id', session.user.id)
-              .single()
-            setIsAdmin(!!adminData)
-          } catch {
-            setIsAdmin(false)
+              .maybeSingle()
+            
+            if (!adminError && adminData) {
+              setIsAdmin(true)
+            }
+          } catch (adminCheckError) {
+            console.warn('Admin check skipped:', adminCheckError)
+            // Silently continue - admin check is optional
           }
         }
       } catch (err) {
@@ -81,16 +86,21 @@ export const AuthProvider = ({ children }) => {
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
         
-        // Check admin status (ignore errors safely)
+        // Check admin status (fully optional - don't block on errors)
+        setIsAdmin(false) // Default to false
         try {
-          const { data: adminData } = await supabase
+          const { data: adminData, error: adminError } = await supabase
             .from('admin_users')
             .select('*')
             .eq('user_id', session.user.id)
-            .single()
-          setIsAdmin(!!adminData)
-        } catch {
-          setIsAdmin(false)
+            .maybeSingle()
+          
+          if (!adminError && adminData) {
+            setIsAdmin(true)
+          }
+        } catch (adminCheckError) {
+          console.warn('Admin check skipped:', adminCheckError)
+          // Silently continue - admin check is optional
         }
         
         setLoading(false)
