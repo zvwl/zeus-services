@@ -23,13 +23,12 @@ export default function ResetPasswordPage() {
         setError('')
       } else {
         setError('Invalid or expired reset link. Please request a new one.')
-      } else {
-        // If user has MFA enabled, we need to handle AAL2 requirement
-        // Password reset links bypass MFA requirement as they are already verified via email
-
+      }
+    }
+    checkSession()
     // Listen for password recovery event which upgrades the session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === 'PASSWORD_RECOVERY' || session) {
+      if (event === 'PASSWORD_RECOVERY' && session) {
         setSession(session)
         setCanReset(true)
         setError('')
@@ -37,13 +36,6 @@ export default function ResetPasswordPage() {
     })
 
     return () => subscription.unsubscribe()
-        const currentAAL = session.aal
-        if (currentAAL !== 'aal2') {
-          console.log('AAL1 session detected, password reset will proceed without MFA')
-        }
-      }
-    }
-    checkSession()
   }, [])
 
   const handleSubmit = async (e) => {
