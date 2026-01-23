@@ -31,11 +31,6 @@ export default function SettingsPage() {
   const [qrCode, setQrCode] = useState(null)
   const [factorId, setFactorId] = useState(null)
   const [verifyCode, setVerifyCode] = useState('')
-  
-  // Captcha settings state
-  const [requireCaptchaLogin, setRequireCaptchaLogin] = useState(false)
-  const [captchaLoading, setCaptchaLoading] = useState(false)
-  const [captchaMessage, setCaptchaMessage] = useState('')
 
   // Check if user has MFA enabled
   useEffect(() => {
@@ -550,55 +545,10 @@ export default function SettingsPage() {
             <h2>Advanced Settings</h2>
             
             <div className="advanced-section">
-              <h3>Security Preferences</h3>
-              
-              <div className="setting-item">
-                <div className="setting-info">
-                  <strong>Require CAPTCHA on Login</strong>
-                  <p>Add an extra verification step when logging in to prevent automated attacks.</p>
-                </div>
-                <label className="toggle-switch">
-                  <input
-                    type="checkbox"
-                    checked={requireCaptchaLogin}
-                    onChange={(e) => setRequireCaptchaLogin(e.target.checked)}
-                    disabled={captchaLoading}
-                  />
-                  <span className="toggle-slider"></span>
-                </label>
-              </div>
-
-              <div className="setting-note">
-                <strong>Note:</strong> CAPTCHA on signup is always enabled for security.
-              </div>
-
-              {captchaMessage && (
-                <div className="message">{captchaMessage}</div>
-              )}
-
-              <button 
-                className="save-btn" 
-                disabled={captchaLoading}
-                onClick={() => {
-                  setCaptchaLoading(true)
-                  setCaptchaMessage('✅ Settings saved! Note: CAPTCHA is currently enabled on login by default.')
-                  setTimeout(() => {
-                    setCaptchaLoading(false)
-                    setCaptchaMessage('')
-                  }, 3000)
-                }}
-              >
-                {captchaLoading ? 'Saving...' : 'Save Preferences'}
-              </button>
-            </div>
-
-            <hr style={{ margin: '2rem 0', border: '1px solid rgba(251, 191, 36, 0.2)' }} />
-
-            <div className="advanced-section">
               <h3>Account Information</h3>
               <div className="info-item">
                 <span className="info-label">Account Created:</span>
-                <span className="info-value">{new Date().toLocaleDateString()}</span>
+                <span className="info-value">{user?.created_at ? new Date(user.created_at).toLocaleDateString() : new Date().toLocaleDateString()}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">User ID:</span>
