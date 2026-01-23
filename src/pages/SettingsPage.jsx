@@ -239,35 +239,23 @@ export default function SettingsPage() {
       }
     }
 
-    try {
-      // Add 30-second timeout to prevent hanging (password updates can be slow)
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout - password may have changed')), 30000)
-      )
-      
-      const result = await Promise.race([
-        changePassword(newPassword),
-        timeoutPromise
-      ])
-      
-      if (result.success) {
-        setPasswordMessage('✅ Password changed successfully!')
-        setNewPassword('')
-        setConfirmPassword('')
-        setCurrentPassword('')
-        setMfaCode('')
-      } else {
-        setPasswordMessage('❌ ' + result.error)
-      }
-    } catch (error) {
-      if (error.message.includes('timeout')) {
-        setPasswordMessage('⚠️ Request timed out, but your password was likely changed successfully. Log out and try logging in with your new password.')
-      } else {
-        setPasswordMessage('❌ Error: ' + error.message)
-      }
-    } finally {
+    const result = await changePassword(newPassword)
+    
+    if (result.success) {
+      setPasswordMessage('✅ Password changed! Refreshing your session...')
+      setNewPassword('')
+      setConfirmPassword('')
+      setCurrentPassword('')
+      setMfaCode('')
       setPasswordLoading(false)
-      setTimeout(() => setPasswordMessage(''), 10000)
+      
+      // Wait 2 seconds then reload to get fresh session
+      setTimeout(() => {
+        window.location.reload()
+      }, 2000)
+    } else {
+      setPasswordMessage('❌ ' + result.error)
+      setPasswordLoading(false)
     }
   }
 
