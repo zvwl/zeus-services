@@ -88,21 +88,36 @@ export default function LoginPage() {
     }
 
     setIsVerifyingMfa(true)
-    const result = await verifyMfaChallenge({
-      factorId: mfaFactorId,
-      challengeId: mfaChallengeId,
-      code: mfaCode
-    })
-    setIsVerifyingMfa(false)
+    
+    try {
+      // Add 10-second timeout to prevent infinite hang
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Verification timeout - please try again')), 10000)
+      )
+      
+      const result = await Promise.race([
+        verifyMfaChallenge({
+          factorId: mfaFactorId,
+          challengeId: mfaChallengeId,
+          code: mfaCode
+        }),
+        timeoutPromise
+      ])
 
-    if (result.success) {
-      setMfaRequired(false)
-      setMfaCode('')
-      captchaRef.current?.resetCaptcha()
-      setCaptchaToken(null)
-      navigate('/services')
-    } else {
-      setMfaError(result.error)
+      if (result.success) {
+        setMfaRequired(false)
+        setMfaCode('')
+        captchaRef.current?.resetCaptcha()
+        setCaptchaToken(null)
+        navigate('/services')
+      } else {
+        setMfaError(result.error || 'Verification failed')
+      }
+    } catch (err) {
+      console.error('MFA verification error:', err)
+      setMfaError(err.message || 'Failed to verify code. Please try again.')
+    } finally {
+      setIsVerifyingMfa(false)
     }
   }
 

@@ -153,11 +153,16 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) {
+        console.error('MFA verification error:', error)
         return { success: false, error: error.message }
       }
 
       // Refresh session/user after successful MFA to ensure state is updated to AAL2
-      const { data: sessionData } = await supabase.auth.getSession()
+      const { data: sessionData, error: sessionError } = await supabase.auth.getSession()
+      if (sessionError) {
+        console.error('Session refresh error:', sessionError)
+      }
+      
       const authedUser = sessionData?.session?.user
 
       if (authedUser) {
@@ -168,11 +173,17 @@ export const AuthProvider = ({ children }) => {
           created_at: authedUser.created_at
         })
 
-        await createSessionRecord(authedUser.id)
+        // Try to create session record but don't block if it fails
+        try {
+          await createSessionRecord(authedUser.id)
+        } catch (sessionRecordErr) {
+          console.warn('Session record creation failed (non-blocking):', sessionRecordErr)
+        }
       }
 
       return { success: true }
     } catch (err) {
+      console.error('MFA verification exception:', err)
       return { success: false, error: 'Failed to verify MFA code' }
     }
   }
@@ -261,7 +272,7 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut({ scope: 'local' })
       if (error) {
         console.error('Logout error:', error)
       }
@@ -272,6 +283,19 @@ export const AuthProvider = ({ children }) => {
       setUser(null)
       setEmailVerified(false)
       setIsAdmin(false)
+      
+      // Force clear Supabase session from localStorage
+      try {
+        localStorage.removeItem('supabase.auth.token')
+        const keys = Object.keys(localStorage)
+        keys.forEach(key => {
+          if (key.startsWith('sb-') || key.includes('supabase')) {
+            localStorage.removeItem(key)
+          }
+        })
+      } catch (storageErr) {
+        console.warn('LocalStorage clear failed:', storageErr)
+      }
     }
   }
 
