@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [emailVerified, setEmailVerified] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     // Check for existing Supabase session
@@ -42,12 +43,30 @@ export const AuthProvider = ({ children }) => {
             created_at: session.user.created_at
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
+          
+          // Check admin status (non-blocking, happens after login completes)
+          setTimeout(async () => {
+            try {
+              const { data: adminData } = await supabase
+                .from('admin_users')
+                .select('user_id')
+                .eq('user_id', session.user.id)
+                .maybeSingle()
+              
+              if (adminData) {
+                setIsAdmin(true)
+              }
+            } catch (err) {
+              // Silently fail - admin check is optional
+            }
+          }, 0)
         }
       } catch (err) {
         console.error('Session check error:', err)
         // If session check fails, clear everything
         setUser(null)
         setEmailVerified(false)
+        setIsAdmin(false)
       } finally {
         setLoading(false)
       }
@@ -65,10 +84,29 @@ export const AuthProvider = ({ children }) => {
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
+        
+        // Check admin status (non-blocking)
+        setTimeout(async () => {
+          try {
+            const { data: adminData } = await supabase
+              .from('admin_users')
+              .select('user_id')
+              .eq('user_id', session.user.id)
+              .maybeSingle()
+            
+            if (adminData) {
+              setIsAdmin(true)
+            }
+          } catch (err) {
+            // Silently fail
+          }
+        }, 0)
+        
         setLoading(false)
       } else {
         setUser(null)
         setEmailVerified(false)
+        setIsAdmin(false)
         setLoading(false)
       }
     })
@@ -271,6 +309,7 @@ export const AuthProvider = ({ children }) => {
       // Always clear local state even if signOut fails
       setUser(null)
       setEmailVerified(false)
+      setIsAdmin(false)
       
       // Force clear Supabase session from localStorage
       try {
@@ -362,7 +401,8 @@ export const AuthProvider = ({ children }) => {
       signup, 
       logout, 
       loading, 
-      emailVerified, 
+      emailVerified,
+      isAdmin, 
       resendVerificationEmail,
       updateProfile,
       changePassword,

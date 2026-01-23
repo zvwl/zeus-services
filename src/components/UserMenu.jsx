@@ -5,7 +5,7 @@ import './UserMenu.css'
 export default function UserMenu({ isOpen, onClose }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { user, logout } = useAuth()
+  const { user, isAdmin, logout } = useAuth()
 
   const handleNavigation = (path) => {
     navigate(path)
@@ -63,6 +63,19 @@ export default function UserMenu({ isOpen, onClose }) {
                   <span className="menu-label">My Orders</span>
                 </button>
               </div>
+
+              {isAdmin && (
+                <div className="menu-section">
+                  <div className="menu-section-title">Admin</div>
+                  <button
+                    className={`menu-item ${isActive('/admin/orders') ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/admin/orders')}
+                  >
+                    <span className="menu-icon">👨‍💼</span>
+                    <span className="menu-label">Manage Orders</span>
+                  </button>
+                </div>
+              )}
 
               <div className="menu-section">
                 <div className="menu-section-title">Shopping</div>
