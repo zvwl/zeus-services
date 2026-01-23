@@ -17,6 +17,13 @@ export default function ResetPasswordPage() {
       const { data: { session } } = await supabase.auth.getSession()
       if (!session) {
         setError('Invalid or expired reset link. Please request a new one.')
+      } else {
+        // If user has MFA enabled, we need to handle AAL2 requirement
+        // Password reset links bypass MFA requirement as they are already verified via email
+        const currentAAL = session.aal
+        if (currentAAL !== 'aal2') {
+          console.log('AAL1 session detected, password reset will proceed without MFA')
+        }
       }
     }
     checkSession()
@@ -52,9 +59,16 @@ export default function ResetPasswordPage() {
       })
 
       if (error) {
-        setError(error.message)
+        // If AAL2 is required, provide helpful message
+        if (error.message.includes('AAL2')) {
+          setError('For security, please log in with your current password and change it from Settings instead.')
+        } else {
+          setError(error.message)
+        }
       } else {
         setMessage('Password updated successfully! Redirecting to login...')
+        // Sign out to ensure fresh login with new password
+        await supabase.auth.signOut()
         setTimeout(() => {
           navigate('/login')
         }, 2000)
