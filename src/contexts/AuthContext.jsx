@@ -97,20 +97,9 @@ export const AuthProvider = ({ children }) => {
           
           if (!adminError && adminData) {
             setIsAdmin(true)
-          }
-        } catch (adminCheckError) {
-          console.warn('Admin check skipped:', adminCheckError)
-          // Silently continue - admin check is optional
-        }
-        try {
-          const { data: adminData, error: adminError } = await supabase
-            .from('admin_users')
-            .select('*')
-            .eq('user_id', session.user.id)
-            .maybeSingle()
-          
-          if (!adminError && adminData) {
-            setIsAdmin(true)
+            console.log('Admin access granted')
+          } else {
+            console.log('Not an admin user')
           }
         } catch (adminCheckError) {
           console.warn('Admin check skipped:', adminCheckError)

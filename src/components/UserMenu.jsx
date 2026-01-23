@@ -13,12 +13,9 @@ export default function UserMenu({ isOpen, onClose }) {
   }
 
   const handleLogout = async () => {
+    onClose()
     await logout()
-    // Small delay to allow auth state to propagate
-    setTimeout(() => {
-      navigate('/')
-      onClose()
-    }, 100)
+    // Page will reload automatically after logout
   }
 
   const isActive = (path) => location.pathname === path
