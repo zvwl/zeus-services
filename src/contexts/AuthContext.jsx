@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [emailVerified, setEmailVerified] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
 
   useEffect(() => {
     // Check for existing Supabase session
@@ -29,6 +30,14 @@ export const AuthProvider = ({ children }) => {
             created_at: session.user.created_at
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
+          
+          // Check admin status
+          const { data: adminData } = await supabase
+            .from('admin_users')
+            .select('*')
+            .eq('user_id', session.user.id)
+            .single()
+          setIsAdmin(!!adminData)
         }
       } catch (err) {
         console.error('Session check error:', err)
@@ -40,7 +49,7 @@ export const AuthProvider = ({ children }) => {
     checkSession()
 
     // Listen for auth changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -49,10 +58,20 @@ export const AuthProvider = ({ children }) => {
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
+        
+        // Check admin status
+        const { data: adminData } = await supabase
+          .from('admin_users')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single()
+        setIsAdmin(!!adminData)
+        
         setLoading(false)
       } else {
         setUser(null)
         setEmailVerified(false)
+        setIsAdmin(false)
         setLoading(false)
       }
     })

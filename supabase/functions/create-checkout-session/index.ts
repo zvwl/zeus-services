@@ -146,6 +146,47 @@ Deno.serve(async (req) => {
       })
       .eq("id", order.id);
 
+    // Send order notification emails to admins
+    try {
+      const { data: adminUsers } = await supabaseAdmin
+        .from('admin_users')
+        .select('email')
+        .eq('notification_enabled', true)
+
+      if (adminUsers && adminUsers.length > 0) {
+        const adminEmails = adminUsers.map((admin: { email: string }) => admin.email)
+        
+        // Calculate order total
+        const orderTotal = (order.total_amount / 100).toFixed(2)
+        
+        // Send email notification
+        await fetch(`${SUPABASE_URL}/functions/v1/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          body: JSON.stringify({
+            to: adminEmails,
+            subject: `New Order #${order.id.slice(0, 8)} - $${orderTotal}`,
+            html: `
+              <h2>New Order Received</h2>
+              <p><strong>Order ID:</strong> ${order.id}</p>
+              <p><strong>Customer:</strong> ${order.customer_name || 'N/A'} (${order.customer_email})</p>
+              <p><strong>Total Amount:</strong> $${orderTotal}</p>
+              <p><strong>Status:</strong> ${order.status}</p>
+              <p><strong>Payment Status:</strong> Pending</p>
+              <br>
+              <p>View order details in the <a href="${finalFrontendUrl}/admin/orders">Admin Dashboard</a></p>
+            `,
+          }),
+        })
+      }
+    } catch (emailError) {
+      console.error('Failed to send admin notification:', emailError)
+      // Don't fail the whole request if email fails
+    }
+
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

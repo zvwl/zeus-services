@@ -16,6 +16,7 @@ import SettingsPage from './pages/SettingsPage'
 import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import OrdersPage from './pages/OrdersPage'
+import AdminOrdersPage from './pages/AdminOrdersPage'
 
 function App() {
   const [cartItems, setCartItems] = useState([])
@@ -339,6 +340,10 @@ function App() {
         <Route
           path="/orders"
           element={<OrdersPage />}
+        />
+        <Route
+          path="/admin/orders"
+          element={<AdminOrdersPage />}
         />
         <Route
           path="/forgot-password"
