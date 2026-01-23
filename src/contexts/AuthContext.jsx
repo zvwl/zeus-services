@@ -133,12 +133,12 @@ export const AuthProvider = ({ children }) => {
       const { data: sessionData } = await supabase.auth.getSession()
       const authedUser = sessionData?.session?.user
 
-      if (id: authedUser.id,
+      if (authedUser) {
+        setUser({
+          id: authedUser.id,
           email: authedUser.email,
           name: authedUser.user_metadata?.name || authedUser.email.split('@')[0],
           created_at: authedUser.created_at
-          email: authedUser.email,
-          name: authedUser.user_metadata?.name || authedUser.email.split('@')[0]
         })
 
         await createSessionRecord(authedUser.id)
