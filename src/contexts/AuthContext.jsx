@@ -44,22 +44,24 @@ export const AuthProvider = ({ children }) => {
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
           
-          // Check admin status (non-blocking, happens after login completes)
-          setTimeout(async () => {
-            try {
-              const { data: adminData } = await supabase
-                .from('admin_users')
-                .select('user_id')
-                .eq('user_id', session.user.id)
-                .maybeSingle()
-              
-              if (adminData) {
-                setIsAdmin(true)
-              }
-            } catch (err) {
-              // Silently fail - admin check is optional
+          // Check admin status (non-blocking on errors)
+          try {
+            const { data: adminData, error: adminError } = await supabase
+              .from('admin_users')
+              .select('user_id')
+              .eq('user_id', session.user.id)
+              .maybeSingle()
+            
+            if (!adminError && adminData) {
+              console.log('✅ Admin access granted!')
+              setIsAdmin(true)
+            } else {
+              setIsAdmin(false)
             }
-          }, 0)
+          } catch (err) {
+            console.warn('⚠️ Admin check failed:', err.message)
+            setIsAdmin(false)
+          }
         }
       } catch (err) {
         console.error('Session check error:', err)
@@ -85,22 +87,25 @@ export const AuthProvider = ({ children }) => {
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
         
-        // Check admin status (non-blocking)
-        setTimeout(async () => {
-          try {
-            const { data: adminData } = await supabase
-              .from('admin_users')
-              .select('user_id')
-              .eq('user_id', session.user.id)
-              .maybeSingle()
-            
-            if (adminData) {
-              setIsAdmin(true)
-            }
-          } catch (err) {
-            // Silently fail
+        // Check admin status (synchronously but won't block on error)
+        try {
+          const { data: adminData, error: adminError } = await supabase
+            .from('admin_users')
+            .select('user_id')
+            .eq('user_id', session.user.id)
+            .maybeSingle()
+          
+          if (!adminError && adminData) {
+            console.log('✅ Admin access granted!')
+            setIsAdmin(true)
+          } else {
+            console.log('ℹ️ Not an admin user')
+            setIsAdmin(false)
           }
-        }, 0)
+        } catch (err) {
+          console.warn('⚠️ Admin check failed:', err.message)
+          setIsAdmin(false)
+        }
         
         setLoading(false)
       } else {
