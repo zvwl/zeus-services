@@ -55,6 +55,12 @@ export default function SettingsPage() {
     setTwoFactorMessage('')
 
     try {
+      // First verify the user exists
+      const { data: { user: currentUser }, error: userError } = await supabase.auth.getUser()
+      if (userError || !currentUser) {
+        throw new Error('User session invalid. Please log out and log back in.')
+      }
+      
       const { data, error } = await supabase.auth.mfa.enroll({
         factorType: 'totp',
         friendlyName: 'Authenticator App'
@@ -66,7 +72,12 @@ export default function SettingsPage() {
       setFactorId(data.id)
       setTwoFactorMessage('📱 Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.)')
     } catch (error) {
-      setTwoFactorMessage('❌ ' + error.message)
+      const errorMessage = error.message || 'Failed to enable 2FA'
+      if (errorMessage.includes('JWT') || errorMessage.includes('does not exist')) {
+        setTwoFactorMessage('❌ Your session is invalid. Please log out and log back in.')
+      } else {
+        setTwoFactorMessage('❌ ' + errorMessage)
+      }
     } finally {
       setTwoFactorLoading(false)
     }

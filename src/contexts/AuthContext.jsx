@@ -23,6 +23,20 @@ export const AuthProvider = ({ children }) => {
       try {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
+          // Verify the user actually exists in the database
+          const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser()
+          
+          if (userError || !verifiedUser) {
+            console.error('User verification failed:', userError)
+            // User doesn't exist - force logout
+            await supabase.auth.signOut({ scope: 'local' })
+            setUser(null)
+            setEmailVerified(false)
+            setIsAdmin(false)
+            setLoading(false)
+            return
+          }
+          
           setUser({
             id: session.user.id,
             email: session.user.email,
@@ -45,6 +59,10 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error('Session check error:', err)
+        // If session check fails, clear everything
+        setUser(null)
+        setEmailVerified(false)
+        setIsAdmin(false)
       } finally {
         setLoading(false)
       }
