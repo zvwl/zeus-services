@@ -23,8 +23,10 @@ export const AuthProvider = ({ children }) => {
         const { data: { session } } = await supabase.auth.getSession()
         if (session?.user) {
           setUser({
+            id: session.user.id,
             email: session.user.email,
-            name: session.user.user_metadata?.name || session.user.email.split('@')[0]
+            name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+            created_at: session.user.created_at
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
         }
@@ -41,8 +43,10 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
         setUser({
+          id: session.user.id,
           email: session.user.email,
-          name: session.user.user_metadata?.name || session.user.email.split('@')[0]
+          name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+          created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
         setLoading(false)
@@ -96,8 +100,10 @@ export const AuthProvider = ({ children }) => {
           challengeId: challengeData.id
         }
       }
-
-      setUser({
+id: data.user.id,
+        email: data.user.email,
+        name: data.user.user_metadata?.name || data.user.email.split('@')[0],
+        created_at: data.user.created_at
         email: data.user.email,
         name: data.user.user_metadata?.name || data.user.email.split('@')[0]
       })
@@ -127,8 +133,10 @@ export const AuthProvider = ({ children }) => {
       const { data: sessionData } = await supabase.auth.getSession()
       const authedUser = sessionData?.session?.user
 
-      if (authedUser) {
-        setUser({
+      if (id: authedUser.id,
+          email: authedUser.email,
+          name: authedUser.user_metadata?.name || authedUser.email.split('@')[0],
+          created_at: authedUser.created_at
           email: authedUser.email,
           name: authedUser.user_metadata?.name || authedUser.email.split('@')[0]
         })
