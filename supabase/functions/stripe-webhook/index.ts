@@ -22,15 +22,16 @@ async function verifyWebhookSignature(
   let sig = "";
 
   for (const part of parts) {
-    if (part.startsWith("t=")) {
-      timestamp = part.slice(2);
-    } else if (part.startsWith("v1=")) {
-      sig = part.slice(4);
+    const trimmed = part.trim();
+    if (trimmed.startsWith("t=")) {
+      timestamp = trimmed.substring(2);
+    } else if (trimmed.startsWith("v1=")) {
+      sig = trimmed.substring(3);
     }
   }
 
   if (!timestamp || !sig) {
-    console.error("Invalid signature format");
+    console.error("Invalid signature format", { timestamp, sig });
     return false;
   }
 
@@ -55,8 +56,9 @@ async function verifyWebhookSignature(
   const hashArray = Array.from(new Uint8Array(expectedSignature));
   const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
-  console.log(`Verifying: timestamp=${timestamp}, computed=${hashHex}, expected=${sig}`);
-  return sig === hashHex;
+  const isValid = sig === hashHex;
+  console.log(`Verifying: timestamp=${timestamp}, computed=${hashHex}, expected=${sig}, valid=${isValid}`);
+  return isValid;
 }
 
 Deno.serve(async (req) => {
