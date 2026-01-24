@@ -213,7 +213,13 @@ export default function AdminOrdersPage() {
                   <ul>
                     {(order.items || []).map((item, idx) => (
                       <li key={idx}>
-                        {item.name} - {item.quantity}x {formatCurrency(item.price, order.currency)}
+                        {item.name} - {item.quantity}x {formatCurrency(
+                          // Prefer converted price; fallback to USD if missing
+                          (typeof item.price_converted === 'number' ? item.price_converted : (
+                            typeof item.price_usd === 'number' ? item.price_usd : Number(item?.price_converted ?? item?.price_usd ?? 0)
+                          )),
+                          order.currency
+                        )}
                       </li>
                     ))}
                   </ul>
