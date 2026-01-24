@@ -238,8 +238,6 @@ export default function AdminOrdersPage() {
                     {order.payment_status}
                   </span>
                 </div>
-                  </div>
-                </div>
 
                 <div className="order-items">
                   <h4>Items:</h4>
