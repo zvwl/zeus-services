@@ -62,7 +62,8 @@ export default function OrdersPage() {
       pending: { label: 'Pending', className: 'payment-pending' },
       paid: { label: 'Paid', className: 'payment-paid' },
       failed: { label: 'Failed', className: 'payment-failed' },
-      skipped: { label: 'Skipped (Dev)', className: 'payment-skipped' }
+      skipped: { label: 'Skipped (Dev)', className: 'payment-skipped' },
+      refunded: { label: 'Refunded', className: 'payment-refunded' }
     }
     return statusMap[paymentStatus] || { label: paymentStatus, className: 'payment-default' }
   }
