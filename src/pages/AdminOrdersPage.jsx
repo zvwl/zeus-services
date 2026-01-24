@@ -2,6 +2,16 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AdminOrdersPage.css'
+
+export default function AdminOrdersPage() {
+  const { user } = useAuth()
+  const [orders, setOrders] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [updatingOrderId, setUpdatingOrderId] = useState(null)
+
   // Refund handler
   const handleRefundOrder = async (orderId) => {
     setUpdatingOrderId(orderId);
@@ -28,15 +38,6 @@ import './AdminOrdersPage.css'
       setUpdatingOrderId(null);
     }
   };
-
-export default function AdminOrdersPage() {
-  const { user } = useAuth()
-  const [orders, setOrders] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [updatingOrderId, setUpdatingOrderId] = useState(null)
 
   useEffect(() => {
     checkAdminStatus()
