@@ -132,6 +132,7 @@ Deno.serve(async (req) => {
       payment_method_types: ['card'],
       metadata: {
         order_id: order.id,
+        ...(userId ? { user_id: userId } : {}),
       },
       success_url: `${finalFrontendUrl}/cart?success=true&orderId=${order.id}`,
       cancel_url: `${finalFrontendUrl}/cart?canceled=true&orderId=${order.id}`,

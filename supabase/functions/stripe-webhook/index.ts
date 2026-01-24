@@ -66,10 +66,18 @@ Deno.serve(async (req) => {
     return new Response("Method not allowed", { status: 405 });
   }
 
+  // Log all headers for debugging
+  console.log("Received headers:", Object.fromEntries(req.headers.entries()));
+
   const sig = req.headers.get("stripe-signature");
   if (!sig) return new Response("Missing signature", { status: 400 });
 
   const rawBody = await req.text();
+
+  // Log the received signature and secret for debugging
+  console.log("Received stripe-signature:", sig);
+  console.log("Using STRIPE_WEBHOOK_SECRET:", STRIPE_WEBHOOK_SECRET);
+  console.log("Raw body:", rawBody);
 
   // Verify signature using Web Crypto API
   const isValid = await verifyWebhookSignature(
@@ -95,51 +103,60 @@ Deno.serve(async (req) => {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as any;
       const orderId = session.metadata?.order_id;
+      const userId = session.metadata?.user_id;
 
       if (orderId) {
         console.log(`✅ [checkout.session.completed] Updating order ${orderId}`);
+        const updateData: any = {
+          payment_status: "paid",
+          status: "processing",
+          payment_intent_id: session.payment_intent ?? null,
+          paid_at: new Date().toISOString(),
+          checkout_session_id: session.id,
+          payment_provider: "stripe",
+        };
+        if (userId) updateData.user_id = userId;
         await supabase
           .from("orders")
-          .update({
-            payment_status: "paid",
-            status: "processing",
-            payment_intent_id: session.payment_intent ?? null,
-            paid_at: new Date().toISOString(),
-            checkout_session_id: session.id,
-            payment_provider: "stripe",
-          })
+          .update(updateData)
           .eq("id", orderId);
         console.log(`✅ Order ${orderId} marked as paid/processing`);
       }
     } else if (event.type === "payment_intent.succeeded") {
       const intent = event.data.object as any;
       const orderId = intent.metadata?.order_id;
+      const userId = intent.metadata?.user_id;
 
       if (orderId) {
         console.log(`✅ [payment_intent.succeeded] Updating order ${orderId}`);
+        const updateData: any = {
+          payment_status: "paid",
+          status: "processing",
+          payment_intent_id: intent.id,
+          paid_at: new Date().toISOString(),
+          payment_provider: "stripe",
+        };
+        if (userId) updateData.user_id = userId;
         await supabase
           .from("orders")
-          .update({
-            payment_status: "paid",
-            status: "processing",
-            payment_intent_id: intent.id,
-            paid_at: new Date().toISOString(),
-            payment_provider: "stripe",
-          })
+          .update(updateData)
           .eq("id", orderId);
       }
     } else if (event.type === "payment_intent.payment_failed") {
       const intent = event.data.object as any;
       const orderId = intent.metadata?.order_id;
+      const userId = intent.metadata?.user_id;
 
       if (orderId) {
         console.log(`❌ [payment_intent.payment_failed] Marking order ${orderId} as failed`);
+        const updateData: any = {
+          payment_status: "failed",
+          status: "cancelled",
+        };
+        if (userId) updateData.user_id = userId;
         await supabase
           .from("orders")
-          .update({
-            payment_status: "failed",
-            status: "cancelled",
-          })
+          .update(updateData)
           .eq("id", orderId);
       }
     } else {
