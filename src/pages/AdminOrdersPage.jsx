@@ -284,7 +284,8 @@ export default function AdminOrdersPage() {
                     value={order.status}
                     onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                     className="status-select"
-                    disabled={updatingOrderId === order.id}
+                    disabled={updatingOrderId === order.id || order.payment_status === 'refunded'}
+                    title={order.payment_status === 'refunded' ? 'Cannot change status of refunded order' : ''}
                   >
                     <option value="created">Created</option>
                     <option value="pending">Pending Payment</option>
@@ -296,8 +297,9 @@ export default function AdminOrdersPage() {
                     className="cancel-order-btn"
                     disabled={order.status === 'cancelled' || updatingOrderId === order.id || order.payment_status === 'refunded'}
                     onClick={() => handleRefundOrder(order.id)}
+                    title={order.payment_status === 'refunded' ? 'Order already refunded' : 'Cancel order and issue refund via Stripe'}
                   >
-                    Cancel & Refund
+                    {order.payment_status === 'refunded' ? 'Refunded' : 'Cancel & Refund'}
                   </button>
                 </div>
                 <div className="detail-row">
