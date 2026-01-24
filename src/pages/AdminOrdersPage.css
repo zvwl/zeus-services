@@ -1,3 +1,22 @@
+/* Cancel & Refund button styles */
+.cancel-order-btn {
+  background: #ef4444;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-left: 1rem;
+}
+.cancel-order-btn:disabled {
+  background: #fca5a5;
+  cursor: not-allowed;
+}
+.cancel-order-btn:hover:not(:disabled) {
+  background: #dc2626;
+}
 .admin-section {
   min-height: calc(100vh - 200px);
   padding: 2rem 1rem;

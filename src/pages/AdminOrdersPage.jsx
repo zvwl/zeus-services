@@ -2,6 +2,32 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AdminOrdersPage.css'
+  // Refund handler
+  const handleRefundOrder = async (orderId) => {
+    setUpdatingOrderId(orderId);
+    setError('');
+    try {
+      const response = await fetch('https://<YOUR_PROJECT_REF>.functions.supabase.co/refund-order', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ orderId }),
+      });
+      const result = await response.json();
+      if (!response.ok) throw new Error(result.error || 'Refund failed');
+      // Update local state
+      setOrders(orders.map(order =>
+        order.id === orderId
+          ? { ...order, status: 'cancelled', payment_status: 'refunded' }
+          : order
+      ));
+    } catch (err) {
+      setError('Refund error: ' + err.message);
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
 
 export default function AdminOrdersPage() {
   const { user } = useAuth()
@@ -183,22 +209,29 @@ export default function AdminOrdersPage() {
                   </span>
                 </div>
 
-                <div className="order-details">
-                  <div className="detail-row">
-                    <span className="label">Customer:</span>
-                    <span className="value">{order.customer_name || 'N/A'}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Email:</span>
-                    <span className="value">{order.customer_email}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Date:</span>
-                    <span className="value">{formatDate(order.created_at)}</span>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Total:</span>
-                    <span className="value total">{formatCurrency(order.total_amount, order.currency)}</span>
+                <div className="order-actions">
+                  <label htmlFor={`status-${order.id}`}>Update Status:</label>
+                  <select
+                    id={`status-${order.id}`}
+                    value={order.status}
+                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
+                    className="status-select"
+                    disabled={updatingOrderId === order.id}
+                  >
+                    <option value="created">Created</option>
+                    <option value="pending">Pending Payment</option>
+                    <option value="processing">Processing</option>
+                    <option value="completed">Completed</option>
+                    <option value="cancelled">Cancelled</option>
+                  </select>
+                  <button
+                    className="cancel-order-btn"
+                    disabled={order.status === 'cancelled' || updatingOrderId === order.id || order.payment_status === 'refunded'}
+                    onClick={() => handleRefundOrder(order.id)}
+                  >
+                    Cancel & Refund
+                  </button>
+                </div>
                   </div>
                   <div className="detail-row">
                     <span className="label">Payment:</span>
