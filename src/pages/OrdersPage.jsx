@@ -32,6 +32,7 @@ export default function OrdersPage() {
         .from('orders')
         .select('*')
         .eq('user_id', authUser.id)
+        .neq('payment_status', 'pending') // Hide incomplete/abandoned orders
         .order('created_at', { ascending: false })
 
       if (fetchError) throw fetchError
