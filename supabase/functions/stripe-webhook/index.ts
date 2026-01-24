@@ -17,6 +17,33 @@ const stripe = new Stripe(STRIPE_SECRET_KEY ?? "", {
 
 const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "");
 
+// Manual webhook signature verification using Web Crypto API
+async function verifyWebhookSignature(
+  body: string,
+  signature: string,
+  secret: string
+): Promise<boolean> {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"]
+  );
+
+  const expectedSignature = await crypto.subtle.sign(
+    "HMAC",
+    key,
+    encoder.encode(body)
+  );
+
+  const hashArray = Array.from(new Uint8Array(expectedSignature));
+  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+
+  return signature === `t=${hashHex}`;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") {
     return new Response("Method not allowed", { status: 405 });
@@ -25,15 +52,25 @@ Deno.serve(async (req) => {
   const sig = req.headers.get("stripe-signature");
   if (!sig) return new Response("Missing signature", { status: 400 });
 
-  const rawBody = await req.arrayBuffer();
-  const decoder = new TextDecoder();
-  const rawBodyString = decoder.decode(rawBody);
+  const rawBody = await req.text();
+
+  // Verify signature using Web Crypto API
+  const isValid = await verifyWebhookSignature(
+    rawBody,
+    sig.split(",")[0].replace("t=", ""),
+    STRIPE_WEBHOOK_SECRET ?? ""
+  );
+
+  if (!isValid) {
+    console.error("Webhook signature verification failed");
+    return new Response("Webhook Error: Invalid signature", { status: 400 });
+  }
 
   let event;
   try {
-    event = await stripe.webhooks.constructEventAsync(rawBodyString, sig, STRIPE_WEBHOOK_SECRET ?? "");
+    event = JSON.parse(rawBody);
   } catch (err) {
-    console.error("Webhook signature verification failed", err.message);
+    console.error("Failed to parse webhook body", err.message);
     return new Response(`Webhook Error: ${err.message}`, { status: 400 });
   }
 
