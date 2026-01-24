@@ -120,29 +120,27 @@ Deno.serve(async (req) => {
           .update(updateData)
           .eq("id", orderId);
         console.log(`✅ Order ${orderId} marked as paid/processing`);
-        
+
         // Send order confirmation email
         try {
-          console.log(`📧 Attempting to send email for order ${orderId}`);
-          const emailUrl = `${SUPABASE_URL}/functions/v1/send-order-confirmation`;
-          console.log(`Email function URL: ${emailUrl}`);
-          
-          const emailRes = await fetch(emailUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY || 'MISSING_KEY'}`
-            },
-            body: JSON.stringify({ orderId })
-          });
-          
-          const emailData = await emailRes.text();
-          console.log(`Email response status: ${emailRes.status}, body:`, emailData);
-          
-          if (emailRes.ok) {
-            console.log(`📧 Order confirmation email sent for ${orderId}`);
+          if (!SUPABASE_ANON_KEY) {
+            console.error("❌ Missing SUPABASE_ANON_KEY env var; cannot send confirmation email");
           } else {
-            console.error(`❌ Failed to send confirmation email for ${orderId}:`, emailData);
+            const emailUrl = `${SUPABASE_URL}/functions/v1/send-order-confirmation`;
+            console.log(`📧 Attempting to send email for order ${orderId} via ${emailUrl}`);
+            const emailRes = await fetch(emailUrl, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+              },
+              body: JSON.stringify({ orderId })
+            });
+            const emailText = await emailRes.text();
+            console.log(`📧 Email response status=${emailRes.status}, body=${emailText}`);
+            if (!emailRes.ok) {
+              console.error(`❌ Failed to send confirmation email for ${orderId}`);
+            }
           }
         } catch (emailErr) {
           console.error('❌ Email send error:', emailErr);

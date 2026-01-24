@@ -77,24 +77,37 @@ Deno.serve(async (req) => {
         to: customer_email,
         subject: `Order Confirmation #${orderId.slice(0, 8)}`,
         html: `
-          <h2>Thank you for your order, ${customer_name || 'valued customer'}! 🎉</h2>
-          <p>We've received your payment and are processing your order.</p>
-          
-          <h3>Order Details</h3>
-          <p><strong>Order ID:</strong> ${orderId}</p>
-          <p><strong>Order Date:</strong> ${orderDate}</p>
-          
-          <h3>Items Ordered</h3>
-          <pre>${itemsList}</pre>
-          
-          <h3>Total</h3>
-          <p><strong>${formatCurrency(total_amount, currency)}</strong></p>
-          
-          <hr>
-          <p>You can track your order status at <a href="https://zeuservices.com/orders">zeuservices.com/orders</a></p>
-          <p>If you have any questions, please don't hesitate to contact us.</p>
-          
-          <p>Best regards,<br>The Zeus Services Team</p>
+<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 20px; text-align: center; color: white;">
+    <h1 style="margin: 0; font-size: 26px; letter-spacing: 0.5px;">Zeus Services</h1>
+    <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Order Confirmation</p>
+  </div>
+
+  <div style="padding: 32px 20px; max-width: 640px; margin: 0 auto; background: #f8fafc;">
+    <p style="font-size: 16px; margin: 0 0 12px;">Hi ${customer_name || 'there'},</p>
+    <p style="font-size: 15px; color: #555; margin: 0 0 16px;">Thank you for your purchase! We've received your payment and are processing your order.</p>
+
+    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
+      <p style="margin: 4px 0; font-size: 14px;"><strong>Order ID:</strong> ${orderId}</p>
+      <p style="margin: 4px 0; font-size: 14px;"><strong>Order Date:</strong> ${orderDate}</p>
+      <p style="margin: 4px 0; font-size: 14px;"><strong>Total:</strong> ${formatCurrency(total_amount, currency)}</p>
+    </div>
+
+    <h3 style="margin: 16px 0 10px; font-size: 15px; color: #111;">Items Ordered</h3>
+    <pre style="white-space: pre-wrap; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 12px; font-size: 14px; color: #374151; margin: 0 0 20px;">${itemsList}</pre>
+
+    <div style="text-align: center; margin: 28px 0;">
+      <a href="https://zeuservices.com/orders" style="display: inline-block; background-color: #FFD700; color: #000; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">View Your Order</a>
+    </div>
+
+    <p style="font-size: 13px; color: #777; margin: 0 0 18px;">If you have any questions, reply to this email and we'll help you out.</p>
+
+    <div style="text-align: center; padding-top: 18px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #999;">
+      <p style="margin: 6px 0;">© 2026 Zeus Services. All rights reserved.</p>
+      <p style="margin: 6px 0;"><a href="https://zeuservices.com" style="color: #0066cc; text-decoration: none;">Visit Our Website</a></p>
+    </div>
+  </div>
+</div>
         `
       })
     });
