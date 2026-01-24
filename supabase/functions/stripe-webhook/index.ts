@@ -74,10 +74,8 @@ Deno.serve(async (req) => {
 
   const rawBody = await req.text();
 
-  // Log the received signature and secret for debugging
-  console.log("Received stripe-signature:", sig);
-  console.log("Using STRIPE_WEBHOOK_SECRET:", STRIPE_WEBHOOK_SECRET);
-  console.log("Raw body:", rawBody);
+  // Log minimal webhook context (never log secrets or raw body)
+  console.log("Received stripe-signature header");
 
   // Verify signature using Web Crypto API
   const isValid = await verifyWebhookSignature(

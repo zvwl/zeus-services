@@ -91,7 +91,8 @@ export default function AdminOrdersPage() {
       // Apply search by customer email or user ID (case-insensitive)
       const q = searchQuery.trim()
       if (q) {
-        query = query.or(`customer_email.ilike.%${q}%,user_id.ilike.%${q}%`)
+        // Cast UUID to text for ilike; also allow searching by order id
+        query = query.or(`customer_email.ilike.%${q}%,user_id::text.ilike.%${q}%,id::text.ilike.%${q}%`)
       }
 
       const { data, error } = await query
