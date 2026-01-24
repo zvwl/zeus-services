@@ -91,9 +91,9 @@ export default function AdminOrdersPage() {
 
       // Apply search by customer email or user ID (case-insensitive)
       const q = searchDebounced.trim()
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
       if (q) {
-        // If query looks like a UUID, match directly on user_id or order id
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        // If query looks like a full UUID, match directly on user_id or order id
         if (uuidRegex.test(q)) {
           query = query.or(`user_id.eq.${q},id.eq.${q},customer_email.ilike.%${q}%`)
         } else {
@@ -106,7 +106,14 @@ export default function AdminOrdersPage() {
 
       if (error) throw error
 
-      setOrders(data || [])
+      // If q is a non-UUID string, also allow partial match on order ID client-side
+      let results = data || []
+      if (q && !uuidRegex.test(q)) {
+        const qLower = q.toLowerCase()
+        results = results.filter(o => String(o.id || '').toLowerCase().includes(qLower))
+      }
+
+      setOrders(results)
       setError('')
     } catch (err) {
       setError('Error loading orders: ' + err.message)
