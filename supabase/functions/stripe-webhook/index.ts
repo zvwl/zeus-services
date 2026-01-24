@@ -23,6 +23,27 @@ async function verifyWebhookSignature(
   signature: string,
   secret: string
 ): Promise<boolean> {
+  // Signature format: t=timestamp,v1=signature,v0=signature
+  const parts = signature.split(",");
+  let timestamp = "";
+  let sig = "";
+
+  for (const part of parts) {
+    if (part.startsWith("t=")) {
+      timestamp = part.slice(2);
+    } else if (part.startsWith("v1=")) {
+      sig = part.slice(4);
+    }
+  }
+
+  if (!timestamp || !sig) {
+    console.error("Invalid signature format");
+    return false;
+  }
+
+  // Stripe signs: timestamp.body
+  const signedContent = `${timestamp}.${body}`;
+
   const encoder = new TextEncoder();
   const key = await crypto.subtle.importKey(
     "raw",
@@ -35,13 +56,14 @@ async function verifyWebhookSignature(
   const expectedSignature = await crypto.subtle.sign(
     "HMAC",
     key,
-    encoder.encode(body)
+    encoder.encode(signedContent)
   );
 
   const hashArray = Array.from(new Uint8Array(expectedSignature));
   const hashHex = hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
 
-  return signature === `t=${hashHex}`;
+  console.log(`Verifying: timestamp=${timestamp}, computed=${hashHex}, expected=${sig}`);
+  return sig === hashHex;
 }
 
 Deno.serve(async (req) => {
@@ -57,7 +79,7 @@ Deno.serve(async (req) => {
   // Verify signature using Web Crypto API
   const isValid = await verifyWebhookSignature(
     rawBody,
-    sig.split(",")[0].replace("t=", ""),
+    sig,
     STRIPE_WEBHOOK_SECRET ?? ""
   );
 
