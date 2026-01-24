@@ -11,6 +11,7 @@ export default function AdminOrdersPage() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [searchDebounced, setSearchDebounced] = useState('')
   const [updatingOrderId, setUpdatingOrderId] = useState(null)
 
   // Refund handler
@@ -89,7 +90,7 @@ export default function AdminOrdersPage() {
       }
 
       // Apply search by customer email or user ID (case-insensitive)
-      const q = searchQuery.trim()
+      const q = searchDebounced.trim()
       if (q) {
         // If query looks like a UUID, match directly on user_id or order id
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
@@ -118,7 +119,15 @@ export default function AdminOrdersPage() {
     if (isAdmin) {
       fetchOrders()
     }
-  }, [statusFilter, isAdmin, searchQuery])
+  }, [statusFilter, isAdmin, searchDebounced])
+
+  // Debounce search input to reduce requests while typing
+  useEffect(() => {
+    const t = setTimeout(() => {
+      setSearchDebounced(searchQuery)
+    }, 350)
+    return () => clearTimeout(t)
+  }, [searchQuery])
 
   const updateOrderStatus = async (orderId, newStatus) => {
     setUpdatingOrderId(orderId)
@@ -211,7 +220,21 @@ export default function AdminOrdersPage() {
             placeholder="Search by email or customer ID"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                setSearchDebounced(searchQuery)
+              }
+            }}
           />
+          {searchQuery && (
+            <button
+              type="button"
+              className="clear-search-btn"
+              onClick={() => { setSearchQuery(''); setSearchDebounced('') }}
+            >
+              Clear
+            </button>
+          )}
           <span className="order-count">{orders.length} orders</span>
         </div>
 
