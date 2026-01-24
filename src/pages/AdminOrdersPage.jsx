@@ -281,26 +281,38 @@ export default function AdminOrdersPage() {
                   <label htmlFor={`status-${order.id}`}>Update Status:</label>
                   <select
                     id={`status-${order.id}`}
-                    value={order.status}
+                    value={order.status === 'cancelled' ? 'cancelled' : order.status}
                     onChange={(e) => updateOrderStatus(order.id, e.target.value)}
                     className="status-select"
-                    disabled={updatingOrderId === order.id || order.payment_status === 'refunded'}
-                    title={order.payment_status === 'refunded' ? 'Cannot change status of refunded order' : ''}
+                    disabled={updatingOrderId === order.id || order.payment_status === 'refunded' || order.status === 'cancelled'}
+                    title={order.payment_status === 'refunded' ? 'Cannot change status of refunded order' : order.status === 'cancelled' ? 'Use Cancel & Refund or Cancel Without Refund buttons' : ''}
                   >
                     <option value="created">Created</option>
                     <option value="pending">Pending Payment</option>
                     <option value="processing">Processing</option>
                     <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
+                    {order.status === 'cancelled' && <option value="cancelled">Cancelled</option>}
                   </select>
-                  <button
-                    className="cancel-order-btn"
-                    disabled={order.status === 'cancelled' || updatingOrderId === order.id || order.payment_status === 'refunded'}
-                    onClick={() => handleRefundOrder(order.id)}
-                    title={order.payment_status === 'refunded' ? 'Order already refunded' : 'Cancel order and issue refund via Stripe'}
-                  >
-                    {order.payment_status === 'refunded' ? 'Refunded' : 'Cancel & Refund'}
-                  </button>
+                  <div className="action-buttons">
+                    <button
+                      className="cancel-order-btn"
+                      disabled={order.status === 'cancelled' || updatingOrderId === order.id || order.payment_status === 'refunded'}
+                      onClick={() => handleRefundOrder(order.id)}
+                      title={order.payment_status === 'refunded' ? 'Order already refunded' : 'Cancel order and issue refund via Stripe'}
+                    >
+                      {order.payment_status === 'refunded' ? 'Refunded' : 'Cancel & Refund'}
+                    </button>
+                    {order.status !== 'cancelled' && order.payment_status !== 'refunded' && (
+                      <button
+                        className="cancel-no-refund-btn"
+                        disabled={updatingOrderId === order.id}
+                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                        title="Cancel order without issuing refund (customer forfeits payment)"
+                      >
+                        Cancel Only
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="detail-row">
                   <span className="label">Payment:</span>
