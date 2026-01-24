@@ -123,21 +123,29 @@ Deno.serve(async (req) => {
         
         // Send order confirmation email
         try {
-          const emailRes = await fetch(`${SUPABASE_URL}/functions/v1/send-order-confirmation`, {
+          console.log(`📧 Attempting to send email for order ${orderId}`);
+          const emailUrl = `${SUPABASE_URL}/functions/v1/send-order-confirmation`;
+          console.log(`Email function URL: ${emailUrl}`);
+          
+          const emailRes = await fetch(emailUrl, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY || 'MISSING_KEY'}`
             },
             body: JSON.stringify({ orderId })
           });
+          
+          const emailData = await emailRes.text();
+          console.log(`Email response status: ${emailRes.status}, body:`, emailData);
+          
           if (emailRes.ok) {
             console.log(`📧 Order confirmation email sent for ${orderId}`);
           } else {
-            console.error(`Failed to send confirmation email for ${orderId}`);
+            console.error(`❌ Failed to send confirmation email for ${orderId}:`, emailData);
           }
         } catch (emailErr) {
-          console.error('Email send error:', emailErr);
+          console.error('❌ Email send error:', emailErr);
         }
       }
     } else if (event.type === "payment_intent.succeeded") {
