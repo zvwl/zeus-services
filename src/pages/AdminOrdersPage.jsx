@@ -214,6 +214,11 @@ export default function AdminOrdersPage() {
                   </span>
                 </div>
 
+                <div className="customer-info">
+                  <span className="label">Customer Email:</span>
+                  <span className="value">{order.customer_email || <em>Unknown</em>}</span>
+                </div>
+
                 <div className="order-actions">
                   <label htmlFor={`status-${order.id}`}>Update Status:</label>
                   <select
@@ -267,24 +272,6 @@ export default function AdminOrdersPage() {
                     <p>{order.notes}</p>
                   </div>
                 )}
-
-                <div className="order-actions">
-                  <label htmlFor={`status-${order.id}`}>Update Status:</label>
-                  <select
-                    id={`status-${order.id}`}
-                    value={order.status}
-                    onChange={(e) => updateOrderStatus(order.id, e.target.value)}
-                    disabled={updatingOrderId === order.id}
-                    className="status-select"
-                  >
-                    <option value="created">Created</option>
-                    <option value="pending">Pending Payment</option>
-                    <option value="paid">Paid</option>
-                    <option value="processing">Processing</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
-                  </select>
-                </div>
               </div>
             ))}
           </div>

@@ -1,10 +1,51 @@
+
 import Stripe from "https://esm.sh/stripe@17.5.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
+
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+
+// Helper to verify JWT and check admin (no node polyfills)
+function parseJwtSub(token) {
+  try {
+    const payload = token.split('.')[1];
+    const decoded = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+    return decoded.sub;
+  } catch {
+    return null;
+  }
+}
+
+async function isAdminUser(req, supabase) {
+  const authHeader = req.headers.get('authorization') || req.headers.get('Authorization');
+  console.log('Auth header:', authHeader);
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    console.log('No Bearer token');
+    return false;
+  }
+  const token = authHeader.replace('Bearer ', '');
+  const userId = parseJwtSub(token);
+  console.log('Parsed userId from JWT:', userId);
+  if (!userId) {
+    console.log('No userId in JWT');
+    return false;
+  }
+  try {
+    const { data, error } = await supabase
+      .from('admin_users')
+      .select('user_id')
+      .eq('user_id', userId)
+      .single();
+    console.log('Admin user lookup:', { data, error });
+    return !!data && !error;
+  } catch (e) {
+    console.log('Admin user lookup error:', e);
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -31,6 +72,16 @@ Deno.serve(async (req) => {
     }
 
     const { orderId } = await req.json();
+
+    // Auth check: only allow admin users
+    const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const isAdmin = await isAdminUser(req, supabaseAdmin);
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
     if (!orderId) {
       return new Response(JSON.stringify({ error: "orderId is required" }), {
         status: 400,
@@ -38,7 +89,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const supabase = supabaseAdmin;
     // Fetch the order to get payment_intent_id
     const { data: order, error: orderError } = await supabase
       .from("orders")
