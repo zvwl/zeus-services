@@ -41,6 +41,7 @@ Deno.serve(async (req) => {
       const orderId = session.metadata?.order_id;
 
       if (orderId) {
+        console.log(`✅ [checkout.session.completed] Updating order ${orderId}`);
         await supabase
           .from("orders")
           .update({
@@ -48,12 +49,48 @@ Deno.serve(async (req) => {
             status: "processing",
             payment_intent_id: session.payment_intent ?? null,
             paid_at: new Date().toISOString(),
+            checkout_session_id: session.id,
+            payment_provider: "stripe",
+          })
+          .eq("id", orderId);
+        console.log(`✅ Order ${orderId} marked as paid/processing`);
+      }
+    } else if (event.type === "payment_intent.succeeded") {
+      const intent = event.data.object as any;
+      const orderId = intent.metadata?.order_id;
+
+      if (orderId) {
+        console.log(`✅ [payment_intent.succeeded] Updating order ${orderId}`);
+        await supabase
+          .from("orders")
+          .update({
+            payment_status: "paid",
+            status: "processing",
+            payment_intent_id: intent.id,
+            paid_at: new Date().toISOString(),
+            payment_provider: "stripe",
           })
           .eq("id", orderId);
       }
+    } else if (event.type === "payment_intent.payment_failed") {
+      const intent = event.data.object as any;
+      const orderId = intent.metadata?.order_id;
+
+      if (orderId) {
+        console.log(`❌ [payment_intent.payment_failed] Marking order ${orderId} as failed`);
+        await supabase
+          .from("orders")
+          .update({
+            payment_status: "failed",
+            status: "cancelled",
+          })
+          .eq("id", orderId);
+      }
+    } else {
+      console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }
   } catch (err) {
-    console.error("Error handling webhook", err);
+    console.error("❌ Error handling webhook:", err);
     return new Response("Webhook handler error", { status: 500 });
   }
 
