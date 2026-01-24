@@ -91,8 +91,14 @@ export default function AdminOrdersPage() {
       // Apply search by customer email or user ID (case-insensitive)
       const q = searchQuery.trim()
       if (q) {
-        // Cast UUID to text for ilike; also allow searching by order id
-        query = query.or(`customer_email.ilike.%${q}%,user_id::text.ilike.%${q}%,id::text.ilike.%${q}%`)
+        // If query looks like a UUID, match directly on user_id or order id
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+        if (uuidRegex.test(q)) {
+          query = query.or(`user_id.eq.${q},id.eq.${q},customer_email.ilike.%${q}%`)
+        } else {
+          // Otherwise search by email only (safe for ilike)
+          query = query.or(`customer_email.ilike.%${q}%`)
+        }
       }
 
       const { data, error } = await query
