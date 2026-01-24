@@ -17,6 +17,25 @@ export const AuthProvider = ({ children }) => {
   const [emailVerified, setEmailVerified] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
 
+  // Function to check admin status
+  const checkAdminStatus = async (userId) => {
+    try {
+      const { data: adminData } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle()
+      
+      if (adminData) {
+        setIsAdmin(true)
+      } else {
+        setIsAdmin(false)
+      }
+    } catch (err) {
+      setIsAdmin(false)
+    }
+  }
+
   useEffect(() => {
     // Check for existing Supabase session
     const checkSession = async () => {
@@ -44,22 +63,8 @@ export const AuthProvider = ({ children }) => {
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
           
-          // Check admin status (non-blocking, happens after login completes)
-          setTimeout(async () => {
-            try {
-              const { data: adminData } = await supabase
-                .from('admin_users')
-                .select('user_id')
-                .eq('user_id', session.user.id)
-                .maybeSingle()
-              
-              if (adminData) {
-                setIsAdmin(true)
-              }
-            } catch (err) {
-              // Silently fail - admin check is optional
-            }
-          }, 0)
+          // Check admin status immediately
+          checkAdminStatus(session.user.id)
         }
       } catch (err) {
         console.error('Session check error:', err)
@@ -145,20 +150,8 @@ export const AuthProvider = ({ children }) => {
         created_at: data.user.created_at
       })
 
-      // Check admin status after login (non-blocking)
-      try {
-        const { data: adminData } = await supabase
-          .from('admin_users')
-          .select('user_id')
-          .eq('user_id', data.user.id)
-          .maybeSingle()
-        
-        if (adminData) {
-          setIsAdmin(true)
-        }
-      } catch (err) {
-        // Silently fail
-      }
+      // Check admin status after login
+      checkAdminStatus(data.user.id)
 
       // Create session record
       await createSessionRecord(data.user.id)
@@ -198,20 +191,8 @@ export const AuthProvider = ({ children }) => {
           created_at: authedUser.created_at
         })
 
-        // Check admin status after MFA (non-blocking)
-        try {
-          const { data: adminData } = await supabase
-            .from('admin_users')
-            .select('user_id')
-            .eq('user_id', authedUser.id)
-            .maybeSingle()
-          
-          if (adminData) {
-            setIsAdmin(true)
-          }
-        } catch (err) {
-          // Silently fail
-        }
+        // Check admin status after MFA
+        checkAdminStatus(authedUser.id)
 
         // Try to create session record but don't block if it fails
         try {
