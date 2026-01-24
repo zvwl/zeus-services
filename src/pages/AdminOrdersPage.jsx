@@ -10,6 +10,7 @@ export default function AdminOrdersPage() {
   const [error, setError] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const [updatingOrderId, setUpdatingOrderId] = useState(null)
 
   // Refund handler
@@ -87,6 +88,12 @@ export default function AdminOrdersPage() {
         query = query.eq('status', statusFilter)
       }
 
+      // Apply search by customer email or user ID (case-insensitive)
+      const q = searchQuery.trim()
+      if (q) {
+        query = query.or(`customer_email.ilike.%${q}%,user_id.ilike.%${q}%`)
+      }
+
       const { data, error } = await query
 
       if (error) throw error
@@ -104,7 +111,7 @@ export default function AdminOrdersPage() {
     if (isAdmin) {
       fetchOrders()
     }
-  }, [statusFilter, isAdmin])
+  }, [statusFilter, isAdmin, searchQuery])
 
   const updateOrderStatus = async (orderId, newStatus) => {
     setUpdatingOrderId(orderId)
@@ -191,6 +198,13 @@ export default function AdminOrdersPage() {
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search by email or customer ID"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
           <span className="order-count">{orders.length} orders</span>
         </div>
 

@@ -81,6 +81,25 @@
   font-weight: 600;
 }
 
+/* Admin search input */
+.search-input {
+  flex: 0 1 280px;
+  padding: 0.5rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgba(10, 14, 26, 0.6);
+  color: #f8fafc;
+  font-size: 1rem;
+}
+.search-input::placeholder {
+  color: #94a3b8;
+}
+.search-input:focus {
+  outline: none;
+  border-color: rgba(251, 191, 36, 0.7);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
 .orders-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
