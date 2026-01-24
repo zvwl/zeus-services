@@ -168,16 +168,23 @@ function App() {
     setCheckoutStatus({ state: 'loading', message: 'Placing order...' })
 
     try {
-      const { data: userResult } = await supabase.auth.getUser()
-      const authedUser = userResult?.user
+      // Ensure we have a fresh authenticated session and user
+      const { data: sessionData } = await supabase.auth.getSession()
+      const sessionUser = sessionData?.session?.user
+      if (!sessionUser?.id) {
+        setCheckoutStatus({ state: 'error', message: 'Your session expired. Please log in again.' })
+        navigate('/login')
+        return
+      }
 
       const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
       const totalConverted = convertAmount(totalUsd)
 
       const orderPayload = {
-        user_id: authedUser?.id ?? null,
-        customer_email: authedUser?.email ?? user.email,
-        customer_name: authedUser?.user_metadata?.name ?? user.name ?? null,
+        // RLS requires user_id to match auth.uid()
+        user_id: sessionUser.id,
+        customer_email: sessionUser.email ?? user.email,
+        customer_name: sessionUser.user_metadata?.name ?? user.name ?? null,
         items: cartItems.map(({ id, name, platform, quantity, price }) => ({
           id,
           name,
@@ -206,7 +213,11 @@ function App() {
         .single()
 
       if (error) {
-        setCheckoutStatus({ state: 'error', message: error.message })
+        // Provide clearer hint when RLS blocks the insert
+        const msg = error.message?.includes('row-level security')
+          ? 'Access denied by security policy. Please log out and log back in, then try again.'
+          : error.message
+        setCheckoutStatus({ state: 'error', message: msg })
         return
       }
 
