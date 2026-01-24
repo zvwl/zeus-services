@@ -232,12 +232,12 @@ export default function AdminOrdersPage() {
                     Cancel & Refund
                   </button>
                 </div>
-                  </div>
-                  <div className="detail-row">
-                    <span className="label">Payment:</span>
-                    <span className={`value payment-${order.payment_status}`}>
-                      {order.payment_status}
-                    </span>
+                <div className="detail-row">
+                  <span className="label">Payment:</span>
+                  <span className={`value payment-${order.payment_status}`}>
+                    {order.payment_status}
+                  </span>
+                </div>
                   </div>
                 </div>
 
