@@ -17,7 +17,7 @@ export default function AdminOrdersPage() {
     setUpdatingOrderId(orderId);
     setError('');
     try {
-      const response = await fetch('https://<YOUR_PROJECT_REF>.functions.supabase.co/refund-order', {
+      const response = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/refund-order', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
