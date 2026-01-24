@@ -89,16 +89,20 @@ export default function AdminOrdersPage() {
         query = query.eq('status', statusFilter)
       }
 
-      // Apply search by customer email or user ID (case-insensitive)
+      // Apply search by email, user ID, or order ID
       const q = searchDebounced.trim()
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
       if (q) {
-        // If query looks like a full UUID, match directly on user_id or order id
         if (uuidRegex.test(q)) {
+          // Full UUID: narrow on server by id/user_id and allow email match too
           query = query.or(`user_id.eq.${q},id.eq.${q},customer_email.ilike.%${q}%`)
         } else {
-          // Otherwise search by email only (safe for ilike)
-          query = query.or(`customer_email.ilike.%${q}%`)
+          // Non-UUID: only apply server-side email ilike if the query looks like email
+          const isEmailLike = q.includes('@')
+          if (isEmailLike) {
+            query = query.or(`customer_email.ilike.%${q}%`)
+          }
+          // Otherwise, skip server-side search filters to allow client-side partial ID matching
         }
       }
 
@@ -106,11 +110,14 @@ export default function AdminOrdersPage() {
 
       if (error) throw error
 
-      // If q is a non-UUID string, also allow partial match on order ID client-side
+      // Client-side matching for non-UUID: partial order ID or email
       let results = data || []
       if (q && !uuidRegex.test(q)) {
         const qLower = q.toLowerCase()
-        results = results.filter(o => String(o.id || '').toLowerCase().includes(qLower))
+        results = results.filter(o => (
+          String(o.id || '').toLowerCase().includes(qLower) ||
+          String(o.customer_email || '').toLowerCase().includes(qLower)
+        ))
       }
 
       setOrders(results)
@@ -224,7 +231,7 @@ export default function AdminOrdersPage() {
           <input
             type="text"
             className="search-input"
-            placeholder="Search by email or customer ID"
+            placeholder="Search by email, user ID, or order ID"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             onKeyDown={(e) => {
@@ -258,7 +265,7 @@ export default function AdminOrdersPage() {
                 <div className="order-header">
                   <div className="order-id">
                     <span className="label">Order ID:</span>
-                    <span className="value">{order.id.slice(0, 8)}</span>
+                    <span className="value" title={order.id}>{order.id.slice(0, 8)}</span>
                   </div>
                   <span className={`status-badge status-${order.status}`}>
                     {order.status}
