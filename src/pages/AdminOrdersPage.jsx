@@ -13,11 +13,28 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
   const [updatingOrderId, setUpdatingOrderId] = useState(null)
+  const [confirmDialog, setConfirmDialog] = useState({
+    isOpen: false,
+    orderId: null,
+    action: null, // 'refund' or 'cancel'
+    orderInfo: null
+  })
 
-  // Refund handler
+  // Show confirmation dialog for refund
+  const openRefundConfirmation = (order) => {
+    setConfirmDialog({
+      isOpen: true,
+      orderId: order.id,
+      action: 'refund',
+      orderInfo: order
+    });
+  };
+
+  // Refund handler (after confirmation)
   const handleRefundOrder = async (orderId) => {
     setUpdatingOrderId(orderId);
     setError('');
+    setConfirmDialog({ isOpen: false, orderId: null, action: null, orderInfo: null });
     try {
       // Get the current session access token
       const session = await supabase.auth.getSession();
@@ -43,6 +60,22 @@ export default function AdminOrdersPage() {
     } finally {
       setUpdatingOrderId(null);
     }
+  };
+
+  // Show confirmation dialog for cancel without refund
+  const openCancelConfirmation = (order) => {
+    setConfirmDialog({
+      isOpen: true,
+      orderId: order.id,
+      action: 'cancel',
+      orderInfo: order
+    });
+  };
+
+  // Cancel without refund handler (after confirmation)
+  const handleCancelOrder = async (orderId) => {
+    setConfirmDialog({ isOpen: false, orderId: null, action: null, orderInfo: null });
+    await updateOrderStatus(orderId, 'cancelled');
   };
 
   useEffect(() => {
@@ -297,7 +330,7 @@ export default function AdminOrdersPage() {
                     <button
                       className="cancel-order-btn"
                       disabled={order.status === 'cancelled' || updatingOrderId === order.id || order.payment_status === 'refunded'}
-                      onClick={() => handleRefundOrder(order.id)}
+                      onClick={() => openRefundConfirmation(order)}
                       title={order.payment_status === 'refunded' ? 'Order already refunded' : 'Cancel order and issue refund via Stripe'}
                     >
                       {order.payment_status === 'refunded' ? 'Refunded' : 'Cancel & Refund'}
@@ -306,7 +339,7 @@ export default function AdminOrdersPage() {
                       <button
                         className="cancel-no-refund-btn"
                         disabled={updatingOrderId === order.id}
-                        onClick={() => updateOrderStatus(order.id, 'cancelled')}
+                        onClick={() => openCancelConfirmation(order)}
                         title="Cancel order without issuing refund (customer forfeits payment)"
                       >
                         Cancel Only
@@ -349,6 +382,52 @@ export default function AdminOrdersPage() {
           </div>
         )}
       </div>
+
+      {/* Confirmation Dialog */}
+      {confirmDialog.isOpen && (
+        <div className="modal-overlay" onClick={() => setConfirmDialog({ isOpen: false, orderId: null, action: null, orderInfo: null })}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Confirm Action</h2>
+            <div className="modal-body">
+              <p>
+                Are you sure you want to {confirmDialog.action === 'refund' ? 'cancel and refund' : 'cancel'} this order?
+              </p>
+              <div className="order-summary">
+                <p><strong>Order ID:</strong> {confirmDialog.orderInfo?.id.slice(0, 12)}...</p>
+                <p><strong>Customer Email:</strong> {confirmDialog.orderInfo?.customer_email || 'Unknown'}</p>
+                <p><strong>Customer Name:</strong> {confirmDialog.orderInfo?.customer_name || 'Not provided'}</p>
+                <p><strong>Total Amount:</strong> {formatCurrency(confirmDialog.orderInfo?.total_amount, confirmDialog.orderInfo?.currency)}</p>
+              </div>
+              {confirmDialog.action === 'refund' && (
+                <p className="refund-warning">⚠️ This will issue a refund to the customer's original payment method.</p>
+              )}
+              {confirmDialog.action === 'cancel' && (
+                <p className="cancel-warning">⚠️ This will cancel the order WITHOUT refunding the customer.</p>
+              )}
+            </div>
+            <div className="modal-actions">
+              <button
+                className="btn-cancel"
+                onClick={() => setConfirmDialog({ isOpen: false, orderId: null, action: null, orderInfo: null })}
+              >
+                No, Keep Order
+              </button>
+              <button
+                className={`btn-confirm ${confirmDialog.action}`}
+                onClick={() => {
+                  if (confirmDialog.action === 'refund') {
+                    handleRefundOrder(confirmDialog.orderId);
+                  } else if (confirmDialog.action === 'cancel') {
+                    handleCancelOrder(confirmDialog.orderId);
+                  }
+                }}
+              >
+                Yes, {confirmDialog.action === 'refund' ? 'Cancel & Refund' : 'Cancel Only'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }
