@@ -5,163 +5,244 @@ export default function TermsPage() {
   return (
     <section className="section terms-page">
       <div className="terms-container">
-        <h1>Terms & Conditions</h1>
-        <p className="last-updated">Last updated: January 2026</p>
+        <h1>Terms of Service</h1>
+        <p className="last-updated">Last Updated: January 2026</p>
 
         <div className="terms-content">
           <section className="terms-section">
-            <h2>1. Agreement to Terms</h2>
+            <h2>Agreement to Terms</h2>
             <p>
-              By accessing and using Zeus Services, you agree to be bound by these Terms & Conditions. 
-              If you do not agree to abide by these terms, please do not use this service.
+              By accessing, browsing, or purchasing from <strong>Zeus Services</strong> ("we", "us", "our"), 
+              you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, 
+              you must not use our website or services.
             </p>
           </section>
 
           <section className="terms-section">
-            <h2>2. Description of Service</h2>
+            <h2>1. Nature of Our Services</h2>
             <p>
-              Zeus Services provides GTA Online account services and account modifications. Our services include:
+              Zeus Services provides <strong>digital in-game services and/or modded accounts for GTA Online (PC)</strong>. 
+              All services are delivered digitally and are considered <strong>intangible goods</strong> once started or completed.
+            </p>
+          </section>
+
+          <section className="terms-section critical">
+            <h2>2. Rockstar Games Disclaimer & Risk Acceptance</h2>
+            <p>
+              <strong>CRITICAL:</strong> Purchasing modded accounts or modding services is <strong>against Rockstar Games' Terms of Service</strong>.
             </p>
             <ul>
-              <li>Account boosts (cash, level, unlocks, etc.)</li>
-              <li>Account modifications and services (custom outfits, vehicles, properties)</li>
-              <li>Pre-made modded accounts</li>
+              <li>Zeus Services is <strong>NOT affiliated with, endorsed by, or associated with Rockstar Games</strong> in any way</li>
+              <li>Rockstar Games actively enforces their ToS against modded accounts and modifications</li>
+              <li>We cannot prevent, predict, or guarantee protection against Rockstar Games enforcement</li>
             </ul>
             <p>
-              All services are delivered manually through Discord after payment confirmation. You must already own 
-              GTA V / GTA Online on your chosen platform before purchasing our services.
-            </p>
-          </section>
-
-          <section className="terms-section">
-            <h2>3. User Responsibility & Account Ownership</h2>
-            <p>
-              By purchasing our services, you acknowledge and agree that:
+              By purchasing from us, you <strong>fully acknowledge and accept</strong> that:
             </p>
             <ul>
-              <li>You own the GTA Online account and have the right to use our services on it</li>
-              <li>You are solely responsible for maintaining the security of your account</li>
-              <li>You are the sole owner of the account and have the authority to grant us temporary access if required for service delivery</li>
-              <li>Zeus Services is not responsible for any unauthorized access, account lockouts, or security breaches that occur after we deliver our services</li>
-            </ul>
-          </section>
-
-          <section className="terms-section">
-            <h2>4. Account Moderation Risk & Limitations</h2>
-            <p>
-              We take measures to ensure account security and reliability. However, you acknowledge that:
-            </p>
-            <ul>
-              <li>Account moderation policies are enforced by Rockstar Games and are beyond our control</li>
-              <li>While we craft orders carefully and use safe methods, the use of any modified accounts or services carries inherent risk</li>
-              <li>Any negative implications (such as account restrictions, bans, or resets) are the sole responsibility of the account owner</li>
-              <li>We cannot guarantee immunity from account moderation actions taken by Rockstar Games</li>
-              <li>Zeus Services bears no responsibility for account-related issues that arise after delivery of services or accounts</li>
+              <li>Your account may be <strong>reset, suspended, or permanently banned</strong></li>
+              <li>Rockstar Games may take enforcement action <strong>at any time</strong> without warning</li>
+              <li>These consequences are <strong>entirely outside our control</strong></li>
+              <li>We cannot reverse Rockstar Games actions or provide compensation for them</li>
             </ul>
             <p>
-              If an account receives a ban after our service is delivered, we will provide one free account restoration service. 
-              However, we cannot purchase a game key for you if your game license is lost or restricted.
+              <strong>You proceed at your own risk and accept full responsibility for any outcomes.</strong>
             </p>
           </section>
 
           <section className="terms-section">
-            <h2>5. After-Delivery Accountability</h2>
+            <h2>3. No Refund Policy (Important)</h2>
             <p>
-              Once we provide you with full account access details and deliver our services:
+              <strong>ALL SALES ARE FINAL</strong>
+            </p>
+            <p>
+              <strong>NO refunds</strong> are provided under any circumstances, including but not limited to:
             </p>
             <ul>
-              <li>We are not responsible for account lockouts caused by incorrect login attempts or compromised credentials</li>
-              <li>We are not responsible for account restrictions due to suspicious activity on the account</li>
-              <li>We are not liable for any issues arising from your or third-party actions on the account after delivery</li>
-              <li>We are not responsible if you share your account details with unauthorized users</li>
-              <li>Any service disruptions, game updates, or Rockstar policy changes are not our responsibility</li>
-            </ul>
-          </section>
-
-          <section className="terms-section">
-            <h2>6. Account Services vs. Pre-Made Accounts</h2>
-            <p>
-              <strong>Account Services (Boosts, Outfits, Vehicles, Cash):</strong>
-              Applied to your existing account. You must provide login access. If the service ends up not working 
-              (e.g., items disappear, modifiers reset), we will provide a free re-service. Refunds are not available 
-              for account services—you may request cancellation only before delivery begins.
-            </p>
-            <p>
-              <strong>Pre-Made Accounts:</strong>
-              Fully prepared accounts with built-in modifications delivered to you via Discord. Once we provide you 
-              with the account details, we are not responsible for subsequent account lockouts, bans, or any other 
-              issues that occur after we hand over the account. We bear no responsibility for what happens to the 
-              account after successful delivery. Refunds are not available. See our Refund Policy for more details.
-            </p>
-          </section>
-
-          <section className="terms-section">
-            <h2>7. Payment & Refund Policy</h2>
-            <p>
-              All payments are processed through Stripe and are final. Please see our <a href="/refund">Refund Policy</a> for 
-              detailed information about refunds, cancellations, and our money-back guarantee.
-            </p>
-          </section>
-
-          <section className="terms-section">
-            <h2>8. Dispute Resolution & Communication</h2>
-            <p>
-              All communication regarding orders, disputes, and support is handled exclusively through Discord. 
-              By using Zeus Services, you agree to resolve any disputes through Discord discussion with our team. 
-              We maintain full chat history for transparency and accountability.
-            </p>
-          </section>
-
-          <section className="terms-section">
-            <h2>9. Limitation of Liability</h2>
-            <p>
-              Zeus Services is provided on an "as-is" basis. We are not liable for:
-            </p>
-            <ul>
-              <li>Any indirect, incidental, or consequential damages</li>
-              <li>Loss of game access, virtual currency, or items due to account moderation</li>
-              <li>Third-party actions or Rockstar Games policy changes</li>
-              <li>Any service interruptions or delays</li>
+              <li>Account bans, suspensions, or resets</li>
+              <li>Failure to follow instructions</li>
+              <li>Buyer regret or change of mind</li>
+              <li>Delays caused by the buyer</li>
+              <li>Rockstar Games enforcement actions</li>
+              <li>Service incompleteness due to buyer factors</li>
             </ul>
             <p>
-              Our total liability is limited to the amount you paid for the service.
+              Once a service has been started or completed, it is considered <strong>fulfilled</strong>.
             </p>
           </section>
 
           <section className="terms-section">
-            <h2>10. Prohibited Uses</h2>
+            <h2>4. Free Recovery / Compensation Policy</h2>
             <p>
-              You agree not to:
+              We may offer <strong>free recovery services only if</strong> the buyer strictly follows our guidance.
             </p>
+            <h3>Daily Cash Safety Guidelines:</h3>
             <ul>
-              <li>Use our services for accounts you do not own or have authorization to modify</li>
-              <li>Share account details provided to unauthorized third parties if they are not the account owner</li>
-              <li>Resell or redistribute pre-made accounts</li>
-              <li>Hold Zeus Services liable for misuse of our services after delivery</li>
+              <li><strong>30–50 million GTA$ per day maximum</strong> is the recommended safe limit</li>
+              <li>Exceeding this daily limit significantly increases ban risk</li>
+            </ul>
+            <h3>Free Service Eligibility:</h3>
+            <ul>
+              <li>If you follow our daily cash guidance AND receive a ban → you <strong>may</strong> be eligible for a <strong>free one-time service</strong></li>
+              <li>If you <strong>exceed</strong> the daily cash limit → <strong>no free service will be provided</strong></li>
+              <li>Any ban caused by ignoring instructions → buyer accepts full responsibility</li>
             </ul>
           </section>
 
           <section className="terms-section">
-            <h2>11. Modification of Terms</h2>
+            <h2>5. Service Delivery & Queue System</h2>
+            <ul>
+              <li>All services are handled using a <strong>queue-based system</strong></li>
+              <li>Orders are completed <strong>in the order they are received</strong></li>
+              <li>Delivery times are <strong>estimates only</strong> and are <strong>not guaranteed</strong></li>
+            </ul>
+            <h3>Service Hours:</h3>
             <p>
-              Zeus Services reserves the right to modify these terms at any time. Changes become effective 
-              immediately upon posting. Your continued use of the service after changes indicates acceptance.
+              We are fully operational <strong>daily from 6:00 PM to 1:00 AM (UK time)</strong>.
+            </p>
+            <p>
+              Orders placed outside these hours will be processed during the next service window.
             </p>
           </section>
 
           <section className="terms-section">
-            <h2>12. Contact</h2>
+            <h2>6. Discord Ticket Requirement (Mandatory)</h2>
             <p>
-              For questions about these Terms & Conditions, please contact us via Discord or email support.
+              <strong>After purchasing, the buyer MUST open a ticket in our official Discord server.</strong>
+            </p>
+            <p>
+              The ticket must include:
+            </p>
+            <ul>
+              <li>Order ID / proof of purchase</li>
+              <li>Platform (PC)</li>
+              <li>Account login details (as requested)</li>
+              <li>Clear description of what is to be done on the account</li>
+              <li>Confirmation of availability during service hours</li>
+            </ul>
+            <p>
+              <strong>Services will NOT begin until a valid ticket is opened.</strong>
+            </p>
+          </section>
+
+          <section className="terms-section">
+            <h2>7. Two-Factor Authentication (2FA) & Buyer Availability</h2>
+            <p>
+              To complete services, <strong>temporary account access is required</strong>, including <strong>2FA codes</strong>.
+            </p>
+            <p>
+              By purchasing, you agree that:
+            </p>
+            <ul>
+              <li>2FA codes may be required from:
+                <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+                  <li>Your platform (e.g., Steam, Epic Games, Rockstar Launcher)</li>
+                  <li>Email authentication if set up on your account</li>
+                </ul>
+              </li>
+              <li>You must be <strong>actively available</strong> to provide these codes in a timely manner</li>
+              <li>Delays caused by missing or late 2FA codes are the <strong>buyer's responsibility</strong></li>
+              <li>If you cannot be reached for 2FA verification, the service will be paused</li>
+            </ul>
+          </section>
+
+          <section className="terms-section">
+            <h2>8. Unresponsiveness & Order Cancellation</h2>
+            <p>
+              If a buyer becomes <strong>unresponsive for more than 24 hours</strong>, including failure to:
+            </p>
+            <ul>
+              <li>Provide login details</li>
+              <li>Provide required 2FA codes</li>
+              <li>Respond to staff messages in Discord</li>
+              <li>Confirm account access or service details</li>
+            </ul>
+            <p>
+              Then:
+            </p>
+            <ul>
+              <li>The order will be considered <strong>abandoned</strong></li>
+              <li>The order will be <strong>cancelled without notice</strong></li>
+              <li><strong>NO refund will be issued</strong></li>
+            </ul>
+          </section>
+
+          <section className="terms-section">
+            <h2>9. Buyer Responsibilities</h2>
+            <p>
+              By purchasing, you agree that:
+            </p>
+            <ul>
+              <li>You understand and accept <strong>ALL risks</strong> associated with modded accounts</li>
+              <li>You will follow <strong>all instructions</strong> provided by our team</li>
+              <li>You will provide <strong>correct and complete information</strong></li>
+              <li>You will not attempt fraud, chargebacks, disputes, or payment reversals</li>
+              <li>You will not resell or redistribute accounts or services to third parties</li>
+            </ul>
+            <p>
+              Any abuse of payment systems (Stripe, banks, payment disputes, etc.) will result in:
+            </p>
+            <ul>
+              <li>Permanent refusal of service</li>
+              <li>Evidence submitted to the payment provider</li>
+              <li>Possible legal action</li>
+            </ul>
+          </section>
+
+          <section className="terms-section">
+            <h2>10. Account Security</h2>
+            <ul>
+              <li>Login details are used <strong>only</strong> to complete the service</li>
+              <li>Credentials are <strong>not stored</strong> after completion</li>
+              <li>Buyers are strongly advised to <strong>change passwords immediately after service delivery</strong></li>
+              <li>Zeus Services is not responsible for issues caused by:
+                <ul style={{ marginLeft: '1.5rem', marginTop: '0.5rem' }}>
+                  <li>Incorrect login details provided by buyer</li>
+                  <li>Buyer-side password changes during service</li>
+                  <li>Email compromises or account takeovers</li>
+                  <li>Delayed responses to security prompts</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+
+          <section className="terms-section">
+            <h2>11. Right to Refuse Service</h2>
+            <p>
+              We reserve the right to refuse or terminate service to anyone at our discretion, without obligation 
+              to provide a reason. This includes but is not limited to:
+            </p>
+            <ul>
+              <li>Suspicious account activity or fraud indicators</li>
+              <li>Payment disputes or chargebacks</li>
+              <li>Abusive communication</li>
+              <li>Violation of any terms in this agreement</li>
+            </ul>
+          </section>
+
+          <section className="terms-section">
+            <h2>12. Changes to These Terms</h2>
+            <p>
+              We reserve the right to update or modify these Terms of Service at any time. 
+              Continued use of the website or services constitutes acceptance of the updated terms.
+            </p>
+          </section>
+
+          <section className="terms-section">
+            <h2>13. Contact & Support</h2>
+            <p>
+              Support is provided <strong>exclusively through our official Discord server</strong> and designated support channels.
+            </p>
+            <p>
+              Email support may be available for account recovery or billing inquiries only.
             </p>
           </section>
 
           <section className="terms-section disclaimer">
             <p>
-              <strong>Disclaimer:</strong> Zeus Services operates independently. We are not affiliated with, endorsed by, 
-              or in partnership with Rockstar Games. GTA Online is a registered trademark of Rockstar Games. 
-              Users acknowledge that using our services may violate Rockstar Games' Terms of Service, and Zeus Services 
-              bears no responsibility for actions taken by Rockstar Games against your account.
+              <strong>DISCLAIMER:</strong> By completing a purchase, you explicitly acknowledge that you have read, 
+              understood, and agree to all terms outlined above, including the risks associated with modded accounts, 
+              the final nature of all sales, and the potential for Rockstar Games enforcement actions.
             </p>
           </section>
         </div>

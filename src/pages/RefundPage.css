@@ -76,12 +76,21 @@
   color: #f59e0b;
 }
 
-.refund-section.disclaimer {
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(59, 130, 246, 0.1));
-  border: 1px solid rgba(251, 191, 36, 0.3);
+.refund-section.critical {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(251, 191, 36, 0.15));
+  border: 2px solid rgba(239, 68, 68, 0.5);
   border-radius: 12px;
   padding: 1.5rem;
-  margin-top: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.refund-section.critical h2 {
+  color: #fca5a5;
+}
+
+.refund-section.critical ul li {
+  color: #e2e8f0;
+  font-weight: 500;
 }
 
 .refund-section.disclaimer p {
