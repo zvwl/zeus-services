@@ -4,6 +4,7 @@ import { useAuth } from './contexts/AuthContext'
 import './App.css'
 import { supabase } from './supabaseClient'
 import Header from './components/Header'
+import Footer from './components/Footer'
 import Home from './pages/Home'
 import ServicesPage from './pages/Services'
 import ServiceDetail from './pages/ServiceDetail'
@@ -450,7 +451,35 @@ function App() {
           path="/reset-password"
           element={<ResetPasswordPage />}
         />
+        <Route
+          path="/terms"
+          element={(
+            <PlaceholderPage
+              title="Terms & Conditions"
+              description="Our terms of service and user agreement."
+            />
+          )}
+        />
+        <Route
+          path="/privacy"
+          element={(
+            <PlaceholderPage
+              title="Privacy Policy"
+              description="How we collect, use, and protect your personal information."
+            />
+          )}
+        />
+        <Route
+          path="/refund"
+          element={(
+            <PlaceholderPage
+              title="Refund Policy"
+              description="Information about refunds, cancellations, and our guarantee."
+            />
+          )}
+        />
       </Routes>
+      <Footer />
     </div>
   )
 }
