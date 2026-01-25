@@ -145,69 +145,84 @@ function App() {
       id: 1,
       name: '🚗 50 Modded Cars',
       price: 3.00,
-      description: '🚗 Fully customized vehicles delivered in minutes. Includes a variety of sports cars, supercars, and unique vehicles ready to dominate the streets of Los Santos.',
+      description: 'Get 50 fully customized modded vehicles added to your account. Delivered manually within 30 minutes to 12 hours.',
       icon: '🚗',
       platforms: platformOptions,
       details: [
         '📌 You must already own GTA V / GTA Online before purchasing',
-        '💥 50 Modded Cars included',
-        '✅ Completed within 20-5 hours',
-        '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
+        '💥 What\'s Included:',
+        '  🚗 50 Modded Cars of your choice',
+        '⏱️ Delivery:',
+        '  ✅ Completed within 30 minutes to 12 hours',
+        '  🔑 Login access required',
+        '  💬 We\'ll contact you via Discord with full instructions',
+        '⚠️ Important:',
+        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
       ]
     },
     {
       id: 2,
       name: '👕 20 Modded Outfits',
       price: 3.00,
-      description: '🎨 Stylish modded outfits to make your character stand out.',
+      description: 'Get 20 premium modded outfits to make your character stand out. Delivered manually within 30 minutes to 12 hours.',
       icon: '👕',
       platforms: platformOptions,
       details: [
         '📌 You must already own GTA V / GTA Online before purchasing',
-        '💥 20 Premium Modded Outfits included',
-        '✅ Completed within 20-5 hours',
-        '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
+        '💥 What\'s Included:',
+        '  👕 20 Premium Modded Outfits',
+        '⏱️ Delivery:',
+        '  ✅ Completed within 30 minutes to 12 hours',
+        '  🔑 Login access required',
+        '  💬 We\'ll contact you via Discord with full instructions',
+        '⚠️ Important:',
+        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
       ]
     },
     {
       id: 3,
       name: '💸 Custom Cash',
       price: 3.00,
-      description: '💰 Add any amount of custom cash to your account. 30m-50m recommended per 24h for safety, but you choose the amount that works for you.',
+      description: 'Add any amount of custom cash to your account (30m–50m recommended per 24 hours for safety). Delivered manually within 30 minutes to 12 hours.',
       icon: '💸',
       platforms: platformOptions,
       details: [
         '📌 You must already own GTA V / GTA Online before purchasing',
-        '💥 Custom cash amount of your choice (30m-50m recommended per 24h)',
-        '✅ Completed within 20-5 hours',
-        '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
+        '💥 What\'s Included:',
+        '  💰 Any amount of custom cash (30m–50m recommended per 24 hours, your choice)',
+        '⏱️ Delivery:',
+        '  ✅ Completed within 30 minutes to 12 hours',
+        '  🔑 Login access required',
+        '  💬 We\'ll contact you via Discord with full instructions',
+        '⚠️ Important:',
+        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
       ]
     },
     {
       id: 4,
       name: '💸 Ultimate GTA Package',
       price: 6.00,
-      description: '⚡ The complete GTA Online transformation! Custom cash, max level, all unlocks, fast run, premium outfits, modded cars, and all properties. Everything you need for the ultimate account.',
+      description: 'The complete GTA Online transformation! Custom cash, max level, all unlocks, fast run, premium outfits, modded cars, and all properties. Delivered manually within 1–24 hours.',
       icon: '⚡',
       platforms: platformOptions,
       details: [
         '📌 You must already own GTA V / GTA Online before purchasing',
         '💥 What\'s Included:',
-        '  💰 Custom cash amount (50m recommended per 24h)',
+        '  💰 Custom cash amount (50m recommended per 24 hours, your choice)',
         '  📈 Level 1–8000 of your choice',
         '  🔥 All stats maxed out',
-        '  🔓 All content unlocked + achievements',
+        '  🔓 All content unlocked + all achievements',
         '  🏃 Fast run enabled',
         '  🎯 Customizable K/D ratio, account creation date & playtime',
         '  👕 Premium modded outfits',
         '  🚗 Any vehicles of your choice',
         '  🏡 All businesses & properties purchased',
-        '✅ Completed within 20-5 hours',
-        '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
+        '⏱️ Delivery:',
+        '  ✅ Completed within 1–24 hours',
+        '  🔑 Login access required',
+        '  💬 We\'ll contact you via Discord with full instructions',
+        '⚠️ Important:',
+        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
       ]
     }
   ]
