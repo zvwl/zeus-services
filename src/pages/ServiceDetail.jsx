@@ -64,17 +64,21 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   }, [cartItems, service.id, platform, version])
 
   const handleAddToCart = () => {
+    console.log('handleAddToCart called - user:', user, 'platform:', platform, 'version:', version)
     if (!user) {
       // Save pending cart item before redirecting to login
       if (!platform || !version) {
+        console.log('Missing platform or version - platform:', platform, 'version:', version)
         alert('Please select a platform and version first')
         return
       }
       const fullPlatform = `${platform} ${version}`
+      console.log('Saving pending item - serviceId:', service.id, 'platform:', fullPlatform)
       localStorage.setItem('pendingCartItem', JSON.stringify({
         serviceId: service.id,
         platform: fullPlatform
       }))
+      console.log('Pending item saved, checking localStorage:', localStorage.getItem('pendingCartItem'))
       navigate('/login')
       return
     }
