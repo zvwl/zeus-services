@@ -316,11 +316,6 @@ function App() {
           element={(
             <ServicesPage
               services={services}
-              cartItems={cartItems}
-              addToCart={addToCart}
-              removeFromCart={removeFromCart}
-              updateQuantity={updateQuantity}
-              currency={currency}
               formatPrice={formatPrice}
             />
           )}
