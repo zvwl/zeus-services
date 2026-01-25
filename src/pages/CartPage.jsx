@@ -9,32 +9,74 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
   const [searchParams, setSearchParams] = useSearchParams()
   const [orderDetails, setOrderDetails] = useState(null)
   const [loadingOrder, setLoadingOrder] = useState(false)
+  const [fetchError, setFetchError] = useState(null)
   const navigate = useNavigate()
 
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
-  const orderId = searchParams.get('orderId')
 
   useEffect(() => {
-    if (success === 'true' && orderId) {
-      // Clear the cart when showing order summary
+    if (success === 'true') {
+      // Clear the cart when payment successful
       if (clearCart && cartItems.length > 0) {
         clearCart()
       }
-      fetchOrderDetails(orderId)
+      // Fetch the most recent order (just created by Stripe webhook)
+      fetchMostRecentOrder()
     }
-  }, [success, orderId])
+  }, [success])
 
   // Show message if payment was cancelled
   useEffect(() => {
     if (canceled === 'true') {
-      // Optionally show a message or just clear the URL params
+      // Clear URL params after a moment
       const timer = setTimeout(() => {
         setSearchParams({})
       }, 100)
       return () => clearTimeout(timer)
     }
   }, [canceled])
+
+  const fetchMostRecentOrder = async () => {
+    try {
+      setLoadingOrder(true)
+      setFetchError(null)
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
+
+      if (!accessToken) {
+        throw new Error('Please log in to view your order')
+      }
+
+      // Fetch user's orders and get the most recent one
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orders`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+
+      const body = await res.json()
+      if (!res.ok || body?.error) {
+        throw new Error(body?.error || 'Failed to load order')
+      }
+
+      // Get the most recent order (first in the array, should be sorted by created_at desc)
+      const orders = body.orders || []
+      if (orders.length > 0) {
+        setOrderDetails(orders[0])
+      } else {
+        setFetchError('Order not found. It may still be processing.')
+      }
+    } catch (err) {
+      console.error('Error fetching order:', err)
+      setFetchError(err.message || 'Failed to load order')
+    } finally {
+      setLoadingOrder(false)
+    }
+  }
 
   const fetchOrderDetails = async (id) => {
     try {
@@ -94,12 +136,28 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
     }
   }
 
-  if (success === 'true' && orderId) {
+  if (success === 'true') {
     if (loadingOrder) {
       return (
         <section className="section services" id="cart">
           <div className="order-summary-container">
             <div className="loading-message">Loading order details...</div>
+          </div>
+        </section>
+      )
+    }
+
+    if (fetchError) {
+      return (
+        <section className="section services" id="cart">
+          <div className="order-summary-container">
+            <div className="error-message">
+              <p>{fetchError}</p>
+              <p>Your payment was successful. The order may take a moment to appear.</p>
+              <button onClick={() => navigate('/orders')} className="view-orders-btn">
+                View All Orders
+              </button>
+            </div>
           </div>
         </section>
       )
