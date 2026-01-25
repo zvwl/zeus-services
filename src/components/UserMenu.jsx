@@ -15,7 +15,7 @@ export default function UserMenu({ isOpen, onClose }) {
   const handleLogout = async () => {
     onClose()
     await logout()
-    // Page will reload automatically after logout
+    navigate('/login')
   }
 
   const isActive = (path) => location.pathname === path

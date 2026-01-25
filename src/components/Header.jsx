@@ -14,9 +14,9 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
 
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`
 
-  const handleLogout = () => {
-    logout()
-    navigate('/')
+  const handleLogout = async () => {
+    await logout()
+    navigate('/login')
   }
 
   return (
