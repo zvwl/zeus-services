@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import Cart from '../components/Cart'
 import '../App.css'
@@ -11,10 +12,18 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
   const [loadingOrder, setLoadingOrder] = useState(false)
   const [fetchError, setFetchError] = useState(null)
   const navigate = useNavigate()
+  const { user } = useAuth()
 
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
   const sessionId = searchParams.get('session_id')
+
+  // Redirect to home if user logs out while on success page
+  useEffect(() => {
+    if (success === 'true' && !user) {
+      navigate('/')
+    }
+  }, [user, success, navigate])
 
   useEffect(() => {
     if (success === 'true') {
