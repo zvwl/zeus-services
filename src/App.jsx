@@ -94,7 +94,7 @@ function App() {
         '💥 50 Modded Cars included',
         '✅ Completed within 20 minutes',
         '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
       ]
     },
     {
@@ -109,7 +109,7 @@ function App() {
         '💥 20 Premium Modded Outfits included',
         '✅ Completed within 20 minutes',
         '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
       ]
     },
     {
@@ -124,7 +124,7 @@ function App() {
         '💥 Custom cash amount of your choice (30m-50m recommended per 24h)',
         '✅ Completed within 20 minutes',
         '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
       ]
     },
     {
@@ -148,7 +148,7 @@ function App() {
         '  🏡 All businesses & properties purchased',
         '✅ Completed within 1–24 hours',
         '🔑 Login access required',
-        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided.'
       ]
     }
   ]
