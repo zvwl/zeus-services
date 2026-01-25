@@ -94,6 +94,22 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
               <p>Thank you for your order. We'll get started right away.</p>
             </div>
 
+            <div className="discord-cta">
+              <div className="discord-cta-text">
+                <strong>Need updates or have a question?</strong>
+                <span>Join our Discord and contact support for faster help.</span>
+              </div>
+              <a
+                href="https://discord.gg/NSNSmmaA"
+                className="discord-btn"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <img src="/discordLogo.png" alt="Discord" className="discord-btn-icon" />
+                Join our Discord
+              </a>
+            </div>
+
             <div className="order-summary-card">
               <div className="order-summary-header">
                 <div>
