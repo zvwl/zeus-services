@@ -111,6 +111,9 @@ Deno.serve(async (req) => {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as any;
+      console.log(`📦 [checkout.session.completed] Session:`, session.id);
+      console.log(`📦 Metadata:`, JSON.stringify(session.metadata));
+      
       const userId = session.metadata?.user_id;
       const itemsJson = session.metadata?.items;
       const totalAmount = session.metadata?.total_amount;
@@ -119,13 +122,23 @@ Deno.serve(async (req) => {
       const customerName = session.metadata?.customer_name;
       const notes = session.metadata?.notes;
 
+      console.log(`📦 Parsed - userId: ${userId}, totalAmount: ${totalAmount}, currency: ${currency}, email: ${customerEmail}`);
+
       if (!itemsJson || !totalAmount || !currency) {
         console.error("❌ Missing required metadata in checkout session");
+        console.error(`❌ itemsJson exists: ${!!itemsJson}, totalAmount exists: ${!!totalAmount}, currency exists: ${!!currency}`);
         return new Response("Missing metadata", { status: 400 });
       }
 
       // Parse items
-      const items = JSON.parse(itemsJson);
+      let items;
+      try {
+        items = JSON.parse(itemsJson);
+        console.log(`📦 Parsed ${items.length} items`);
+      } catch (parseErr) {
+        console.error("❌ Failed to parse items JSON:", parseErr);
+        return new Response("Invalid items metadata", { status: 400 });
+      }
 
       // Encrypt notes if provided
       let notesCiphertext = null;

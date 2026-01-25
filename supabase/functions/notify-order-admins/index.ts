@@ -82,11 +82,44 @@ Deno.serve(async (req) => {
 
   try {
     const body = await req.json();
-    const { order_id, customer_email, customer_name, total_amount, currency, items, payment_method, created_at } = body;
+    console.log("Received body:", JSON.stringify(body));
+    
+    const orderId = body.orderId || body.order_id;
+    console.log("Extracted orderId:", orderId);
+    
+    if (!orderId) {
+      console.error("Missing orderId in request body:", body);
+      return new Response(
+        JSON.stringify({ error: "Missing orderId" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Fetching order with ID:", orderId);
+    // Fetch the order details
+    const { data: order, error: orderError } = await supabase
+      .from("orders")
+      .select("*")
+      .eq("id", orderId)
+      .single();
+
+    console.log("Order fetch result - error:", orderError, "order:", order);
+    if (orderError || !order) {
+      console.error("Order not found:", orderId, orderError);
+      return new Response(
+        JSON.stringify({ error: "Order not found", details: orderError?.message }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    console.log("Order found:", order.id);
+    const order_id = order.id;
+    const { customer_email, customer_name, total_amount, currency, items, payment_method, created_at } = order;
 
     if (!order_id || !customer_email || !items) {
+      console.error("Missing required fields - order_id:", order_id, "email:", customer_email, "items:", items);
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Missing required fields in order" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
@@ -114,7 +147,10 @@ Deno.serve(async (req) => {
     }
 
     // Get emails for each admin user from auth.users
-    const emailPromises = admins.map(async (admin) => {
+    const emailPromises = admins.map(async (admin, index) => {
+      // Add 600ms delay between each email to avoid Resend rate limits (2 per second)
+      await new Promise(resolve => setTimeout(resolve, index * 600));
+      
       const { data: userData, error: userError } = await supabase.auth.admin.getUserById(admin.user_id);
       
       if (userError || !userData?.user?.email) {
