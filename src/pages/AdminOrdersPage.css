@@ -173,6 +173,12 @@
   gap: 1.5rem;
 }
 
+@media (max-width: 900px) {
+  .orders-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 .order-card {
   background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
   border: 2px solid rgba(251, 191, 36, 0.25);
@@ -542,6 +548,21 @@
 @media (max-width: 768px) {
   .orders-grid {
     grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .order-card {
+    padding: 1.25rem;
+  }
+
+  .order-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .status-badge {
+    align-self: flex-start;
   }
 
   .filter-bar {
@@ -552,6 +573,16 @@
   .order-count {
     margin-left: 0;
     text-align: center;
+  }
+
+  .detail-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .detail-row .value {
+    text-align: left;
   }
 }
 /* Confirmation Dialog Modal */
@@ -726,6 +757,14 @@
     padding: 1.5rem 0.75rem;
   }
 
+  .admin-header h1 {
+    font-size: 1.75rem;
+  }
+
+  .admin-header p {
+    font-size: 0.95rem;
+  }
+
   .filter-bar {
     flex-direction: column;
     gap: 0.75rem;
@@ -762,5 +801,27 @@
     font-size: 0.9rem;
     padding-top: 0.5rem;
     border-top: 1px solid rgba(251, 191, 36, 0.2);
+  }
+
+  .order-card {
+    padding: 1rem;
+  }
+
+  .order-id .value {
+    font-size: 0.9rem;
+    word-break: break-all;
+  }
+
+  .customer-info {
+    padding: 0.75rem;
+  }
+
+  .order-items-list {
+    padding: 0.75rem;
+  }
+
+  .action-buttons button {
+    padding: 0.7rem 1rem;
+    font-size: 0.85rem;
   }
 }
