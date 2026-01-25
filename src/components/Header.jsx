@@ -4,10 +4,13 @@ import { useAuth } from '../contexts/AuthContext'
 import UserMenu from './UserMenu'
 import './Header.css'
 
-export default function Header({ cartCount, currency }) {
+export default function Header({ cartCount, currency, onCurrencyChange }) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
+
+  const currencies = ['GBP', 'USD', 'EUR']
 
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`
 
@@ -34,8 +37,25 @@ export default function Header({ cartCount, currency }) {
         </nav>
 
         <div className="nav-actions">
-          <div className="currency-badge">
+          <div className="currency-badge" onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}>
             {currency}
+            {isCurrencyOpen && (
+              <div className="currency-dropdown">
+                {currencies.map((curr) => (
+                  <button
+                    key={curr}
+                    className={`currency-option ${curr === currency ? 'active' : ''}`}
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onCurrencyChange?.(curr)
+                      setIsCurrencyOpen(false)
+                    }}
+                  >
+                    {curr}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <a

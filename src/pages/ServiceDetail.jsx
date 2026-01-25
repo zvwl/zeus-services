@@ -8,6 +8,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   const navigate = useNavigate()
   const location = useLocation()
   const [platform, setPlatform] = useState('')
+  const [version, setVersion] = useState('')
   const { user, emailVerified, resendVerificationEmail } = useAuth()
   const [verificationMessage, setVerificationMessage] = useState('')
 
@@ -26,11 +27,12 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   }
 
   const cartItem = useMemo(() => {
-    if (!platform) return null
+    if (!platform || !version) return null
+    const fullPlatform = `${platform} ${version}`
     return cartItems.find(item => 
-      item.id === service.id && item.platform === platform
+      item.id === service.id && item.platform === fullPlatform
     )
-  }, [cartItems, service.id, platform])
+  }, [cartItems, service.id, platform, version])
 
   const handleAddToCart = () => {
     if (!user) {
@@ -42,8 +44,9 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
       setTimeout(() => setVerificationMessage(''), 5000)
       return
     }
-    if (!platform) return
-    addToCart(service, platform)
+    if (!platform || !version) return
+    const fullPlatform = `${platform} ${version}`
+    addToCart(service, fullPlatform)
     setVerificationMessage('✓ Added to cart!')
     setTimeout(() => setVerificationMessage(''), 3000)
   }
@@ -59,6 +62,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
       if (cartItem.quantity === 1) {
         removeFromCart(cartItem.cartId)
         setPlatform('')
+        setVersion('')
       } else {
         updateQuantity(cartItem.cartId, cartItem.quantity - 1)
       }
@@ -154,7 +158,10 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
               <select
                 className="platform-select"
                 value={platform}
-                onChange={(e) => setPlatform(e.target.value)}
+                onChange={(e) => {
+                  setPlatform(e.target.value)
+                  setVersion('') // Reset version when platform changes
+                }}
                 style={{
                   width: '100%',
                   padding: '0.75rem',
@@ -171,6 +178,32 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
+
+              {platform && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ color: '#cbd5e1', fontWeight: '600', fontSize: '0.95rem', display: 'block', marginBottom: '0.5rem' }}>
+                    Choose a version
+                  </label>
+                  <select
+                    className="version-select"
+                    value={version}
+                    onChange={(e) => setVersion(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      borderRadius: '10px',
+                      border: '1px solid rgba(251, 191, 36, 0.3)',
+                      background: 'rgba(10, 14, 26, 0.9)',
+                      color: '#f8fafc',
+                      fontWeight: '600'
+                    }}
+                  >
+                    <option value="">Select a version</option>
+                    <option value="Legacy">Legacy</option>
+                    <option value="Enhanced">Enhanced</option>
+                  </select>
+                </div>
+              )}
             </div>
 
             <div style={{
@@ -195,10 +228,10 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                 <button
                   className="add-to-cart-btn"
                   onClick={handleAddToCart}
-                  disabled={!platform}
+                  disabled={!platform || !version}
                   style={{
-                    opacity: !platform ? 0.5 : 1,
-                    cursor: !platform ? 'not-allowed' : 'pointer'
+                    opacity: !platform || !version ? 0.5 : 1,
+                    cursor: !platform || !version ? 'not-allowed' : 'pointer'
                   }}
                 >
                   Add to Cart

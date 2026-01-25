@@ -75,9 +75,7 @@ Deno.serve(async (req) => {
 
     const paymentNote = payment_method === "dev_skip"
       ? "Dev payment bypassed"
-      : (payment_method === "stripe" || payment_method === "stripe_checkout")
-        ? "Stripe checkout initiated"
-        : "Payment pending (invoice/manual)";
+      : "Stripe checkout initiated";
 
     const fullNote = notes?.trim()
       ? `${notes.trim()}\n\nSystem: ${paymentNote}`

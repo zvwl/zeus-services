@@ -284,7 +284,7 @@ function App() {
           currency,
           status: 'created',
           payment_status: paymentMethod === 'dev_skip' ? 'skipped' : 'pending',
-          payment_method: paymentMethod === 'stripe' ? 'stripe_checkout' : paymentMethod,
+          payment_method: paymentMethod === 'dev_skip' ? 'dev_skip' : 'stripe_checkout',
           notes: orderNote
         })
       })
@@ -333,11 +333,8 @@ function App() {
         return
       }
 
-      const successMessage = paymentMethod === 'dev_skip'
-        ? 'Order placed. Payment was skipped (dev).'
-        : 'Order placed. Payment pending (invoice/manual).'
-
-      setCheckoutStatus({ state: 'success', message: successMessage })
+      // Non-Stripe path is dev-skip only
+      setCheckoutStatus({ state: 'success', message: 'Order placed. Payment was skipped (dev).' })
       setCartItems([])
       setOrderNote('')
       navigate('/cart')
@@ -352,6 +349,7 @@ function App() {
         cartCount={cartItems.length}
         user={user}
         currency={currency}
+        onCurrencyChange={setCurrency}
       />
 
       <Routes>

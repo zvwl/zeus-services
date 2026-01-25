@@ -8,7 +8,6 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
   const hasMessage = checkoutStatus?.message
   const buttonLabel = (() => {
     if (paymentMethod === 'dev_skip') return isLoading ? 'Placing order...' : 'Buy now (dev skip payment)'
-    if (paymentMethod === 'invoice') return isLoading ? 'Placing order...' : 'Place order (invoice)'
     return isLoading ? 'Redirecting to Stripe...' : 'Pay with Stripe'
   })()
 
@@ -83,20 +82,6 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
             <div className="option-copy">
               <span className="option-title">Card (Stripe)</span>
               <span className="option-desc">Pay securely via Stripe Checkout.</span>
-            </div>
-          </label>
-
-          <label className="payment-option">
-            <input
-              type="radio"
-              name="payment-method"
-              value="invoice"
-              checked={paymentMethod === 'invoice'}
-              onChange={() => onPaymentMethodChange('invoice')}
-            />
-            <div className="option-copy">
-              <span className="option-title">Invoice / manual</span>
-              <span className="option-desc">We will contact you to finalize payment.</span>
             </div>
           </label>
 
