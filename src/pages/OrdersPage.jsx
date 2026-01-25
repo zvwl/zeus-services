@@ -9,15 +9,18 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
-  const { user } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
+    // Wait for auth to finish loading before checking if user is logged in
+    if (authLoading) return
+    
     if (!user) {
       navigate('/login')
       return
     }
     fetchOrders()
-  }, [user, navigate])
+  }, [user, authLoading, navigate])
 
   const fetchOrders = async () => {
     try {

@@ -148,8 +148,9 @@ Deno.serve(async (req) => {
 
     // Get emails for each admin user from auth.users
     const emailPromises = admins.map(async (admin, index) => {
-      // Add 600ms delay between each email to avoid Resend rate limits (2 per second)
-      await new Promise(resolve => setTimeout(resolve, index * 600));
+      // Add 1000ms (1 second) delay between each email to avoid Resend rate limits (2 per second)
+      // This ensures we stay well under the limit
+      await new Promise(resolve => setTimeout(resolve, index * 4000));
       
       const { data: userData, error: userError } = await supabase.auth.admin.getUserById(admin.user_id);
       
