@@ -33,41 +33,14 @@ function App() {
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
 
-  // Detect user's country and set currency accordingly
+  // Detect user's country and set currency accordingly via backend
   useEffect(() => {
     const detectLocation = async () => {
       try {
-        const response = await fetch('https://ipapi.co/json/')
+        const response = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/detect-location')
         const data = await response.json()
         setUserCountry(data.country_code)
-        
-        // Set currency based on country
-        const countryToCurrency = {
-          'US': 'USD',
-          'GB': 'GBP',
-          'IE': 'EUR',
-          'DE': 'EUR',
-          'FR': 'EUR',
-          'ES': 'EUR',
-          'IT': 'EUR',
-          'NL': 'EUR',
-          'BE': 'EUR',
-          'AT': 'EUR',
-          'GR': 'EUR',
-          'PT': 'EUR',
-          'CY': 'EUR',
-          'LU': 'EUR',
-          'MT': 'EUR',
-          'SK': 'EUR',
-          'SI': 'EUR',
-          'LT': 'EUR',
-          'LV': 'EUR',
-          'EE': 'EUR',
-          'FI': 'EUR'
-        }
-        
-        const detectedCurrency = countryToCurrency[data.country_code] || 'GBP'
-        setCurrency(detectedCurrency)
+        setCurrency(data.currency)
       } catch (err) {
         console.log('Location detection failed, defaulting to GBP:', err)
         setCurrency('GBP')
