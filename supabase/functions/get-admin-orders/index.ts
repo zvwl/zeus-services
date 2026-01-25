@@ -80,7 +80,12 @@ Deno.serve(async (req) => {
       .order("created_at", { ascending: false });
 
     if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter);
+      // "paid" is a payment_status, not a status
+      if (statusFilter === "paid") {
+        query = query.eq("payment_status", "paid");
+      } else {
+        query = query.eq("status", statusFilter);
+      }
     }
 
     // Simple search by id/user/email
