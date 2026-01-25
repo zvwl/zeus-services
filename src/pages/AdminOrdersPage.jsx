@@ -8,10 +8,6 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-                {(() => {
-                  const { currency: orderCurrency, subtotal, recordedTotal } = getOrderTotals(order)
-                  return (
-                    <>
   const [isAdmin, setIsAdmin] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -318,8 +314,10 @@ export default function AdminOrdersPage() {
           </div>
         ) : (
           <div className="orders-grid">
-            {orders.map(order => (
-              <div key={order.id} className="order-card">
+            {orders.map(order => {
+              const { currency: orderCurrency, subtotal, recordedTotal } = getOrderTotals(order)
+              return (
+                <div key={order.id} className="order-card">
                 <div className="order-header">
                   <div className="order-id">
                     <span className="label">Order ID:</span>
@@ -415,11 +413,9 @@ export default function AdminOrdersPage() {
                     <p>{order.notes}</p>
                   </div>
                 )}
-                    </>
-                  )
-                })()}
-              </div>
-            ))}
+                </div>
+              )
+            })}
           </div>
         )}
       </div>
