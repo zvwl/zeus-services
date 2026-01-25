@@ -10,6 +10,12 @@ const supabaseService = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_K
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization,apikey,content-type",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+};
+
 async function importAesKey(base64Key: string) {
   const raw = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
   return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["decrypt"]);
@@ -29,25 +35,28 @@ async function decryptNote(ciphertext: string | null, iv: string | null) {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "GET") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   try {
     const url = new URL(req.url);
     const orderId = url.searchParams.get("orderId");
     if (!orderId) {
-      return new Response(JSON.stringify({ error: "orderId required" }), { status: 400, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "orderId required" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer", "").trim();
-    if (!token) return new Response(JSON.stringify({ error: "Missing auth token" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    if (!token) return new Response(JSON.stringify({ error: "Missing auth token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     // Verify user session
     const { data: userData, error: userError } = await supabaseUser.auth.getUser(token);
     if (userError || !userData?.user) {
-      return new Response(JSON.stringify({ error: "Invalid auth" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Invalid auth" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const user = userData.user;
 
@@ -59,21 +68,21 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     if (!order) {
-      return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const note = await decryptNote(order.notes_ciphertext, order.notes_iv) || order.notes || null;
 
     return new Response(JSON.stringify({ order: { ...order, note_plaintext: note } }), {
       status: 200,
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (err) {
     console.error("get-user-order error", err);
-    return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

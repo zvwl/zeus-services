@@ -30,39 +30,21 @@ export default function OrdersPage() {
         return
       }
 
-      const { data, error: fetchError } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', authUser.id)
-        .neq('payment_status', 'pending') // Hide incomplete/abandoned orders
-        .order('created_at', { ascending: false })
-
-      if (fetchError) throw fetchError
-
-      const baseOrders = data || []
-
-      const withNotes = await Promise.all(baseOrders.map(async (order) => {
-        try {
-          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-order?orderId=${order.id}`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${accessToken}`
-            }
-          })
-
-          const body = await res.json()
-          if (res.ok && !body?.error && body?.order) {
-            return body.order
-          }
-        } catch (err) {
-          console.warn('Note decrypt failed for order', order.id, err)
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orders`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${accessToken}`
         }
-        return order
-      }))
+      })
 
-      setOrders(withNotes)
+      const body = await res.json()
+      if (!res.ok || body?.error) {
+        throw new Error(body?.error || 'Failed to load orders')
+      }
+
+      setOrders(body.orders || [])
     } catch (err) {
       console.error('Error fetching orders:', err)
       setError(err.message || 'Failed to load orders')

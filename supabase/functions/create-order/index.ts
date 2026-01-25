@@ -17,6 +17,12 @@ const supabaseService = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_K
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization,apikey,content-type",
+  "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+};
+
 async function importAesKey(base64Key: string) {
   const raw = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
   return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
@@ -41,19 +47,22 @@ async function encryptNote(note: string) {
 }
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   try {
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer", "").trim();
-    if (!token) return new Response(JSON.stringify({ error: "Missing auth token" }), { status: 401, headers: { "Content-Type": "application/json" } });
+    if (!token) return new Response(JSON.stringify({ error: "Missing auth token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
     // Verify user session
     const { data: userData, error: userError } = await supabaseUser.auth.getUser(token);
     if (userError || !userData?.user) {
-      return new Response(JSON.stringify({ error: "Invalid auth" }), { status: 401, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Invalid auth" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
     const user = userData.user;
 
@@ -61,12 +70,12 @@ Deno.serve(async (req) => {
     const { items, total_amount, currency, payment_method, payment_status, status, notes } = body;
 
     if (!Array.isArray(items) || typeof total_amount !== "number" || !currency) {
-      return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: "Invalid payload" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     const paymentNote = payment_method === "dev_skip"
       ? "Dev payment bypassed"
-      : payment_method === "stripe"
+      : (payment_method === "stripe" || payment_method === "stripe_checkout")
         ? "Stripe checkout initiated"
         : "Payment pending (invoice/manual)";
 
@@ -98,15 +107,15 @@ Deno.serve(async (req) => {
       .single();
 
     if (error) {
-      return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { "Content-Type": "application/json" } });
+      return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     return new Response(JSON.stringify({ order: orderRow }), {
       status: 200,
-      headers: { "Content-Type": "application/json" }
+      headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (err) {
     console.error("create-order error", err);
-    return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { "Content-Type": "application/json" } });
+    return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });

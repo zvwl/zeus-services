@@ -5,10 +5,6 @@ const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const NOTES_ENC_KEY = Deno.env.get("NOTES_ENC_KEY");
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_ROLE_KEY) {
-  console.error("Missing Supabase env vars");
-}
-
 const supabaseUser = createClient(SUPABASE_URL ?? "", SUPABASE_ANON_KEY ?? "");
 const supabaseService = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "", {
   auth: { autoRefreshToken: false, persistSession: false }
@@ -47,10 +43,6 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const url = new URL(req.url);
-    const statusFilter = url.searchParams.get("status") ?? "all";
-    const search = (url.searchParams.get("q") ?? "").trim();
-
     const authHeader = req.headers.get("Authorization") || "";
     const token = authHeader.replace("Bearer", "").trim();
     if (!token) return new Response(JSON.stringify({ error: "Missing auth token" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -62,52 +54,20 @@ Deno.serve(async (req) => {
     }
     const user = userData.user;
 
-    // Admin check
-    const { data: adminRow } = await supabaseService
-      .from("admin_users")
-      .select("id")
-      .eq("user_id", user.id)
-      .maybeSingle();
-
-    if (!adminRow) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
-
-    // Build query
-    let query = supabaseService
+    const { data, error } = await supabaseService
       .from("orders")
       .select("*")
+      .eq("user_id", user.id)
+      .neq("payment_status", "pending")
       .order("created_at", { ascending: false });
 
-    if (statusFilter !== "all") {
-      query = query.eq("status", statusFilter);
+    if (error) {
+      return new Response(JSON.stringify({ error: error.message }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    // Simple search by id/user/email
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-    if (search) {
-      if (uuidRegex.test(search)) {
-        query = query.or(`id.eq.${search},user_id.eq.${search},customer_email.ilike.%${search}%`);
-      } else if (search.includes("@")) {
-        query = query.or(`customer_email.ilike.%${search}%`);
-      } else {
-        // non-email: allow partial match client side
-      }
-    }
+    const orders = data || [];
 
-    const { data, error } = await query;
-    if (error) throw error;
-
-    let results = data || [];
-    if (search && !uuidRegex.test(search)) {
-      const qLower = search.toLowerCase();
-      results = results.filter(o =>
-        String(o.id || "").toLowerCase().includes(qLower) ||
-        String(o.customer_email || "").toLowerCase().includes(qLower)
-      );
-    }
-
-    const withNotes = await Promise.all(results.map(async (order) => {
+    const withNotes = await Promise.all(orders.map(async (order) => {
       const note = await decryptNote(order.notes_ciphertext, order.notes_iv) || order.notes || null;
       return { ...order, note_plaintext: note };
     }));
@@ -117,7 +77,7 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
   } catch (err) {
-    console.error("get-admin-orders error", err);
+    console.error("get-user-orders error", err);
     return new Response(JSON.stringify({ error: "Server error" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
 });
