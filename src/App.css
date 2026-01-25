@@ -381,6 +381,52 @@ body {
   width: 100%;
 }
 
+#service-detail .service-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 2rem;
+  align-items: start;
+}
+
+#service-detail .service-detail-image-wrap {
+  width: 100%;
+}
+
+#service-detail .service-detail-image {
+  width: 100%;
+  border-radius: 15px;
+  border: 2px solid rgba(251, 191, 36, 0.25);
+  box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
+  display: block;
+}
+
+@media (max-width: 900px) {
+  #service-detail .service-detail-grid {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  #service-detail .service-detail-image-wrap {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 600px) {
+  #service-detail .service-detail-grid {
+    gap: 1.4rem;
+  }
+
+  #service-detail .service-detail-image-wrap {
+    max-width: 340px;
+  }
+
+  #service-detail .service-detail-image {
+    border-radius: 12px;
+  }
+}
+
 /* Large Desktop */
 @media (min-width: 1440px) {
   .services-grid {

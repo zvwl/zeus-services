@@ -77,20 +77,15 @@ function App() {
         setCheckoutStatus({ state: 'idle', message: '' })
       }, 15000)
     }
-  }, [location])
-
-  const platformOptions = ['Steam Enhanced', 'Epic Games Enhanced', 'Xbox App Enhanced', 'Rockstar Launcher Enhanced', 'Steam Legacy', 'Epic Games Legacy', 'Xbox App Legacy', 'Rockstar Launcher Legacy']
-
-  const services = [
-    {
-      id: 1,
-      name: '🚗 50 Modded Cars',
-      price: 3.00,
-      description: '🚗 Fully customized vehicles delivered in minutes. Includes a variety of sports cars, supercars, and unique vehicles ready to dominate the streets of Los Santos.',
-      icon: '🚗',
-      platforms: platformOptions,
-      details: [
-        '📌 You must already own GTA V / GTA Online before purchasing',
+        <div className="service-detail-grid">
+          {/* Left side - Image */}
+          <div className="service-detail-image-wrap">
+            <img
+              src="/zeusservicesPackage.png"
+              alt={service.name}
+              className="service-detail-image"
+            />
+          </div>
         '💥 50 Modded Cars included',
         '✅ Completed within 20 minutes',
         '🔑 Login access required',
