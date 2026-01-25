@@ -434,13 +434,14 @@
 }
 
 .modal-content {
-  background: #fff;
+  background: #1a1f35;
   border-radius: 10px;
   padding: 2rem;
   max-width: 500px;
   width: 90%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 10px 10px -5px rgba(0, 0, 0, 0.2);
   animation: slideUp 0.2s ease-out;
+  border: 1px solid rgba(251, 191, 36, 0.2);
 }
 
 @keyframes slideUp {
@@ -457,7 +458,7 @@
 .modal-content h2 {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
-  color: #1f2937;
+  color: #f1f5f9;
 }
 
 .modal-body {
@@ -466,13 +467,13 @@
 
 .modal-body > p:first-child {
   font-size: 1rem;
-  color: #4b5563;
+  color: #cbd5e1;
   margin-bottom: 1.5rem;
 }
 
 .order-summary {
-  background: #f9fafb;
-  border-left: 4px solid #3b82f6;
+  background: rgba(251, 191, 36, 0.08);
+  border-left: 4px solid #fbbf24;
   padding: 1rem;
   border-radius: 6px;
   margin-bottom: 1rem;
@@ -481,29 +482,29 @@
 
 .order-summary p {
   margin: 0.5rem 0;
-  color: #374151;
+  color: #cbd5e1;
 }
 
 .order-summary strong {
-  color: #1f2937;
+  color: #fbbf24;
 }
 
 .refund-warning {
-  background: #fef2f2;
-  border-left: 4px solid #ef4444;
+  background: rgba(251, 191, 36, 0.1);
+  border-left: 4px solid #fbbf24;
   padding: 0.75rem 1rem;
-  border-radius: 4px;
-  color: #991b1b;
+  border-radius: 6px;
+  color: #fde68a;
   font-size: 0.9rem;
   margin: 0;
 }
 
 .cancel-warning {
-  background: #fffbeb;
-  border-left: 4px solid #f59e0b;
+  background: rgba(251, 191, 36, 0.1);
+  border-left: 4px solid #fbbf24;
   padding: 0.75rem 1rem;
-  border-radius: 4px;
-  color: #92400e;
+  border-radius: 6px;
+  color: #fde68a;
   font-size: 0.9rem;
   margin: 0;
 }
@@ -526,20 +527,25 @@
 }
 
 .btn-cancel {
-  background: #e5e7eb;
-  color: #1f2937;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
 .btn-cancel:hover {
-  background: #d1d5db;
+  background: rgba(251, 191, 36, 0.25);
+  border-color: rgba(251, 191, 36, 0.6);
 }
 
 .btn-confirm {
   color: #fff;
+  background: #fbbf24;
+  color: #0a0e1a;
 }
 
 .btn-confirm.refund {
   background: #ef4444;
+  color: #fff;
 }
 
 .btn-confirm.refund:hover {
@@ -547,11 +553,12 @@
 }
 
 .btn-confirm.cancel {
-  background: #f59e0b;
+  background: #fbbf24;
+  color: #0a0e1a;
 }
 
 .btn-confirm.cancel:hover {
-  background: #d97706;
+  background: #f59e0b;
 }
 
 @media (max-width: 640px) {
