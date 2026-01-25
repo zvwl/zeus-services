@@ -1,8 +1,10 @@
 import Stripe from "https://esm.sh/stripe@17.5.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 
+const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://zeuservices.com";
+
 const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Origin': FRONTEND_URL,
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 

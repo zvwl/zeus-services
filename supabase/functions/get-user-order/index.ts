@@ -10,10 +10,12 @@ const supabaseService = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_K
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
+const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://zeuservices.com";
+
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": FRONTEND_URL,
   "Access-Control-Allow-Headers": "authorization,apikey,content-type",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+  "Access-Control-Allow-Methods": "GET,OPTIONS"
 };
 
 async function importAesKey(base64Key: string) {

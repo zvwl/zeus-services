@@ -3,9 +3,10 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7?deno-s
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
+const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://zeuservices.com";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": FRONTEND_URL,
   "Access-Control-Allow-Headers": "authorization,apikey,content-type",
   "Access-Control-Allow-Methods": "POST,OPTIONS"
 };

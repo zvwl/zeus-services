@@ -58,7 +58,7 @@ serve(async (req) => {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Access-Control-Allow-Origin': Deno.env.get("FRONTEND_URL") || "https://zeuservices.com"
         }
       }
     )
@@ -75,7 +75,7 @@ serve(async (req) => {
       {
         headers: {
           'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
+          'Access-Control-Allow-Origin': Deno.env.get("FRONTEND_URL") || "https://zeuservices.com"
         }
       }
     )
