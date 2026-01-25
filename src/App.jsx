@@ -19,6 +19,8 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import OrdersPage from './pages/OrdersPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
+import TermsPage from './pages/TermsPage'
+import RefundPage from './pages/RefundPage'
 
 function App() {
   // Load cart from localStorage on mount
@@ -483,12 +485,7 @@ function App() {
         />
         <Route
           path="/terms"
-          element={(
-            <PlaceholderPage
-              title="Terms & Conditions"
-              description="Our terms of service and user agreement."
-            />
-          )}
+          element={<TermsPage />}
         />
         <Route
           path="/privacy"
@@ -501,12 +498,7 @@ function App() {
         />
         <Route
           path="/refund"
-          element={(
-            <PlaceholderPage
-              title="Refund Policy"
-              description="Information about refunds, cancellations, and our guarantee."
-            />
-          )}
+          element={<RefundPage />}
         />
       </Routes>
       <Footer />
