@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import '../App.css'
@@ -14,6 +14,30 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
 
   // Get service from props or location state
   const service = services.find(s => s.id === parseInt(id)) || location.state?.service
+
+  // Auto-add pending cart item after login
+  useEffect(() => {
+    if (user && emailVerified && service) {
+      const pendingItem = localStorage.getItem('pendingCartItem')
+      if (pendingItem) {
+        try {
+          const { serviceId, platform: savedPlatform } = JSON.parse(pendingItem)
+          if (serviceId === service.id) {
+            localStorage.removeItem('pendingCartItem')
+            // Set platform and version so they're visible when added
+            setPlatform(savedPlatform.split(' ')[0])
+            setVersion(savedPlatform.split(' ')[1])
+            // Auto-add to cart
+            addToCart(service, savedPlatform)
+            setVerificationMessage('✓ Added to cart!')
+            setTimeout(() => setVerificationMessage(''), 3000)
+          }
+        } catch (err) {
+          console.error('Error processing pending cart item:', err)
+        }
+      }
+    }
+  }, [user, emailVerified, service, addToCart])
 
   if (!service) {
     return (
@@ -36,6 +60,16 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
 
   const handleAddToCart = () => {
     if (!user) {
+      // Save pending cart item before redirecting to login
+      if (!platform || !version) {
+        alert('Please select a platform and version first')
+        return
+      }
+      const fullPlatform = `${platform} ${version}`
+      localStorage.setItem('pendingCartItem', JSON.stringify({
+        serviceId: service.id,
+        platform: fullPlatform
+      }))
       navigate('/login')
       return
     }

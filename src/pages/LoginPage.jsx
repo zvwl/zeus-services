@@ -49,7 +49,22 @@ export default function LoginPage() {
     if (result.success) {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
-      navigate('/services')
+      
+      // Check if there's a pending cart item to add
+      const pendingItem = localStorage.getItem('pendingCartItem')
+      if (pendingItem) {
+        localStorage.removeItem('pendingCartItem')
+        try {
+          const { serviceId } = JSON.parse(pendingItem)
+          // Navigate to the service detail page with the ID
+          navigate(`/service/${serviceId}`)
+        } catch (err) {
+          console.error('Error processing pending cart item:', err)
+          navigate('/services')
+        }
+      } else {
+        navigate('/services')
+      }
       return
     }
 
@@ -109,7 +124,21 @@ export default function LoginPage() {
         setMfaCode('')
         captchaRef.current?.resetCaptcha()
         setCaptchaToken(null)
-        navigate('/services')
+        
+        // Check if there's a pending cart item to add
+        const pendingItem = localStorage.getItem('pendingCartItem')
+        if (pendingItem) {
+          localStorage.removeItem('pendingCartItem')
+          try {
+            const { serviceId } = JSON.parse(pendingItem)
+            navigate(`/service/${serviceId}`)
+          } catch (err) {
+            console.error('Error processing pending cart item:', err)
+            navigate('/services')
+          }
+        } else {
+          navigate('/services')
+        }
       } else {
         setMfaError(result.error || 'Verification failed')
       }
