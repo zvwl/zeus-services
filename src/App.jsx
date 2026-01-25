@@ -21,7 +21,15 @@ import OrdersPage from './pages/OrdersPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
 
 function App() {
-  const [cartItems, setCartItems] = useState([])
+  // Load cart from localStorage on mount
+  const [cartItems, setCartItems] = useState(() => {
+    try {
+      const savedCart = localStorage.getItem('cartItems')
+      return savedCart ? JSON.parse(savedCart) : []
+    } catch {
+      return []
+    }
+  })
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
   const [userCountry, setUserCountry] = useState(null)
@@ -32,6 +40,11 @@ function App() {
   const location = useLocation()
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
+
+  // Persist cart to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('cartItems', JSON.stringify(cartItems))
+  }, [cartItems])
 
   // Detect user's country and set currency accordingly via backend
   useEffect(() => {
