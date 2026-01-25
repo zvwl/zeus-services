@@ -17,7 +17,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
 
   // Auto-add pending cart item after login
   useEffect(() => {
-    if (user && emailVerified && service) {
+    if (user && service) {
       const pendingItem = localStorage.getItem('pendingCartItem')
       if (pendingItem) {
         try {
@@ -25,8 +25,9 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
           if (serviceId === service.id) {
             localStorage.removeItem('pendingCartItem')
             // Set platform and version so they're visible when added
-            setPlatform(savedPlatform.split(' ')[0])
-            setVersion(savedPlatform.split(' ')[1])
+            const [plat, vers] = savedPlatform.split(' ')
+            setPlatform(plat)
+            setVersion(vers)
             // Auto-add to cart
             addToCart(service, savedPlatform)
             setVerificationMessage('✓ Added to cart!')
@@ -37,7 +38,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
         }
       }
     }
-  }, [user, emailVerified, service, addToCart])
+  }, [user, service, addToCart])
 
   if (!service) {
     return (
