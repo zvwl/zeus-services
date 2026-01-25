@@ -106,6 +106,25 @@ function App() {
     }
   }, [isDevUser, paymentMethod])
 
+  // Handle pending cart item after login (from both email and OAuth logins)
+  useEffect(() => {
+    if (user) {
+      const pendingItem = localStorage.getItem('pendingCartItem')
+      if (pendingItem) {
+        try {
+          const { serviceId, platform: fullPlatform } = JSON.parse(pendingItem)
+          console.log('Found pending item in App - serviceId:', serviceId, 'platform:', fullPlatform)
+          // Redirect to the service detail page to trigger auto-add
+          navigate(`/service/${serviceId}`)
+          // Don't remove from localStorage here - let ServiceDetail handle it
+        } catch (err) {
+          console.error('Error processing pending cart item in App:', err)
+          localStorage.removeItem('pendingCartItem')
+        }
+      }
+    }
+  }, [user, navigate])
+
   // Check for successful payment return from Stripe
   useEffect(() => {
     const params = new URLSearchParams(location.search)
