@@ -64,28 +64,42 @@ function App() {
     const params = new URLSearchParams(location.search)
     const success = params.get('success')
     const orderId = params.get('orderId')
-    
+
     if (success === 'true' && orderId) {
       setCheckoutStatus({ state: 'success', message: 'Payment successful! Your order has been confirmed.' })
       setCartItems([])
-      
+
       // Clear the URL parameters
       window.history.replaceState({}, '', '/cart')
-      
+
       // Auto-clear the success message after 15 seconds
       setTimeout(() => {
         setCheckoutStatus({ state: 'idle', message: '' })
       }, 15000)
     }
-        <div className="service-detail-grid">
-          {/* Left side - Image */}
-          <div className="service-detail-image-wrap">
-            <img
-              src="/zeusservicesPackage.png"
-              alt={service.name}
-              className="service-detail-image"
-            />
-          </div>
+  }, [location])
+
+  const platformOptions = [
+    'Steam Enhanced',
+    'Epic Games Enhanced',
+    'Xbox App Enhanced',
+    'Rockstar Launcher Enhanced',
+    'Steam Legacy',
+    'Epic Games Legacy',
+    'Xbox App Legacy',
+    'Rockstar Launcher Legacy'
+  ]
+
+  const services = [
+    {
+      id: 1,
+      name: '🚗 50 Modded Cars',
+      price: 3.00,
+      description: '🚗 Fully customized vehicles delivered in minutes. Includes a variety of sports cars, supercars, and unique vehicles ready to dominate the streets of Los Santos.',
+      icon: '🚗',
+      platforms: platformOptions,
+      details: [
+        '📌 You must already own GTA V / GTA Online before purchasing',
         '💥 50 Modded Cars included',
         '✅ Completed within 20 minutes',
         '🔑 Login access required',
@@ -259,7 +273,7 @@ function App() {
           setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData?.error || fnRes.statusText || 'Request failed'}` })
           return
         }
-        
+
         if (fnData?.error) {
           setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData.error}` })
           return

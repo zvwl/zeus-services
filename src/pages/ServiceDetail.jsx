@@ -84,18 +84,13 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{service.name}</h1>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem', marginBottom: '2rem' }}>
+        <div className="service-detail-grid">
           {/* Left side - Image */}
-          <div>
+          <div className="service-detail-image-wrap">
             <img
               src="/zeusservicesPackage.png"
               alt={service.name}
-              style={{
-                width: '100%',
-                borderRadius: '15px',
-                border: '2px solid rgba(251, 191, 36, 0.25)',
-                boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)'
-              }}
+              className="service-detail-image"
             />
           </div>
 
