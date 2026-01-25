@@ -81,7 +81,8 @@ function App() {
 
   // Handle pending cart item after login (from both email and OAuth logins)
   useEffect(() => {
-    if (user) {
+    // Don't redirect if user is still on login page (might be in MFA flow)
+    if (user && location.pathname !== '/login') {
       const pendingItem = localStorage.getItem('pendingCartItem')
       if (pendingItem) {
         try {
@@ -96,7 +97,7 @@ function App() {
         }
       }
     }
-  }, [user, navigate])
+  }, [user, location.pathname, navigate])
 
   // Check for successful payment return from Stripe
   useEffect(() => {
