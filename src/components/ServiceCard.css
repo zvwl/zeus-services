@@ -33,6 +33,11 @@
 .card-back {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   overflow-y: auto;
+  border-radius: 13px;
+}
+
+.service-card:hover .card-back {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .service-card::before {

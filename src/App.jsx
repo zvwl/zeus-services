@@ -113,7 +113,7 @@ function App() {
     },
     {
       id: 3,
-      name: '💸 Custom Cash | Any Amount',
+      name: '💸 Custom Cash',
       price: 3.00,
       description: '💰 Add any amount of custom cash to your account. 30m-50m recommended per 24h for safety, but you choose the amount that works for you.',
       icon: '💸',
