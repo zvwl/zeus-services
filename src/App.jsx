@@ -78,54 +78,77 @@ function App() {
     }
   }, [location])
 
+  const platformOptions = ['Steam Enhanced', 'Epic Games Enhanced', 'Xbox App Enhanced', 'Rockstar Launcher Enhanced', 'Steam Legacy', 'Epic Games Legacy', 'Xbox App Legacy', 'Rockstar Launcher Legacy']
+
   const services = [
     {
       id: 1,
-      name: 'Web Development',
-      price: 0.50,
-      description: 'Build your professional website',
-      icon: '⚡',
-      platforms: ['Web', 'Mobile Web', 'Landing Page', 'E-commerce']
+      name: '🚗 50 Modded Cars',
+      price: 3.00,
+      description: '🚗 Fully customized vehicles delivered in minutes. Includes a variety of sports cars, supercars, and unique vehicles ready to dominate the streets of Los Santos.',
+      icon: '🚗',
+      platforms: platformOptions,
+      details: [
+        '📌 You must already own GTA V / GTA Online before purchasing',
+        '💥 50 Modded Cars included',
+        '✅ Completed within 20 minutes',
+        '🔑 Login access required',
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+      ]
     },
     {
       id: 2,
-      name: 'SEO Optimization',
-      price: 0.50,
-      description: 'Boost your search rankings',
-      icon: '🔍',
-      platforms: ['Google', 'Bing', 'Local SEO', 'App Store']
+      name: '👕 20 Modded Outfits',
+      price: 3.00,
+      description: '🎨 Stylish modded outfits to make your character stand out. Choose from exclusive, rare, and custom designs unavailable in normal gameplay.',
+      icon: '👕',
+      platforms: platformOptions,
+      details: [
+        '📌 You must already own GTA V / GTA Online before purchasing',
+        '💥 20 Premium Modded Outfits included',
+        '✅ Completed within 20 minutes',
+        '🔑 Login access required',
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+      ]
     },
     {
       id: 3,
-      name: 'Mobile App',
-      price: 0.50,
-      description: 'Custom iOS & Android apps',
-      icon: '📱',
-      platforms: ['iOS', 'Android', 'Cross-platform']
+      name: '💸 Custom Cash | Any Amount',
+      price: 3.00,
+      description: '💰 Add any amount of custom cash to your account. 30m-50m recommended per 24h for safety, but you choose the amount that works for you.',
+      icon: '💸',
+      platforms: platformOptions,
+      details: [
+        '📌 You must already own GTA V / GTA Online before purchasing',
+        '💥 Custom cash amount of your choice (30m-50m recommended per 24h)',
+        '✅ Completed within 20 minutes',
+        '🔑 Login access required',
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+      ]
     },
     {
       id: 4,
-      name: 'Branding',
-      price: 0.50,
-      description: 'Create your brand identity',
-      icon: '🎨',
-      platforms: ['Logo', 'Guidelines', 'Pitch Deck', 'Social Kit']
-    },
-    {
-      id: 5,
-      name: 'Cloud Migration',
-      price: 0.50,
-      description: 'Secure cloud solutions',
-      icon: '☁️',
-      platforms: ['AWS', 'Azure', 'GCP', 'Hybrid']
-    },
-    {
-      id: 6,
-      name: 'Support Package',
-      price: 0.50,
-      description: '24/7 technical support',
-      icon: '🛠️',
-      platforms: ['Web', 'Mobile', 'Cloud', 'On-prem']
+      name: '💸 Ultimate GTA Package',
+      price: 6.00,
+      description: '⚡ The complete GTA Online transformation! Custom cash, max level, all unlocks, fast run, premium outfits, modded cars, and all properties. Everything you need for the ultimate account.',
+      icon: '⚡',
+      platforms: platformOptions,
+      details: [
+        '📌 You must already own GTA V / GTA Online before purchasing',
+        '💥 What\'s Included:',
+        '  💰 Custom cash amount (50m recommended per 24h)',
+        '  📈 Level 1–8000 of your choice',
+        '  🔥 All stats maxed out',
+        '  🔓 All content unlocked + achievements',
+        '  🏃 Fast run enabled',
+        '  🎯 Customizable K/D ratio, account creation date & playtime',
+        '  👕 Premium modded outfits',
+        '  🚗 Any vehicles of your choice',
+        '  🏡 All businesses & properties purchased',
+        '✅ Completed within 1–24 hours',
+        '🔑 Login access required',
+        '🚫 Game not included – progression account only. You take full responsibility for your account. Free service if you receive a ban, but no game key provided. No refunds.'
+      ]
     }
   ]
 
