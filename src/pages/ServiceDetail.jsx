@@ -106,15 +106,17 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
             </p>
 
             <div style={{ 
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: 'linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%)',
+              border: '2px solid rgba(251, 191, 36, 0.25)',
               padding: '2rem',
               borderRadius: '15px',
-              marginBottom: '2rem'
+              marginBottom: '2rem',
+              boxShadow: '0 8px 32px rgba(59, 130, 246, 0.15)'
             }}>
-              <h3 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.3rem' }}>Service Details</h3>
+              <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.3rem', fontWeight: '700' }}>Service Details</h3>
               {service.details?.map((detail, index) => (
                 <p key={index} style={{
-                  color: 'rgba(255, 255, 255, 0.95)',
+                  color: '#94a3b8',
                   marginBottom: '0.7rem',
                   lineHeight: '1.6'
                 }}>
