@@ -19,13 +19,16 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   useEffect(() => {
     if (user && service) {
       const pendingItem = localStorage.getItem('pendingCartItem')
+      console.log('Checking for pending item:', pendingItem, 'service id:', service.id)
       if (pendingItem) {
         try {
           const { serviceId, platform: savedPlatform } = JSON.parse(pendingItem)
+          console.log('Parsed pending - serviceId:', serviceId, 'savedPlatform:', savedPlatform, 'match:', serviceId === service.id)
           if (serviceId === service.id) {
             localStorage.removeItem('pendingCartItem')
             // Set platform and version so they're visible when added
             const [plat, vers] = savedPlatform.split(' ')
+            console.log('Auto-adding to cart - platform:', plat, 'version:', vers)
             setPlatform(plat)
             setVersion(vers)
             // Auto-add to cart
@@ -35,6 +38,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
           }
         } catch (err) {
           console.error('Error processing pending cart item:', err)
+          localStorage.removeItem('pendingCartItem')
         }
       }
     }
