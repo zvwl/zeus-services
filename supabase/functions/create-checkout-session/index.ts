@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
       line_items: lineItems,
       payment_method_types: ['card'],
       metadata: metadata,
-      success_url: `${finalFrontendUrl}/cart?success=true`,
+      success_url: `${finalFrontendUrl}/cart?success=true&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${finalFrontendUrl}/cart?canceled=true`,
     });
 

@@ -14,6 +14,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
 
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
+  const sessionId = searchParams.get('session_id')
 
   useEffect(() => {
     if (success === 'true') {
@@ -21,10 +22,14 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
       if (clearCart && cartItems.length > 0) {
         clearCart()
       }
-      // Fetch the most recent order (just created by Stripe webhook)
-      fetchMostRecentOrder()
+      // Fetch the order by session ID (with retry logic for webhook delay)
+      if (sessionId) {
+        fetchOrderBySessionId(sessionId)
+      } else {
+        fetchMostRecentOrder()
+      }
     }
-  }, [success])
+  }, [success, sessionId])
 
   // Show message if payment was cancelled
   useEffect(() => {
@@ -36,6 +41,58 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
       return () => clearTimeout(timer)
     }
   }, [canceled])
+
+  const fetchOrderBySessionId = async (checkoutSessionId, retryCount = 0) => {
+    const MAX_RETRIES = 10
+    const RETRY_DELAY = 1000 // 1 second
+
+    try {
+      setLoadingOrder(true)
+      setFetchError(null)
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
+
+      if (!accessToken) {
+        throw new Error('Please log in to view your order')
+      }
+
+      // Fetch all user orders and find the one with matching checkout_session_id
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orders`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+
+      const body = await res.json()
+      if (!res.ok || body?.error) {
+        throw new Error(body?.error || 'Failed to load orders')
+      }
+
+      const orders = body.orders || []
+      const matchingOrder = orders.find(order => order.checkout_session_id === checkoutSessionId)
+
+      if (matchingOrder) {
+        setOrderDetails(matchingOrder)
+        setLoadingOrder(false)
+      } else if (retryCount < MAX_RETRIES) {
+        // Order not found yet, webhook might still be processing
+        console.log(`Order not found, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
+        setTimeout(() => {
+          fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
+        }, RETRY_DELAY)
+      } else {
+        setFetchError('Order is taking longer than expected to process. Please check "Your Orders" in a moment.')
+        setLoadingOrder(false)
+      }
+    } catch (err) {
+      console.error('Error fetching order:', err)
+      setFetchError(err.message || 'Failed to load order')
+      setLoadingOrder(false)
+    }
+  }
 
   const fetchMostRecentOrder = async () => {
     try {
