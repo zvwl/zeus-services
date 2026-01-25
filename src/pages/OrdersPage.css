@@ -257,10 +257,15 @@
   border-radius: 8px;
   font-size: 0.875rem;
   color: var(--text-secondary);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .order-notes strong {
   color: var(--text-primary);
+  display: block;
+  margin-bottom: 0.25rem;
 }
 
 @media (max-width: 768px) {
