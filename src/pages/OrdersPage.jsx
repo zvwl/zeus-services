@@ -20,9 +20,11 @@ export default function OrdersPage() {
       setLoading(true)
       setError(null)
 
-      const { data: { user: authUser } } = await supabase.auth.getUser()
-      
-      if (!authUser) {
+      const { data: sessionData } = await supabase.auth.getSession()
+      const authUser = sessionData?.session?.user
+      const accessToken = sessionData?.session?.access_token
+
+      if (!authUser || !accessToken) {
         setError('Please log in to view your orders')
         setLoading(false)
         return
@@ -37,7 +39,30 @@ export default function OrdersPage() {
 
       if (fetchError) throw fetchError
 
-      setOrders(data || [])
+      const baseOrders = data || []
+
+      const withNotes = await Promise.all(baseOrders.map(async (order) => {
+        try {
+          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-order?orderId=${order.id}`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${accessToken}`
+            }
+          })
+
+          const body = await res.json()
+          if (res.ok && !body?.error && body?.order) {
+            return body.order
+          }
+        } catch (err) {
+          console.warn('Note decrypt failed for order', order.id, err)
+        }
+        return order
+      }))
+
+      setOrders(withNotes)
     } catch (err) {
       console.error('Error fetching orders:', err)
       setError(err.message || 'Failed to load orders')
@@ -193,9 +218,9 @@ export default function OrdersPage() {
                     )}
                   </div>
 
-                  {order.notes && (
+                  {(order.note_plaintext || order.notes) && (
                     <div className="order-notes">
-                      <strong>Notes:</strong> {order.notes}
+                      <strong>Notes:</strong> {order.note_plaintext || order.notes}
                     </div>
                   )}
                 </div>

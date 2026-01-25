@@ -251,6 +251,7 @@ function App() {
       // Ensure we have a fresh authenticated session and user
       const { data: sessionData } = await supabase.auth.getSession()
       const sessionUser = sessionData?.session?.user
+      const accessToken = sessionData?.session?.access_token
       if (!sessionUser?.id) {
         setCheckoutStatus({ state: 'error', message: 'Your session expired. Please log in again.' })
         navigate('/login')
@@ -260,52 +261,40 @@ function App() {
       const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
       const totalConverted = convertAmount(totalUsd)
 
-      const paymentNote = paymentMethod === 'dev_skip'
-        ? 'Dev payment bypassed'
-        : paymentMethod === 'stripe'
-          ? 'Stripe checkout initiated'
-          : 'Payment pending (invoice/manual)'
+      // Create order via Edge Function (encrypts note server-side)
+      const createOrderRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-order`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${accessToken}`
+        },
+        body: JSON.stringify({
+          items: cartItems.map(({ id, name, platform, quantity, price }) => ({
+            id,
+            name,
+            platform,
+            quantity,
+            price_usd: price,
+            price_converted: convertAmount(price),
+            currency
+          })),
+          total_amount: totalConverted,
+          currency,
+          status: 'created',
+          payment_status: paymentMethod === 'dev_skip' ? 'skipped' : 'pending',
+          payment_method: paymentMethod === 'stripe' ? 'stripe_checkout' : paymentMethod,
+          notes: orderNote
+        })
+      })
 
-      const orderPayload = {
-        // RLS requires user_id to match auth.uid()
-        user_id: sessionUser.id,
-        customer_email: sessionUser.email ?? user.email,
-        customer_name: sessionUser.user_metadata?.name ?? user.name ?? null,
-        items: cartItems.map(({ id, name, platform, quantity, price }) => ({
-          id,
-          name,
-          platform,
-          quantity,
-          price_usd: price,
-          price_converted: convertAmount(price),
-          currency
-        })),
-        total_amount: totalConverted,
-        currency,
-        status: 'created',
-        payment_status: paymentMethod === 'dev_skip' ? 'skipped' : 'pending',
-        payment_method: paymentMethod === 'stripe' ? 'stripe_checkout' : paymentMethod,
-        notes: orderNote.trim()
-          ? `${orderNote.trim()}
-
-System: ${paymentNote}`
-          : paymentNote
-      }
-
-      const { data: orderRow, error } = await supabase
-        .from('orders')
-        .insert([orderPayload])
-        .select()
-        .single()
-
-      if (error) {
-        // Provide clearer hint when RLS blocks the insert
-        const msg = error.message?.includes('row-level security')
-          ? 'Access denied by security policy. Please log out and log back in, then try again.'
-          : error.message
-        setCheckoutStatus({ state: 'error', message: msg })
+      const createOrderData = await createOrderRes.json()
+      if (!createOrderRes.ok || createOrderData?.error) {
+        setCheckoutStatus({ state: 'error', message: createOrderData?.error || 'Order creation failed' })
         return
       }
+
+      const orderRow = createOrderData.order
 
       if (paymentMethod === 'stripe') {
         // Call the Edge Function via fetch to avoid sending Authorization header

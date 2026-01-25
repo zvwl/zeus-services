@@ -39,14 +39,28 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
   const fetchOrderDetails = async (id) => {
     try {
       setLoadingOrder(true)
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('id', id)
-        .single()
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
 
-      if (error) throw error
-      setOrderDetails(data)
+      if (!accessToken) {
+        throw new Error('Please log in to view your order')
+      }
+
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-order?orderId=${id}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${accessToken}`
+        }
+      })
+
+      const body = await res.json()
+      if (!res.ok || body?.error) {
+        throw new Error(body?.error || 'Failed to load order')
+      }
+
+      setOrderDetails(body.order)
     } catch (err) {
       console.error('Error fetching order:', err)
     } finally {
@@ -93,7 +107,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
 
     if (orderDetails) {
       const items = Array.isArray(orderDetails.items) ? orderDetails.items : []
-      const { userNote, systemNote } = getNoteParts(orderDetails.notes)
+      const { userNote, systemNote } = getNoteParts(orderDetails.note_plaintext || orderDetails.notes)
 
       return (
         <section className="section services" id="cart">

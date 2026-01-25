@@ -112,48 +112,46 @@ export default function AdminOrdersPage() {
   }
 
   const fetchOrders = async () => {
+    setLoading(true)
     try {
-      let query = supabase
-        .from('orders')
-        .select('*')
-        .order('created_at', { ascending: false })
+      const { data: sessionData } = await supabase.auth.getSession()
+      const accessToken = sessionData?.session?.access_token
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
+      if (!accessToken) {
+        setError('Please log in')
+        setLoading(false)
+        return
       }
 
-      // Apply search by email, user ID, or order ID
-      const q = searchDebounced.trim()
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
-      if (q) {
-        if (uuidRegex.test(q)) {
-          // Full UUID: narrow on server by id/user_id and allow email match too
-          query = query.or(`user_id.eq.${q},id.eq.${q},customer_email.ilike.%${q}%`)
-        } else {
-          // Non-UUID: only apply server-side email ilike if the query looks like email
-          const isEmailLike = q.includes('@')
-          if (isEmailLike) {
-            query = query.or(`customer_email.ilike.%${q}%`)
-          }
-          // Otherwise, skip server-side search filters to allow client-side partial ID matching
+      const params = new URLSearchParams()
+      params.set('status', statusFilter)
+      if (searchDebounced.trim()) {
+        params.set('q', searchDebounced.trim())
+      }
+
+      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-admin-orders?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${accessToken}`
         }
+      })
+
+      const body = await res.json()
+
+      if (res.status === 403) {
+        setIsAdmin(false)
+        setError('Access denied. Admin privileges required.')
+        setLoading(false)
+        return
       }
 
-      const { data, error } = await query
-
-      if (error) throw error
-
-      // Client-side matching for non-UUID: partial order ID or email
-      let results = data || []
-      if (q && !uuidRegex.test(q)) {
-        const qLower = q.toLowerCase()
-        results = results.filter(o => (
-          String(o.id || '').toLowerCase().includes(qLower) ||
-          String(o.customer_email || '').toLowerCase().includes(qLower)
-        ))
+      if (!res.ok || body?.error) {
+        throw new Error(body?.error || 'Failed to load orders')
       }
 
-      setOrders(results)
+      setOrders(body.orders || [])
       setError('')
     } catch (err) {
       setError('Error loading orders: ' + err.message)
@@ -407,10 +405,10 @@ export default function AdminOrdersPage() {
                   )}
                 </div>
 
-                {order.notes && (
+                {(order.note_plaintext || order.notes) && (
                   <div className="order-notes">
                     <strong>Notes:</strong>
-                    <p>{order.notes}</p>
+                    <p>{order.note_plaintext || order.notes}</p>
                   </div>
                 )}
                 </div>
