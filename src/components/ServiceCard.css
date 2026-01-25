@@ -1,8 +1,3 @@
-.service-card-container {
-  perspective: 1000px;
-  height: 100%;
-}
-
 .service-card {
   background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
   border: 2px solid rgba(251, 191, 36, 0.25);
@@ -18,28 +13,6 @@
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
 }
 
-.card-front,
-.card-back {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.card-front {
-  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
-}
-
-.card-back {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  overflow-y: auto;
-  border-radius: 13px;
-}
-
-.service-card:hover .card-back {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
 .service-card::before {
   content: '';
   position: absolute;
@@ -49,7 +22,6 @@
   height: 100%;
   background: linear-gradient(90deg, transparent, rgba(251, 191, 36, 0.2), transparent);
   transition: left 0.5s ease;
-  z-index: 0;
 }
 
 .service-card:hover::before {
@@ -57,12 +29,9 @@
 }
 
 .service-card:hover {
+  transform: translateY(-10px) scale(1.02);
   border-color: rgba(251, 191, 36, 0.7);
   box-shadow: 0 20px 40px rgba(251, 191, 36, 0.3);
-}
-
-.service-card:hover .card-front {
-  transform: translateY(-10px) scale(1.02);
   background: linear-gradient(135deg, #1e2a47 0%, #1a1f35 100%);
 }
 
@@ -238,45 +207,6 @@
   text-align: center;
 }
 
-.flip-hint {
-  font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.6);
-  text-align: center;
-  margin-top: auto;
-  padding-top: 0.5rem;
-  font-style: italic;
-}
-
-.card-back .flip-hint {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.back-title {
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: white;
-  text-align: center;
-}
-
-.details-list {
-  flex-grow: 1;
-  overflow-y: auto;
-}
-
-.detail-item {
-  font-size: 0.95rem;
-  color: rgba(255, 255, 255, 0.95);
-  margin-bottom: 0.8rem;
-  line-height: 1.5;
-  padding-left: 0.5rem;
-}
-
-.detail-item strong {
-  color: white;
-  font-weight: 700;
-}
-
 /* Tablet */
 @media (max-width: 1024px) {
   .service-card {
@@ -309,16 +239,6 @@
   .qty-display {
     font-size: 1rem;
     min-width: 28px;
-  }
-
-  .back-title {
-    font-size: 1.2rem;
-    margin-bottom: 1.2rem;
-  }
-
-  .detail-item {
-    font-size: 0.9rem;
-    margin-bottom: 0.7rem;
   }
 }
 
@@ -359,16 +279,6 @@
   .qty-display {
     font-size: 0.95rem;
     min-width: 26px;
-  }
-
-  .back-title {
-    font-size: 1.15rem;
-    margin-bottom: 1rem;
-  }
-
-  .detail-item {
-    font-size: 0.85rem;
-    margin-bottom: 0.6rem;
   }
 }
 
@@ -416,16 +326,6 @@
   .qty-display {
     font-size: 0.9rem;
     min-width: 24px;
-  }
-
-  .back-title {
-    font-size: 1.1rem;
-    margin-bottom: 0.9rem;
-  }
-
-  .detail-item {
-    font-size: 0.8rem;
-    margin-bottom: 0.5rem;
   }
 }
 
@@ -479,15 +379,5 @@
   .qty-display {
     font-size: 0.85rem;
     min-width: 22px;
-  }
-
-  .back-title {
-    font-size: 1rem;
-    margin-bottom: 0.8rem;
-  }
-
-  .detail-item {
-    font-size: 0.75rem;
-    margin-bottom: 0.4rem;
   }
 }

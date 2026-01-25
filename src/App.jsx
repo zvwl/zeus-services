@@ -6,6 +6,7 @@ import { supabase } from './supabaseClient'
 import Header from './components/Header'
 import Home from './pages/Home'
 import ServicesPage from './pages/Services'
+import ServiceDetail from './pages/ServiceDetail'
 import CartPage from './pages/CartPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 import LoginPage from './pages/LoginPage'
@@ -314,6 +315,20 @@ function App() {
           path="/services"
           element={(
             <ServicesPage
+              services={services}
+              cartItems={cartItems}
+              addToCart={addToCart}
+              removeFromCart={removeFromCart}
+              updateQuantity={updateQuantity}
+              currency={currency}
+              formatPrice={formatPrice}
+            />
+          )}
+        />
+        <Route
+          path="/service/:id"
+          element={(
+            <ServiceDetail
               services={services}
               cartItems={cartItems}
               addToCart={addToCart}
