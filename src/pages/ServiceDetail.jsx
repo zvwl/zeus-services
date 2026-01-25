@@ -27,7 +27,10 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
           if (serviceId === service.id) {
             localStorage.removeItem('pendingCartItem')
             // Set platform and version so they're visible when added
-            const [plat, vers] = savedPlatform.split(' ')
+            // Split by last space: "Epic Games Legacy" -> ["Epic Games", "Legacy"]
+            const lastSpaceIndex = savedPlatform.lastIndexOf(' ')
+            const plat = savedPlatform.substring(0, lastSpaceIndex)
+            const vers = savedPlatform.substring(lastSpaceIndex + 1)
             console.log('Auto-adding to cart - platform:', plat, 'version:', vers)
             setPlatform(plat)
             setVersion(vers)
