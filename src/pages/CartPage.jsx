@@ -5,7 +5,7 @@ import Cart from '../components/Cart'
 import '../App.css'
 import './CartPage.css'
 
-export default function CartPage({ cartItems, removeFromCart, updateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, clearCart }) {
+export default function CartPage({ cartItems, removeFromCart, updateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange, clearCart }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [orderDetails, setOrderDetails] = useState(null)
   const [loadingOrder, setLoadingOrder] = useState(false)
@@ -196,6 +196,8 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
         paymentMethod={paymentMethod}
         onPaymentMethodChange={onPaymentMethodChange}
         isDevUser={isDevUser}
+        orderNote={orderNote}
+        onOrderNoteChange={onOrderNoteChange}
       />
     </section>
   )

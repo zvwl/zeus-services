@@ -8,6 +8,10 @@ export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+                {(() => {
+                  const { currency: orderCurrency, subtotal, recordedTotal } = getOrderTotals(order)
+                  return (
+                    <>
   const [isAdmin, setIsAdmin] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -214,6 +218,27 @@ export default function AdminOrdersPage() {
     })
   }
 
+  const getItemUnitPrice = (item, currency) => {
+    if (typeof item?.price_converted === 'number') return item.price_converted
+    if (typeof item?.price_usd === 'number') return item.price_usd
+    return Number(item?.price_converted ?? item?.price_usd ?? 0)
+  }
+
+  const getOrderTotals = (order) => {
+    const currency = order?.currency || 'GBP'
+    const subtotal = (order?.items || []).reduce((sum, item) => {
+      const quantity = item?.quantity ?? 1
+      const unitPrice = getItemUnitPrice(item, currency)
+      return sum + unitPrice * quantity
+    }, 0)
+
+    const recordedTotal = typeof order?.total_amount === 'number'
+      ? order.total_amount
+      : subtotal
+
+    return { currency, subtotal, recordedTotal }
+  }
+
   if (loading) {
     return (
       <section className="section admin-section">
@@ -359,16 +384,29 @@ export default function AdminOrdersPage() {
                   <ul>
                     {(order.items || []).map((item, idx) => (
                       <li key={idx}>
-                        {item.name} - {item.quantity}x {formatCurrency(
-                          // Prefer converted price; fallback to USD if missing
-                          (typeof item.price_converted === 'number' ? item.price_converted : (
-                            typeof item.price_usd === 'number' ? item.price_usd : Number(item?.price_converted ?? item?.price_usd ?? 0)
-                          )),
-                          order.currency
-                        )}
+                        <div className="item-row">
+                          <div className="item-name">{item.name}</div>
+                          <div className="item-meta">{item.quantity} x {formatCurrency(getItemUnitPrice(item, orderCurrency), orderCurrency)}</div>
+                          <div className="item-total">{formatCurrency((item.quantity || 1) * getItemUnitPrice(item, orderCurrency), orderCurrency)}</div>
+                        </div>
+                        {item.platform && <div className="item-platform">Platform: {item.platform}</div>}
                       </li>
                     ))}
                   </ul>
+                </div>
+
+                <div className="order-totals">
+                  <div className="totals-row">
+                    <span>Items total</span>
+                    <strong>{formatCurrency(subtotal, orderCurrency)}</strong>
+                  </div>
+                  <div className="totals-row">
+                    <span>Recorded total</span>
+                    <strong>{formatCurrency(recordedTotal, orderCurrency)}</strong>
+                  </div>
+                  {Math.abs((recordedTotal ?? 0) - (subtotal ?? 0)) > 0.01 && (
+                    <div className="totals-note">Includes discounts/fees or taxes</div>
+                  )}
                 </div>
 
                 {order.notes && (
@@ -377,6 +415,9 @@ export default function AdminOrdersPage() {
                     <p>{order.notes}</p>
                   </div>
                 )}
+                    </>
+                  )
+                })()}
               </div>
             ))}
           </div>

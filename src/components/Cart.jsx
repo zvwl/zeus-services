@@ -1,7 +1,7 @@
 import './Cart.css'
 import { useAuth } from '../contexts/AuthContext'
 
-export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser }) {
+export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
   const { emailVerified } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const isLoading = checkoutStatus?.state === 'loading'
@@ -99,6 +99,20 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
               <span className="option-desc">We will contact you to finalize payment.</span>
             </div>
           </label>
+
+        <div className="order-note">
+          <div className="order-note-header">
+            <h3>Order notes</h3>
+            <p>Share account email, login details, or specific instructions for this order.</p>
+          </div>
+          <textarea
+            value={orderNote}
+            onChange={(e) => onOrderNoteChange?.(e.target.value)}
+            placeholder="Example: Account email is user@example.com, please add cars to Slot 1 and keep outfits #3 and #4."
+            maxLength={1000}
+          />
+          <div className="order-note-hint">Up to 1000 characters. Sent securely with your order.</div>
+        </div>
 
           {isDevUser && (
             <label className="payment-option dev-option">

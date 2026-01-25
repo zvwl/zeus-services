@@ -24,6 +24,7 @@ function App() {
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
   const [userCountry, setUserCountry] = useState(null)
+  const [orderNote, setOrderNote] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('stripe')
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -113,6 +114,7 @@ function App() {
     if (success === 'true' && orderId) {
       setCheckoutStatus({ state: 'success', message: 'Payment successful! Your order has been confirmed.' })
       setCartItems([])
+      setOrderNote('')
 
       // Clear the URL parameters
       window.history.replaceState({}, '', '/cart')
@@ -258,6 +260,12 @@ function App() {
       const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
       const totalConverted = convertAmount(totalUsd)
 
+      const paymentNote = paymentMethod === 'dev_skip'
+        ? 'Dev payment bypassed'
+        : paymentMethod === 'stripe'
+          ? 'Stripe checkout initiated'
+          : 'Payment pending (invoice/manual)'
+
       const orderPayload = {
         // RLS requires user_id to match auth.uid()
         user_id: sessionUser.id,
@@ -277,11 +285,11 @@ function App() {
         status: 'created',
         payment_status: paymentMethod === 'dev_skip' ? 'skipped' : 'pending',
         payment_method: paymentMethod === 'stripe' ? 'stripe_checkout' : paymentMethod,
-        notes: paymentMethod === 'dev_skip'
-          ? 'Dev payment bypassed'
-          : paymentMethod === 'stripe'
-            ? 'Stripe checkout initiated'
-            : 'Payment pending (invoice/manual)'
+        notes: orderNote.trim()
+          ? `${orderNote.trim()}
+
+System: ${paymentNote}`
+          : paymentNote
       }
 
       const { data: orderRow, error } = await supabase
@@ -341,6 +349,7 @@ function App() {
 
       setCheckoutStatus({ state: 'success', message: successMessage })
       setCartItems([])
+      setOrderNote('')
       navigate('/cart')
     } catch (err) {
       setCheckoutStatus({ state: 'error', message: err.message || 'Checkout failed' })
@@ -410,6 +419,8 @@ function App() {
               paymentMethod={paymentMethod}
               onPaymentMethodChange={setPaymentMethod}
               isDevUser={isDevUser}
+              orderNote={orderNote}
+              onOrderNoteChange={setOrderNote}
               clearCart={() => setCartItems([])}
             />
           )}
