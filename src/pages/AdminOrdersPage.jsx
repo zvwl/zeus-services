@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AdminOrdersPage.css'
@@ -111,7 +111,7 @@ export default function AdminOrdersPage() {
     }
   }
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
     setLoading(true)
     try {
       const { data: sessionData } = await supabase.auth.getSession()
@@ -158,13 +158,13 @@ export default function AdminOrdersPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [statusFilter, searchDebounced])
 
   useEffect(() => {
     if (isAdmin) {
       fetchOrders()
     }
-  }, [statusFilter, isAdmin, searchDebounced])
+  }, [isAdmin, fetchOrders])
 
   // Debounce search input to reduce requests while typing
   useEffect(() => {
