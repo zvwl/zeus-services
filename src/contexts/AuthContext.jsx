@@ -112,7 +112,10 @@ export const AuthProvider = ({ children }) => {
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        password
+        password,
+        options: {
+          captchaToken
+        }
       })
       
       if (error) {
