@@ -57,16 +57,6 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
               </div>
             )}
           </div>
-
-          <a
-            href="https://discord.gg/NSNSmmaA"
-            className="discord-link"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img src="/discordLogo.png" alt="Discord" className="discord-icon" />
-            Discord
-          </a>
           
           <button className="cart-button" onClick={() => navigate('/cart')}>
             🛒 Cart ({cartCount})
