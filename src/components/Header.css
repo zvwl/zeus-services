@@ -346,14 +346,14 @@
   }
 
   .brand {
-    flex: 0 1 auto;
+    flex: 0 0 auto;
     justify-content: flex-start;
     min-width: 0;
     gap: 0.4rem;
   }
 
   .brand-name {
-    font-size: 1.1rem;
+    display: none; /* Hide text on mobile to prevent overlapping */
   }
 
   .nav {
@@ -388,6 +388,7 @@
   .cart-button {
     padding: 0.45rem 0.65rem;
     font-size: 0.85rem;
+    white-space: nowrap;
   }
 
   .menu-button {
