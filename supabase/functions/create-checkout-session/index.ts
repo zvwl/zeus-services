@@ -75,38 +75,23 @@ Deno.serve(async (req) => {
       }
     )
 
-    const { orderId } = await req.json();
+    const { items, total_amount, currency, customer_email, customer_name, notes } = await req.json();
     
-    if (!orderId) {
-      return new Response(JSON.stringify({ error: "orderId is required" }), { 
+    if (!Array.isArray(items) || typeof total_amount !== 'number' || !currency) {
+      return new Response(JSON.stringify({ error: "items, total_amount, and currency are required" }), { 
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
 
-    // Fetch order
-    const { data: order, error: orderError } = await supabaseAdmin
-      .from("orders")
-      .select("id, items, total_amount, currency, customer_email")
-      .eq("id", orderId)
-      .single();
-
-    if (orderError || !order) {
-      return new Response(JSON.stringify({ error: orderError?.message ?? "Order not found" }), { 
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      });
-    }
-
-    const currency = (order.currency || "USD").toLowerCase();
-    const items = Array.isArray(order.items) ? order.items : [];
+    const finalCurrency = (currency || "USD").toLowerCase();
 
     const lineItems = items.map((item: any) => {
       const unit = typeof item.price_converted === "number" ? item.price_converted : Number(item.price_converted ?? 0);
       const amount = Math.max(0, Math.round(unit * 100));
       return {
         price_data: {
-          currency,
+          currency: finalCurrency,
           product_data: {
             name: item.name ?? "Item",
             description: item.platform ?? undefined,
@@ -124,28 +109,27 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Store all order data in metadata to create order after payment
+    const metadata: any = {
+      items: JSON.stringify(items),
+      total_amount: total_amount.toString(),
+      currency: currency,
+      customer_email: customer_email || '',
+      customer_name: customer_name || '',
+      notes: notes || '',
+      ...(userId ? { user_id: userId } : {}),
+    };
+
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      currency,
-      customer_email: order.customer_email ?? undefined,
+      currency: finalCurrency,
+      customer_email: customer_email ?? undefined,
       line_items: lineItems,
       payment_method_types: ['card'],
-      metadata: {
-        order_id: order.id,
-        ...(userId ? { user_id: userId } : {}),
-      },
-      success_url: `${finalFrontendUrl}/cart?success=true&orderId=${order.id}`,
-      cancel_url: `${finalFrontendUrl}/cart?canceled=true&orderId=${order.id}`,
+      metadata: metadata,
+      success_url: `${finalFrontendUrl}/cart?success=true`,
+      cancel_url: `${finalFrontendUrl}/cart?canceled=true`,
     });
-
-    await supabaseAdmin
-      .from("orders")
-      .update({
-        payment_provider: "stripe",
-        payment_status: "pending",
-        checkout_session_id: session.id,
-      })
-      .eq("id", order.id);
 
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

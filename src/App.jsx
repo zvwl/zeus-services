@@ -258,51 +258,72 @@ function App() {
       const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
       const totalConverted = convertAmount(totalUsd)
 
-      // Create order via Edge Function (encrypts note server-side)
-      const createOrderRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-order`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({
-          items: cartItems.map(({ id, name, platform, quantity, price }) => ({
-            id,
-            name,
-            platform,
-            quantity,
-            price_usd: price,
-            price_converted: convertAmount(price),
-            currency
-          })),
-          total_amount: totalConverted,
-          currency,
-          status: 'created',
-          payment_status: paymentMethod === 'dev_skip' ? 'skipped' : 'pending',
-          payment_method: paymentMethod === 'dev_skip' ? 'dev_skip' : 'stripe_checkout',
-          notes: orderNote
+      if (paymentMethod === 'dev_skip') {
+        // For dev_skip, create order directly via create-order function
+        const createOrderRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-order`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${accessToken}`
+          },
+          body: JSON.stringify({
+            items: cartItems.map(({ id, name, platform, quantity, price }) => ({
+              id,
+              name,
+              platform,
+              quantity,
+              price_usd: price,
+              price_converted: convertAmount(price),
+              currency
+            })),
+            total_amount: totalConverted,
+            currency,
+            status: 'processing',
+            payment_status: 'skipped',
+            payment_method: 'dev_skip',
+            notes: orderNote
+          })
         })
-      })
 
-      const createOrderData = await createOrderRes.json()
-      if (!createOrderRes.ok || createOrderData?.error) {
-        setCheckoutStatus({ state: 'error', message: createOrderData?.error || 'Order creation failed' })
+        const createOrderData = await createOrderRes.json()
+        if (!createOrderRes.ok || createOrderData?.error) {
+          setCheckoutStatus({ state: 'error', message: createOrderData?.error || 'Order creation failed' })
+          return
+        }
+
+        // Clear cart and show success
+        setCartItems([])
+        setCheckoutStatus({ state: 'success', message: 'Dev order created!' })
+        navigate('/orders')
         return
       }
 
-      const orderRow = createOrderData.order
-
+      // For Stripe payments, go directly to checkout without creating order
       if (paymentMethod === 'stripe') {
-        // Call the Edge Function via fetch to avoid sending Authorization header
         const fnRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`
+            Authorization: `Bearer ${accessToken}`
           },
-          body: JSON.stringify({ orderId: orderRow.id })
+          body: JSON.stringify({
+            items: cartItems.map(({ id, name, platform, quantity, price }) => ({
+              id,
+              name,
+              platform,
+              quantity,
+              price_usd: price,
+              price_converted: convertAmount(price),
+              currency
+            })),
+            total_amount: totalConverted,
+            currency,
+            customer_email: sessionUser.email,
+            customer_name: sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0],
+            notes: orderNote
+          })
         })
 
         let fnData = null
@@ -328,12 +349,6 @@ function App() {
         window.location.assign(url)
         return
       }
-
-      // Non-Stripe path is dev-skip only
-      setCheckoutStatus({ state: 'success', message: 'Order placed. Payment was skipped (dev).' })
-      setCartItems([])
-      setOrderNote('')
-      navigate('/cart')
     } catch (err) {
       setCheckoutStatus({ state: 'error', message: err.message || 'Checkout failed' })
     }

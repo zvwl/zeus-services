@@ -11,6 +11,16 @@ if (!STRIPE_WEBHOOK_SECRET || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "");
 
+// Encryption helpers
+async function importAesKey(base64Key: string) {
+  const raw = Uint8Array.from(atob(base64Key), c => c.charCodeAt(0));
+  return crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
+}
+
+function toBase64(bytes: ArrayBuffer) {
+  return btoa(String.fromCharCode(...new Uint8Array(bytes)));
+}
+
 // Manual webhook signature verification using Web Crypto API
 async function verifyWebhookSignature(
   body: string,
@@ -101,88 +111,101 @@ Deno.serve(async (req) => {
   try {
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as any;
-      const orderId = session.metadata?.order_id;
       const userId = session.metadata?.user_id;
+      const itemsJson = session.metadata?.items;
+      const totalAmount = session.metadata?.total_amount;
+      const currency = session.metadata?.currency;
+      const customerEmail = session.metadata?.customer_email || session.customer_email;
+      const customerName = session.metadata?.customer_name;
+      const notes = session.metadata?.notes;
 
-      if (orderId) {
-        console.log(`✅ [checkout.session.completed] Updating order ${orderId}`);
-        const updateData: any = {
-          payment_status: "paid",
+      if (!itemsJson || !totalAmount || !currency) {
+        console.error("❌ Missing required metadata in checkout session");
+        return new Response("Missing metadata", { status: 400 });
+      }
+
+      // Parse items
+      const items = JSON.parse(itemsJson);
+
+      // Encrypt notes if provided
+      let notesCiphertext = null;
+      let notesIv = null;
+      
+      const NOTES_ENC_KEY = Deno.env.get("NOTES_ENC_KEY");
+      if (notes && notes.trim() && NOTES_ENC_KEY) {
+        try {
+          const fullNote = `${notes.trim()}\n\nSystem: Stripe payment completed`;
+          const key = await importAesKey(NOTES_ENC_KEY);
+          const iv = crypto.getRandomValues(new Uint8Array(12));
+          const encoder = new TextEncoder();
+          const data = encoder.encode(fullNote);
+          const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, data);
+          notesCiphertext = toBase64(encrypted);
+          notesIv = toBase64(iv);
+        } catch (encErr) {
+          console.error("❌ Note encryption error:", encErr);
+        }
+      }
+
+      // Create the order NOW that payment is complete
+      console.log(`✅ [checkout.session.completed] Creating order after successful payment`);
+      const { data: newOrder, error: insertError } = await supabase
+        .from("orders")
+        .insert([{
+          user_id: userId || null,
+          customer_email: customerEmail,
+          customer_name: customerName || customerEmail?.split("@")[0] || null,
+          items: items,
+          total_amount: parseFloat(totalAmount),
+          currency: currency,
           status: "processing",
+          payment_status: "paid",
+          payment_method: "stripe_checkout",
           payment_intent_id: session.payment_intent ?? null,
           paid_at: new Date().toISOString(),
           checkout_session_id: session.id,
           payment_provider: "stripe",
-        };
-        if (userId) updateData.user_id = userId;
-        await supabase
-          .from("orders")
-          .update(updateData)
-          .eq("id", orderId);
-        console.log(`✅ Order ${orderId} marked as paid/processing`);
+          notes: null,
+          notes_ciphertext: notesCiphertext,
+          notes_iv: notesIv
+        }])
+        .select()
+        .single();
 
-        // Send order confirmation email
-        try {
-          if (!SUPABASE_ANON_KEY) {
-            console.error("❌ Missing SUPABASE_ANON_KEY env var; cannot send confirmation email");
-          } else {
-            const emailUrl = `${SUPABASE_URL}/functions/v1/send-order-confirmation`;
-            console.log(`📧 Attempting to send email for order ${orderId} via ${emailUrl}`);
-            const emailRes = await fetch(emailUrl, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-              },
-              body: JSON.stringify({ orderId })
-            });
-            const emailText = await emailRes.text();
-            console.log(`📧 Email response status=${emailRes.status}, body=${emailText}`);
-            if (!emailRes.ok) {
-              console.error(`❌ Failed to send confirmation email for ${orderId}`);
-            }
-          }
-        } catch (emailErr) {
-          console.error('❌ Email send error:', emailErr);
-        }
+      if (insertError) {
+        console.error(`❌ Failed to create order:`, insertError);
+        return new Response("Order creation failed", { status: 500 });
       }
-    } else if (event.type === "payment_intent.succeeded") {
-      const intent = event.data.object as any;
-      const orderId = intent.metadata?.order_id;
-      const userId = intent.metadata?.user_id;
 
-      if (orderId) {
-        console.log(`✅ [payment_intent.succeeded] Updating order ${orderId}`);
-        const updateData: any = {
-          payment_status: "paid",
-          status: "processing",
-          payment_intent_id: intent.id,
-          paid_at: new Date().toISOString(),
-          payment_provider: "stripe",
-        };
-        if (userId) updateData.user_id = userId;
-        await supabase
-          .from("orders")
-          .update(updateData)
-          .eq("id", orderId);
+      console.log(`✅ Order ${newOrder.id} created and marked as paid/processing`);
+
+      // Send order confirmation email
+      try {
+        if (!SUPABASE_ANON_KEY) {
+          console.error("❌ Missing SUPABASE_ANON_KEY env var; cannot send confirmation email");
+        } else {
+          const emailUrl = `${SUPABASE_URL}/functions/v1/send-order-confirmation`;
+          console.log(`📧 Attempting to send email for order ${newOrder.id} via ${emailUrl}`);
+          const emailRes = await fetch(emailUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ orderId: newOrder.id })
+          });
+          const emailText = await emailRes.text();
+          console.log(`📧 Email response status=${emailRes.status}, body=${emailText}`);
+          if (!emailRes.ok) {
+            console.error(`❌ Failed to send confirmation email for ${newOrder.id}`);
+          }
+        }
+      } catch (emailErr) {
+        console.error('❌ Email send error:', emailErr);
       }
     } else if (event.type === "payment_intent.payment_failed") {
-      const intent = event.data.object as any;
-      const orderId = intent.metadata?.order_id;
-      const userId = intent.metadata?.user_id;
-
-      if (orderId) {
-        console.log(`❌ [payment_intent.payment_failed] Marking order ${orderId} as failed`);
-        const updateData: any = {
-          payment_status: "failed",
-          status: "cancelled",
-        };
-        if (userId) updateData.user_id = userId;
-        await supabase
-          .from("orders")
-          .update(updateData)
-          .eq("id", orderId);
-      }
+      // Payment failed - nothing to do since order was never created
+      console.log(`ℹ️ [payment_intent.payment_failed] Payment failed, no order created`);
     } else {
       console.log(`ℹ️ Unhandled event type: ${event.type}`);
     }
