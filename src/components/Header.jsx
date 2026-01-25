@@ -16,7 +16,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
 
   const handleLogout = async () => {
     await logout()
-    navigate('/login')
+    navigate('/')
   }
 
   return (

@@ -15,7 +15,7 @@ export default function UserMenu({ isOpen, onClose }) {
   const handleLogout = async () => {
     onClose()
     await logout()
-    navigate('/login')
+    navigate('/')
   }
 
   const isActive = (path) => location.pathname === path
