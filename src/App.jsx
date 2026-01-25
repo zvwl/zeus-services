@@ -128,14 +128,10 @@ function App() {
   }, [location])
 
   const platformOptions = [
-    'Steam Enhanced',
-    'Epic Games Enhanced',
-    'Xbox App Enhanced',
-    'Rockstar Launcher Enhanced',
-    'Steam Legacy',
-    'Epic Games Legacy',
-    'Xbox App Legacy',
-    'Rockstar Launcher Legacy'
+    'Steam',
+    'Epic Games',
+    'Xbox App',
+    'Rockstar Launcher'
   ]
 
   const services = [
