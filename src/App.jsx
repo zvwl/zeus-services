@@ -23,6 +23,7 @@ function App() {
   const [cartItems, setCartItems] = useState([])
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
+  const [userCountry, setUserCountry] = useState(null)
   const [paymentMethod, setPaymentMethod] = useState('stripe')
   const { user } = useAuth()
   const navigate = useNavigate()
@@ -30,27 +31,71 @@ function App() {
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
 
+  // Detect user's country and set currency accordingly
+  useEffect(() => {
+    const detectLocation = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/')
+        const data = await response.json()
+        setUserCountry(data.country_code)
+        
+        // Set currency based on country
+        const countryToCurrency = {
+          'US': 'USD',
+          'GB': 'GBP',
+          'IE': 'EUR',
+          'DE': 'EUR',
+          'FR': 'EUR',
+          'ES': 'EUR',
+          'IT': 'EUR',
+          'NL': 'EUR',
+          'BE': 'EUR',
+          'AT': 'EUR',
+          'GR': 'EUR',
+          'PT': 'EUR',
+          'CY': 'EUR',
+          'LU': 'EUR',
+          'MT': 'EUR',
+          'SK': 'EUR',
+          'SI': 'EUR',
+          'LT': 'EUR',
+          'LV': 'EUR',
+          'EE': 'EUR',
+          'FI': 'EUR'
+        }
+        
+        const detectedCurrency = countryToCurrency[data.country_code] || 'GBP'
+        setCurrency(detectedCurrency)
+      } catch (err) {
+        console.log('Location detection failed, defaulting to GBP:', err)
+        setCurrency('GBP')
+      }
+    }
+    
+    detectLocation()
+  }, [])
+
   const currencyRates = {
-    USD: 1,
-    GBP: 0.79,
-    EUR: 0.92
+    GBP: 1,
+    USD: 1.27,
+    EUR: 1.09
   }
 
   const currencySymbols = {
-    USD: '$',
     GBP: '£',
+    USD: '$',
     EUR: '€'
   }
 
-  const formatPrice = (amountUsd) => {
+  const formatPrice = (amountGbp) => {
     const rate = currencyRates[currency] ?? 1
-    const symbol = currencySymbols[currency] ?? '$'
-    return `${symbol}${(amountUsd * rate).toFixed(2)}`
+    const symbol = currencySymbols[currency] ?? '£'
+    return `${symbol}${(amountGbp * rate).toFixed(2)}`
   }
 
-  const convertAmount = (amountUsd) => {
+  const convertAmount = (amountGbp) => {
     const rate = currencyRates[currency] ?? 1
-    return Number((amountUsd * rate).toFixed(2))
+    return Number((amountGbp * rate).toFixed(2))
   }
 
   useEffect(() => {
@@ -308,7 +353,6 @@ function App() {
         cartCount={cartItems.length}
         user={user}
         currency={currency}
-        onCurrencyChange={setCurrency}
       />
 
       <Routes>

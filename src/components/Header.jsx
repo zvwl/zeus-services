@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import UserMenu from './UserMenu'
 import './Header.css'
 
-export default function Header({ cartCount, currency, onCurrencyChange }) {
+export default function Header({ cartCount, currency }) {
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -34,17 +34,8 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
         </nav>
 
         <div className="nav-actions">
-          <div className="currency-switcher">
-            <label htmlFor="currency-select">Currency</label>
-            <select
-              id="currency-select"
-              value={currency}
-              onChange={(e) => onCurrencyChange(e.target.value)}
-            >
-              <option value="USD">USD ($)</option>
-              <option value="GBP">GBP (£)</option>
-              <option value="EUR">EUR (€)</option>
-            </select>
+          <div className="currency-badge">
+            {currency}
           </div>
 
           <a

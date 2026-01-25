@@ -123,6 +123,21 @@
   outline-offset: 2px;
 }
 
+/* Currency badge - auto-detected location */
+.currency-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #0a0e1a;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background: #fbbf24;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 8px rgba(251, 191, 36, 0.3);
+}
+
 .user-greeting {
   color: #fbbf24;
   font-weight: 600;
@@ -294,17 +309,11 @@
     flex-shrink: 0;
   }
 
-  .currency-switcher {
+  .currency-badge {
     display: inline-flex;
-    order: -1; /* keep it first in the cluster on mobile */
-    padding: 0.2rem 0.55rem;
-    font-size: 0.8rem;
-    gap: 0.3rem;
-  }
-
-  .currency-switcher select {
-    font-size: 0.85rem;
-    padding: 0.1rem 0.1rem;
+    order: -1;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
   }
 
   .discord-link {
