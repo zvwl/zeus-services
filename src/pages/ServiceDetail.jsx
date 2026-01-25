@@ -45,7 +45,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
         }
       }
     }
-  }, [user, service, addToCart])
+  }, [user, service, addToCart, location.pathname])
 
   if (!service) {
     return (
