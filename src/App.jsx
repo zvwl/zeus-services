@@ -100,7 +100,7 @@ function App() {
       id: 2,
       name: '👕 20 Modded Outfits',
       price: 3.00,
-      description: '🎨 Stylish modded outfits to make your character stand out. Choose from exclusive, rare, and custom designs unavailable in normal gameplay.',
+      description: '🎨 Stylish modded outfits to make your character stand out.',
       icon: '👕',
       platforms: platformOptions,
       details: [
