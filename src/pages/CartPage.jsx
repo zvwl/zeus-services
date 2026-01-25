@@ -71,6 +71,15 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
     })
   }
 
+  const getNoteParts = (notes) => {
+    if (!notes) return { userNote: '', systemNote: '' }
+    const [userPart, ...rest] = notes.split('\nSystem:')
+    return {
+      userNote: userPart.trim(),
+      systemNote: rest.join('\nSystem:').trim()
+    }
+  }
+
   if (success === 'true' && orderId) {
     if (loadingOrder) {
       return (
@@ -84,6 +93,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
 
     if (orderDetails) {
       const items = Array.isArray(orderDetails.items) ? orderDetails.items : []
+      const { userNote, systemNote } = getNoteParts(orderDetails.notes)
 
       return (
         <section className="section services" id="cart">
@@ -155,6 +165,24 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
                   {formatCurrency(orderDetails.total_amount, orderDetails.currency)}
                 </span>
               </div>
+
+              {(userNote || systemNote) && (
+                <div className="order-notes-summary">
+                  <h3>Notes</h3>
+                  {userNote && (
+                    <div className="note-block">
+                      <span className="note-label">Your note</span>
+                      <p>{userNote}</p>
+                    </div>
+                  )}
+                  {systemNote && (
+                    <div className="note-block system">
+                      <span className="note-label">System</span>
+                      <p>{systemNote}</p>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {orderDetails.customer_email && (
                 <div className="order-confirmation-note">

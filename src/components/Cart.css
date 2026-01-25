@@ -259,6 +259,49 @@
   animation: slide-up 0.5s ease-out 0.2s backwards;
 }
 
+.order-notes-summary {
+  margin-top: 1.25rem;
+  background: rgba(10, 14, 26, 0.55);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.order-notes-summary h3 {
+  margin: 0;
+  color: #f8fafc;
+}
+
+.note-block {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 0.75rem 0.85rem;
+}
+
+.note-block.system {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.note-label {
+  display: inline-block;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 0.3rem;
+}
+
+.note-block p {
+  margin: 0;
+  color: #f1f5f9;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}
+
 .cart-total-text {
   display: flex;
   flex-direction: column;

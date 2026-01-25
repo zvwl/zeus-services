@@ -198,9 +198,11 @@
   border-bottom: 1px solid rgba(251, 191, 36, 0.2);
   gap: 1rem;
 }
-
-.order-id {
-  display: flex;
+.order-notes p {
+  color: #cbd5e1;
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
   flex-direction: column;
   gap: 0.4rem;
   flex: 1;
