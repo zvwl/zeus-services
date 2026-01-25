@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import '../App.css'
+import './CartPage.css'
 
 export default function ServiceDetail({ services, cartItems, addToCart, removeFromCart, updateQuantity, currency, formatPrice }) {
   const { id } = useParams()
@@ -284,6 +285,13 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                 </button>
               )}
             </div>
+
+            {cartItem && (
+              <div className="order-actions" style={{ marginTop: '1rem' }}>
+                <button className="primary-btn" onClick={() => navigate('/cart')}>Continue to Checkout</button>
+                <button className="secondary-btn" onClick={() => navigate('/services')}>Continue Shopping</button>
+              </div>
+            )}
           </div>
         </div>
       </div>
