@@ -14,7 +14,11 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   const [verificationMessage, setVerificationMessage] = useState('')
 
   // Get service from props or location state
-  const service = services.find(s => s.id === parseInt(id)) || location.state?.service
+  // ID can be UUID (from DB) or number (legacy), so try both
+  const service = services.find(s => {
+    const paramId = id
+    return s.id === paramId || s.id === parseInt(paramId)
+  }) || location.state?.service
 
   // Auto-add pending cart item after login
   useEffect(() => {

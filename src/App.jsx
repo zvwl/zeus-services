@@ -22,6 +22,7 @@ import ResetPasswordPage from './pages/ResetPasswordPage'
 import OrdersPage from './pages/OrdersPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminServicesPage from './pages/AdminServicesPage'
 import TermsPage from './pages/TermsPage'
 import RefundPage from './pages/RefundPage'
 
@@ -35,6 +36,8 @@ function App() {
       return []
     }
   })
+  const [services, setServices] = useState([])
+  const [servicesLoading, setServicesLoading] = useState(true)
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
   const [userCountry, setUserCountry] = useState(null)
@@ -45,6 +48,31 @@ function App() {
   const location = useLocation()
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
+
+  // Fetch services from database
+  useEffect(() => {
+    const fetchServices = async () => {
+      setServicesLoading(true)
+      try {
+        const { data, error } = await supabase
+          .from('services')
+          .select('*')
+          .eq('active', true)
+          .order('created_at', { ascending: true })
+
+        if (error) throw error
+        setServices(data || [])
+      } catch (err) {
+        console.error('Error fetching services:', err)
+        // Fallback to empty array if database fails
+        setServices([])
+      } finally {
+        setServicesLoading(false)
+      }
+    }
+
+    fetchServices()
+  }, [])
 
   // Persist cart to localStorage whenever it changes
   useEffect(() => {
@@ -154,93 +182,6 @@ function App() {
     'Epic Games',
     'Xbox App',
     'Rockstar Launcher'
-  ]
-
-  const services = [
-    {
-      id: 1,
-      name: '🚗 50 Modded Cars',
-      price: 3.00,
-      description: 'Get 50 fully customized modded vehicles added to your account. Delivered manually within 30 minutes to 12 hours.',
-      icon: '🚗',
-      platforms: platformOptions,
-      details: [
-        '📌 You must already own GTA V / GTA Online before purchasing',
-        '💥 What\'s Included:',
-        '  🚗 50 Modded Cars of your choice',
-        '⏱️ Delivery:',
-        '  ✅ Completed within 30 minutes to 12 hours',
-        '  🔑 Login access required',
-        '  💬 We\'ll contact you via Discord with full instructions',
-        '⚠️ Important:',
-        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
-      ]
-    },
-    {
-      id: 2,
-      name: '👕 20 Modded Outfits',
-      price: 3.00,
-      description: 'Get 20 premium modded outfits to make your character stand out. Delivered manually within 30 minutes to 12 hours.',
-      icon: '👕',
-      platforms: platformOptions,
-      details: [
-        '📌 You must already own GTA V / GTA Online before purchasing',
-        '💥 What\'s Included:',
-        '  👕 20 Premium Modded Outfits',
-        '⏱️ Delivery:',
-        '  ✅ Completed within 30 minutes to 12 hours',
-        '  🔑 Login access required',
-        '  💬 We\'ll contact you via Discord with full instructions',
-        '⚠️ Important:',
-        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
-      ]
-    },
-    {
-      id: 3,
-      name: '💸 Custom Cash',
-      price: 3.00,
-      description: 'Add any amount of custom cash to your account (30m–50m recommended per 24 hours for safety). Delivered manually within 30 minutes to 12 hours.',
-      icon: '💸',
-      platforms: platformOptions,
-      details: [
-        '📌 You must already own GTA V / GTA Online before purchasing',
-        '💥 What\'s Included:',
-        '  💰 Any amount of custom cash (30m–50m recommended per 24 hours, your choice)',
-        '⏱️ Delivery:',
-        '  ✅ Completed within 30 minutes to 12 hours',
-        '  🔑 Login access required',
-        '  💬 We\'ll contact you via Discord with full instructions',
-        '⚠️ Important:',
-        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
-      ]
-    },
-    {
-      id: 4,
-      name: '💸 Ultimate GTA Package',
-      price: 6.00,
-      description: 'The complete GTA Online transformation! Custom cash, max level, all unlocks, fast run, premium outfits, modded cars, and all properties. Delivered manually within 1–24 hours.',
-      icon: '⚡',
-      platforms: platformOptions,
-      details: [
-        '📌 You must already own GTA V / GTA Online before purchasing',
-        '💥 What\'s Included:',
-        '  💰 Custom cash amount (50m recommended per 24 hours, your choice)',
-        '  📈 Level 1–8000 of your choice',
-        '  🔥 All stats maxed out',
-        '  🔓 All content unlocked + all achievements',
-        '  🏃 Fast run enabled',
-        '  🎯 Customizable K/D ratio, account creation date & playtime',
-        '  👕 Premium modded outfits',
-        '  🚗 Any vehicles of your choice',
-        '  🏡 All businesses & properties purchased',
-        '⏱️ Delivery:',
-        '  ✅ Completed within 1–24 hours',
-        '  🔑 Login access required',
-        '  💬 We\'ll contact you via Discord with full instructions',
-        '⚠️ Important:',
-        '  By purchasing this service, you take full responsibility for your account. If your account receives a ban, we\'ll provide a free service once to restore your account, but we cannot purchase a game key for you and refunds are not available. See our Terms & Conditions for more details.'
-      ]
-    }
   ]
 
   const addToCart = (service, platform) => {
@@ -508,6 +449,14 @@ function App() {
           element={
             <ProtectedAdminRoute>
               <AdminDashboard />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/services"
+          element={
+            <ProtectedAdminRoute>
+              <AdminServicesPage />
             </ProtectedAdminRoute>
           }
         />
