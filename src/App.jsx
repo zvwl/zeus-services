@@ -49,6 +49,17 @@ function App() {
     localStorage.setItem('cartItems', JSON.stringify(cartItems))
   }, [cartItems])
 
+  // Handle OAuth redirect - if user just logged in and there's a stored redirect, apply it
+  useEffect(() => {
+    if (user) {
+      const storedRedirect = localStorage.getItem('oauthRedirect')
+      if (storedRedirect) {
+        localStorage.removeItem('oauthRedirect')
+        navigate(storedRedirect)
+      }
+    }
+  }, [user, navigate])
+
   // Detect user's country and set currency accordingly via backend
   useEffect(() => {
     const detectLocation = async () => {

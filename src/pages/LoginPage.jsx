@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react'
+import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
@@ -22,16 +22,6 @@ export default function LoginPage() {
   const captchaRef = useRef(null)
   const { login, loginWithGoogle, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
-
-  // Listen for OAuth redirect event
-  useEffect(() => {
-    const handleOAuthRedirect = (event) => {
-      navigate(event.detail.path)
-    }
-    
-    window.addEventListener('oauthRedirect', handleOAuthRedirect)
-    return () => window.removeEventListener('oauthRedirect', handleOAuthRedirect)
-  }, [navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
