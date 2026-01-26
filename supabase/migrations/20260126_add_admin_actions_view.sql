@@ -1,5 +1,7 @@
 -- Create a view to get admin_actions with admin names
-CREATE OR REPLACE VIEW public.admin_actions_with_names AS
+-- Using SECURITY INVOKER to enforce RLS policies of the querying user
+CREATE OR REPLACE VIEW public.admin_actions_with_names 
+WITH (security_invoker = true) AS
 SELECT 
   aa.id,
   aa.admin_user_id,
@@ -14,9 +16,6 @@ SELECT
 FROM public.admin_actions aa
 LEFT JOIN public.customers c ON aa.admin_user_id = c.user_id;
 
--- Enable RLS on the view to respect table policies
-ALTER VIEW public.admin_actions_with_names OWNER TO postgres;
-
--- Grant select to authenticated users (RLS will filter)
+-- Grant select to authenticated users (RLS policies will filter based on user)
 GRANT SELECT ON public.admin_actions_with_names TO authenticated;
 GRANT SELECT ON public.admin_actions_with_names TO anon;
