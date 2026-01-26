@@ -44,6 +44,39 @@ export default function UserMenu({ isOpen, onClose }) {
         </div>
 
         <div className="user-menu-content">
+          {/* Browse section - always visible */}
+          <div className="menu-section">
+            <div className="menu-section-title">Browse</div>
+            <button
+              className={`menu-item ${isActive('/') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/')}
+            >
+              <span className="menu-icon">🏠</span>
+              <span className="menu-label">Home</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/services') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/services')}
+            >
+              <span className="menu-icon">🛍️</span>
+              <span className="menu-label">Services</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/products') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/products')}
+            >
+              <span className="menu-icon">📦</span>
+              <span className="menu-label">Products</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/cart') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/cart')}
+            >
+              <span className="menu-icon">🛒</span>
+              <span className="menu-label">Cart</span>
+            </button>
+          </div>
+
           {user ? (
             <>
               <div className="menu-section">
@@ -59,7 +92,7 @@ export default function UserMenu({ isOpen, onClose }) {
                   className={`menu-item ${isActive('/orders') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/orders')}
                 >
-                  <span className="menu-icon">📦</span>
+                  <span className="menu-icon">📋</span>
                   <span className="menu-label">My Orders</span>
                 </button>
               </div>
@@ -78,24 +111,6 @@ export default function UserMenu({ isOpen, onClose }) {
               )}
 
               <div className="menu-section">
-                <div className="menu-section-title">Shopping</div>
-                <button
-                  className={`menu-item ${isActive('/services') ? 'active' : ''}`}
-                  onClick={() => handleNavigation('/services')}
-                >
-                  <span className="menu-icon">🛍️</span>
-                  <span className="menu-label">Browse Services</span>
-                </button>
-                <button
-                  className={`menu-item ${isActive('/cart') ? 'active' : ''}`}
-                  onClick={() => handleNavigation('/cart')}
-                >
-                  <span className="menu-icon">🛒</span>
-                  <span className="menu-label">Cart</span>
-                </button>
-              </div>
-
-              <div className="menu-section">
                 <button className="menu-item logout" onClick={handleLogout}>
                   <span className="menu-icon">🚪</span>
                   <span className="menu-label">Logout</span>
@@ -104,6 +119,7 @@ export default function UserMenu({ isOpen, onClose }) {
             </>
           ) : (
             <div className="menu-section">
+              <div className="menu-section-title">Account</div>
               <button
                 className="menu-item"
                 onClick={() => handleNavigation('/login')}
