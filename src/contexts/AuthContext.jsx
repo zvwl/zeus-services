@@ -51,11 +51,9 @@ export const AuthProvider = ({ children }) => {
       }
       
       if (adminData) {
-        console.log('✅ Admin status confirmed for user:', userId)
         setIsAdmin(true)
         try { localStorage.setItem('isAdmin', 'true') } catch {}
       } else {
-        console.log('❌ User is not an admin:', userId)
         setIsAdmin(false)
         try { localStorage.removeItem('isAdmin') } catch {}
       }
