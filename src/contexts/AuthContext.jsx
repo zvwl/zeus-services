@@ -20,18 +20,28 @@ export const AuthProvider = ({ children }) => {
   // Function to check admin status
   const checkAdminStatus = async (userId) => {
     try {
-      const { data: adminData } = await supabase
+      const { data: adminData, error } = await supabase
         .from('admin_users')
-        .select('id')
+        .select('id, active')
         .eq('user_id', userId)
+        .eq('active', true)
         .maybeSingle()
       
+      if (error) {
+        console.error('Admin check error:', error)
+        setIsAdmin(false)
+        return
+      }
+      
       if (adminData) {
+        console.log('✅ Admin status confirmed for user:', userId)
         setIsAdmin(true)
       } else {
+        console.log('❌ User is not an admin:', userId)
         setIsAdmin(false)
       }
     } catch (err) {
+      console.error('Admin check exception:', err)
       setIsAdmin(false)
     }
   }
@@ -80,7 +90,7 @@ export const AuthProvider = ({ children }) => {
     checkSession()
 
     // Listen for auth changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -89,7 +99,8 @@ export const AuthProvider = ({ children }) => {
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
-        // Don't check admin here - let it stay from checkSession or login
+        // Check admin status on every auth change
+        await checkAdminStatus(session.user.id)
         setLoading(false)
       } else {
         setUser(null)
