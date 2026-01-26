@@ -414,7 +414,8 @@ export const AuthProvider = ({ children }) => {
       resendVerificationEmail,
       updateProfile,
       changePassword,
-      verifyMfaChallenge
+      verifyMfaChallenge,
+      refreshAdminStatus: () => user && checkAdminStatus(user.id)
     }}>
       {children}
     </AuthContext.Provider>
