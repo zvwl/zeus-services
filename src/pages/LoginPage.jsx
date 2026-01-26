@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
@@ -22,6 +22,16 @@ export default function LoginPage() {
   const captchaRef = useRef(null)
   const { login, loginWithGoogle, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
+
+  // Listen for OAuth redirect event
+  useEffect(() => {
+    const handleOAuthRedirect = (event) => {
+      navigate(event.detail.path)
+    }
+    
+    window.addEventListener('oauthRedirect', handleOAuthRedirect)
+    return () => window.removeEventListener('oauthRedirect', handleOAuthRedirect)
+  }, [navigate])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -93,15 +103,20 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError('')
     try {
+      // Store the redirect destination before OAuth redirect
+      localStorage.setItem('oauthRedirect', redirectTo)
+      
       const result = await loginWithGoogle()
       if (result.success) {
-        // If user came from checkout, go to checkout. Otherwise go to services.
+        // If Google OAuth redirects, the stored redirect will be used in AuthContext
         navigate(redirectTo)
       } else if (result.error) {
         setError(result.error)
+        localStorage.removeItem('oauthRedirect')
       }
     } catch (err) {
       setError('Could not start Google sign-in')
+      localStorage.removeItem('oauthRedirect')
     }
   }
 

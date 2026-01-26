@@ -89,7 +89,15 @@ export const AuthProvider = ({ children }) => {
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
-        // Don't check admin here - let it stay from checkSession or login
+        
+        // If user logged in via OAuth, check for stored redirect and clear it
+        const storedRedirect = localStorage.getItem('oauthRedirect')
+        if (storedRedirect) {
+          localStorage.removeItem('oauthRedirect')
+          // Navigate to the stored redirect (this will be handled in LoginPage or App)
+          window.dispatchEvent(new CustomEvent('oauthRedirect', { detail: { path: storedRedirect } }))
+        }
+        
         setLoading(false)
       } else {
         setUser(null)
