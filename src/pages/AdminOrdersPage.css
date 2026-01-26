@@ -348,6 +348,12 @@
   border: 1px solid rgba(148, 163, 184, 0.4);
 }
 
+.detail-row .value.payment-skipped {
+  color: #8b5cf6 !important;
+  background-color: rgba(139, 92, 246, 0.25) !important;
+  border: 1px solid rgba(139, 92, 246, 0.4);
+}
+
 .detail-row .value.payment-default {
   color: #f8fafc !important;
   background-color: rgba(148, 163, 184, 0.25) !important;
