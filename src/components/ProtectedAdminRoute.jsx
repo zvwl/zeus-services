@@ -4,15 +4,15 @@ import { useEffect, useState } from 'react'
 import { supabase } from '../supabaseClient'
 
 export default function ProtectedAdminRoute({ children }) {
-  const { user, isAdmin, loading: authLoading, refreshAdminStatus } = useAuth()
+  const { user, isAdmin, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const [hasChecked, setHasChecked] = useState(false)
   const [timeoutReached, setTimeoutReached] = useState(false)
 
-  // If auth is taking too long, show fallback actions
+  // If auth is taking too long, show fallback actions after 6 seconds
   useEffect(() => {
     if (!authLoading) return
-    const t = setTimeout(() => setTimeoutReached(true), 7000)
+    const t = setTimeout(() => setTimeoutReached(true), 6000)
     return () => clearTimeout(t)
   }, [authLoading])
 
@@ -35,6 +35,28 @@ export default function ProtectedAdminRoute({ children }) {
     }
   }, [user, isAdmin, authLoading, navigate])
 
+  const handleForceLogout = async () => {
+    // Clear state immediately
+    try {
+      localStorage.clear()
+      sessionStorage.clear()
+    } catch {}
+    
+    // Try Supabase logout but don't wait long
+    try {
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('timeout')), 2000)
+      )
+      await Promise.race([
+        supabase.auth.signOut({ scope: 'global' }),
+        timeoutPromise
+      ])
+    } catch {}
+    
+    // Redirect immediately
+    window.location.href = '/login'
+  }
+
   // Show loading while auth is being checked, with fallback actions if it stalls
   if (authLoading || !hasChecked) {
     return (
@@ -43,30 +65,7 @@ export default function ProtectedAdminRoute({ children }) {
         {timeoutReached && (
           <div style={{ marginTop: '1rem' }}>
             <button
-              onClick={() => refreshAdminStatus && refreshAdminStatus()}
-              style={{
-                padding: '0.6rem 1rem',
-                marginRight: '0.6rem',
-                borderRadius: 6,
-                border: '1px solid rgba(251,191,36,0.5)',
-                background: 'rgba(251,191,36,0.1)',
-                color: '#fbbf24',
-                cursor: 'pointer'
-              }}
-            >
-              Retry Admin Check
-            </button>
-            <button
-              onClick={async () => {
-                try {
-                  await supabase.auth.signOut({ scope: 'global' })
-                } catch {}
-                try {
-                  localStorage.clear()
-                  sessionStorage.clear()
-                } catch {}
-                window.location.href = '/login'
-              }}
+              onClick={handleForceLogout}
               style={{
                 padding: '0.6rem 1rem',
                 borderRadius: 6,

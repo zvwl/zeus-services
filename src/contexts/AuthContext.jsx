@@ -23,15 +23,26 @@ export const AuthProvider = ({ children }) => {
     }
   })
 
-  // Function to check admin status
+  // Function to check admin status with timeout
   const checkAdminStatus = async (userId) => {
     try {
-      const { data: adminData, error } = await supabase
+      // Create a promise that rejects after 5 seconds
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Admin check timeout')), 5000)
+      )
+
+      // Race the actual query against the timeout
+      const queryPromise = supabase
         .from('admin_users')
         .select('id, active')
         .eq('user_id', userId)
         .eq('active', true)
         .maybeSingle()
+
+      const { data: adminData, error } = await Promise.race([
+        queryPromise,
+        timeoutPromise
+      ])
       
       if (error) {
         console.error('Admin check error:', error)
@@ -55,10 +66,21 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    // Check for existing Supabase session
+    // Check for existing Supabase session with timeout
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession()
+        // Create timeout promise - if session check takes >5 seconds, give up
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Session check timeout')), 5000)
+        )
+
+        const sessionPromise = supabase.auth.getSession()
+
+        const { data: { session } } = await Promise.race([
+          sessionPromise,
+          timeoutPromise
+        ])
+
         if (session?.user) {
           // Verify the user actually exists in the database
           const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser()
@@ -86,7 +108,7 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (err) {
         console.error('Session check error:', err)
-        // If session check fails, clear everything
+        // If session check fails or times out, clear everything
         setUser(null)
         setEmailVerified(false)
         setIsAdmin(false)
@@ -314,21 +336,26 @@ export const AuthProvider = ({ children }) => {
   }
 
   const logout = async () => {
-    try {
-      // End all Supabase sessions (global ensures remote sessions cleared too)
-      const { error } = await supabase.auth.signOut({ scope: 'global' })
-      if (error) {
-        console.error('Logout error:', error)
-      }
-    } catch (err) {
-      console.error('Logout exception:', err)
-    } finally {
-      // Clear local state regardless
-      setUser(null)
-      setEmailVerified(false)
-      setIsAdmin(false)
+    // Clear local state IMMEDIATELY - don't wait for Supabase
+    setUser(null)
+    setEmailVerified(false)
+    setIsAdmin(false)
 
-      // Clear client storage artifacts
+    // Try to sign out from Supabase but don't block if it fails/times out
+    try {
+      // Use a short timeout for logout - should be fast
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Logout timeout')), 3000)
+      )
+      
+      const logoutPromise = supabase.auth.signOut({ scope: 'global' })
+      
+      await Promise.race([logoutPromise, timeoutPromise])
+    } catch (err) {
+      // Logout call failed or timed out - that's OK, local state is already cleared
+      console.error('Supabase logout failed (non-blocking):', err)
+    } finally {
+      // Clear ALL client storage
       try {
         localStorage.clear()
         sessionStorage.clear()
@@ -336,7 +363,7 @@ export const AuthProvider = ({ children }) => {
         console.warn('Storage clear failed:', storageErr)
       }
 
-      // Redirect to login to avoid stale state
+      // Force redirect to login immediately
       window.location.href = '/login'
     }
   }
