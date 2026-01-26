@@ -69,29 +69,18 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
 
   const handleAddToCart = () => {
     console.log('handleAddToCart called - user:', user, 'platform:', platform, 'version:', version)
-    if (!user) {
-      // Save pending cart item before redirecting to login
-      if (!platform || !version) {
-        console.log('Missing platform or version - platform:', platform, 'version:', version)
-        alert('Please select a platform and version first')
-        return
-      }
-      const fullPlatform = `${platform} ${version}`
-      console.log('Saving pending item - serviceId:', service.id, 'platform:', fullPlatform)
-      localStorage.setItem('pendingCartItem', JSON.stringify({
-        serviceId: service.id,
-        platform: fullPlatform
-      }))
-      console.log('Pending item saved, checking localStorage:', localStorage.getItem('pendingCartItem'))
-      navigate('/login')
+    
+    if (!platform || !version) {
+      alert('Please select a platform and version first')
       return
     }
-    if (!emailVerified) {
+
+    if (!emailVerified && user) {
       setVerificationMessage('⚠️ Please verify your email before adding items to cart')
       setTimeout(() => setVerificationMessage(''), 5000)
       return
     }
-    if (!platform || !version) return
+
     const fullPlatform = `${platform} ${version}`
     addToCart(service, fullPlatform)
     setVerificationMessage('✓ Added to cart!')

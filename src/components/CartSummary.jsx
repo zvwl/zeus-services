@@ -1,9 +1,19 @@
 import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../contexts/AuthContext'
 import './Cart.css'
 
 export default function CartSummary({ items, onRemove, onUpdateQuantity, currency, formatPrice }) {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+
+  const handleCheckout = () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
+    navigate('/checkout')
+  }
 
   if (items.length === 0) {
     return (
@@ -57,9 +67,9 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
         </div>
         <button
           className="checkout-btn"
-          onClick={() => navigate('/checkout')}
+          onClick={handleCheckout}
         >
-          Proceed to Checkout
+          {user ? 'Proceed to Checkout' : 'Login to Checkout'}
         </button>
       </div>
     </div>

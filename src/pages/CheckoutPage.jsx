@@ -1,14 +1,21 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import './CartPage.css'
 
 export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
   const navigate = useNavigate()
-  const { emailVerified } = useAuth()
+  const { user, loading: authLoading, emailVerified } = useAuth()
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const isLoading = checkoutStatus?.state === 'loading'
   const hasMessage = checkoutStatus?.message
+
+  // Redirect to login if not logged in (but wait for auth to finish loading)
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/login')
+    }
+  }, [user, authLoading, navigate])
 
   const buttonLabel = (() => {
     if (paymentMethod === 'dev_skip') return isLoading ? 'Placing order...' : 'Buy now (dev skip payment)'
@@ -16,11 +23,31 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
   })()
 
   const handleCheckout = () => {
+    if (!user) {
+      navigate('/login')
+      return
+    }
     if (!emailVerified) {
       alert('Please verify your email before checking out')
       return
     }
     onCheckout()
+  }
+
+  // Show loading while auth is being checked
+  if (authLoading) {
+    return (
+      <section className="section services" id="checkout">
+        <div className="order-summary-container">
+          <div className="loading-message">Loading...</div>
+        </div>
+      </section>
+    )
+  }
+
+  // This shouldn't happen due to useEffect redirect, but just in case
+  if (!user) {
+    return null
   }
 
   if (cartItems.length === 0) {
