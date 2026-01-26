@@ -26,9 +26,9 @@ export const AuthProvider = ({ children }) => {
   // Function to check admin status with timeout
   const checkAdminStatus = async (userId) => {
     try {
-      // Create a promise that rejects after 12 seconds
+      // Create a promise that rejects after 10 seconds (background check)
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Admin check timeout')), 12000)
+        setTimeout(() => reject(new Error('Admin check timeout')), 10000)
       )
 
       // Race the actual query against the timeout
@@ -103,8 +103,9 @@ export const AuthProvider = ({ children }) => {
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
           
-          // Check admin status and WAIT for it to complete before marking loading as false
-          await checkAdminStatus(session.user.id)
+          // Check admin status in the background (don't block page load)
+          // If it times out or errors, isAdmin stays false
+          checkAdminStatus(session.user.id)
         }
       } catch (err) {
         console.error('Session check error:', err)
@@ -113,6 +114,7 @@ export const AuthProvider = ({ children }) => {
         setEmailVerified(false)
         setIsAdmin(false)
       } finally {
+        // Mark loading as done immediately - don't wait for admin check
         setLoading(false)
       }
     }
@@ -129,8 +131,8 @@ export const AuthProvider = ({ children }) => {
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
-        // Check admin status on every auth change and WAIT for it
-        await checkAdminStatus(session.user.id)
+        // Check admin status in background (don't block)
+        checkAdminStatus(session.user.id)
         setLoading(false)
       } else {
         setUser(null)
