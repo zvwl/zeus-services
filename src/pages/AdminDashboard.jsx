@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './AdminOrdersPage.css'
 
 export default function AdminDashboard() {
-  const { user, isAdmin } = useAuth()
+  const { user, isAdmin, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [adminStats, setAdminStats] = useState([])
   const [adminLogs, setAdminLogs] = useState([])
   const [loading, setLoading] = useState(true)
@@ -13,15 +15,30 @@ export default function AdminDashboard() {
   const [dateRange, setDateRange] = useState('all') // 'all', '7days', '30days', '90days'
   const [adminNames, setAdminNames] = useState({})
 
+  // FIRST: Check if user is authenticated and is admin
   useEffect(() => {
-    if (!isAdmin) {
-      setError('Admin access required')
-      setLoading(false)
+    if (authLoading) return // Still checking auth status
+    
+    // Not authenticated
+    if (!user) {
+      setError('Please log in to access this page')
+      navigate('/login')
       return
     }
     
+    // Not admin
+    if (!isAdmin) {
+      setError('Admin access required - this incident will be logged')
+      console.warn(`Non-admin user ${user.id} (${user.email}) attempted to access admin dashboard`)
+      setLoading(false)
+      // Redirect after a short delay
+      setTimeout(() => navigate('/'), 2000)
+      return
+    }
+    
+    // User is authenticated and is admin - fetch data
     fetchDashboardData()
-  }, [isAdmin, dateRange])
+  }, [isAdmin, authLoading, user, navigate])
 
   const getDayOffset = () => {
     switch(dateRange) {
@@ -161,10 +178,26 @@ export default function AdminDashboard() {
     }
   }
 
+  if (authLoading) {
+    return (
+      <div className="admin-orders-container">
+        <div className="loading">Verifying admin access...</div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <div className="admin-orders-container">
+        <div className="error-message">Unauthorized - redirecting to login...</div>
+      </div>
+    )
+  }
+
   if (!isAdmin) {
     return (
       <div className="admin-orders-container">
-        <div className="error-message">Admin access required</div>
+        <div className="error-message">❌ Admin access required - this incident has been logged</div>
       </div>
     )
   }

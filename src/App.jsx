@@ -5,6 +5,7 @@ import './App.css'
 import { supabase } from './supabaseClient'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import Home from './pages/Home'
 import ServicesPage from './pages/Services'
 import ServiceDetail from './pages/ServiceDetail'
@@ -39,7 +40,7 @@ function App() {
   const [userCountry, setUserCountry] = useState(null)
   const [orderNote, setOrderNote] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('stripe')
-  const { user } = useAuth()
+  const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -496,11 +497,19 @@ function App() {
         />
         <Route
           path="/admin/orders"
-          element={<AdminOrdersPage />}
+          element={
+            <ProtectedAdminRoute>
+              <AdminOrdersPage />
+            </ProtectedAdminRoute>
+          }
         />
         <Route
           path="/admin/dashboard"
-          element={<AdminDashboard />}
+          element={
+            <ProtectedAdminRoute>
+              <AdminDashboard />
+            </ProtectedAdminRoute>
+          }
         />
         <Route
           path="/forgot-password"
