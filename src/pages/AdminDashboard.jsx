@@ -47,6 +47,20 @@ export default function AdminDashboard() {
 
       const adminUserIds = adminUsersData?.map(a => a.user_id) || []
 
+      // Fetch admin names from customers table
+      const { data: customersData, error: customersError } = await supabase
+        .from('customers')
+        .select('user_id, name, email')
+        .in('user_id', adminUserIds)
+
+      if (customersError) throw customersError
+
+      const adminNamesTemp = {}
+      customersData?.forEach(customer => {
+        adminNamesTemp[customer.user_id] = customer.name || customer.email || 'Unknown'
+      })
+      setAdminNames(adminNamesTemp)
+
       // Fetch orders handled by admins
       let ordersQuery = supabase
         .from('orders')
@@ -78,16 +92,6 @@ export default function AdminDashboard() {
       const { data: actions, error: actionsError } = await logsQuery
 
       if (actionsError) throw actionsError
-
-      // Get admin names from auth
-      const adminNamesTemp = {}
-      for (const adminId of adminUserIds) {
-        const { data: { user: authUser }, error: authError } = await supabase.auth.admin.getUserById(adminId)
-        if (!authError && authUser) {
-          adminNamesTemp[adminId] = authUser.user_metadata?.name || authUser.email || 'Unknown'
-        }
-      }
-      setAdminNames(adminNamesTemp)
 
       // Build admin stats from orders
       const stats = {}
