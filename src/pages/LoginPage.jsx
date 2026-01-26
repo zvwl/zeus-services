@@ -94,7 +94,10 @@ export default function LoginPage() {
     setError('')
     try {
       const result = await loginWithGoogle()
-      if (!result.success && result.error) {
+      if (result.success) {
+        // If user came from checkout, go to checkout. Otherwise go to services.
+        navigate(redirectTo)
+      } else if (result.error) {
         setError(result.error)
       }
     } catch (err) {
@@ -134,6 +137,12 @@ export default function LoginPage() {
         captchaRef.current?.resetCaptcha()
         setCaptchaToken(null)
         
+        // If user came from checkout, go to checkout. Otherwise check for pending cart item.
+        if (redirectTo === '/checkout') {
+          navigate('/checkout')
+          return
+        }
+        
         // Check if there's a pending cart item to add
         const pendingItem = localStorage.getItem('pendingCartItem')
         if (pendingItem) {
@@ -144,10 +153,10 @@ export default function LoginPage() {
           } catch (err) {
             console.error('Error processing pending cart item:', err)
             localStorage.removeItem('pendingCartItem')
-            navigate('/services')
+            navigate(redirectTo)
           }
         } else {
-          navigate('/services')
+          navigate(redirectTo)
         }
       } else {
         setMfaError(result.error || 'Verification failed')
