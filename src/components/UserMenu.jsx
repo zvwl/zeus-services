@@ -111,8 +111,8 @@ export default function UserMenu({ isOpen, onClose }) {
                     className={`menu-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/admin/dashboard')}
                   >
-                    <span className="menu-icon">📊</span>
-                    <span className="menu-label">Dashboard</span>
+                    <span className="menu-icon">�</span>
+                    <span className="menu-label">Activity Logs</span>
                   </button>
                 </div>
               )}
