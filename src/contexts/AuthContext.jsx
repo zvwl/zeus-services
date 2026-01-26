@@ -15,7 +15,13 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [emailVerified, setEmailVerified] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(() => {
+    try {
+      return localStorage.getItem('isAdmin') === 'true'
+    } catch {
+      return false
+    }
+  })
 
   // Function to check admin status
   const checkAdminStatus = async (userId) => {
@@ -36,9 +42,11 @@ export const AuthProvider = ({ children }) => {
       if (adminData) {
         console.log('✅ Admin status confirmed for user:', userId)
         setIsAdmin(true)
+        try { localStorage.setItem('isAdmin', 'true') } catch {}
       } else {
         console.log('❌ User is not an admin:', userId)
         setIsAdmin(false)
+        try { localStorage.removeItem('isAdmin') } catch {}
       }
     } catch (err) {
       console.error('Admin check exception:', err)
