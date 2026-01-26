@@ -832,3 +832,326 @@
     font-size: 0.85rem;
   }
 }
+
+/* Admin Dashboard Styles */
+.dashboard-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.tab-btn {
+  background: rgba(251, 191, 36, 0.1);
+  border: 2px solid rgba(251, 191, 36, 0.3);
+  color: #fbbf24;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
+}
+
+.tab-btn:hover {
+  background: rgba(251, 191, 36, 0.2);
+  border-color: rgba(251, 191, 36, 0.6);
+}
+
+.tab-btn.active {
+  background: #fbbf24;
+  color: #1a1a1a;
+  border-color: #fbbf24;
+}
+
+.date-filter {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.date-filter label {
+  font-weight: 600;
+  color: #cbd5e1;
+}
+
+.date-filter select {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  color: #f8fafc;
+  padding: 0.6rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.date-filter select:hover {
+  border-color: rgba(251, 191, 36, 0.6);
+}
+
+.date-filter select:focus {
+  outline: none;
+  border-color: #fbbf24;
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+}
+
+.stats-section h2,
+.logs-section h2 {
+  color: #f8fafc;
+  margin-bottom: 1.5rem;
+  font-size: 1.5rem;
+}
+
+.no-data {
+  color: #94a3b8;
+  text-align: center;
+  padding: 2rem;
+  font-style: italic;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(251, 191, 36, 0.5);
+  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.1);
+  transform: translateY(-2px);
+}
+
+.stat-card h3 {
+  color: #fbbf24;
+  margin-bottom: 1.25rem;
+  font-size: 1.25rem;
+  border-bottom: 2px solid rgba(251, 191, 36, 0.2);
+  padding-bottom: 0.75rem;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.stat-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  color: #cbd5e1;
+}
+
+.stat-label {
+  font-weight: 600;
+  color: #94a3b8;
+}
+
+.stat-value {
+  font-weight: 700;
+  color: #f8fafc;
+  font-size: 1.1rem;
+}
+
+.stat-row.revenue {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.currency-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  margin-left: 1rem;
+}
+
+.currency-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.95rem;
+}
+
+.currency-item .amount {
+  font-weight: 700;
+  color: #10b981;
+}
+
+.currency-item .currency {
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.logs-table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+}
+
+.logs-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: rgba(15, 23, 42, 0.8);
+}
+
+.logs-table thead {
+  background: rgba(251, 191, 36, 0.1);
+  border-bottom: 2px solid rgba(251, 191, 36, 0.3);
+}
+
+.logs-table th {
+  color: #fbbf24;
+  font-weight: 700;
+  padding: 1rem;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+.logs-table td {
+  color: #cbd5e1;
+  padding: 1rem;
+  border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+}
+
+.logs-table tbody tr:hover {
+  background: rgba(251, 191, 36, 0.05);
+}
+
+.admin-name {
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+.action-badge {
+  display: inline-block;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  color: white;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.order-id {
+  font-family: 'Courier New', monospace;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.status-change {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.old-status {
+  color: #f97316;
+}
+
+.new-status {
+  color: #10b981;
+}
+
+.arrow {
+  color: #fbbf24;
+}
+
+.no-change {
+  color: #64748b;
+  font-style: italic;
+}
+
+.notes {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboard-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .logs-table {
+    font-size: 0.85rem;
+  }
+
+  .logs-table th,
+  .logs-table td {
+    padding: 0.75rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .tab-buttons {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .tab-btn {
+    width: 100%;
+  }
+
+  .date-filter {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .date-filter select {
+    width: 100%;
+  }
+
+  .logs-table-wrapper {
+    overflow: auto;
+  }
+
+  .logs-table {
+    font-size: 0.8rem;
+  }
+
+  .logs-table th,
+  .logs-table td {
+    padding: 0.5rem;
+  }
+
+  .status-change {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
+  }
+
+  .notes {
+    max-width: 150px;
+  }
+}

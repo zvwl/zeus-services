@@ -20,6 +20,7 @@ import ForgotPasswordPage from './pages/ForgotPasswordPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
 import OrdersPage from './pages/OrdersPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
+import AdminDashboard from './pages/AdminDashboard'
 import TermsPage from './pages/TermsPage'
 import RefundPage from './pages/RefundPage'
 
@@ -496,6 +497,10 @@ function App() {
         <Route
           path="/admin/orders"
           element={<AdminOrdersPage />}
+        />
+        <Route
+          path="/admin/dashboard"
+          element={<AdminDashboard />}
         />
         <Route
           path="/forgot-password"

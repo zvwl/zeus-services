@@ -107,6 +107,13 @@ export default function UserMenu({ isOpen, onClose }) {
                     <span className="menu-icon">👨‍💼</span>
                     <span className="menu-label">Manage Orders</span>
                   </button>
+                  <button
+                    className={`menu-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/admin/dashboard')}
+                  >
+                    <span className="menu-icon">📊</span>
+                    <span className="menu-label">Dashboard</span>
+                  </button>
                 </div>
               )}
 

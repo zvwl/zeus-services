@@ -36,6 +36,11 @@ export default function AdminOrdersPage() {
     setError('');
     setConfirmDialog({ isOpen: false, orderId: null, action: null, orderInfo: null });
     try {
+      // Get the current order for logging
+      const currentOrder = orders.find(o => o.id === orderId)
+      const oldStatus = currentOrder?.status
+      const oldPaymentStatus = currentOrder?.payment_status
+      
       // Get the current session access token
       const session = await supabase.auth.getSession();
       const accessToken = session?.data?.session?.access_token;
@@ -49,6 +54,10 @@ export default function AdminOrdersPage() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Refund failed');
+      
+      // Log admin action for refund
+      await logAdminAction(orderId, 'refund', oldStatus, 'cancelled', `Refunded from ${oldPaymentStatus}`)
+      
       // Update local state
       setOrders(orders.map(order =>
         order.id === orderId
@@ -75,6 +84,13 @@ export default function AdminOrdersPage() {
   // Cancel without refund handler (after confirmation)
   const handleCancelOrder = async (orderId) => {
     setConfirmDialog({ isOpen: false, orderId: null, action: null, orderInfo: null });
+    // Get the current order for logging
+    const currentOrder = orders.find(o => o.id === orderId)
+    const oldStatus = currentOrder?.status
+    
+    // Log admin action for cancel
+    await logAdminAction(orderId, 'cancel', oldStatus, 'cancelled', 'Cancelled without refund')
+    
     await updateOrderStatus(orderId, 'cancelled');
   };
 
@@ -177,12 +193,19 @@ export default function AdminOrdersPage() {
   const updateOrderStatus = async (orderId, newStatus) => {
     setUpdatingOrderId(orderId)
     try {
+      // Get the current order to find the old status
+      const currentOrder = orders.find(o => o.id === orderId)
+      const oldStatus = currentOrder?.status
+      
       const { error } = await supabase
         .from('orders')
         .update({ status: newStatus })
         .eq('id', orderId)
 
       if (error) throw error
+
+      // Log admin action
+      await logAdminAction(orderId, 'status_change', oldStatus, newStatus)
 
       // Update local state
       setOrders(orders.map(order => 
@@ -192,6 +215,29 @@ export default function AdminOrdersPage() {
       setError('Error updating order: ' + err.message)
     } finally {
       setUpdatingOrderId(null)
+    }
+  }
+
+  const logAdminAction = async (orderId, actionType, oldStatus, newStatus, notes = null) => {
+    try {
+      const { error } = await supabase
+        .from('admin_actions')
+        .insert([
+          {
+            admin_user_id: user.id,
+            action_type: actionType,
+            order_id: orderId,
+            old_status: oldStatus || null,
+            new_status: newStatus || null,
+            notes: notes || null
+          }
+        ])
+      
+      if (error) {
+        console.error('Failed to log admin action:', error)
+      }
+    } catch (err) {
+      console.error('Error logging admin action:', err)
     }
   }
 
