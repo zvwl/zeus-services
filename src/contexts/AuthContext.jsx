@@ -103,8 +103,8 @@ export const AuthProvider = ({ children }) => {
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
           
-          // Check admin status immediately
-          checkAdminStatus(session.user.id)
+          // Check admin status and WAIT for it to complete before marking loading as false
+          await checkAdminStatus(session.user.id)
         }
       } catch (err) {
         console.error('Session check error:', err)
@@ -129,7 +129,7 @@ export const AuthProvider = ({ children }) => {
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
-        // Check admin status on every auth change
+        // Check admin status on every auth change and WAIT for it
         await checkAdminStatus(session.user.id)
         setLoading(false)
       } else {
