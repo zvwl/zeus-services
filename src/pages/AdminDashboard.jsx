@@ -11,7 +11,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [dateRange, setDateRange] = useState('all') // 'all', '7days', '30days', '90days'
-  const [adminNames, setAdminNames] = useState({})
 
   // FIRST: Check if user is authenticated and is admin
   useEffect(() => {
@@ -53,38 +52,10 @@ export default function AdminDashboard() {
     try {
       const dayOffset = getDayOffset()
       
-      // Fetch all admin users first
-      const { data: adminUsersData, error: adminUsersError } = await supabase
-        .from('admin_users')
-        .select('user_id, id')
-
-      if (adminUsersError) throw adminUsersError
-
-      const adminUserIds = adminUsersData?.map(a => a.user_id) || []
-
-      // Fetch admin names from customers table
-      let adminNamesTemp = {}
-      if (adminUserIds.length > 0) {
-        const { data: customersData, error: customersError } = await supabase
-          .from('customers')
-          .select('user_id, name, email')
-          .in('user_id', adminUserIds)
-
-        if (customersError) {
-          console.warn('Could not fetch customer names:', customersError)
-        } else {
-          customersData?.forEach(customer => {
-            adminNamesTemp[customer.user_id] = customer.name || customer.email || 'Unknown'
-          })
-        }
-      }
-      
-      setAdminNames(adminNamesTemp)
-
-      // Fetch admin actions logs only
+      // Fetch admin actions with names from the view
       let logsQuery = supabase
-        .from('admin_actions')
-        .select('id, admin_user_id, action_type, order_id, old_status, new_status, notes, created_at')
+        .from('admin_actions_with_names')
+        .select('id, admin_user_id, admin_name, action_type, order_id, old_status, new_status, notes, created_at')
         .order('created_at', { ascending: false })
 
       if (dayOffset) {
@@ -189,7 +160,7 @@ export default function AdminDashboard() {
                     <td>{new Date(log.created_at).toLocaleString()}</td>
                     <td>
                       <span className="admin-name">
-                        {adminNames[log.admin_user_id] || 'Unknown'}
+                        {log.admin_name || 'Unknown'}
                       </span>
                     </td>
                     <td>
