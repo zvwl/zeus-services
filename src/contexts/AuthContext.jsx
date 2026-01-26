@@ -147,17 +147,17 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, captchaToken) => {
     try {
-      // Note: captchaToken validation would ideally be done server-side
-      // For now, we just require it to be present
-      if (!captchaToken) {
-        return { success: false, error: 'Please complete the CAPTCHA' }
-      }
+      // Temporarily allow login without CAPTCHA for debugging
+      // TODO: Re-enable CAPTCHA once Supabase/hCaptcha is properly configured
+      // if (!captchaToken) {
+      //   return { success: false, error: 'Please complete the CAPTCHA' }
+      // }
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
         options: {
-          captchaToken
+          captchaToken: captchaToken || undefined
         }
       })
       

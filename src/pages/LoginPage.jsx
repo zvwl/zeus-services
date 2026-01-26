@@ -37,15 +37,16 @@ export default function LoginPage() {
       return
     }
 
-    if (!siteKey) {
-      setError('Captcha is unavailable. Please contact support.')
-      return
-    }
+    // TODO: Re-enable CAPTCHA check once properly configured
+    // if (!siteKey) {
+    //   setError('Captcha is unavailable. Please contact support.')
+    //   return
+    // }
 
-    if (!captchaToken) {
-      setError('Please complete the CAPTCHA')
-      return
-    }
+    // if (!captchaToken) {
+    //   setError('Please complete the CAPTCHA')
+    //   return
+    // }
 
     const result = await login(email, password, captchaToken)
     if (result.success) {
