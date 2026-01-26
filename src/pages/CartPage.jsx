@@ -2,11 +2,11 @@ import { useState, useEffect } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
-import Cart from '../components/Cart'
+import CartSummary from '../components/CartSummary'
 import '../App.css'
 import './CartPage.css'
 
-export default function CartPage({ cartItems, removeFromCart, updateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange, clearCart }) {
+export default function CartPage({ cartItems, removeFromCart, updateQuantity, currency, formatPrice, clearCart }) {
   const [searchParams, setSearchParams] = useSearchParams()
   const [orderDetails, setOrderDetails] = useState(null)
   const [loadingOrder, setLoadingOrder] = useState(false)
@@ -352,19 +352,12 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, on
         </div>
       )}
       
-      <Cart
+      <CartSummary
         items={cartItems}
         onRemove={removeFromCart}
         onUpdateQuantity={updateQuantity}
-        onCheckout={onCheckout}
-        checkoutStatus={checkoutStatus}
         currency={currency}
         formatPrice={formatPrice}
-        paymentMethod={paymentMethod}
-        onPaymentMethodChange={onPaymentMethodChange}
-        isDevUser={isDevUser}
-        orderNote={orderNote}
-        onOrderNoteChange={onOrderNoteChange}
       />
     </section>
   )

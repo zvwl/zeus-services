@@ -9,6 +9,7 @@ import Home from './pages/Home'
 import ServicesPage from './pages/Services'
 import ServiceDetail from './pages/ServiceDetail'
 import CartPage from './pages/CartPage'
+import CheckoutPage from './pages/CheckoutPage'
 import PlaceholderPage from './pages/PlaceholderPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -434,6 +435,17 @@ function App() {
               cartItems={cartItems}
               removeFromCart={removeFromCart}
               updateQuantity={updateQuantity}
+              currency={currency}
+              formatPrice={formatPrice}
+              clearCart={() => setCartItems([])}
+            />
+          )}
+        />
+        <Route
+          path="/checkout"
+          element={(
+            <CheckoutPage
+              cartItems={cartItems}
               onCheckout={handleCheckout}
               checkoutStatus={checkoutStatus}
               currency={currency}
@@ -443,7 +455,6 @@ function App() {
               isDevUser={isDevUser}
               orderNote={orderNote}
               onOrderNoteChange={setOrderNote}
-              clearCart={() => setCartItems([])}
             />
           )}
         />
