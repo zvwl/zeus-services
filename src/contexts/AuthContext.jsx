@@ -26,9 +26,9 @@ export const AuthProvider = ({ children }) => {
   // Function to check admin status with timeout
   const checkAdminStatus = async (userId) => {
     try {
-      // Create a promise that rejects after 8 seconds
+      // Create a promise that rejects after 12 seconds
       const timeoutPromise = new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Admin check timeout')), 8000)
+        setTimeout(() => reject(new Error('Admin check timeout')), 12000)
       )
 
       // Race the actual query against the timeout
@@ -69,9 +69,9 @@ export const AuthProvider = ({ children }) => {
     // Check for existing Supabase session with timeout
     const checkSession = async () => {
       try {
-        // Create timeout promise - if session check takes >8 seconds, give up
+        // Create timeout promise - if session check takes >12 seconds, give up
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Session check timeout')), 8000)
+          setTimeout(() => reject(new Error('Session check timeout')), 12000)
         )
 
         const sessionPromise = supabase.auth.getSession()
