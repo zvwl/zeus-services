@@ -307,33 +307,29 @@ export const AuthProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      const { error } = await supabase.auth.signOut({ scope: 'local' })
+      // End all Supabase sessions (global ensures remote sessions cleared too)
+      const { error } = await supabase.auth.signOut({ scope: 'global' })
       if (error) {
         console.error('Logout error:', error)
       }
     } catch (err) {
       console.error('Logout exception:', err)
     } finally {
-      // Always clear local state even if signOut fails
+      // Clear local state regardless
       setUser(null)
       setEmailVerified(false)
       setIsAdmin(false)
-      
-      // Force clear Supabase session from localStorage
+
+      // Clear client storage artifacts
       try {
-        localStorage.removeItem('supabase.auth.token')
-        const keys = Object.keys(localStorage)
-        keys.forEach(key => {
-          if (key.startsWith('sb-') || key.includes('supabase')) {
-            localStorage.removeItem(key)
-          }
-        })
+        localStorage.clear()
+        sessionStorage.clear()
       } catch (storageErr) {
-        console.warn('LocalStorage clear failed:', storageErr)
+        console.warn('Storage clear failed:', storageErr)
       }
-      
-      // Force page reload to clear all state
-      window.location.reload()
+
+      // Redirect to login to avoid stale state
+      window.location.href = '/login'
     }
   }
 
