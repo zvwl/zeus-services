@@ -5,7 +5,12 @@ WITH (security_invoker = true) AS
 SELECT 
   aa.id,
   aa.admin_user_id,
-  COALESCE(c.name, c.email, 'Unknown') as admin_name,
+  COALESCE(
+    c.name,
+    c.email,
+    (SELECT email FROM auth.users WHERE id = aa.admin_user_id),
+    'Unknown'
+  ) as admin_name,
   aa.action_type,
   aa.order_id,
   aa.old_status,
