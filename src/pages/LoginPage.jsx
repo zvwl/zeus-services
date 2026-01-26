@@ -1,11 +1,13 @@
 import { useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
 import googleLogo from '../assets/google-logo.svg'
 import './AuthPages.css'
 
 export default function LoginPage() {
+  const [searchParams] = useSearchParams()
+  const redirectTo = searchParams.get('redirect') || '/services'
   const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -50,6 +52,12 @@ export default function LoginPage() {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
       
+      // If user came from checkout, go to checkout. Otherwise check for pending cart item.
+      if (redirectTo === '/checkout') {
+        navigate('/checkout')
+        return
+      }
+      
       // Check if there's a pending cart item to add
       const pendingItem = localStorage.getItem('pendingCartItem')
       if (pendingItem) {
@@ -61,10 +69,10 @@ export default function LoginPage() {
         } catch (err) {
           console.error('Error processing pending cart item:', err)
           localStorage.removeItem('pendingCartItem')
-          navigate('/services')
+          navigate(redirectTo)
         }
       } else {
-        navigate('/services')
+        navigate(redirectTo)
       }
       return
     }

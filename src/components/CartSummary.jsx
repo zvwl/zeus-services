@@ -9,7 +9,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
 
   const handleCheckout = () => {
     if (!user) {
-      navigate('/login')
+      navigate('/login?redirect=/checkout')
       return
     }
     navigate('/checkout')
