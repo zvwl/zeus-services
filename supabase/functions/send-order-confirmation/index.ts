@@ -65,18 +65,27 @@ Deno.serve(async (req) => {
 
     console.log('Sending order confirmation to:', customer_email);
 
-    // Send email via Resend
-    const resendRes = await fetch('https://api.resend.com/emails', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${RESEND_API_KEY}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        from: 'Zeus Services <orders@zeuservices.com>',
-        to: customer_email,
-        subject: `Order Confirmation #${orderId.slice(0, 8)}`,
-        html: `
+    // Add small delay to avoid rate limiting
+    await new Promise(resolve => setTimeout(resolve, 100));
+
+    // Send email via Resend with retry logic
+    let resendRes;
+    let resendData;
+    let retries = 0;
+    const maxRetries = 3;
+
+    while (retries < maxRetries) {
+      resendRes = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: 'Zeus Services <orders@zeuservices.com>',
+          to: customer_email,
+          subject: `Order Confirmation #${orderId.slice(0, 8)}`,
+          html: `
 <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
   <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 20px; text-align: center; color: white;">
     <h1 style="margin: 0; font-size: 26px; letter-spacing: 0.5px;">Zeus Services</h1>
@@ -113,10 +122,33 @@ Deno.serve(async (req) => {
   </div>
 </div>
         `
-      })
-    });
+        })
+      });
 
-    const resendData = await resendRes.json();
+      resendData = await resendRes.json();
+
+      // If rate limited, wait and retry
+      if (resendRes.status === 429 && retries < maxRetries - 1) {
+        const waitTime = Math.pow(2, retries) * 1000; // Exponential backoff: 1s, 2s, 4s
+        console.log(`Rate limited, retrying in ${waitTime}ms (attempt ${retries + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        retries++;
+        continue;
+      }
+
+      // If successful, break the loop
+      if (resendRes.ok) {
+        break;
+      }
+
+      // If not rate limited and not ok, fail
+      console.error('Resend error:', resendData);
+      return new Response(JSON.stringify({ error: resendData }), {
+        status: resendRes.status,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
     console.log('Resend API response:', resendData);
 
     if (!resendRes.ok) {

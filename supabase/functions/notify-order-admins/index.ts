@@ -16,60 +16,76 @@ const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "
 });
 
 async function sendAdminEmail(adminEmail: string, orderDetails: any) {
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Authorization": `Bearer ${RESEND_API_KEY}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      from: "admin@zeuservices.com",
-      to: adminEmail,
-      subject: `[ADMIN] New Order #${orderDetails.order_id} - ${orderDetails.currency}${orderDetails.total_amount}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 20px; border-radius: 10px;">
-          <h2 style="color: #1e40af; margin-bottom: 20px;">🎉 New Order Received</h2>
-          
-          <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #fbbf24;">
-            <p style="margin: 8px 0;"><strong>Order ID:</strong> ${orderDetails.order_id}</p>
-            <p style="margin: 8px 0;"><strong>Customer:</strong> ${orderDetails.customer_name || orderDetails.customer_email}</p>
-            <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:${orderDetails.customer_email}">${orderDetails.customer_email}</a></p>
-            <p style="margin: 8px 0;"><strong>Amount:</strong> <span style="font-size: 1.3em; color: #fbbf24; font-weight: bold;">${orderDetails.currency}${orderDetails.total_amount}</span></p>
-            <p style="margin: 8px 0;"><strong>Payment Method:</strong> ${orderDetails.payment_method === 'stripe_checkout' ? '💳 Stripe' : orderDetails.payment_method}</p>
-            <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(orderDetails.created_at).toLocaleString()}</p>
-          </div>
-
-          <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-            <h3 style="color: #1e40af; margin-top: 0;">Items Ordered:</h3>
-            <ul style="margin: 10px 0; padding-left: 20px;">
-              ${orderDetails.items.map((item: any) => `
-                <li style="margin: 8px 0;">
-                  ${item.icon || '📦'} <strong>${item.name}</strong> (${item.platform}) 
-                  <br/><span style="color: #666; font-size: 0.9em;">Qty: ${item.quantity} | Price: ${item.currency || 'GBP'}${item.price}</span>
-                </li>
-              `).join('')}
-            </ul>
-          </div>
-
-          <div style="text-align: center; padding: 20px; background: #e0f2fe; border-radius: 8px;">
-            <a href="https://zeuservices.com/admin/orders" style="display: inline-block; background: #1e40af; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-              View in Admin Panel
-            </a>
-          </div>
-
-          <p style="color: #666; font-size: 0.9em; text-align: center; margin-top: 20px;">
-            This is an automated notification. Do not reply to this email.
-          </p>
-        </div>
-      `
-    })
-  });
+  let retries = 0;
+  const maxRetries = 3;
   
-  const result = await response.json();
-  if (!response.ok) {
-    console.error(`Resend error for ${adminEmail}:`, result);
+  while (retries < maxRetries) {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        from: "admin@zeuservices.com",
+        to: adminEmail,
+        subject: `[ADMIN] New Order #${orderDetails.order_id} - ${orderDetails.currency}${orderDetails.total_amount}`,
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 20px; border-radius: 10px;">
+            <h2 style="color: #1e40af; margin-bottom: 20px;">🎉 New Order Received</h2>
+            
+            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #fbbf24;">
+              <p style="margin: 8px 0;"><strong>Order ID:</strong> ${orderDetails.order_id}</p>
+              <p style="margin: 8px 0;"><strong>Customer:</strong> ${orderDetails.customer_name || orderDetails.customer_email}</p>
+              <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:${orderDetails.customer_email}">${orderDetails.customer_email}</a></p>
+              <p style="margin: 8px 0;"><strong>Amount:</strong> <span style="font-size: 1.3em; color: #fbbf24; font-weight: bold;">${orderDetails.currency}${orderDetails.total_amount}</span></p>
+              <p style="margin: 8px 0;"><strong>Payment Method:</strong> ${orderDetails.payment_method === 'stripe_checkout' ? '💳 Stripe' : orderDetails.payment_method}</p>
+              <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(orderDetails.created_at).toLocaleString()}</p>
+            </div>
+
+            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+              <h3 style="color: #1e40af; margin-top: 0;">Items Ordered:</h3>
+              <ul style="margin: 10px 0; padding-left: 20px;">
+                ${orderDetails.items.map((item: any) => `
+                  <li style="margin: 8px 0;">
+                    ${item.icon || '📦'} <strong>${item.name}</strong> (${item.platform}) 
+                    <br/><span style="color: #666; font-size: 0.9em;">Qty: ${item.quantity} | Price: ${item.currency || 'GBP'}${item.price}</span>
+                  </li>
+                `).join('')}
+              </ul>
+            </div>
+
+            <div style="text-align: center; padding: 20px; background: #e0f2fe; border-radius: 8px;">
+              <a href="https://zeuservices.com/admin/orders" style="display: inline-block; background: #1e40af; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
+                View in Admin Panel
+              </a>
+            </div>
+
+            <p style="color: #666; font-size: 0.9em; text-align: center; margin-top: 20px;">
+              This is an automated notification. Do not reply to this email.
+            </p>
+          </div>
+        `
+      })
+    });
+    
+    const result = await response.json();
+    
+    // If rate limited, retry with exponential backoff
+    if (response.status === 429 && retries < maxRetries - 1) {
+      const waitTime = Math.pow(2, retries) * 1000;
+      console.log(`Rate limited for ${adminEmail}, retrying in ${waitTime}ms (attempt ${retries + 1}/${maxRetries})`);
+      await new Promise(resolve => setTimeout(resolve, waitTime));
+      retries++;
+      continue;
+    }
+    
+    // If successful or final attempt, return result
+    if (!response.ok) {
+      console.error(`Resend error for ${adminEmail}:`, result);
+    }
+    return result;
   }
-  return result;
 }
 
 Deno.serve(async (req) => {
@@ -149,9 +165,9 @@ Deno.serve(async (req) => {
 
     // Get emails for each admin user from auth.users
     const emailPromises = admins.map(async (admin, index) => {
-      // Add 1000ms (1 second) delay between each email to avoid Resend rate limits (2 per second)
-      // This ensures we stay well under the limit
-      await new Promise(resolve => setTimeout(resolve, index * 4000));
+      // Add staggered delay between each email to avoid Resend rate limits (2 per second)
+      // 1000ms delay per admin ensures smooth spacing
+      await new Promise(resolve => setTimeout(resolve, index * 1000));
       
       const { data: userData, error: userError } = await supabase.auth.admin.getUserById(admin.user_id);
       
