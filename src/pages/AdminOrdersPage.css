@@ -1,3 +1,11 @@
+/* Admin Orders Container */
+.admin-orders-container {
+  min-height: calc(100vh - 200px);
+  padding: 2rem 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
 /* Cancel & Refund button styles */
 .cancel-order-btn {
   background: #ef4444;
@@ -1061,10 +1069,13 @@
   overflow-x: auto;
   border-radius: 12px;
   border: 1px solid rgba(251, 191, 36, 0.2);
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
 }
 
 .logs-table {
   width: 100%;
+  min-width: 800px;
   border-collapse: collapse;
   background: rgba(15, 23, 42, 0.8);
 }
@@ -1204,16 +1215,23 @@
   }
 
   .logs-table-wrapper {
-    overflow: auto;
+    overflow-x: auto;
+    overflow-y: visible;
+    margin: 0 -1rem;
+    padding: 0 1rem;
+    border-left: none;
+    border-right: none;
   }
 
   .logs-table {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    min-width: 700px;
   }
 
   .logs-table th,
   .logs-table td {
-    padding: 0.5rem;
+    padding: 0.4rem 0.3rem;
+    font-size: 0.7rem;
   }
 
   .status-change {
@@ -1223,6 +1241,33 @@
   }
 
   .notes {
-    max-width: 150px;
+    max-width: 120px;
+    font-size: 0.7rem;
+  }
+
+  .action-badge {
+    font-size: 0.65rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .order-id {
+    font-size: 0.75rem;
+  }
+
+  .admin-orders-container {
+    padding: 1rem 0.5rem;
+  }
+
+  .admin-orders-container h1 {
+    font-size: 1.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .dashboard-controls {
+    padding: 0 0.5rem;
+  }
+
+  .logs-section {
+    width: 100%;
   }
 }

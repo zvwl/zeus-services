@@ -49,7 +49,6 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
         <p className="banner-subtitle">Web, mobile, brand, and growth services delivered as fast, tangible outcomes.</p>
         <div className="banner-actions">
           <button className="primary-btn" onClick={onGetStarted}>Get started</button>
-          <button className="ghost-btn" onClick={onScrollAbout}>About us</button>
         </div>
       </div>
       <div className="banner-accent"></div>
