@@ -1190,24 +1190,27 @@
 }
 
 .status-change {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+  display: inline;
   font-weight: 600;
-  flex-wrap: nowrap;
-  width: 100%;
-  padding: 0;
+  line-height: 1.5;
+  white-space: nowrap;
 }
 
 .old-status {
   color: #f97316;
+  display: inline;
 }
 
 .new-status {
   color: #10b981;
+  display: inline;
 }
 
 .arrow {
+  color: #fbbf24;
+  display: inline;
+  margin: 0 0.25rem;
+}
   color: #fbbf24;
 }
 
