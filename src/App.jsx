@@ -5,6 +5,7 @@ import './App.css'
 import { supabase } from './supabaseClient'
 import Header from './components/Header'
 import Footer from './components/Footer'
+import ScrollToTop from './components/ScrollToTop'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import Home from './pages/Home'
 import ServicesPage from './pages/Services'
@@ -498,6 +499,7 @@ function App() {
         />
       </Routes>
       <Footer />
+      <ScrollToTop />
     </div>
   )
 }
