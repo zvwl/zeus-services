@@ -28,7 +28,7 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
         color: 0x66ccff,           // electric blue
         backgroundColor: 0x050914, // deep navy
         amplitudeFactor: 2.2,      // more ripple energy
-        size: 1.4,                 // larger halo arcs
+        size: 1.9,                 // larger halo arcs
       })
     }
 
