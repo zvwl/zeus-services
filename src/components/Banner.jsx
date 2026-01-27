@@ -24,7 +24,7 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
         backgroundColor: 0x050914, // deep navy background
         points: 18.0,              // more nodes
         maxDistance: 18.0,         // shorter, snappier links
-        spacing: 14.0,             // tighter mesh
+        spacing: 10.0,             // tighter mesh
         shininess: 60,             // extra glow
         gyroControls: false,
       })
