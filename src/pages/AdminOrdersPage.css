@@ -1191,10 +1191,11 @@
 
 .status-change {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.25rem;
   font-weight: 600;
   white-space: nowrap;
+  line-height: 1.5;
 }
 
 .old-status {
