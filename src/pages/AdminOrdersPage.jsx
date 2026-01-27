@@ -13,6 +13,7 @@ export default function AdminOrdersPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
   const [updatingOrderId, setUpdatingOrderId] = useState(null)
+  const [adminNotes, setAdminNotes] = useState({}) // State for admin notes per order
   const [confirmDialog, setConfirmDialog] = useState({
     isOpen: false,
     orderId: null,
@@ -56,14 +57,17 @@ export default function AdminOrdersPage() {
       if (!response.ok) throw new Error(result.error || 'Refund failed');
       
       // Log admin action for refund
-      await logAdminAction(orderId, 'refund', oldStatus, 'cancelled', `Refunded from ${oldPaymentStatus}`)
+      await logAdminAction(orderId, 'refund', oldStatus, 'cancelled', adminNotes[orderId] || `Refunded from ${oldPaymentStatus}`)
+      
+      // Clear notes after logging
+      setAdminNotes(prev => ({ ...prev, [orderId]: '' }))
       
       // Update local state
       setOrders(orders.map(order =>
         order.id === orderId
           ? { ...order, status: 'cancelled', payment_status: 'refunded' }
           : order
-      ));
+      ))
     } catch (err) {
       setError('Refund error: ' + err.message);
     } finally {
@@ -89,7 +93,10 @@ export default function AdminOrdersPage() {
     const oldStatus = currentOrder?.status
     
     // Log admin action for cancel
-    await logAdminAction(orderId, 'cancel', oldStatus, 'cancelled', 'Cancelled without refund')
+    await logAdminAction(orderId, 'cancel', oldStatus, 'cancelled', adminNotes[orderId] || 'Cancelled without refund')
+    
+    // Clear notes after logging
+    setAdminNotes(prev => ({ ...prev, [orderId]: '' }))
     
     await updateOrderStatus(orderId, 'cancelled');
   };
@@ -205,7 +212,10 @@ export default function AdminOrdersPage() {
       if (error) throw error
 
       // Log admin action
-      await logAdminAction(orderId, 'status_change', oldStatus, newStatus)
+      await logAdminAction(orderId, 'status_change', oldStatus, newStatus, adminNotes[orderId] || null)
+      
+      // Clear notes after logging
+      setAdminNotes(prev => ({ ...prev, [orderId]: '' }))
 
       // Update local state
       setOrders(orders.map(order => 
@@ -414,6 +424,18 @@ export default function AdminOrdersPage() {
                     )}
                   </div>
                 </div>
+
+                <div className="admin-notes-section">
+                  <label htmlFor={`notes-${order.id}`}>Admin Notes:</label>
+                  <textarea
+                    id={`notes-${order.id}`}
+                    value={adminNotes[order.id] || ''}
+                    onChange={(e) => setAdminNotes(prev => ({ ...prev, [order.id]: e.target.value }))}
+                    placeholder="Add notes for this action (will be logged in Activity Logs)"
+                    className="admin-notes-input"
+                  />
+                </div>
+
                 <div className="detail-row">
                   <span className="label">Payment:</span>
                   <span className={`value payment-${order.payment_status}`}>
