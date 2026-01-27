@@ -44,7 +44,7 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
     <div className="banner" ref={bannerRef}>
       <div className="banner-overlay"></div>
       <div className="banner-content">
-        <p className="eyebrow">Full-service studio</p>
+        <p className="eyebrow">GTA Online Account Services</p>
         <h2 className="banner-title">Play Smarter, Not Harder</h2>
         <p className="banner-subtitle">GTA Online account boosting and progression made simple.</p>
         <div className="banner-actions">
