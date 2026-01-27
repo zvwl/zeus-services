@@ -22,7 +22,10 @@ export default function AdminServicesPage() {
     details: [],
     active: true
   })
-  const [platformInput, setPlatformInput] = useState('')
+  const platformOptions = ['Steam', 'Epic Games', 'Xbox App', 'Rockstar Launcher']
+  const versionOptions = ['Legacy', 'Enhanced']
+  const [selectedPlatform, setSelectedPlatform] = useState('')
+  const [selectedVersion, setSelectedVersion] = useState('')
   const [detailInput, setDetailInput] = useState('')
 
   useEffect(() => {
@@ -64,28 +67,35 @@ export default function AdminServicesPage() {
       description: '',
       icon: '',
       platforms: [],
+      versions: ['Legacy', 'Enhanced'],
       details: [],
       active: true
     })
-    setPlatformInput('')
+    setSelectedPlatform('')
+    setSelectedVersion('')
     setDetailInput('')
     setEditingId(null)
     setShowForm(false)
   }
 
   const handleEdit = (service) => {
-    setFormData(service)
+    setFormData({
+      ...service,
+      versions: service.versions?.length ? service.versions : ['Legacy', 'Enhanced'],
+    })
+    setSelectedPlatform('')
+    setSelectedVersion('')
     setEditingId(service.id)
     setShowForm(true)
   }
 
   const handleAddPlatform = () => {
-    if (platformInput.trim()) {
+    if (selectedPlatform && !formData.platforms.includes(selectedPlatform)) {
       setFormData(prev => ({
         ...prev,
-        platforms: [...prev.platforms, platformInput.trim()]
+        platforms: [...prev.platforms, selectedPlatform]
       }))
-      setPlatformInput('')
+      setSelectedPlatform('')
     }
   }
 
@@ -104,6 +114,23 @@ export default function AdminServicesPage() {
       }))
       setDetailInput('')
     }
+  }
+
+  const handleAddVersion = () => {
+    if (selectedVersion && !formData.versions.includes(selectedVersion)) {
+      setFormData(prev => ({
+        ...prev,
+        versions: [...prev.versions, selectedVersion]
+      }))
+      setSelectedVersion('')
+    }
+  }
+
+  const handleRemoveVersion = (index) => {
+    setFormData(prev => ({
+      ...prev,
+      versions: prev.versions.filter((_, i) => i !== index)
+    }))
   }
 
   const handleRemoveDetail = (index) => {
@@ -130,6 +157,7 @@ export default function AdminServicesPage() {
             description: formData.description,
             icon: formData.icon,
             platforms: formData.platforms,
+            versions: formData.versions,
             details: formData.details,
             active: formData.active,
             updated_at: new Date().toISOString()
@@ -147,6 +175,7 @@ export default function AdminServicesPage() {
             description: formData.description,
             icon: formData.icon,
             platforms: formData.platforms,
+            versions: formData.versions,
             details: formData.details,
             active: formData.active
           }])
@@ -309,12 +338,9 @@ export default function AdminServicesPage() {
             <div>
               <label>Platforms</label>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <input
-                  type="text"
-                  value={platformInput}
-                  onChange={e => setPlatformInput(e.target.value)}
-                  onKeyPress={e => e.key === 'Enter' && handleAddPlatform()}
-                  placeholder="e.g., Steam"
+                <select
+                  value={selectedPlatform}
+                  onChange={e => setSelectedPlatform(e.target.value)}
                   style={{
                     flex: 1,
                     padding: '0.75rem',
@@ -323,7 +349,12 @@ export default function AdminServicesPage() {
                     borderRadius: '6px',
                     color: '#fff'
                   }}
-                />
+                >
+                  <option value="">Select a platform</option>
+                  {platformOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
                 <button 
                   onClick={handleAddPlatform}
                   style={{
@@ -352,6 +383,69 @@ export default function AdminServicesPage() {
                     {platform}
                     <button
                       onClick={() => handleRemovePlatform(index)}
+                      style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#ef4444',
+                        cursor: 'pointer',
+                        fontSize: '1.2rem'
+                      }}
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label>Versions</label>
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+                <select
+                  value={selectedVersion}
+                  onChange={e => setSelectedVersion(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '0.75rem',
+                    background: '#111827',
+                    border: '1px solid #374151',
+                    borderRadius: '6px',
+                    color: '#fff'
+                  }}
+                >
+                  <option value="">Select a version</option>
+                  {versionOptions.map(option => (
+                    <option key={option} value={option}>{option}</option>
+                  ))}
+                </select>
+                <button 
+                  onClick={handleAddVersion}
+                  style={{
+                    padding: '0.75rem 1rem',
+                    background: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Add
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.75rem' }}>
+                {formData.versions?.map((version, index) => (
+                  <span key={index} style={{
+                    background: '#374151',
+                    color: '#fff',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    {version}
+                    <button
+                      onClick={() => handleRemoveVersion(index)}
                       style={{
                         background: 'none',
                         border: 'none',
@@ -485,6 +579,25 @@ export default function AdminServicesPage() {
                           fontSize: '0.875rem'
                         }}>
                           {platform}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {service.versions?.length > 0 && (
+                  <div style={{ margin: '0.75rem 0' }}>
+                    <strong style={{ color: '#9ca3af' }}>Versions:</strong>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.25rem' }}>
+                      {service.versions.map((ver, i) => (
+                        <span key={i} style={{
+                          background: '#374151',
+                          color: '#d1d5db',
+                          padding: '0.25rem 0.75rem',
+                          borderRadius: '3px',
+                          fontSize: '0.875rem'
+                        }}>
+                          {ver}
                         </span>
                       ))}
                     </div>

@@ -20,6 +20,8 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
     return s.id === paramId || s.id === parseInt(paramId)
   }) || location.state?.service
 
+  const versionOptions = service?.versions?.length ? service.versions : ['Legacy', 'Enhanced']
+
   // Auto-add pending cart item after login
   useEffect(() => {
     if (user && service) {
@@ -239,8 +241,9 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                     }}
                   >
                     <option value="">Select a version</option>
-                    <option value="Legacy">Legacy</option>
-                    <option value="Enhanced">Enhanced</option>
+                    {versionOptions.map(option => (
+                      <option key={option} value={option}>{option}</option>
+                    ))}
                   </select>
                 </div>
               )}
