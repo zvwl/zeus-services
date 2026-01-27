@@ -134,7 +134,7 @@ Deno.serve(async (req) => {
 
   } catch (error) {
     console.error('Send order confirmation error:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Failed to send order confirmation" }), {
       status: 500,
       headers: { 'Content-Type': 'application/json' }
     });

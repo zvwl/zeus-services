@@ -7,7 +7,9 @@ import './AuthPages.css'
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams()
-  const redirectTo = searchParams.get('redirect') || '/services'
+  // Validate redirect parameter to prevent open redirect attacks
+  const rawRedirect = searchParams.get('redirect') || '/services'
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/services'
   const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')

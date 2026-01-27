@@ -86,7 +86,9 @@ function App() {
       const storedRedirect = localStorage.getItem('oauthRedirect')
       if (storedRedirect) {
         localStorage.removeItem('oauthRedirect')
-        navigate(storedRedirect)
+        // Validate redirect is internal path only to prevent open redirect
+        const validRedirect = storedRedirect.startsWith('/') && !storedRedirect.startsWith('//') ? storedRedirect : '/services'
+        navigate(validRedirect)
       }
     }
   }, [user, navigate])
