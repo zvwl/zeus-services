@@ -3,7 +3,6 @@
   min-height: calc(100vh - 200px);
   padding: 2rem 1rem;
   max-width: 100%;
-  overflow-x: hidden;
 }
 
 /* Cancel & Refund button styles */
@@ -1217,15 +1216,18 @@
   .logs-table-wrapper {
     overflow-x: auto;
     overflow-y: visible;
-    margin: 0 -1rem;
-    padding: 0 1rem;
+    margin: 0 -0.5rem;
+    padding: 0 0.5rem;
     border-left: none;
     border-right: none;
+    width: calc(100% + 1rem);
+    -webkit-overflow-scrolling: touch;
   }
 
   .logs-table {
     font-size: 0.75rem;
     min-width: 700px;
+    display: table;
   }
 
   .logs-table th,
