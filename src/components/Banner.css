@@ -1,13 +1,23 @@
+
 .banner {
-  background: linear-gradient(135deg, #1e40af 0%, #3b82f6 100%);
+  background: #0a1024;
   padding: 4rem 2rem;
   text-align: center;
   position: relative;
   overflow: hidden;
-  min-height: 300px;
+  min-height: 320px;
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.banner-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(12, 18, 34, 0.8) 0%, rgba(30, 64, 175, 0.35) 100%);
+  pointer-events: none;
+  z-index: 1;
+  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.35);
 }
 
 .banner::before {
@@ -118,8 +128,9 @@
   bottom: 0;
   width: 100%;
   height: 5px;
-  background: linear-gradient(90deg, transparent, white, transparent);
+  background: linear-gradient(90deg, transparent, #60a5fa, transparent);
   animation: glow 2s ease-in-out infinite;
+  z-index: 2;
 }
 
 @keyframes glow {

@@ -1,8 +1,46 @@
+import { useEffect, useRef } from 'react'
 import './Banner.css'
 
 export default function Banner({ onGetStarted, onScrollAbout }) {
+  const bannerRef = useRef(null)
+
+  useEffect(() => {
+    let effect
+    let cancelled = false
+
+    async function loadVanta() {
+      if (!bannerRef.current || typeof window === 'undefined') return
+      const [THREE, VANTA] = await Promise.all([
+        import('three'),
+        import('vanta/dist/vanta.net.min'),
+      ])
+
+      if (cancelled) return
+
+      effect = VANTA.default({
+        el: bannerRef.current,
+        THREE: THREE.default || THREE,
+        color: 0x66ccff,
+        backgroundColor: 0x0a1024,
+        points: 14.0,
+        maxDistance: 22.0,
+        spacing: 18.0,
+        shininess: 40,
+        gyroControls: false,
+      })
+    }
+
+    loadVanta()
+
+    return () => {
+      cancelled = true
+      if (effect && typeof effect.destroy === 'function') effect.destroy()
+    }
+  }, [])
+
   return (
-    <div className="banner">
+    <div className="banner" ref={bannerRef}>
+      <div className="banner-overlay"></div>
       <div className="banner-content">
         <p className="eyebrow">Full-service studio</p>
         <h2 className="banner-title">Unleash the Power of Zeus</h2>
