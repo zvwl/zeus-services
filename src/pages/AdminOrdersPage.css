@@ -1153,6 +1153,7 @@
   border-bottom: 1px solid rgba(251, 191, 36, 0.1);
   vertical-align: top;
   text-align: left;
+  line-height: 1.6;
 }
 
 /* Column specific widths */
@@ -1190,12 +1191,11 @@
 }
 
 .status-change {
-  display: flex;
-  align-items: center;
+  display: inline-flex;
+  align-items: baseline;
   gap: 0.25rem;
   font-weight: 600;
-  white-space: nowrap;
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .old-status {
