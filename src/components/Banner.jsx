@@ -17,15 +17,15 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
 
       if (cancelled) return
 
-      effect = VANTA.default({
+       effect = VANTA.default({
         el: bannerRef.current,
         THREE: THREE.default || THREE,
-        color: 0x66ccff,
-        backgroundColor: 0x0a1024,
-        points: 14.0,
-        maxDistance: 22.0,
-        spacing: 18.0,
-        shininess: 40,
+        color: 0x99e0ff,          // bright blue-white lines
+        backgroundColor: 0x050914, // deep navy background
+        points: 18.0,              // more nodes
+        maxDistance: 18.0,         // shorter, snappier links
+        spacing: 14.0,             // tighter mesh
+        shininess: 60,             // extra glow
         gyroControls: false,
       })
     }
