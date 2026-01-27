@@ -27,7 +27,7 @@ export default function Footer() {
           <h3>Support</h3>
           <div className="footer-links">
             <a
-              href="https://discord.gg/NSNSmmaA"
+              href="http://discord.gg/zeusservices"
               target="_blank"
               rel="noreferrer"
               className="discord-link"

@@ -159,7 +159,7 @@ export default function UserMenu({ isOpen, onClose }) {
 
         <div className="user-menu-footer">
           <a
-            href="https://discord.gg/NSNSmmaA"
+            href="http://discord.gg/zeusservices"
             className="menu-item discord-item"
             target="_blank"
             rel="noreferrer"

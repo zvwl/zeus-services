@@ -249,7 +249,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
                 <span>Join our Discord and contact support for faster help.</span>
               </div>
               <a
-                href="https://discord.gg/NSNSmmaA"
+                href="http://discord.gg/zeusservices"
                 className="discord-btn"
                 target="_blank"
                 rel="noreferrer"
