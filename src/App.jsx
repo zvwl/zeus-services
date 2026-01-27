@@ -23,6 +23,7 @@ import OrdersPage from './pages/OrdersPage'
 import AdminOrdersPage from './pages/AdminOrdersPage'
 import AdminDashboard from './pages/AdminDashboard'
 import AdminServicesPage from './pages/AdminServicesPage'
+import AdminProductsPage from './pages/AdminProductsPage'
 import TermsPage from './pages/TermsPage'
 import RefundPage from './pages/RefundPage'
 
@@ -457,6 +458,14 @@ function App() {
           element={
             <ProtectedAdminRoute>
               <AdminServicesPage />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/products"
+          element={
+            <ProtectedAdminRoute>
+              <AdminProductsPage />
             </ProtectedAdminRoute>
           }
         />

@@ -22,11 +22,21 @@ ALTER TABLE public.services
 
 -- Anyone can read services
 DROP POLICY IF EXISTS "services_select_policy" ON public.services;
+DROP POLICY IF EXISTS "services_select_anon_policy" ON public.services;
+
+-- Allow authenticated users to read active services
 CREATE POLICY "services_select_policy"
   ON public.services
   FOR SELECT
   TO authenticated
-  USING (true);
+  USING (active = true);
+
+-- Allow anonymous users (public browsing) to read active services
+CREATE POLICY "services_select_anon_policy"
+  ON public.services
+  FOR SELECT
+  TO anon
+  USING (active = true);
 
 -- Only admins can insert
 DROP POLICY IF EXISTS "services_insert_policy" ON public.services;
