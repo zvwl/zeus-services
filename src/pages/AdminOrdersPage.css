@@ -1190,13 +1190,12 @@
 }
 
 .status-change {
-  display: inline-flex;
+  display: flex;
   align-items: center;
   gap: 0.5rem;
   font-weight: 600;
   flex-wrap: nowrap;
-  white-space: nowrap;
-  vertical-align: middle;
+  width: 100%;
 }
 
 .old-status {
