@@ -16,6 +16,10 @@ CREATE TABLE IF NOT EXISTS public.services (
 -- Enable RLS
 ALTER TABLE public.services ENABLE ROW LEVEL SECURITY;
 
+-- Ensure versions column exists for reruns
+ALTER TABLE public.services
+  ADD COLUMN IF NOT EXISTS versions jsonb DEFAULT '["Legacy","Enhanced"]'::jsonb;
+
 -- Anyone can read services
 DROP POLICY IF EXISTS "services_select_policy" ON public.services;
 CREATE POLICY "services_select_policy"

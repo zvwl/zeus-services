@@ -26,7 +26,7 @@ export default function AdminServicesPage() {
   const versionOptions = ['Legacy', 'Enhanced']
   const [selectedPlatform, setSelectedPlatform] = useState('')
   const [selectedVersion, setSelectedVersion] = useState('')
-  const [detailInput, setDetailInput] = useState('')
+  const [detailText, setDetailText] = useState('')
 
   useEffect(() => {
     if (authLoading) return
@@ -73,7 +73,7 @@ export default function AdminServicesPage() {
     })
     setSelectedPlatform('')
     setSelectedVersion('')
-    setDetailInput('')
+    setDetailText('')
     setEditingId(null)
     setShowForm(false)
   }
@@ -83,6 +83,7 @@ export default function AdminServicesPage() {
       ...service,
       versions: service.versions?.length ? service.versions : ['Legacy', 'Enhanced'],
     })
+    setDetailText(Array.isArray(service.details) ? service.details.join('\n') : '')
     setSelectedPlatform('')
     setSelectedVersion('')
     setEditingId(service.id)
@@ -104,16 +105,6 @@ export default function AdminServicesPage() {
       ...prev,
       platforms: prev.platforms.filter((_, i) => i !== index)
     }))
-  }
-
-  const handleAddDetail = () => {
-    if (detailInput.trim()) {
-      setFormData(prev => ({
-        ...prev,
-        details: [...prev.details, detailInput.trim()]
-      }))
-      setDetailInput('')
-    }
   }
 
   const handleAddVersion = () => {
@@ -158,7 +149,7 @@ export default function AdminServicesPage() {
             icon: formData.icon,
             platforms: formData.platforms,
             versions: formData.versions,
-            details: formData.details,
+            details: detailText ? detailText.split('\n') : [],
             active: formData.active,
             updated_at: new Date().toISOString()
           })
@@ -176,7 +167,7 @@ export default function AdminServicesPage() {
             icon: formData.icon,
             platforms: formData.platforms,
             versions: formData.versions,
-            details: formData.details,
+            details: detailText ? detailText.split('\n') : [],
             active: formData.active
           }])
 
@@ -462,52 +453,26 @@ export default function AdminServicesPage() {
             </div>
 
             <div>
-              <label>Details (one per line)</label>
-              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
-                <textarea
-                  value={detailInput}
-                  onChange={e => setDetailInput(e.target.value)}
-                  onKeyPress={e => e.key === 'Enter' && !e.shiftKey && handleAddDetail()}
-                  placeholder="Add a detail and press Enter"
-                  style={{
-                    flex: 1,
-                    padding: '0.75rem',
-                    background: '#111827',
-                    border: '1px solid #374151',
-                    borderRadius: '6px',
-                    color: '#fff',
-                    minHeight: '60px',
-                    fontFamily: 'inherit'
-                  }}
-                />
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginTop: '0.75rem' }}>
-                {formData.details.map((detail, index) => (
-                  <div key={index} style={{
-                    background: '#374151',
-                    color: '#fff',
-                    padding: '0.75rem',
-                    borderRadius: '4px',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                  }}>
-                    <span>{detail}</span>
-                    <button
-                      onClick={() => handleRemoveDetail(index)}
-                      style={{
-                        background: 'none',
-                        border: 'none',
-                        color: '#ef4444',
-                        cursor: 'pointer',
-                        fontSize: '1.2rem'
-                      }}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
-              </div>
+              <label>Details (multiline)</label>
+              <textarea
+                value={detailText}
+                onChange={e => setDetailText(e.target.value)}
+                placeholder="Enter details. Use new lines if you want bullet-style lines."
+                style={{
+                  width: '100%',
+                  padding: '0.75rem',
+                  background: '#111827',
+                  border: '1px solid #374151',
+                  borderRadius: '6px',
+                  color: '#fff',
+                  minHeight: '120px',
+                  fontFamily: 'inherit',
+                  marginTop: '0.5rem'
+                }}
+              />
+              <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                Tip: Use separate lines for bullets. They will be stored as an array split by newlines.
+              </p>
             </div>
 
             <div>
