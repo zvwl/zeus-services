@@ -12,7 +12,7 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
       if (!bannerRef.current || typeof window === 'undefined') return
       const [THREE, VANTA] = await Promise.all([
         import('three'),
-        import('vanta/dist/vanta.net.min'),
+        import('vanta/dist/vanta.halo.min'),
       ])
 
       if (cancelled) return
@@ -20,13 +20,15 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
        effect = VANTA.default({
         el: bannerRef.current,
         THREE: THREE.default || THREE,
-        color: 0x99e0ff,          // bright blue-white lines
-        backgroundColor: 0x050914, // deep navy background
-        points: 18.0,              // more nodes
-        maxDistance: 18.0,         // shorter, snappier links
-        spacing: 10.0,             // tighter mesh
-        shininess: 60,             // extra glow
+        mouseControls: true,
+        touchControls: true,
         gyroControls: false,
+        minHeight: 200.0,
+        minWidth: 200.0,
+        color: 0x66ccff,           // electric blue
+        backgroundColor: 0x050914, // deep navy
+        amplitudeFactor: 2.2,      // more ripple energy
+        size: 1.4,                 // larger halo arcs
       })
     }
 
