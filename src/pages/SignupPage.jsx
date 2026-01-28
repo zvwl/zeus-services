@@ -51,7 +51,7 @@ export default function SignupPage() {
     // Check if display name is already taken
     const { data: existingCustomer, error: checkError } = await supabase
       .from('customers')
-      .select('id')
+      .select('user_id')
       .eq('name', name)
       .maybeSingle()
     
