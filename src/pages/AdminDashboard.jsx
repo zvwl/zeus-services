@@ -197,7 +197,7 @@ export default function AdminDashboard() {
                     </td>
                     <td className="status-change">
                       {isReviewAction(log.action_type) ? (
-                        <span className="review-action">{log.notes || 'Review moderated'}</span>
+                        <span className="review-action">-</span>
                       ) : log.old_status && log.new_status ? (
                         <>
                           <span className="old-status">{log.old_status}</span>
