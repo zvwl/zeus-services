@@ -20,7 +20,7 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.email,
-    NEW.raw_user_meta_data->>'display_name'  -- Get display_name from signup metadata
+    COALESCE(NEW.raw_user_meta_data->>'display_name', NEW.email)  -- Use email as fallback if display_name is NULL
   );
   
   RETURN NEW;
@@ -55,8 +55,8 @@ CREATE POLICY "customers_select_policy"
 CREATE POLICY "customers_insert_policy"
   ON public.customers
   FOR INSERT
-  TO authenticated
-  WITH CHECK ((SELECT auth.uid()) = user_id);
+  TO authenticated, service_role  -- Allow both authenticated users and service role (for trigger)
+  WITH CHECK ((SELECT auth.uid()) IS NULL OR (SELECT auth.uid()) = user_id);
 
 CREATE POLICY "customers_update_policy"
   ON public.customers

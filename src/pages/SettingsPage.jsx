@@ -9,7 +9,7 @@ export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState('profile')
   
   // Profile state
-  const [name, setName] = useState(user?.name || '')
+  const [name, setName] = useState('')
   const [profileMessage, setProfileMessage] = useState('')
   const [profileLoading, setProfileLoading] = useState(false)
   const [lastNameChangeDate, setLastNameChangeDate] = useState(null)
@@ -53,7 +53,7 @@ export default function SettingsPage() {
     if (user) checkMFAStatus()
   }, [user])
 
-  // Check display name change eligibility
+  // Check display name change eligibility and load current display name
   useEffect(() => {
     const checkDisplayNameChange = async () => {
       if (!user?.id) return
@@ -61,7 +61,7 @@ export default function SettingsPage() {
       try {
         const { data, error } = await supabase
           .from('customers')
-          .select('display_name_changed_at')
+          .select('display_name_changed_at, name')
           .eq('user_id', user.id)
           .maybeSingle()
 
@@ -69,6 +69,9 @@ export default function SettingsPage() {
           console.error('Error checking name change date:', error)
           return
         }
+
+        // Set current display name from database
+        setName(data?.name || '')
 
         if (data?.display_name_changed_at) {
           setLastNameChangeDate(new Date(data.display_name_changed_at))
