@@ -263,14 +263,12 @@
 }
 
 .reviewer-initials {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-  color: #0a0e1a;
+  display: inline-block;
+  padding: 0.35rem 0.6rem;
+  border: 2px solid #fbbf24;
+  border-radius: 6px;
+  background: transparent;
+  color: #fbbf24;
   font-weight: 700;
   font-size: 0.875rem;
   margin-left: auto;
