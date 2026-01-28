@@ -10,6 +10,7 @@ import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import Home from './pages/Home'
 import ServicesPage from './pages/Services'
 import ServiceDetail from './pages/ServiceDetail'
+import ProductsPage from './pages/ProductsPage'
 import CartPage from './pages/CartPage'
 import CheckoutPage from './pages/CheckoutPage'
 import PlaceholderPage from './pages/PlaceholderPage'
@@ -383,10 +384,7 @@ function App() {
         <Route
           path="/products"
           element={(
-            <PlaceholderPage
-              title="Products"
-              description="Browse packaged offerings, bundles, and add-ons tailored for Zeus clients."
-            />
+            <ProductsPage formatPrice={formatPrice} />
           )}
         />
         <Route
