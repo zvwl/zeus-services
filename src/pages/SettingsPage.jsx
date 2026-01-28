@@ -240,7 +240,12 @@ export default function SettingsPage() {
       }
       setProfileMessage('✅ Profile updated successfully!')
     } else {
-      setProfileMessage('❌ ' + result.error)
+      // Check if error is due to duplicate name
+      if (result.error?.includes('duplicate') || result.error?.includes('unique') || result.error?.includes('customers_name_key')) {
+        setProfileMessage('❌ This display name is already taken. Please choose a different name.')
+      } else {
+        setProfileMessage('❌ ' + result.error)
+      }
     }
     
     setProfileLoading(false)
