@@ -211,13 +211,42 @@ export default function SettingsPage() {
       return
     }
 
+    // Get the original name from database to compare
+    const { data: currentData } = await supabase
+      .from('customers')
+      .select('name')
+      .eq('user_id', user.id)
+      .maybeSingle()
+
+    const originalName = currentData?.name || ''
+
     // Check if display name is being changed
-    if (name !== (user?.name || '')) {
-      if (!canChangeName) {
+    if (name !== originalName) {
+      if (!canChangeName && originalName !== '') {
         const nextChangeDate = lastNameChangeDate 
           ? new Date(lastNameChangeDate.getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString()
           : ''
         setProfileMessage(`❌ You can only change your display name once every 60 days. Next change available on ${nextChangeDate}`)
+        setProfileLoading(false)
+        return
+      }
+
+      // Check if the new display name is already taken
+      const { data: existingUser, error: checkError } = await supabase
+        .from('customers')
+        .select('user_id')
+        .eq('name', name)
+        .maybeSingle()
+
+      if (checkError) {
+        console.error('Error checking display name:', checkError)
+        setProfileMessage('❌ Error checking display name availability')
+        setProfileLoading(false)
+        return
+      }
+
+      if (existingUser && existingUser.user_id !== user.id) {
+        setProfileMessage('❌ This display name is already taken. Please choose a different name.')
         setProfileLoading(false)
         return
       }
@@ -227,11 +256,14 @@ export default function SettingsPage() {
     
     if (result.success) {
       // Update the display_name_changed_at timestamp if name was changed
-      if (name !== (user?.name || '')) {
+      if (name !== originalName) {
         try {
           await supabase
             .from('customers')
-            .update({ display_name_changed_at: new Date().toISOString() })
+            .update({ 
+              name: name,
+              display_name_changed_at: new Date().toISOString() 
+            })
             .eq('user_id', user.id)
           
           setLastNameChangeDate(new Date())
