@@ -7,6 +7,7 @@ export default function ServicesPage({ services, formatPrice }) {
   const navigate = useNavigate()
   const [filterPrice, setFilterPrice] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [sortBy, setSortBy] = useState('none')
 
   const filteredServices = useMemo(() => {
     let filtered = services
@@ -33,8 +34,15 @@ export default function ServicesPage({ services, formatPrice }) {
       }
     }
 
+    // Sort by price
+    if (sortBy === 'low-to-high') {
+      filtered = filtered.sort((a, b) => a.price - b.price)
+    } else if (sortBy === 'high-to-low') {
+      filtered = filtered.sort((a, b) => b.price - a.price)
+    }
+
     return filtered
-  }, [services, filterPrice, searchQuery])
+  }, [services, filterPrice, searchQuery, sortBy])
 
   return (
     <section className="section services" id="services">
@@ -66,6 +74,20 @@ export default function ServicesPage({ services, formatPrice }) {
             <option value="50to100">£50 - £100</option>
             <option value="100to500">£100 - £500</option>
             <option value="over500">Over £500</option>
+          </select>
+        </div>
+
+        <div className="filter-controls">
+          <label htmlFor="sort-filter">Sort by Price:</label>
+          <select
+            id="sort-filter"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="filter-select"
+          >
+            <option value="none">None</option>
+            <option value="low-to-high">Low to High</option>
+            <option value="high-to-low">High to Low</option>
           </select>
         </div>
       </div>

@@ -8,6 +8,7 @@ export default function ProductsPage({ formatPrice }) {
   const [filterPrice, setFilterPrice] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState('all')
+  const [sortBy, setSortBy] = useState('none')
   const platformOptions = ['Steam', 'Epic Games', 'Xbox App', 'Rockstar Launcher']
 
   // Fetch products from database
@@ -66,8 +67,15 @@ export default function ProductsPage({ formatPrice }) {
       }
     }
 
+    // Sort by price
+    if (sortBy === 'low-to-high') {
+      filtered = filtered.sort((a, b) => a.price - b.price)
+    } else if (sortBy === 'high-to-low') {
+      filtered = filtered.sort((a, b) => b.price - a.price)
+    }
+
     return filtered
-  }, [products, filterPrice, searchQuery, selectedPlatform])
+  }, [products, filterPrice, searchQuery, selectedPlatform, sortBy])
 
   return (
     <section className="section services" id="products">
@@ -120,6 +128,20 @@ export default function ProductsPage({ formatPrice }) {
                 <option value="50to100">£50 - £100</option>
                 <option value="100to500">£100 - £500</option>
                 <option value="over500">Over £500</option>
+              </select>
+            </div>
+
+            <div className="filter-controls">
+              <label htmlFor="sort-filter">Sort by Price:</label>
+              <select
+                id="sort-filter"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                className="filter-select"
+              >
+                <option value="none">None</option>
+                <option value="low-to-high">Low to High</option>
+                <option value="high-to-low">High to Low</option>
               </select>
             </div>
           </div>
