@@ -2,12 +2,10 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 
 export default function SignupPage() {
   const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
-  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -23,7 +21,7 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
 
-    if (!name || !email || !password || !confirmPassword) {
+    if (!email || !password || !confirmPassword) {
       setError('Please fill in all fields')
       return
     }
@@ -48,29 +46,7 @@ export default function SignupPage() {
       return
     }
 
-    // Check if display name is already taken
-    const { data: existingCustomer, error: checkError } = await supabase
-      .from('customers')
-      .select('user_id')
-      .eq('name', name)
-      .maybeSingle()
-    
-    if (checkError) {
-      console.error('Error checking display name:', checkError)
-      setError('Error checking display name availability')
-      captchaRef.current?.resetCaptcha()
-      setCaptchaToken(null)
-      return
-    }
-    
-    if (existingCustomer) {
-      setError('This display name is already taken. Please choose a different name.')
-      captchaRef.current?.resetCaptcha()
-      setCaptchaToken(null)
-      return
-    }
-
-    const result = await signup(name, email, password, captchaToken)
+    const result = await signup('', email, password, captchaToken)
     if (result.success) {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
@@ -97,17 +73,6 @@ export default function SignupPage() {
           {error && <div className="error-message">{error}</div>}
 
           <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-group">
-              <label htmlFor="name">Name</label>
-              <input
-                type="text"
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-              />
-            </div>
-
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <input
@@ -186,6 +151,7 @@ export default function SignupPage() {
 
           <div className="auth-footer">
             <p>Already have an account? <a href="/login">Sign in</a></p>
+            <p style={{fontSize: '0.85rem', color: '#94a3b8', marginTop: '1rem'}}>💡 Set your display name in Settings after signing in. Once changed, you can only change it again after 60 days.</p>
           </div>
         </div>
       </div>
