@@ -95,13 +95,15 @@
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(251, 191, 36, 0.2);
+  flex-wrap: wrap;
 }
 
 .card-price {
   font-size: 1.8rem;
   font-weight: 700;
   color: #fbbf24;
-  min-width: 80px;
+  min-width: fit-content;
+  flex-basis: 100%;
 }
 
 .view-details-btn {
@@ -116,6 +118,8 @@
   font-size: 0.95rem;
   white-space: nowrap;
   box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
+  flex-basis: 100%;
+  text-align: center;
 }
 
 .view-details-btn:hover {
