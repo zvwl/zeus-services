@@ -9,7 +9,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- Update handle_new_user trigger to allow NULL display name at signup
+-- Remove UNIQUE constraint on display name to allow flexibility
+ALTER TABLE public.customers DROP CONSTRAINT IF EXISTS customers_name_key;
+
+-- Update handle_new_user trigger to insert customer with provided display name
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
@@ -17,7 +20,7 @@ BEGIN
   VALUES (
     NEW.id,
     NEW.email,
-    NULL  -- Don't set display name at signup, user sets it later in Settings
+    NEW.raw_user_meta_data->>'display_name'  -- Get display_name from signup metadata
   );
   
   RETURN NEW;
@@ -36,3 +39,34 @@ CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW
   EXECUTE FUNCTION public.handle_new_user();
+
+-- Fix broken customers policies
+DROP POLICY IF EXISTS "customers_select_policy" ON public.customers;
+DROP POLICY IF EXISTS "customers_insert_policy" ON public.customers;
+DROP POLICY IF EXISTS "customers_update_policy" ON public.customers;
+DROP POLICY IF EXISTS "customers_delete_policy" ON public.customers;
+
+CREATE POLICY "customers_select_policy"
+  ON public.customers
+  FOR SELECT
+  TO authenticated
+  USING ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "customers_insert_policy"
+  ON public.customers
+  FOR INSERT
+  TO authenticated
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "customers_update_policy"
+  ON public.customers
+  FOR UPDATE
+  TO authenticated
+  USING ((SELECT auth.uid()) = user_id)
+  WITH CHECK ((SELECT auth.uid()) = user_id);
+
+CREATE POLICY "customers_delete_policy"
+  ON public.customers
+  FOR DELETE
+  TO authenticated
+  USING ((SELECT auth.uid()) = user_id);

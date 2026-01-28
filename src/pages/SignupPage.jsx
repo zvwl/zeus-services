@@ -6,6 +6,7 @@ import './AuthPages.css'
 
 export default function SignupPage() {
   const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
+  const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -21,7 +22,7 @@ export default function SignupPage() {
     e.preventDefault()
     setError('')
 
-    if (!email || !password || !confirmPassword) {
+    if (!displayName || !email || !password || !confirmPassword) {
       setError('Please fill in all fields')
       return
     }
@@ -46,7 +47,7 @@ export default function SignupPage() {
       return
     }
 
-    const result = await signup('', email, password, captchaToken)
+    const result = await signup(displayName, email, password, captchaToken)
     if (result.success) {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
@@ -73,6 +74,17 @@ export default function SignupPage() {
           {error && <div className="error-message">{error}</div>}
 
           <form onSubmit={handleSubmit} className="auth-form">
+            <div className="form-group">
+              <label htmlFor="displayName">Display Name</label>
+              <input
+                type="text"
+                id="displayName"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Choose your display name"
+              />
+            </div>
+
             <div className="form-group">
               <label htmlFor="email">Email</label>
               <input

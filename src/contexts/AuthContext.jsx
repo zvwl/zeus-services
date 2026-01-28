@@ -305,7 +305,7 @@ export const AuthProvider = ({ children }) => {
         password,
         options: {
           data: {
-            name: name
+            display_name: name
           },
           emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
           captchaToken
