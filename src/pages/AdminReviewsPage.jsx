@@ -162,9 +162,9 @@ export default function AdminReviewsPage() {
     try {
       let mappedActionType = 'status_change'
       
-      if (actionType === 'approve') {
+      if (actionType === 'approved') {
         mappedActionType = 'review_approve'
-      } else if (actionType === 'reject') {
+      } else if (actionType === 'rejected') {
         mappedActionType = 'review_reject'
       } else if (actionType === 'pending') {
         mappedActionType = 'review_pending'
@@ -172,12 +172,17 @@ export default function AdminReviewsPage() {
         mappedActionType = 'review_delete'
       }
 
+      // Get the review to find the order_id
+      const review = reviews.find(r => r.id === reviewId)
+      const orderId = review?.order_id
+
       const { error } = await supabase
         .from('admin_actions')
         .insert([
           {
             admin_user_id: user.id,
             action_type: mappedActionType,
+            order_id: orderId || '00000000-0000-0000-0000-000000000000', // Dummy UUID if not found
             review_id: reviewId,
             notes: notes || null
           }
