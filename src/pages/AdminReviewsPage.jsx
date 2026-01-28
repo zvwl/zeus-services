@@ -89,6 +89,10 @@ export default function AdminReviewsPage() {
   const updateReviewStatus = async (reviewId, newStatus) => {
     setUpdatingReviewId(reviewId)
     try {
+      // Get the current review to capture old status
+      const currentReview = reviews.find(r => r.id === reviewId)
+      const oldStatus = currentReview?.status
+      
       const updateData = {
         status: newStatus,
         updated_at: new Date().toISOString()
@@ -106,8 +110,8 @@ export default function AdminReviewsPage() {
 
       if (error) throw error
 
-      // Log admin action
-      await logAdminAction(reviewId, newStatus, adminNotes[reviewId] || null)
+      // Log admin action with old and new status
+      await logAdminAction(reviewId, newStatus, oldStatus, adminNotes[reviewId] || null)
 
       // Clear notes after update
       setAdminNotes(prev => ({ ...prev, [reviewId]: '' }))
@@ -137,8 +141,9 @@ export default function AdminReviewsPage() {
 
       if (error) throw error
 
-      // Log admin action for delete
-      await logAdminAction(reviewId, 'delete', 'Review permanently deleted')
+      // Log admin action for delete (get status before deleting)
+      const reviewToDelete = reviews.find(r => r.id === reviewId)
+      await logAdminAction(reviewId, 'delete', reviewToDelete?.status, 'Review permanently deleted')
 
       setReviews(reviews.filter(review => review.id !== reviewId))
     } catch (err) {
@@ -158,7 +163,7 @@ export default function AdminReviewsPage() {
     })
   }
 
-  const logAdminAction = async (reviewId, actionType, notes = null) => {
+  const logAdminAction = async (reviewId, actionType, oldStatus = null, notes = null) => {
     try {
       let mappedActionType = 'status_change'
       
@@ -184,6 +189,8 @@ export default function AdminReviewsPage() {
             action_type: mappedActionType,
             order_id: orderId || '00000000-0000-0000-0000-000000000000', // Dummy UUID if not found
             review_id: reviewId,
+            old_status: oldStatus,
+            new_status: actionType === 'delete' ? 'deleted' : actionType,
             notes: notes || null
           }
         ])
