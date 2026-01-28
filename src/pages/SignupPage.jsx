@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 
 export default function SignupPage() {
@@ -44,6 +45,28 @@ export default function SignupPage() {
 
     if (!captchaToken) {
       setError('Please complete the CAPTCHA')
+      return
+    }
+
+    // Check if display name is already taken
+    const { data: existingUser, error: checkError } = await supabase
+      .from('customers')
+      .select('user_id')
+      .eq('name', displayName)
+      .maybeSingle()
+
+    if (checkError) {
+      console.error('Error checking display name:', checkError)
+      setError('Error checking display name availability')
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
+      return
+    }
+
+    if (existingUser) {
+      setError('This display name is already taken. Please choose a different name.')
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
       return
     }
 
