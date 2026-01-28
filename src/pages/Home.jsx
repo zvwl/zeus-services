@@ -81,6 +81,18 @@ export default function Home({ onGetStarted }) {
               <h3>Transparent & Reliable</h3>
               <p>Clear prices, clear items and direct Discord support. You always know what you're buying, how it works, and exactly what to expect.</p>
             </div>
+
+            <div className="why-zeus-card">
+              <div className="why-zeus-icon">🛠️</div>
+              <h3>Experience That Actually Matters</h3>
+              <p>Not new sellers chasing quick cash. We've been around since PS3/Xbox 360 days and adapted through every GTA era, patch, and ban wave. That experience means smarter methods, safer execution, and fewer mistakes.</p>
+            </div>
+
+            <div className="why-zeus-card">
+              <div className="why-zeus-icon">💬</div>
+              <h3>Real Human Support</h3>
+              <p>No bots, no ticket black holes. You speak directly with real people who actually do the service. Need changes, updates, or advice? You're always one Discord message away.</p>
+            </div>
           </div>
         </div>
       </section>
