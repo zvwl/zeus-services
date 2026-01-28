@@ -1,8 +1,10 @@
 import { useState, useEffect, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import '../App.css'
 
 export default function ProductsPage({ formatPrice }) {
+  const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [filterPrice, setFilterPrice] = useState('all')
@@ -153,7 +155,11 @@ export default function ProductsPage({ formatPrice }) {
           ) : (
             <main className="services-grid">
               {filteredProducts.map(product => (
-                <div key={product.id} className="product-card card">
+                <div 
+                  key={product.id} 
+                  className="service-card"
+                  onClick={() => navigate(`/product/${product.id}`, { state: { product } })}
+                >
                   {product.icon && (
                     <img src={product.icon} alt={product.name} className="card-image" />
                   )}
@@ -172,7 +178,15 @@ export default function ProductsPage({ formatPrice }) {
                     <span className="card-price">
                       {formatPrice ? formatPrice(product.price) : `£${product.price}`}
                     </span>
-                    <button className="btn btn-primary">View Details</button>
+                    <button 
+                      className="view-details-btn"
+                      onClick={(e) => { 
+                        e.stopPropagation()
+                        navigate(`/product/${product.id}`, { state: { product } })
+                      }}
+                    >
+                      View Details
+                    </button>
                   </div>
                 </div>
               ))}
