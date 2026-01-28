@@ -306,6 +306,43 @@
   background: rgba(251, 191, 36, 0.1);
 }
 
+/* Password visibility toggle */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  width: 100%;
+  padding-right: 2.75rem;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.5rem;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #94a3b8;
+  transition: color 0.2s;
+  border-radius: 6px;
+}
+
+.password-toggle-btn:hover {
+  color: #fbbf24;
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.password-toggle-btn:active {
+  transform: scale(0.95);
+}
+
 @media (max-width: 600px) {
   .auth-card {
     padding: 2rem 1.5rem;
