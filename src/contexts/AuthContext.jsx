@@ -86,20 +86,6 @@ export const AuthProvider = ({ children }) => {
       return null
     }
   }
-      }
-      
-      if (adminData) {
-        setIsAdmin(true)
-        try { localStorage.setItem('isAdmin', 'true') } catch {}
-      } else {
-        setIsAdmin(false)
-        try { localStorage.removeItem('isAdmin') } catch {}
-      }
-    } catch (err) {
-      console.error('Admin check exception:', err)
-      setIsAdmin(false)
-    }
-  }
 
   useEffect(() => {
     // Check for existing Supabase session with timeout
