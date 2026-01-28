@@ -482,3 +482,36 @@ input:disabled + .toggle-slider {
   font-family: 'Courier New', monospace;
   font-size: 0.85rem;
 }
+
+/* Display Name Cooldown */
+.cooldown-badge {
+  display: inline-block;
+  margin-left: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  background: #ef4444;
+  color: white;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.cooldown-message {
+  display: block;
+  color: #ef4444;
+  font-weight: 500;
+  margin-top: 0.5rem;
+}
+
+.disabled-input {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #94a3b8 !important;
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+.disabled-input:focus {
+  border-color: #475569 !important;
+  box-shadow: 0 0 0 3px rgba(71, 85, 105, 0.1) !important;
+}
+

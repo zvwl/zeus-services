@@ -33,7 +33,29 @@ export default function ReviewsPage() {
 
       if (fetchError) throw fetchError
 
-      setReviews(data || [])
+      // Fetch user info for all reviews
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(r => r.user_id))]
+        const { data: usersData } = await supabase
+          .from('customers')
+          .select('user_id, name')
+          .in('user_id', userIds)
+
+        const userMap = {}
+        usersData?.forEach(user => {
+          userMap[user.user_id] = user.name || 'Anonymous'
+        })
+
+        // Attach user names to reviews
+        const reviewsWithNames = data.map(review => ({
+          ...review,
+          userName: userMap[review.user_id] || 'Anonymous'
+        }))
+
+        setReviews(reviewsWithNames)
+      } else {
+        setReviews(data || [])
+      }
     } catch (err) {
       console.error('Error fetching reviews:', err)
       setError('Failed to load reviews')
@@ -97,6 +119,17 @@ export default function ReviewsPage() {
         ★
       </span>
     ))
+  }
+
+  const getDisplayNameInitials = (userName) => {
+    if (!userName) return '***'
+    const trimmedName = userName.trim()
+    if (trimmedName.length <= 3) {
+      return trimmedName.toUpperCase()
+    }
+    const firstThree = trimmedName.substring(0, 3).toUpperCase()
+    const remainingCount = trimmedName.length - 3
+    return firstThree + '*'.repeat(remainingCount)
   }
 
   const filteredReviews = getFilteredAndSortedReviews()
@@ -217,6 +250,7 @@ export default function ReviewsPage() {
 
                 <div className="review-footer">
                   <span className="verified-badge">✓ Verified Purchase</span>
+                  <span className="reviewer-initials">{getDisplayNameInitials(review.userName)}</span>
                 </div>
               </div>
             ))}

@@ -12,6 +12,9 @@ export default function SettingsPage() {
   const [name, setName] = useState(user?.name || '')
   const [profileMessage, setProfileMessage] = useState('')
   const [profileLoading, setProfileLoading] = useState(false)
+  const [lastNameChangeDate, setLastNameChangeDate] = useState(null)
+  const [canChangeName, setCanChangeName] = useState(true)
+  const [daysUntilCanChange, setDaysUntilCanChange] = useState(0)
   
   // Password state
   const [currentPassword, setCurrentPassword] = useState('')
@@ -48,6 +51,50 @@ export default function SettingsPage() {
       }
     }
     if (user) checkMFAStatus()
+  }, [user])
+
+  // Check display name change eligibility
+  useEffect(() => {
+    const checkDisplayNameChange = async () => {
+      if (!user?.id) return
+
+      try {
+        const { data, error } = await supabase
+          .from('customers')
+          .select('display_name_changed_at')
+          .eq('user_id', user.id)
+          .single()
+
+        if (error && error.code !== 'PGRST116') {
+          console.error('Error checking name change date:', error)
+          return
+        }
+
+        if (data?.display_name_changed_at) {
+          setLastNameChangeDate(new Date(data.display_name_changed_at))
+          
+          const lastChange = new Date(data.display_name_changed_at)
+          const now = new Date()
+          const daysSinceChange = Math.floor((now - lastChange) / (1000 * 60 * 60 * 24))
+          const daysRemaining = Math.max(0, 60 - daysSinceChange)
+
+          if (daysRemaining > 0) {
+            setCanChangeName(false)
+            setDaysUntilCanChange(daysRemaining)
+          } else {
+            setCanChangeName(true)
+            setDaysUntilCanChange(0)
+          }
+        } else {
+          setCanChangeName(true)
+          setDaysUntilCanChange(0)
+        }
+      } catch (err) {
+        console.error('Error in checkDisplayNameChange:', err)
+      }
+    }
+
+    checkDisplayNameChange()
   }, [user])
 
   const handleEnableMFA = async () => {
@@ -161,9 +208,36 @@ export default function SettingsPage() {
       return
     }
 
+    // Check if display name is being changed
+    if (name !== (user?.name || '')) {
+      if (!canChangeName) {
+        const nextChangeDate = lastNameChangeDate 
+          ? new Date(lastNameChangeDate.getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString()
+          : ''
+        setProfileMessage(`❌ You can only change your display name once every 60 days. Next change available on ${nextChangeDate}`)
+        setProfileLoading(false)
+        return
+      }
+    }
+
     const result = await updateProfile({ name })
     
     if (result.success) {
+      // Update the display_name_changed_at timestamp if name was changed
+      if (name !== (user?.name || '')) {
+        try {
+          await supabase
+            .from('customers')
+            .update({ display_name_changed_at: new Date().toISOString() })
+            .eq('user_id', user.id)
+          
+          setLastNameChangeDate(new Date())
+          setCanChangeName(false)
+          setDaysUntilCanChange(60)
+        } catch (err) {
+          console.error('Error updating display name change timestamp:', err)
+        }
+      }
       setProfileMessage('✅ Profile updated successfully!')
     } else {
       setProfileMessage('❌ ' + result.error)
@@ -352,21 +426,35 @@ export default function SettingsPage() {
               </div>
 
               <div className="form-group">
-                <label htmlFor="name">Display Name</label>
+                <label htmlFor="name">
+                  Display Name
+                  {!canChangeName && <span className="cooldown-badge">On Cooldown</span>}
+                </label>
                 <input
                   type="text"
                   id="name"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your name"
+                  disabled={!canChangeName}
+                  className={!canChangeName ? 'disabled-input' : ''}
                 />
+                {!canChangeName && (
+                  <small className="cooldown-message">
+                    ⏱️ You can change your display name again in {daysUntilCanChange} day{daysUntilCanChange !== 1 ? 's' : ''}
+                  </small>
+                )}
               </div>
 
               {profileMessage && (
                 <div className="message">{profileMessage}</div>
               )}
 
-              <button type="submit" className="save-btn" disabled={profileLoading}>
+              <button 
+                type="submit" 
+                className="save-btn" 
+                disabled={profileLoading || !canChangeName}
+              >
                 {profileLoading ? 'Saving...' : 'Save Changes'}
               </button>
             </form>
