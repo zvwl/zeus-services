@@ -21,6 +21,15 @@ CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON public.reviews(created_at D
 -- Enable RLS
 ALTER TABLE public.reviews ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Anyone can view approved reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Users can view their own reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Users can insert reviews for completed orders" ON public.reviews;
+DROP POLICY IF EXISTS "Users can update their own pending reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Admins can view all reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Admins can update reviews" ON public.reviews;
+DROP POLICY IF EXISTS "Admins can delete reviews" ON public.reviews;
+
 -- Users can view approved reviews
 CREATE POLICY "Anyone can view approved reviews"
   ON public.reviews

@@ -55,7 +55,7 @@ export default function AdminDashboard() {
       // Fetch admin actions with names from the view
       let logsQuery = supabase
         .from('admin_actions_with_names')
-        .select('id, admin_user_id, admin_name, action_type, order_id, old_status, new_status, notes, created_at')
+        .select('id, admin_user_id, admin_name, action_type, order_id, review_id, old_status, new_status, notes, created_at')
         .order('created_at', { ascending: false })
 
       if (dayOffset) {
@@ -84,8 +84,26 @@ export default function AdminDashboard() {
       case 'refund': return '#ef4444'
       case 'cancel': return '#f97316'
       case 'status_change': return '#3b82f6'
+      case 'review_approve': return '#10b981'
+      case 'review_reject': return '#ef4444'
+      case 'review_delete': return '#f97316'
+      case 'review_pending': return '#f59e0b'
       default: return '#6b7280'
     }
+  }
+
+  const getActionLabel = (actionType) => {
+    switch(actionType) {
+      case 'review_approve': return 'REVIEW APPROVED'
+      case 'review_reject': return 'REVIEW REJECTED'
+      case 'review_delete': return 'REVIEW DELETED'
+      case 'review_pending': return 'REVIEW PENDING'
+      default: return actionType.toUpperCase().replace(/_/g, ' ')
+    }
+  }
+
+  const isReviewAction = (actionType) => {
+    return actionType.startsWith('review_')
   }
 
   if (authLoading) {
@@ -149,7 +167,7 @@ export default function AdminDashboard() {
                   <th>Timestamp</th>
                   <th>Admin</th>
                   <th>Action</th>
-                  <th>Order ID</th>
+                  <th>Order/Review ID</th>
                   <th>Status Change</th>
                   <th>Notes</th>
                 </tr>
@@ -168,12 +186,19 @@ export default function AdminDashboard() {
                         className="action-badge"
                         style={{ backgroundColor: getActionColor(log.action_type) }}
                       >
-                        {log.action_type.toUpperCase()}
+                        {getActionLabel(log.action_type)}
                       </span>
                     </td>
-                    <td className="order-id">{log.order_id.substring(0, 8)}...</td>
+                    <td className="order-id">
+                      {isReviewAction(log.action_type) 
+                        ? `Review: ${log.review_id?.substring(0, 8)}...`
+                        : `Order: ${log.order_id?.substring(0, 8)}...`
+                      }
+                    </td>
                     <td className="status-change">
-                      {log.old_status && log.new_status ? (
+                      {isReviewAction(log.action_type) ? (
+                        <span className="review-action">{log.notes || 'Review moderated'}</span>
+                      ) : log.old_status && log.new_status ? (
                         <>
                           <span className="old-status">{log.old_status}</span>
                           <span className="arrow">→</span>
