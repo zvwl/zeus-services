@@ -7,7 +7,6 @@ export default function ProductsPage({ formatPrice }) {
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [filterPrice, setFilterPrice] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState('all')
   const [sortBy, setSortBy] = useState('none')
@@ -56,19 +55,6 @@ export default function ProductsPage({ formatPrice }) {
       )
     }
 
-    // Price filter
-    if (filterPrice !== 'all') {
-      if (filterPrice === 'under50') {
-        filtered = filtered.filter(p => p.price < 50)
-      } else if (filterPrice === '50to100') {
-        filtered = filtered.filter(p => p.price >= 50 && p.price < 100)
-      } else if (filterPrice === '100to500') {
-        filtered = filtered.filter(p => p.price >= 100 && p.price < 500)
-      } else if (filterPrice === 'over500') {
-        filtered = filtered.filter(p => p.price >= 500)
-      }
-    }
-
     // Sort by price
     if (sortBy === 'low-to-high') {
       filtered = filtered.sort((a, b) => a.price - b.price)
@@ -77,7 +63,7 @@ export default function ProductsPage({ formatPrice }) {
     }
 
     return filtered
-  }, [products, filterPrice, searchQuery, selectedPlatform, sortBy])
+  }, [products, searchQuery, selectedPlatform, sortBy])
 
   return (
     <section className="section services" id="products">
@@ -114,22 +100,6 @@ export default function ProductsPage({ formatPrice }) {
                 {platformOptions.map(platform => (
                   <option key={platform} value={platform}>{platform}</option>
                 ))}
-              </select>
-            </div>
-
-            <div className="filter-controls">
-              <label htmlFor="price-filter">Price:</label>
-              <select
-                id="price-filter"
-                value={filterPrice}
-                onChange={(e) => setFilterPrice(e.target.value)}
-                className="filter-select"
-              >
-                <option value="all">All Prices</option>
-                <option value="under50">Under £50</option>
-                <option value="50to100">£50 - £100</option>
-                <option value="100to500">£100 - £500</option>
-                <option value="over500">Over £500</option>
               </select>
             </div>
 
