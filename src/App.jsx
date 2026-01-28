@@ -27,6 +27,9 @@ import AdminServicesPage from './pages/AdminServicesPage'
 import AdminProductsPage from './pages/AdminProductsPage'
 import TermsPage from './pages/TermsPage'
 import RefundPage from './pages/RefundPage'
+import ReviewsPage from './pages/ReviewsPage'
+import ReviewForm from './pages/ReviewForm'
+import AdminReviewsPage from './pages/AdminReviewsPage'
 
 function App() {
   // Load cart from localStorage on mount
@@ -473,6 +476,14 @@ function App() {
           }
         />
         <Route
+          path="/admin/reviews"
+          element={
+            <ProtectedAdminRoute>
+              <AdminReviewsPage />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
           path="/forgot-password"
           element={<ForgotPasswordPage />}
         />
@@ -496,6 +507,14 @@ function App() {
         <Route
           path="/refund"
           element={<RefundPage />}
+        />
+        <Route
+          path="/reviews"
+          element={<ReviewsPage />}
+        />
+        <Route
+          path="/review"
+          element={<ReviewForm />}
         />
       </Routes>
       <Footer />

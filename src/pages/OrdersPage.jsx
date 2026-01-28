@@ -9,6 +9,7 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [orderReviews, setOrderReviews] = useState({})
   const { user, loading: authLoading } = useAuth()
 
   useEffect(() => {
@@ -52,6 +53,23 @@ export default function OrdersPage() {
       }
 
       setOrders(body.orders || [])
+      
+      // Fetch reviews for all orders
+      if (body.orders && body.orders.length > 0) {
+        const orderIds = body.orders.map(order => order.id)
+        const { data: reviewsData } = await supabase
+          .from('reviews')
+          .select('order_id, id')
+          .in('order_id', orderIds)
+        
+        const reviewsMap = {}
+        if (reviewsData) {
+          reviewsData.forEach(review => {
+            reviewsMap[review.order_id] = review
+          })
+        }
+        setOrderReviews(reviewsMap)
+      }
     } catch (err) {
       console.error('Error fetching orders:', err)
       setError(err.message || 'Failed to load orders')
@@ -210,6 +228,23 @@ export default function OrdersPage() {
                   {(order.note_plaintext || order.notes) && (
                     <div className="order-notes">
                       <strong>Notes:</strong> {order.note_plaintext || order.notes}
+                    </div>
+                  )}
+                  
+                  {order.status === 'completed' && !orderReviews[order.id] && (
+                    <div className="order-review-section">
+                      <button
+                        className="btn-review"
+                        onClick={() => navigate(`/review?order=${order.id}`)}
+                      >
+                        ⭐ Write a Review
+                      </button>
+                    </div>
+                  )}
+                  
+                  {orderReviews[order.id] && (
+                    <div className="order-review-status">
+                      <span className="review-submitted">✓ Review Submitted</span>
                     </div>
                   )}
                 </div>

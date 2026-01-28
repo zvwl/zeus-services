@@ -69,6 +69,13 @@ export default function UserMenu({ isOpen, onClose }) {
               <span className="menu-label">Products</span>
             </button>
             <button
+              className={`menu-item ${isActive('/reviews') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/reviews')}
+            >
+              <span className="menu-icon">⭐</span>
+              <span className="menu-label">Reviews</span>
+            </button>
+            <button
               className={`menu-item ${isActive('/cart') ? 'active' : ''}`}
               onClick={() => handleNavigation('/cart')}
             >
@@ -120,10 +127,17 @@ export default function UserMenu({ isOpen, onClose }) {
                     <span className="menu-icon">📦</span>
                     <span className="menu-label">Manage Products</span>
                   </button>
+                  <button
+                    className={`menu-item ${isActive('/admin/reviews') ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/admin/reviews')}
+                  >
+                    <span className="menu-icon">⭐</span>
+                    <span className="menu-label">Manage Reviews</span>
+                  </button>
                   <button                    className={`menu-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/admin/dashboard')}
                   >
-                    <span className="menu-icon">�</span>
+                    <span className="menu-icon">📊</span>
                     <span className="menu-label">Activity Logs</span>
                   </button>
                 </div>

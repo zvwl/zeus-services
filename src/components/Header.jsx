@@ -33,6 +33,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
           <NavLink to="/" className={navLinkClass}>Home</NavLink>
           <NavLink to="/products" className={navLinkClass}>Products</NavLink>
           <NavLink to="/services" className={navLinkClass}>Services</NavLink>
+          <NavLink to="/reviews" className={navLinkClass}>Reviews</NavLink>
           {user && <NavLink to="/settings" className={navLinkClass}>Settings</NavLink>}
         </nav>
 
