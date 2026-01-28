@@ -112,3 +112,15 @@ CREATE TRIGGER trigger_set_review_eligible
 UPDATE public.orders
 SET review_eligible = true
 WHERE status = 'completed' AND review_eligible = false;
+
+-- Update admin_actions table to support review moderation
+-- Modify the action_type constraint to include review actions
+ALTER TABLE public.admin_actions DROP CONSTRAINT IF EXISTS admin_actions_action_type_check;
+ALTER TABLE public.admin_actions ADD CONSTRAINT admin_actions_action_type_check 
+  CHECK (action_type IN ('complete', 'cancel', 'refund', 'status_change', 'review_approve', 'review_reject', 'review_delete', 'review_pending'));
+
+-- Add review_id column to admin_actions for tracking review moderation
+ALTER TABLE public.admin_actions ADD COLUMN IF NOT EXISTS review_id UUID REFERENCES public.reviews(id) ON DELETE CASCADE;
+
+-- Create index for review_id for faster queries
+CREATE INDEX IF NOT EXISTS idx_admin_actions_review_id ON public.admin_actions(review_id);

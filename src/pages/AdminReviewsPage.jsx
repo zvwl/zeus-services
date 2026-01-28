@@ -106,6 +106,9 @@ export default function AdminReviewsPage() {
 
       if (error) throw error
 
+      // Log admin action
+      await logAdminAction(reviewId, newStatus, adminNotes[reviewId] || null)
+
       // Clear notes after update
       setAdminNotes(prev => ({ ...prev, [reviewId]: '' }))
 
@@ -134,6 +137,9 @@ export default function AdminReviewsPage() {
 
       if (error) throw error
 
+      // Log admin action for delete
+      await logAdminAction(reviewId, 'delete', 'Review permanently deleted')
+
       setReviews(reviews.filter(review => review.id !== reviewId))
     } catch (err) {
       setError('Error deleting review: ' + err.message)
@@ -150,6 +156,39 @@ export default function AdminReviewsPage() {
       hour: '2-digit',
       minute: '2-digit'
     })
+  }
+
+  const logAdminAction = async (reviewId, actionType, notes = null) => {
+    try {
+      let mappedActionType = 'status_change'
+      
+      if (actionType === 'approve') {
+        mappedActionType = 'review_approve'
+      } else if (actionType === 'reject') {
+        mappedActionType = 'review_reject'
+      } else if (actionType === 'pending') {
+        mappedActionType = 'review_pending'
+      } else if (actionType === 'delete') {
+        mappedActionType = 'review_delete'
+      }
+
+      const { error } = await supabase
+        .from('admin_actions')
+        .insert([
+          {
+            admin_user_id: user.id,
+            action_type: mappedActionType,
+            review_id: reviewId,
+            notes: notes || null
+          }
+        ])
+
+      if (error) {
+        console.error('Failed to log admin action:', error)
+      }
+    } catch (err) {
+      console.error('Error logging admin action:', err)
+    }
   }
 
   const renderStars = (rating) => {
