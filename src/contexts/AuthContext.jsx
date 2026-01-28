@@ -49,6 +49,44 @@ export const AuthProvider = ({ children }) => {
         setIsAdmin(false)
         return
       }
+
+      const isUserAdmin = adminData?.active === true
+      setIsAdmin(isUserAdmin)
+      
+      // Persist to localStorage
+      try {
+        localStorage.setItem('isAdmin', String(isUserAdmin))
+      } catch (err) {
+        console.warn('Failed to store admin status:', err)
+      }
+    } catch (err) {
+      // Timeout or other error - default to not admin
+      console.warn('Admin status check failed:', err)
+      setIsAdmin(false)
+    }
+  }
+
+  // Function to fetch display name from customers table
+  const fetchDisplayName = async (userId) => {
+    try {
+      const { data, error } = await supabase
+        .from('customers')
+        .select('name')
+        .eq('user_id', userId)
+        .maybeSingle()
+
+      if (error) {
+        console.error('Error fetching display name:', error)
+        return null
+      }
+
+      return data?.name || null
+    } catch (err) {
+      console.error('Display name fetch error:', err)
+      return null
+    }
+  }
+      }
       
       if (adminData) {
         setIsAdmin(true)
@@ -93,10 +131,13 @@ export const AuthProvider = ({ children }) => {
             return
           }
           
+          // Fetch display name from customers table
+          const displayName = await fetchDisplayName(session.user.id)
+          
           setUser({
             id: session.user.id,
             email: session.user.email,
-            name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+            name: displayName || session.user.email.split('@')[0],
             created_at: session.user.created_at
           })
           setEmailVerified(session.user.email_confirmed_at !== null)
@@ -187,10 +228,13 @@ export const AuthProvider = ({ children }) => {
         }
       }
 
+      // Fetch display name from customers table
+      const displayName = await fetchDisplayName(data.user.id)
+
       setUser({
         id: data.user.id,
         email: data.user.email,
-        name: data.user.user_metadata?.name || data.user.email.split('@')[0],
+        name: displayName || data.user.email.split('@')[0],
         created_at: data.user.created_at
       })
 
@@ -228,10 +272,13 @@ export const AuthProvider = ({ children }) => {
       const authedUser = sessionData?.session?.user
 
       if (authedUser) {
+        // Fetch display name from customers table
+        const displayName = await fetchDisplayName(authedUser.id)
+        
         setUser({
           id: authedUser.id,
           email: authedUser.email,
-          name: authedUser.user_metadata?.name || authedUser.email.split('@')[0],
+          name: displayName || authedUser.email.split('@')[0],
           created_at: authedUser.created_at
         })
 
