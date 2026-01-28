@@ -130,9 +130,14 @@ export default function ProductsPage({ formatPrice }) {
                   className="service-card"
                   onClick={() => navigate(`/product/${product.id}`, { state: { product } })}
                 >
-                  {product.icon && (
-                    <img src={product.icon} alt={product.name} className="card-image" />
-                  )}
+                  <img 
+                    src={product.icon || '/zeusservicesPackage.png'} 
+                    alt={product.name} 
+                    className="card-image" 
+                    onError={(e) => {
+                      e.target.src = '/zeusservicesPackage.png'
+                    }}
+                  />
                   <h3 className="card-title">{product.name}</h3>
                   <p className="card-description">{product.description}</p>
 
