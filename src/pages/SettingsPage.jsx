@@ -63,9 +63,9 @@ export default function SettingsPage() {
           .from('customers')
           .select('display_name_changed_at')
           .eq('user_id', user.id)
-          .single()
+          .maybeSingle()
 
-        if (error && error.code !== 'PGRST116') {
+        if (error) {
           console.error('Error checking name change date:', error)
           return
         }
