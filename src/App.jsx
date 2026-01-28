@@ -382,6 +382,20 @@ function App() {
           )}
         />
         <Route
+          path="/product/:id"
+          element={(
+            <ServiceDetail
+              services={services}
+              cartItems={cartItems}
+              addToCart={addToCart}
+              removeFromCart={removeFromCart}
+              updateQuantity={updateQuantity}
+              currency={currency}
+              formatPrice={formatPrice}
+            />
+          )}
+        />
+        <Route
           path="/products"
           element={(
             <ProductsPage formatPrice={formatPrice} />

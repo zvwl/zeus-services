@@ -15,10 +15,11 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
 
   // Get service from props or location state
   // ID can be UUID (from DB) or number (legacy), so try both
+  // Also handles products passed via location state
   const service = services.find(s => {
     const paramId = id
     return s.id === paramId || s.id === parseInt(paramId)
-  }) || location.state?.service
+  }) || location.state?.service || location.state?.product
 
   const versionOptions = service?.versions?.length ? service.versions : ['Legacy', 'Enhanced']
 
