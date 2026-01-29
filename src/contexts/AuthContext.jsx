@@ -70,11 +70,18 @@ export const AuthProvider = ({ children }) => {
   // Function to fetch display name from customers table
   const fetchDisplayName = async (userId) => {
     try {
-      const { data, error } = await supabase
+      // Add timeout to prevent hanging
+      const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Display name fetch timeout')), 3000)
+      )
+
+      const queryPromise = supabase
         .from('customers')
         .select('name')
         .eq('user_id', userId)
         .maybeSingle()
+
+      const { data, error } = await Promise.race([queryPromise, timeoutPromise])
 
       if (error) {
         console.error('Error fetching display name:', error)
