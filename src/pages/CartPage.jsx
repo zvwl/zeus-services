@@ -12,19 +12,20 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   const [loadingOrder, setLoadingOrder] = useState(false)
   const [fetchError, setFetchError] = useState(null)
   const navigate = useNavigate()
-  const { user, loading: authLoading } = useAuth()
+  const { user, loading: authLoading, isRecoveringFromRedirect } = useAuth()
 
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
   const sessionId = searchParams.get('session_id')
 
   // Redirect to home if user logs out while on success page,
-  // but only after auth has finished loading to avoid premature redirects.
+  // but only after auth has finished loading AND recovery attempt is complete
   useEffect(() => {
-    if (success === 'true' && !authLoading && !user) {
+    if (success === 'true' && !authLoading && !isRecoveringFromRedirect && !user) {
+      console.log('Auth recovery failed, redirecting to home')
       navigate('/')
     }
-  }, [user, authLoading, success, navigate])
+  }, [user, authLoading, isRecoveringFromRedirect, success, navigate])
 
   useEffect(() => {
     if (success === 'true') {

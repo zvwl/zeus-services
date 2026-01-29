@@ -15,6 +15,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [emailVerified, setEmailVerified] = useState(false)
+  const [isRecoveringFromRedirect, setIsRecoveringFromRedirect] = useState(false)
   const [isAdmin, setIsAdmin] = useState(() => {
     try {
       return localStorage.getItem('isAdmin') === 'true'
@@ -174,13 +175,17 @@ export const AuthProvider = ({ children }) => {
         
         // If on payment success page, try to restore user from backup
         if (isPaymentSuccess) {
+          setIsRecoveringFromRedirect(true)
+          console.log('Payment success page detected, attempting auth recovery from localStorage')
+          
           try {
             const userBackup = localStorage.getItem('authUserBackup')
             if (userBackup && !user) {
               const restoredUser = JSON.parse(userBackup)
-              console.warn('Restored user from localStorage backup during payment redirect:', restoredUser.email)
+              console.warn('✅ Restored user from localStorage backup:', restoredUser.email)
               setUser(restoredUser)
               setEmailVerified(false)
+              setIsRecoveringFromRedirect(false)
               setLoading(false)
               return // Don't clear the user
             }
@@ -189,11 +194,16 @@ export const AuthProvider = ({ children }) => {
           }
           
           if (user) {
-            console.warn('Auth state null but user exists and we\'re on payment success page, keeping user session')
+            console.warn('✅ Auth state recovered, keeping existing user session')
             // Don't clear the user, just update verified status
             setEmailVerified(false)
+            setIsRecoveringFromRedirect(false)
             return
           }
+          
+          // Couldn't restore - let it clear
+          console.error('❌ Could not recover auth state on payment success page')
+          setIsRecoveringFromRedirect(false)
         }
         
         // Clear user and localStorage backup when actually logging out
@@ -534,7 +544,8 @@ export const AuthProvider = ({ children }) => {
       logout, 
       loading, 
       emailVerified,
-      isAdmin, 
+      isAdmin,
+      isRecoveringFromRedirect,
       resendVerificationEmail,
       updateProfile,
       changePassword,
