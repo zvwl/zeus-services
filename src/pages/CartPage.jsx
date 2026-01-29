@@ -83,49 +83,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       setLoadingOrder(true)
       setFetchError(null)
       
-      // IMPORTANT: Wait for Supabase session hydration
-      // The session might not be restored yet on initial page load
-      console.log('Waiting for Supabase session hydration...')
-      
-      let sessionData = null
-      let userSession = null
-      
-      try {
-        // Try to get existing session (first attempt)
-        const { data: s1 } = await supabase.auth.getSession()
-        sessionData = s1
-        userSession = s1?.session
-        console.log('Session check result:', { hasSession: !!userSession, email: userSession?.user?.email })
-        
-        // If no session yet, wait briefly for SIGNED_IN event (up to 10 seconds)
-        if (!userSession) {
-          console.log('No session found, waiting for auth state change...')
-          userSession = await new Promise((resolve) => {
-            const timeout = setTimeout(() => {
-              console.log('Session hydration timeout (10s), continuing without user session')
-              sub?.unsubscribe()
-              resolve(null)
-            }, 10000)
-            
-            const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-              console.log('Auth state changed during wait:', _event, !!session?.user)
-              if (session?.user) {
-                clearTimeout(timeout)
-                sub?.unsubscribe()
-                resolve(session)
-              }
-            })
-          })
-        }
-      } catch (err) {
-        console.error('Error waiting for session hydration:', err)
-        // Continue anyway - we don't strictly need user auth to fetch by session_id
-      }
-      
-      const accessToken = userSession?.access_token
-      console.log('Access token available:', !!accessToken)
-      
-      // Check environment variables
+      // Check environment variables FIRST
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
       
@@ -136,20 +94,37 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         return
       }
 
-      // Fetch order directly by checkout session ID using new edge function
+      // Try to get session, but don't block if it's not available
+      // The edge function uses SERVICE_ROLE so it doesn't need auth
+      console.log('Fetching order by session ID:', checkoutSessionId)
+      
+      let accessToken = null
+      try {
+        const { data: { session } } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+        ])
+        accessToken = session?.access_token
+        if (accessToken) console.log('Using access token for request')
+      } catch (err) {
+        console.log('No user session available (expected after Stripe redirect), continuing without auth')
+      }
+
+      // Fetch order directly by checkout session ID using edge function
       let res
       try {
         res = await fetch(`${supabaseUrl}/functions/v1/get-order-by-session?session_id=${checkoutSessionId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
-            apikey: anonKey,
-            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+            'apikey': anonKey,
+            ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
           }
         })
       } catch (fetchErr) {
         console.error('Network error fetching order:', fetchErr)
         if (retryCount < MAX_RETRIES) {
+          console.log(`Network error, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
           setTimeout(() => {
             fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
           }, RETRY_DELAY)
