@@ -379,8 +379,8 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
 
             <div className="discord-cta">
               <div className="discord-cta-text">
-                <strong>Need updates or have a question?</strong>
-                <span>Join our Discord and contact support for faster help.</span>
+                <strong>⚠️ Action Required: Join Discord to Continue Your Order</strong>
+                <span>You must join our Discord server and create a support ticket to proceed with your order. Our team will contact you there to complete delivery.</span>
               </div>
               <a
                 href="http://discord.gg/zeusservices"
@@ -389,7 +389,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
                 rel="noreferrer"
               >
                 <img src="/discordLogo.png" alt="Discord" className="discord-btn-icon" />
-                Join our Discord
+                Join Discord & Create Ticket
               </a>
             </div>
 
