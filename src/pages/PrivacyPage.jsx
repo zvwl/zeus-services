@@ -79,8 +79,8 @@ export default function PrivacyPage() {
               If you have questions about this Privacy Policy or your data, contact us:
             </p>
             <ul>
-              <li><strong>Email:</strong> [INSERT CONTACT EMAIL]</li>
-              <li><strong>Discord:</strong> [INSERT DISCORD SERVER LINK]</li>
+              <li><strong>Email:</strong> support@kiroozmare.resend.app</li>
+              <li><strong>Discord:</strong> <a href="https://discord.gg/zeusservices" target="_blank" rel="noopener noreferrer">https://discord.gg/zeusservices</a></li>
               <li><strong>Website:</strong> www.zeuservices.com</li>
             </ul>
             <p>
