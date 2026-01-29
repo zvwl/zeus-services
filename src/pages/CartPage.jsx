@@ -43,6 +43,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         clearCart()
       }
       // Fetch the order by session ID (with retry logic for webhook delay)
+      // Order will be created by Stripe webhook and indexed in database
       if (sessionId) {
         console.log('💳 Payment success! Fetching order:', sessionId)
         fetchOrderBySessionId(sessionId)
