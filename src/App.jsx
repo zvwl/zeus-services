@@ -104,6 +104,20 @@ function App() {
     }
   }, [user, navigate])
 
+  // Protect against logout during Stripe redirect
+  // When user is redirected from Stripe back to /cart?success=true, 
+  // don't allow the auth state change to log them out
+  useEffect(() => {
+    const isPaymentSuccess = location.search.includes('success=true')
+    if (isPaymentSuccess && !user) {
+      // User was logged in before Stripe redirect, but came back without session
+      // This might be a session loss during redirect
+      console.warn('Payment success page reached but no user in auth context. This may be a session loss during Stripe redirect.')
+      // Don't navigate away - let the CartPage handle the error
+      return
+    }
+  }, [location.search, user])
+
   // Detect user's country and set currency accordingly via backend
   useEffect(() => {
     const detectLocation = async () => {
@@ -354,6 +368,14 @@ function App() {
 
         console.log('Redirecting to Stripe checkout:', url)
         setCheckoutStatus({ state: 'loading', message: 'Redirecting to Stripe...' })
+        
+        // Store payment info in case session is lost during redirect
+        localStorage.setItem('lastPaymentAttempt', JSON.stringify({
+          timestamp: Date.now(),
+          cartItems: cartItems.map(item => ({ id: item.id, name: item.name, price: item.price, quantity: item.quantity })),
+          currency: currency
+        }))
+        
         window.location.assign(url)
         return
       }

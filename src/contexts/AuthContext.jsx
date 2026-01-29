@@ -137,6 +137,8 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      console.log('Auth state changed:', _event, !!session?.user)
+      
       if (session?.user) {
         // Fetch display name from customers table (same as initial load)
         const displayName = await fetchDisplayName(session.user.id)
@@ -152,6 +154,18 @@ export const AuthProvider = ({ children }) => {
         checkAdminStatus(session.user.id)
         setLoading(false)
       } else {
+        // Don't immediately clear user if we're on a payment success page
+        // The session might be temporarily lost during Stripe redirect
+        const isPaymentSuccess = typeof window !== 'undefined' && 
+                                 window.location.search.includes('success=true')
+        
+        if (isPaymentSuccess && user) {
+          console.warn('Auth state null but we\'re on payment success page, keeping user session')
+          // Don't clear the user, just update verified status
+          setEmailVerified(false)
+          return
+        }
+        
         setUser(null)
         setEmailVerified(false)
         setIsAdmin(false)
