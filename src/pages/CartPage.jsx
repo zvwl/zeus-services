@@ -96,6 +96,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
 
       // Try to get session, but don't block if it's not available
       // The edge function uses SERVICE_ROLE so it doesn't need auth
+      // No authentication required - webhook verified the payment
       console.log('Fetching order by session ID:', checkoutSessionId)
       
       let accessToken = null
