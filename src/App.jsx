@@ -104,19 +104,8 @@ function App() {
     }
   }, [user, navigate])
 
-  // Protect against logout during Stripe redirect
-  // When user is redirected from Stripe back to /cart?success=true, 
-  // don't allow the auth state change to log them out
-  useEffect(() => {
-    const isPaymentSuccess = location.search.includes('success=true')
-    if (isPaymentSuccess && !user) {
-      // User was logged in before Stripe redirect, but came back without session
-      // This might be a session loss during redirect
-      console.warn('Payment success page reached but no user in auth context. This may be a session loss during Stripe redirect.')
-      // Don't navigate away - let the CartPage handle the error
-      return
-    }
-  }, [location.search, user])
+  // Note: No longer needed - AuthContext now properly persists and recovers sessions
+  // CartPage handles any session recovery issues during payment redirects
 
   // Detect user's country and set currency accordingly via backend
   useEffect(() => {

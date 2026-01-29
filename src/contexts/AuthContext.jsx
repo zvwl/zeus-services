@@ -145,7 +145,7 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('Auth state changed:', _event, !!session?.user)
+      console.log('Auth state changed:', _event, !!session?.user, { event: _event })
       
       if (session?.user) {
         // Fetch display name from customers table (same as initial load)
@@ -173,6 +173,10 @@ export const AuthProvider = ({ children }) => {
         
         // Check admin status in background (don't block)
         checkAdminStatus(session.user.id)
+        
+        // CRITICAL: Clear the recovery flag when session is restored
+        // This allows CartPage to proceed with showing the success screen
+        setIsRecoveringFromRedirect(false)
         setLoading(false)
       } else {
         // Don't immediately clear user if we're on a payment success page

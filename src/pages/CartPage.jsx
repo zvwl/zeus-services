@@ -24,9 +24,13 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   useEffect(() => {
     // Don't redirect if we're on success page with a session_id
     // The order fetch will handle showing results or fallback messaging
-    if (success === 'true' && !authLoading && !isRecoveringFromRedirect && !user && !sessionId && !orderDetails && !loadingOrder) {
-      console.log('Auth recovery failed, no session ID, no order yet, redirecting to home')
-      navigate('/')
+    if (success === 'true') {
+      console.log('Success page check:', { authLoading, isRecoveringFromRedirect, hasUser: !!user, hasSessionId: !!sessionId, hasOrderDetails: !!orderDetails, loadingOrder })
+      
+      if (!authLoading && !isRecoveringFromRedirect && !user && !sessionId && !orderDetails && !loadingOrder) {
+        console.log('Auth recovery failed, no session ID, no order yet, redirecting to home')
+        navigate('/')
+      }
     }
   }, [user, authLoading, isRecoveringFromRedirect, success, sessionId, navigate, orderDetails, loadingOrder])
 
@@ -38,11 +42,26 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       }
       // Fetch the order by session ID (with retry logic for webhook delay)
       if (sessionId) {
-        console.log('Payment success, fetching order by sessionId:', sessionId)
-        // Wait a moment for Supabase session to be fully restored from localStorage
-        const timer = setTimeout(() => {
+        console.log('Payment success, fetching order by sessionId:', sessionId, { authLoading, isRecoveringFromRedirect })
+        
+        // Wait for auth to finish loading AND recovery to complete before fetching order
+        const checkAndFetch = async () => {
+          // If auth is still loading or recovering, wait a bit
+          if (authLoading || isRecoveringFromRedirect) {
+            console.log('Auth still loading or recovering, waiting...')
+            await new Promise(r => setTimeout(r, 500))
+            // Check again
+            if (authLoading || isRecoveringFromRedirect) {
+              console.log('Still loading, scheduling another check...')
+              setTimeout(checkAndFetch, 500)
+              return
+            }
+          }
+          console.log('Auth ready, starting order fetch')
           fetchOrderBySessionId(sessionId)
-        }, 300)
+        }
+        
+        checkAndFetch()
         
         // Set a hard timeout of 60 seconds - stop retrying after that
         const hardTimeout = setTimeout(() => {
@@ -54,7 +73,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         }, 60000)
         
         return () => {
-          clearTimeout(timer)
           clearTimeout(hardTimeout)
         }
       } else {
@@ -62,7 +80,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         fetchMostRecentOrder()
       }
     }
-  }, [success, sessionId])
+  }, [success, sessionId, authLoading, isRecoveringFromRedirect])
 
   // Show message if payment was cancelled
   useEffect(() => {
