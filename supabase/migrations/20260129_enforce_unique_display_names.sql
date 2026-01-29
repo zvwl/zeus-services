@@ -46,7 +46,9 @@ DECLARE
     'moderator', 'mod', 'staff', 'root', 'superuser', 'superadmin',
     'test', 'demo', 'guest', 'null', 'undefined', 'anonymous',
     'fuck', 'shit', 'ass', 'bitch', 'bastard', 'damn', 'hell', 'crap',
-    'cock', 'pussy', 'dick', 'asshole', 'motherfucker', 'whoreson'
+    'cock', 'pussy', 'dick', 'asshole', 'motherfucker', 'whoreson',
+    'nigger', 'nigga', 'faggot', 'retard', 'slut', 'whore', 'cunt',
+    'kike', 'chink', 'spic', 'wetback', 'dyke', 'tranny', 'fag'
   ];
   clean_name TEXT;
 BEGIN
