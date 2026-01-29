@@ -196,18 +196,22 @@ export const AuthProvider = ({ children }) => {
           // Fetch display name from customers table
           const displayName = await fetchDisplayName(session.user.id)
           
-          console.log('✅ Setting user from auth event:', session.user.email)
-          setUser({
+          const userObject = {
             id: session.user.id,
             email: session.user.email,
             name: displayName || session.user.email.split('@')[0],
             created_at: session.user.created_at
-          })
+          }
+          
+          console.log('✅ Setting user from auth event:', session.user.email, 'User object:', userObject)
+          setUser(userObject)
           setEmailVerified(session.user.email_confirmed_at !== null)
           
           // Check admin status in background
           checkAdminStatus(session.user.id)
           setLoading(false)
+          
+          console.log('✅ User state should now be set')
         } catch (err) {
           console.error('❌ Error processing auth session:', err)
           setUser(null)
