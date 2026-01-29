@@ -92,7 +92,12 @@ export const AuthProvider = ({ children }) => {
     // Check for existing Supabase session
     const checkSession = async () => {
       try {
+        // CRITICAL: Give Supabase time to restore session from localStorage
+        // This is especially important after a Stripe redirect which causes a page reload
+        await new Promise(resolve => setTimeout(resolve, 100))
+        
         const { data: { session } } = await supabase.auth.getSession()
+        console.log('Initial session check:', { hasSession: !!session?.user, email: session?.user?.email })
 
         if (session?.user) {
           // Verify the user actually exists in the database
@@ -121,6 +126,8 @@ export const AuthProvider = ({ children }) => {
           
           // Check admin status in the background (don't block page load)
           checkAdminStatus(session.user.id)
+        } else {
+          console.log('No session found during initial check')
         }
       } catch (err) {
         console.error('Session check error:', err)

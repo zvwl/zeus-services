@@ -39,7 +39,10 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       // Fetch the order by session ID (with retry logic for webhook delay)
       if (sessionId) {
         console.log('Payment success, fetching order by sessionId:', sessionId)
-        fetchOrderBySessionId(sessionId)
+        // Wait a moment for Supabase session to be fully restored from localStorage
+        const timer = setTimeout(() => {
+          fetchOrderBySessionId(sessionId)
+        }, 300)
         
         // Set a hard timeout of 60 seconds - stop retrying after that
         const hardTimeout = setTimeout(() => {
@@ -51,6 +54,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         }, 60000)
         
         return () => {
+          clearTimeout(timer)
           clearTimeout(hardTimeout)
         }
       } else {
@@ -87,21 +91,21 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       let userSession = null
       
       try {
-        // Try to get existing session
+        // Try to get existing session (first attempt)
         const { data: s1 } = await supabase.auth.getSession()
         sessionData = s1
         userSession = s1?.session
-        console.log('Session check result:', { hasSession: !!userSession })
+        console.log('Session check result:', { hasSession: !!userSession, email: userSession?.user?.email })
         
-        // If no session yet, wait briefly for SIGNED_IN event (up to 8 seconds)
+        // If no session yet, wait briefly for SIGNED_IN event (up to 10 seconds)
         if (!userSession) {
           console.log('No session found, waiting for auth state change...')
           userSession = await new Promise((resolve) => {
             const timeout = setTimeout(() => {
-              console.log('Session hydration timeout (8s), continuing without user')
+              console.log('Session hydration timeout (10s), continuing without user session')
               sub?.unsubscribe()
               resolve(null)
-            }, 8000)
+            }, 10000)
             
             const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
               console.log('Auth state changed during wait:', _event, !!session?.user)
