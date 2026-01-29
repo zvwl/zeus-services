@@ -42,7 +42,7 @@ CREATE OR REPLACE FUNCTION public.is_display_name_available(check_name TEXT)
 RETURNS BOOLEAN AS $$
 DECLARE
   reserved_names TEXT[] := ARRAY[
-    'admin', 'administrator', 'support', 'system', 'zeus', 'bot', 'api',
+    'admin', 'administrator', 'support', 'system', 'bot', 'api',
     'moderator', 'mod', 'staff', 'root', 'superuser', 'superadmin',
     'test', 'demo', 'guest', 'null', 'undefined', 'anonymous'
   ];
