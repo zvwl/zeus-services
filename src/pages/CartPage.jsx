@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
@@ -11,12 +11,23 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   const [orderDetails, setOrderDetails] = useState(null)
   const [loadingOrder, setLoadingOrder] = useState(false)
   const [fetchError, setFetchError] = useState(null)
+  const orderDetailsRef = useRef(null)
+  const hardTimeoutRef = useRef(null)
   const navigate = useNavigate()
   const { user, loading: authLoading, isRecoveringFromRedirect } = useAuth()
 
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
   const sessionId = searchParams.get('session_id')
+
+  useEffect(() => {
+    orderDetailsRef.current = orderDetails
+    if (orderDetails && hardTimeoutRef.current) {
+      clearTimeout(hardTimeoutRef.current)
+      hardTimeoutRef.current = null
+      setFetchError(null)
+    }
+  }, [orderDetails])
 
   // Redirect to home if user logs out while on success page,
   // UNLESS we have a valid session_id (proves payment succeeded)
@@ -49,15 +60,20 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         fetchOrderBySessionId(sessionId)
         
         // Set a hard timeout of 60 seconds - stop retrying after that
-        const hardTimeout = setTimeout(() => {
+        hardTimeoutRef.current = setTimeout(() => {
           console.log('⏱️ Hard timeout reached, stopping order fetch')
           setLoadingOrder(false)
-          if (!orderDetails) {
+          if (!orderDetailsRef.current) {
             setFetchError('Order is taking longer than expected. Please go to "Your Orders" to see your payment status.')
           }
         }, 60000)
-        
-        return () => clearTimeout(hardTimeout)
+
+        return () => {
+          if (hardTimeoutRef.current) {
+            clearTimeout(hardTimeoutRef.current)
+            hardTimeoutRef.current = null
+          }
+        }
       } else {
         console.log('💳 Payment success, fetching most recent order')
         fetchMostRecentOrder()
@@ -167,6 +183,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       if (order) {
         console.log('✅ Order found:', order.id)
         setOrderDetails(order)
+        setFetchError(null)
         setLoadingOrder(false)
       } else if (retryCount < MAX_RETRIES) {
         // Order not found yet, webhook might still be processing
