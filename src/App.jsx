@@ -61,13 +61,18 @@ function App() {
     const fetchServices = async () => {
       setServicesLoading(true)
       try {
+        console.log('Fetching services...')
         const { data, error } = await supabase
           .from('services')
           .select('*')
           .eq('active', true)
           .order('created_at', { ascending: true })
 
-        if (error) throw error
+        if (error) {
+          console.error('Services fetch error:', error.message, error.code)
+          throw error
+        }
+        console.log('Services fetched:', data?.length, 'services')
         setServices(data || [])
       } catch (err) {
         console.error('Error fetching services:', err)

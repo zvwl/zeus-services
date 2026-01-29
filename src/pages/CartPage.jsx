@@ -34,7 +34,16 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       }
       // Fetch the order by session ID (with retry logic for webhook delay)
       if (sessionId) {
+        // Set a hard timeout of 60 seconds - after that, stop retrying
+        const hardTimeout = setTimeout(() => {
+          setLoadingOrder(false)
+          if (!orderDetails) {
+            setFetchError('Order is taking longer than expected. Please go to "Your Orders" to see your payment status.')
+          }
+        }, 60000)
+        
         fetchOrderBySessionId(sessionId)
+        return () => clearTimeout(hardTimeout)
       } else {
         fetchMostRecentOrder()
       }
@@ -53,8 +62,8 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   }, [canceled])
 
   const fetchOrderBySessionId = async (checkoutSessionId, retryCount = 0) => {
-    const MAX_RETRIES = 10
-    const RETRY_DELAY = 1000 // 1 second
+    const MAX_RETRIES = 15
+    const RETRY_DELAY = 2000 // 2 seconds between retries
 
     try {
       setLoadingOrder(true)
@@ -85,6 +94,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       const matchingOrder = orders.find(order => order.checkout_session_id === checkoutSessionId)
 
       if (matchingOrder) {
+        console.log('Order found:', matchingOrder)
         setOrderDetails(matchingOrder)
         setLoadingOrder(false)
       } else if (retryCount < MAX_RETRIES) {
@@ -94,7 +104,8 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
           fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
         }, RETRY_DELAY)
       } else {
-        setFetchError('Order is taking longer than expected to process. Please check "Your Orders" in a moment.')
+        console.error('Max retries reached for order:', checkoutSessionId)
+        setFetchError('Order is taking longer than expected to process. Your order should be in "Your Orders" shortly.')
         setLoadingOrder(false)
       }
     } catch (err) {
