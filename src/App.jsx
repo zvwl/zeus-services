@@ -223,6 +223,7 @@ function App() {
 
   const handleCheckout = async () => {
     if (!user) {
+      console.warn('Checkout failed: No user logged in')
       navigate('/login')
       return
     }
@@ -236,7 +237,16 @@ function App() {
       const { data: sessionData } = await supabase.auth.getSession()
       const sessionUser = sessionData?.session?.user
       const accessToken = sessionData?.session?.access_token
+      
+      console.log('Checkout session check:', {
+        hasSessionUser: !!sessionUser,
+        hasAccessToken: !!accessToken,
+        sessionUserId: sessionUser?.id,
+        currentUserId: user?.id
+      })
+      
       if (!sessionUser?.id) {
+        console.error('Checkout failed: Session expired or invalid')
         setCheckoutStatus({ state: 'error', message: 'Your session expired. Please log in again.' })
         navigate('/login')
         return
@@ -317,26 +327,33 @@ function App() {
         try { fnData = await fnRes.json() } catch (e) { /* ignore */ }
 
         if (!fnRes.ok) {
-          setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData?.error || fnRes.statusText || 'Request failed'}` })
+          const errorMsg = `Stripe error: ${fnData?.error || fnRes.statusText || 'Request failed'}`
+          console.error('Stripe checkout failed:', { status: fnRes.status, error: fnData, errorMsg })
+          setCheckoutStatus({ state: 'error', message: errorMsg })
           return
         }
 
         if (fnData?.error) {
-          setCheckoutStatus({ state: 'error', message: `Stripe error: ${fnData.error}` })
+          const errorMsg = `Stripe error: ${fnData.error}`
+          console.error('Stripe checkout error:', fnData)
+          setCheckoutStatus({ state: 'error', message: errorMsg })
           return
         }
 
         const url = fnData?.url
         if (!url) {
+          console.error('Stripe checkout URL missing', fnData)
           setCheckoutStatus({ state: 'error', message: 'Stripe checkout URL missing' })
           return
         }
 
+        console.log('Redirecting to Stripe checkout:', url)
         setCheckoutStatus({ state: 'loading', message: 'Redirecting to Stripe...' })
         window.location.assign(url)
         return
       }
     } catch (err) {
+      console.error('Checkout exception:', err)
       setCheckoutStatus({ state: 'error', message: err.message || 'Checkout failed' })
     }
   }
