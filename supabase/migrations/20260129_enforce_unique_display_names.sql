@@ -44,23 +44,33 @@ DECLARE
   reserved_names TEXT[] := ARRAY[
     'admin', 'administrator', 'support', 'system', 'bot', 'api',
     'moderator', 'mod', 'staff', 'root', 'superuser', 'superadmin',
-    'test', 'demo', 'guest', 'null', 'undefined', 'anonymous'
+    'test', 'demo', 'guest', 'null', 'undefined', 'anonymous',
+    'fuck', 'shit', 'ass', 'bitch', 'bastard', 'damn', 'hell', 'crap',
+    'cock', 'pussy', 'dick', 'asshole', 'motherfucker', 'whoreson'
   ];
+  clean_name TEXT;
 BEGIN
-  -- Return TRUE if name is available (not found), FALSE if taken
-  -- Also check that name is not empty/null
+  -- Return TRUE if name is available (not found), FALSE if taken or invalid
+  -- Check that name is not empty/null
   IF check_name IS NULL OR trim(check_name) = '' THEN
     RETURN FALSE;
   END IF;
   
+  clean_name := trim(check_name);
+  
+  -- Check maximum length (15 characters)
+  IF char_length(clean_name) > 15 THEN
+    RETURN FALSE;
+  END IF;
+  
   -- Check if name is reserved
-  IF LOWER(trim(check_name)) = ANY(reserved_names) THEN
+  IF LOWER(clean_name) = ANY(reserved_names) THEN
     RETURN FALSE;
   END IF;
   
   RETURN NOT EXISTS (
     SELECT 1 FROM public.customers 
-    WHERE LOWER(name) = LOWER(trim(check_name))
+    WHERE LOWER(name) = LOWER(clean_name)
   );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
