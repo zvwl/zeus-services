@@ -173,13 +173,17 @@ export const AuthProvider = ({ children }) => {
         const isPaymentSuccess = typeof window !== 'undefined' && 
                                  window.location.search.includes('success=true')
         
+        console.log('Auth state null, isPaymentSuccess:', isPaymentSuccess, 'user:', user)
+        
         // If on payment success page, try to restore user from backup
         if (isPaymentSuccess) {
           setIsRecoveringFromRedirect(true)
-          console.log('Payment success page detected, attempting auth recovery from localStorage')
+          console.log('🔄 Payment success page detected, attempting auth recovery from localStorage')
           
           try {
             const userBackup = localStorage.getItem('authUserBackup')
+            console.log('📦 authUserBackup in localStorage:', userBackup ? 'FOUND' : 'NOT FOUND')
+            
             if (userBackup && !user) {
               const restoredUser = JSON.parse(userBackup)
               console.warn('✅ Restored user from localStorage backup:', restoredUser.email)
@@ -190,7 +194,7 @@ export const AuthProvider = ({ children }) => {
               return // Don't clear the user
             }
           } catch (err) {
-            console.warn('Could not restore user from localStorage:', err)
+            console.warn('❌ Could not restore user from localStorage:', err.message)
           }
           
           if (user) {
@@ -202,7 +206,7 @@ export const AuthProvider = ({ children }) => {
           }
           
           // Couldn't restore - let it clear
-          console.error('❌ Could not recover auth state on payment success page')
+          console.error('❌ Could not recover auth state on payment success page - backup missing or empty')
           setIsRecoveringFromRedirect(false)
         }
         
