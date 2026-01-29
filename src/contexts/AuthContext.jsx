@@ -149,10 +149,13 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes (login, logout, token refresh)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (session?.user) {
+        // Fetch display name from customers table (same as initial load)
+        const displayName = await fetchDisplayName(session.user.id)
+        
         setUser({
           id: session.user.id,
           email: session.user.email,
-          name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+          name: displayName || session.user.email.split('@')[0],
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
