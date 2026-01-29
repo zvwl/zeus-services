@@ -193,8 +193,15 @@ export const AuthProvider = ({ children }) => {
       if (session?.user) {
         // User is logged in (SIGNED_IN, TOKEN_REFRESHED, etc)
         try {
-          // Fetch display name from customers table
-          const displayName = await fetchDisplayName(session.user.id)
+          console.log('🔍 Processing auth event for:', session.user.email)
+          
+          // Fetch display name from customers table (with error handling)
+          let displayName = null
+          try {
+            displayName = await fetchDisplayName(session.user.id)
+          } catch (nameErr) {
+            console.warn('Could not fetch display name, using email:', nameErr)
+          }
           
           const userObject = {
             id: session.user.id,
@@ -206,15 +213,25 @@ export const AuthProvider = ({ children }) => {
           console.log('✅ Setting user from auth event:', session.user.email, 'User object:', userObject)
           setUser(userObject)
           setEmailVerified(session.user.email_confirmed_at !== null)
-          
-          // Check admin status in background
-          checkAdminStatus(session.user.id)
           setLoading(false)
           
-          console.log('✅ User state should now be set')
+          console.log('✅ User state set successfully')
+          
+          // Check admin status in background (non-blocking)
+          checkAdminStatus(session.user.id).catch(err => {
+            console.warn('Admin check failed:', err)
+          })
         } catch (err) {
           console.error('❌ Error processing auth session:', err)
-          setUser(null)
+          // Don't clear user on error - keep them logged in with minimal data
+          const fallbackUser = {
+            id: session.user.id,
+            email: session.user.email,
+            name: session.user.email.split('@')[0],
+            created_at: session.user.created_at
+          }
+          console.log('⚠️ Using fallback user object')
+          setUser(fallbackUser)
           setLoading(false)
         }
       } else {
