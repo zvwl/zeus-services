@@ -27,6 +27,7 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminServicesPage from './pages/AdminServicesPage'
 import AdminProductsPage from './pages/AdminProductsPage'
 import TermsPage from './pages/TermsPage'
+import PrivacyPage from './pages/PrivacyPage'
 import RefundPage from './pages/RefundPage'
 import ReviewsPage from './pages/ReviewsPage'
 import ReviewForm from './pages/ReviewForm'
@@ -509,12 +510,7 @@ function App() {
         />
         <Route
           path="/privacy"
-          element={(
-            <PlaceholderPage
-              title="Privacy Policy"
-              description="How we collect, use, and protect your personal information."
-            />
-          )}
+          element={<PrivacyPage />}
         />
         <Route
           path="/refund"
