@@ -1,11 +1,11 @@
 {
   "rewrites": [
-    { "source": "/(?!.*\\.(?:png|jpg|jpeg|gif|ico|svg|css|js|woff|woff2|eot|ttf|otf)$)(.*)", "destination": "/" }
+    { "source": "/(.*)", "destination": "/" }
   ],
   "env": {},
   "headers": [
     {
-      "source": "/(?!.*\\.(?:png|jpg|jpeg|gif|ico|svg|css|js|woff|woff2|eot|ttf|otf)$)(.*)",
+      "source": "/(.*)",
       "headers": [
         {
           "key": "Content-Security-Policy",
