@@ -40,10 +40,21 @@ ADD CONSTRAINT customers_name_key UNIQUE (name);
 -- This function can be called by anyone (even unauthenticated users during signup)
 CREATE OR REPLACE FUNCTION public.is_display_name_available(check_name TEXT)
 RETURNS BOOLEAN AS $$
+DECLARE
+  reserved_names TEXT[] := ARRAY[
+    'admin', 'administrator', 'support', 'system', 'zeus', 'bot', 'api',
+    'moderator', 'mod', 'staff', 'root', 'superuser', 'superadmin',
+    'test', 'demo', 'guest', 'null', 'undefined', 'anonymous'
+  ];
 BEGIN
   -- Return TRUE if name is available (not found), FALSE if taken
   -- Also check that name is not empty/null
   IF check_name IS NULL OR trim(check_name) = '' THEN
+    RETURN FALSE;
+  END IF;
+  
+  -- Check if name is reserved
+  IF LOWER(trim(check_name)) = ANY(reserved_names) THEN
     RETURN FALSE;
   END IF;
   
@@ -52,7 +63,7 @@ BEGIN
     WHERE LOWER(name) = LOWER(trim(check_name))
   );
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER STABLE;
+$$ LANGUAGE plpgsql SECURITY DEFINER STABLE SET search_path = public;
 
 -- Step 4: Grant execute permission to all users (including anon)
 GRANT EXECUTE ON FUNCTION public.is_display_name_available(TEXT) TO anon, authenticated;

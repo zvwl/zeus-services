@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import './ReviewsPage.css'
 
@@ -250,7 +251,7 @@ export default function ReviewsPage() {
 
                 <div className="review-footer">
                   <span className="verified-badge">✓ Verified Purchase</span>
-                  <span className="reviewer-initials">{getDisplayNameInitials(review.userName)}</span>
+                  <span className="reviewer-initials">{getDisplayNameInitials(DOMPurify.sanitize(review.userName))}</span>
                 </div>
               </div>
             ))}

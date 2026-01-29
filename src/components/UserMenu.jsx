@@ -1,4 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom'
+import DOMPurify from 'dompurify'
 import { useAuth } from '../contexts/AuthContext'
 import './UserMenu.css'
 
@@ -32,8 +33,8 @@ export default function UserMenu({ isOpen, onClose }) {
             <div className="user-info">
               <div className="user-avatar">{user.name?.[0]?.toUpperCase() || '👤'}</div>
               <div className="user-details">
-                <div className="user-name">{user.name}</div>
-                <div className="user-email">{user.email}</div>
+                <div className="user-name">{DOMPurify.sanitize(user.name)}</div>
+                <div className="user-email">{DOMPurify.sanitize(user.email)}</div>
               </div>
             </div>
           ) : (
