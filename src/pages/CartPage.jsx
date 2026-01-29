@@ -34,17 +34,23 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       }
       // Fetch the order by session ID (with retry logic for webhook delay)
       if (sessionId) {
-        // Set a hard timeout of 60 seconds - after that, stop retrying
+        console.log('Payment success, fetching order by sessionId:', sessionId)
+        fetchOrderBySessionId(sessionId)
+        
+        // Set a hard timeout of 60 seconds - stop retrying after that
         const hardTimeout = setTimeout(() => {
+          console.log('Hard timeout reached, stopping order fetch retries')
           setLoadingOrder(false)
           if (!orderDetails) {
             setFetchError('Order is taking longer than expected. Please go to "Your Orders" to see your payment status.')
           }
         }, 60000)
         
-        fetchOrderBySessionId(sessionId)
-        return () => clearTimeout(hardTimeout)
+        return () => {
+          clearTimeout(hardTimeout)
+        }
       } else {
+        console.log('Payment success, fetching most recent order')
         fetchMostRecentOrder()
       }
     }
@@ -68,26 +74,94 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
     try {
       setLoadingOrder(true)
       setFetchError(null)
-      const { data: sessionData } = await supabase.auth.getSession()
+      
+      // Get session safely
+      let sessionData
+      try {
+        const result = await supabase.auth.getSession()
+        sessionData = result?.data
+      } catch (err) {
+        console.error('Error getting session:', err)
+        setFetchError('Session error. Please refresh the page.')
+        setLoadingOrder(false)
+        return
+      }
+      
       const accessToken = sessionData?.session?.access_token
 
       if (!accessToken) {
-        throw new Error('Please log in to view your order')
+        console.warn('No access token available')
+        if (retryCount < 3) {
+          // Retry a few times in case session is still loading
+          console.log(`No token, retrying... (${retryCount + 1}/3)`)
+          setTimeout(() => {
+            fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
+          }, 1000)
+          return
+        }
+        setFetchError('Your session expired. Please log in again.')
+        setLoadingOrder(false)
+        return
+      }
+
+      // Check environment variables
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
+      const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
+      
+      if (!supabaseUrl || !anonKey) {
+        console.error('Missing Supabase environment variables')
+        setFetchError('Configuration error. Please refresh the page.')
+        setLoadingOrder(false)
+        return
       }
 
       // Fetch all user orders and find the one with matching checkout_session_id
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-orders`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${accessToken}`
+      let res
+      try {
+        res = await fetch(`${supabaseUrl}/functions/v1/get-user-orders`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: anonKey,
+            Authorization: `Bearer ${accessToken}`
+          }
+        })
+      } catch (fetchErr) {
+        console.error('Network error fetching orders:', fetchErr)
+        if (retryCount < MAX_RETRIES) {
+          setTimeout(() => {
+            fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
+          }, RETRY_DELAY)
+          return
         }
-      })
+        setFetchError('Network error. Please check your connection.')
+        setLoadingOrder(false)
+        return
+      }
 
-      const body = await res.json()
+      let body
+      try {
+        body = await res.json()
+      } catch (parseErr) {
+        console.error('Error parsing response:', parseErr)
+        setFetchError('Server error. Please try again.')
+        setLoadingOrder(false)
+        return
+      }
+      
       if (!res.ok || body?.error) {
-        throw new Error(body?.error || 'Failed to load orders')
+        const errorMsg = body?.error || `Server error (${res.status})`
+        console.error('Order fetch error:', errorMsg)
+        if (retryCount < MAX_RETRIES) {
+          console.log(`Error fetching orders, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
+          setTimeout(() => {
+            fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
+          }, RETRY_DELAY)
+          return
+        }
+        setFetchError('Failed to load orders. Please refresh the page.')
+        setLoadingOrder(false)
+        return
       }
 
       const orders = body.orders || []
@@ -109,8 +183,8 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         setLoadingOrder(false)
       }
     } catch (err) {
-      console.error('Error fetching order:', err)
-      setFetchError(err.message || 'Failed to load order')
+      console.error('Unexpected error in fetchOrderBySessionId:', err)
+      setFetchError('An unexpected error occurred. Please refresh the page.')
       setLoadingOrder(false)
     }
   }
@@ -232,7 +306,13 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
             <div className="error-message">
               <p>{fetchError}</p>
               <p>Your payment was successful. The order may take a moment to appear.</p>
-              <button onClick={() => navigate('/orders')} className="view-orders-btn">
+              <button 
+                onClick={() => {
+                  console.log('Navigating to /orders...')
+                  navigate('/orders')
+                }} 
+                className="view-orders-btn"
+              >
                 View All Orders
               </button>
             </div>
