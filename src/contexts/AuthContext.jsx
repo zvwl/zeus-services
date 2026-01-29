@@ -202,18 +202,11 @@ export const AuthProvider = ({ children }) => {
         try {
           console.log('🔍 Processing auth event for:', session.user.email)
           
-          // Fetch display name from customers table (with error handling)
-          let displayName = null
-          try {
-            displayName = await fetchDisplayName(session.user.id)
-          } catch (nameErr) {
-            console.warn('Could not fetch display name, using email:', nameErr)
-          }
-          
+          // Set user state IMMEDIATELY without waiting for display name
           const userObject = {
             id: session.user.id,
             email: session.user.email,
-            name: displayName || session.user.email.split('@')[0],
+            name: session.user.email.split('@')[0], // Default to email username
             created_at: session.user.created_at
           }
           
@@ -223,6 +216,15 @@ export const AuthProvider = ({ children }) => {
           setLoading(false)
           
           console.log('✅ User state set successfully')
+          
+          // Fetch display name in background and update if found (non-blocking)
+          fetchDisplayName(session.user.id).then(displayName => {
+            if (displayName) {
+              setUser(prev => prev ? { ...prev, name: displayName } : null)
+            }
+          }).catch(err => {
+            console.warn('Could not fetch display name:', err)
+          })
           
           // Check admin status in background (non-blocking)
           checkAdminStatus(session.user.id).catch(err => {
