@@ -231,6 +231,8 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'Please complete the CAPTCHA' }
       }
 
+      console.log('Attempting login with email:', email, 'captchaToken:', captchaToken ? 'present' : 'missing')
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -240,7 +242,8 @@ export const AuthProvider = ({ children }) => {
       })
       
       if (error) {
-        return { success: false, error: error.message }
+        console.error('Login error details:', { status: error.status, message: error.message, code: error.code })
+        return { success: false, error: error.message || 'Login failed. Please check your credentials.' }
       }
 
       // If the user has verified MFA factors, force a challenge before completing login
