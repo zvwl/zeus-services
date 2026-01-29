@@ -150,6 +150,19 @@ export const AuthProvider = ({ children }) => {
           created_at: session.user.created_at
         })
         setEmailVerified(session.user.email_confirmed_at !== null)
+        
+        // Store user in localStorage for recovery during redirects
+        try {
+          localStorage.setItem('authUserBackup', JSON.stringify({
+            id: session.user.id,
+            email: session.user.email,
+            name: displayName || session.user.email.split('@')[0],
+            created_at: session.user.created_at
+          }))
+        } catch (err) {
+          console.warn('Could not backup user to localStorage:', err)
+        }
+        
         // Check admin status in background (don't block)
         checkAdminStatus(session.user.id)
         setLoading(false)
@@ -159,11 +172,35 @@ export const AuthProvider = ({ children }) => {
         const isPaymentSuccess = typeof window !== 'undefined' && 
                                  window.location.search.includes('success=true')
         
-        if (isPaymentSuccess && user) {
-          console.warn('Auth state null but we\'re on payment success page, keeping user session')
-          // Don't clear the user, just update verified status
-          setEmailVerified(false)
-          return
+        // If on payment success page, try to restore user from backup
+        if (isPaymentSuccess) {
+          try {
+            const userBackup = localStorage.getItem('authUserBackup')
+            if (userBackup && !user) {
+              const restoredUser = JSON.parse(userBackup)
+              console.warn('Restored user from localStorage backup during payment redirect:', restoredUser.email)
+              setUser(restoredUser)
+              setEmailVerified(false)
+              setLoading(false)
+              return // Don't clear the user
+            }
+          } catch (err) {
+            console.warn('Could not restore user from localStorage:', err)
+          }
+          
+          if (user) {
+            console.warn('Auth state null but user exists and we\'re on payment success page, keeping user session')
+            // Don't clear the user, just update verified status
+            setEmailVerified(false)
+            return
+          }
+        }
+        
+        // Clear user and localStorage backup when actually logging out
+        try {
+          localStorage.removeItem('authUserBackup')
+        } catch (err) {
+          console.warn('Could not clear localStorage backup:', err)
         }
         
         setUser(null)

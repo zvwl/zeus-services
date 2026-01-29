@@ -82,6 +82,21 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         sessionData = result?.data
       } catch (err) {
         console.error('Error getting session:', err)
+        // Try to restore from localStorage backup
+        try {
+          const userBackup = localStorage.getItem('authUserBackup')
+          if (userBackup) {
+            console.warn('Session error, but found user backup - retrying with stored credentials')
+            if (retryCount < 3) {
+              setTimeout(() => {
+                fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
+              }, 1000)
+              return
+            }
+          }
+        } catch (backupErr) {
+          console.warn('Could not access localStorage backup:', backupErr)
+        }
         setFetchError('Session error. Please refresh the page.')
         setLoadingOrder(false)
         return
