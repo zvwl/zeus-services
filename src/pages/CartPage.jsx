@@ -22,11 +22,13 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   // but only after auth has finished loading AND recovery attempt is complete
   // UNLESS we have a valid session_id (proves payment succeeded)
   useEffect(() => {
-    if (success === 'true' && !authLoading && !isRecoveringFromRedirect && !user && !sessionId) {
-      console.log('Auth recovery failed and no session ID, redirecting to home')
+    // Don't redirect if we're on success page with a session_id
+    // The order fetch will handle showing results or fallback messaging
+    if (success === 'true' && !authLoading && !isRecoveringFromRedirect && !user && !sessionId && !orderDetails && !loadingOrder) {
+      console.log('Auth recovery failed, no session ID, no order yet, redirecting to home')
       navigate('/')
     }
-  }, [user, authLoading, isRecoveringFromRedirect, success, sessionId, navigate])
+  }, [user, authLoading, isRecoveringFromRedirect, success, sessionId, navigate, orderDetails, loadingOrder])
 
   useEffect(() => {
     if (success === 'true') {
@@ -77,50 +79,48 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       setLoadingOrder(true)
       setFetchError(null)
       
-      // Get session safely
-      let sessionData
+      // IMPORTANT: Wait for Supabase session hydration
+      // The session might not be restored yet on initial page load
+      console.log('Waiting for Supabase session hydration...')
+      
+      let sessionData = null
+      let userSession = null
+      
       try {
-        const result = await supabase.auth.getSession()
-        sessionData = result?.data
-      } catch (err) {
-        console.error('Error getting session:', err)
-        // Try to restore from localStorage backup
-        try {
-          const userBackup = localStorage.getItem('authUserBackup')
-          if (userBackup) {
-            console.warn('Session error, but found user backup - retrying with stored credentials')
-            if (retryCount < 3) {
-              setTimeout(() => {
-                fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
-              }, 1000)
-              return
-            }
-          }
-        } catch (backupErr) {
-          console.warn('Could not access localStorage backup:', backupErr)
+        // Try to get existing session
+        const { data: s1 } = await supabase.auth.getSession()
+        sessionData = s1
+        userSession = s1?.session
+        console.log('Session check result:', { hasSession: !!userSession })
+        
+        // If no session yet, wait briefly for SIGNED_IN event (up to 8 seconds)
+        if (!userSession) {
+          console.log('No session found, waiting for auth state change...')
+          userSession = await new Promise((resolve) => {
+            const timeout = setTimeout(() => {
+              console.log('Session hydration timeout (8s), continuing without user')
+              sub?.unsubscribe()
+              resolve(null)
+            }, 8000)
+            
+            const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
+              console.log('Auth state changed during wait:', _event, !!session?.user)
+              if (session?.user) {
+                clearTimeout(timeout)
+                sub?.unsubscribe()
+                resolve(session)
+              }
+            })
+          })
         }
-        setFetchError('Session error. Please refresh the page.')
-        setLoadingOrder(false)
-        return
+      } catch (err) {
+        console.error('Error waiting for session hydration:', err)
+        // Continue anyway - we don't strictly need user auth to fetch by session_id
       }
       
-      const accessToken = sessionData?.session?.access_token
-
-      if (!accessToken) {
-        console.warn('No access token available')
-        if (retryCount < 3) {
-          // Retry a few times in case session is still loading
-          console.log(`No token, retrying... (${retryCount + 1}/3)`)
-          setTimeout(() => {
-            fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
-          }, 1000)
-          return
-        }
-        setFetchError('Your session expired. Please log in again.')
-        setLoadingOrder(false)
-        return
-      }
-
+      const accessToken = userSession?.access_token
+      console.log('Access token available:', !!accessToken)
+      
       // Check environment variables
       const supabaseUrl = import.meta.env.VITE_SUPABASE_URL
       const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY
@@ -140,7 +140,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
           headers: {
             'Content-Type': 'application/json',
             apikey: anonKey,
-            Authorization: `Bearer ${accessToken}`
+            ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
           }
         })
       } catch (fetchErr) {
@@ -197,7 +197,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         console.error('Max retries reached - order still not created. Webhook may have failed.')
         
         // Fallback: if no user and no order found, show confirmation message using lastPaymentAttempt
-        if (!user) {
+        if (!userSession) {
           try {
             const lastPayment = localStorage.getItem('lastPaymentAttempt')
             if (lastPayment) {
@@ -206,7 +206,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
               // Create a minimal order object from payment data
               const fallbackOrder = {
                 id: 'pending-' + checkoutSessionId.substring(0, 8),
-                customer_email: user?.email || 'Order confirmation',
+                customer_email: 'Order confirmation',
                 items: paymentData.cartItems || [],
                 total_amount: paymentData.cartItems?.reduce((sum, item) => sum + (item.price_converted * item.quantity), 0) || 0,
                 currency: paymentData.currency || 'GBP',
