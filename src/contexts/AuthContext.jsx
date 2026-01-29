@@ -198,7 +198,6 @@ export const AuthProvider = ({ children }) => {
       }
       
       setLoading(false)
-      }
     })
 
     return () => subscription.unsubscribe()
