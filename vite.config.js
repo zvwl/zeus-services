@@ -13,10 +13,5 @@ export default defineConfig({
         assetFileNames: '[name]-[hash][extname]'
       }
     }
-  },
-  server: {
-    headers: {
-      'Cache-Control': 'no-cache, no-store, must-revalidate'
-    }
   }
 })

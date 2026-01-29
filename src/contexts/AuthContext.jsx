@@ -164,12 +164,19 @@ export const AuthProvider = ({ children }) => {
     // - User logs in (event: SIGNED_IN)
     // - User logs out (event: SIGNED_OUT, session: null)
     // - Token refreshes (event: TOKEN_REFRESHED)
-    // - Page loads after redirect (event: INITIAL_SESSION if session in localStorage)
+    // - Session restored from localStorage (event: INITIAL_SESSION)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       console.log('🔔 Auth state change:', { event: _event, hasSession: !!session?.user, email: session?.user?.email })
       
+      // Skip INITIAL_SESSION - checkSession() handles the initial restore
+      // We only want to respond to explicit user actions (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED)
+      if (_event === 'INITIAL_SESSION') {
+        console.log('ℹ️ Initial session event - skipping (handled by checkSession)')
+        return
+      }
+      
       if (session?.user) {
-        // User is logged in or session was restored
+        // User is logged in (SIGNED_IN, TOKEN_REFRESHED, etc)
         try {
           // Fetch display name from customers table
           const displayName = await fetchDisplayName(session.user.id)
@@ -185,19 +192,20 @@ export const AuthProvider = ({ children }) => {
           
           // Check admin status in background
           checkAdminStatus(session.user.id)
+          setLoading(false)
         } catch (err) {
           console.error('❌ Error processing auth session:', err)
           setUser(null)
+          setLoading(false)
         }
       } else {
-        // User is logged out or session was cleared
+        // User is logged out (SIGNED_OUT)
         console.log('❌ Auth session cleared')
         setUser(null)
         setEmailVerified(false)
         setIsAdmin(false)
+        setLoading(false)
       }
-      
-      setLoading(false)
     })
 
     return () => subscription.unsubscribe()
