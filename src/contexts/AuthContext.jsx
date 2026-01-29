@@ -95,6 +95,10 @@ export const AuthProvider = ({ children }) => {
       try {
         console.log('📋 Starting session restoration...')
         
+        // CRITICAL: Give Supabase time to initialize and restore session from localStorage
+        // Without this delay, getSession() might run before Supabase reads from storage
+        await new Promise(resolve => setTimeout(resolve, 200))
+        
         // CRITICAL: Wait for Supabase to finish initializing and restoring session from localStorage
         // By default, Supabase checks localStorage on first getSession() call
         const { data: { session }, error } = await supabase.auth.getSession()

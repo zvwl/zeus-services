@@ -22,12 +22,16 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   // UNLESS we have a valid session_id (proves payment succeeded)
   useEffect(() => {
     if (success === 'true') {
-      console.log('✅ Success page check:', { hasUser: !!user, hasSessionId: !!sessionId, authLoading })
+      console.log('✅ Success page check:', { hasUser: !!user, email: user?.email, hasSessionId: !!sessionId, authLoading })
       
       // Only redirect if we're truly logged out AND have no session ID
       if (!authLoading && !user && !sessionId) {
         console.log('⚠️ No user and no session ID, redirecting home')
         navigate('/')
+      } else if (!authLoading && user) {
+        console.log('✅ User is logged in:', user.email)
+      } else if (authLoading) {
+        console.log('⏳ Still waiting for auth to load...')
       }
     }
   }, [user, authLoading, success, sessionId, navigate])
