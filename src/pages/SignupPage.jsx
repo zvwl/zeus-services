@@ -69,10 +69,13 @@ export default function SignupPage() {
     
     checkNameTimeoutRef.current = setTimeout(async () => {
       try {
+        console.log('Checking display name availability for:', trimmedName)
         // Call the database function to check availability
         const { data, error } = await supabase.rpc('is_display_name_available', {
           check_name: trimmedName
         })
+
+        console.log('RPC result:', { data, error })
 
         if (error) {
           console.error('Error checking display name:', error)
@@ -82,6 +85,8 @@ export default function SignupPage() {
           setNameAvailable(data)
           if (!data) {
             setNameError('This display name is already taken')
+          } else {
+            setNameError('')
           }
         }
       } catch (err) {
