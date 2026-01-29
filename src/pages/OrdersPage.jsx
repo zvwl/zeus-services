@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './OrdersPage.css'
 
 export default function OrdersPage() {
-  const navigate = useNavigate()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
@@ -15,20 +13,52 @@ export default function OrdersPage() {
   useEffect(() => {
     // Wait for auth to finish loading before checking if user is logged in
     if (authLoading) return
-    
-    if (!user) {
-      navigate('/login')
-      return
-    }
-    fetchOrders()
-  }, [user, authLoading, navigate])
 
-  const fetchOrders = async () => {
+    let isActive = true
+
+    const init = async () => {
+      setLoading(true)
+      setError(null)
+
+      // Give Supabase a brief moment to hydrate session after Stripe redirect
+      let session = null
+      try {
+        const { data: { session: s } } = await Promise.race([
+          supabase.auth.getSession(),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
+        ])
+        session = s
+      } catch {
+        session = null
+      }
+
+      const hasUser = !!(user || session?.user)
+      if (!hasUser) {
+        if (isActive) {
+          setLoading(false)
+          setError('Please log in to view your orders')
+        }
+        return
+      }
+
+      await fetchOrders(session)
+    }
+
+    init()
+
+    return () => {
+      isActive = false
+    }
+  }, [user, authLoading])
+
+  const fetchOrders = async (sessionOverride = null) => {
     try {
       setLoading(true)
       setError(null)
 
-      const { data: sessionData } = await supabase.auth.getSession()
+      const sessionData = sessionOverride
+        ? { session: sessionOverride }
+        : (await supabase.auth.getSession()).data
       const authUser = sessionData?.session?.user
       const accessToken = sessionData?.session?.access_token
 
@@ -131,7 +161,17 @@ export default function OrdersPage() {
     return (
       <section className="section orders-section">
         <div className="orders-container">
-          <div className="error-message">{error}</div>
+          <div className="error-message">
+            <p>{error}</p>
+            {error.toLowerCase().includes('log in') && (
+              <button
+                className="view-orders-btn"
+                onClick={() => window.location.assign('/login')}
+              >
+                Go to Login
+              </button>
+            )}
+          </div>
         </div>
       </section>
     )
