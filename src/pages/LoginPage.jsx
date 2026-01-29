@@ -51,10 +51,12 @@ export default function LoginPage() {
     }
 
     const result = await login(email, password, captchaToken)
+    
+    // Reset CAPTCHA immediately after login attempt (success or failure)
+    captchaRef.current?.resetCaptcha()
+    setCaptchaToken(null)
+    
     if (result.success) {
-      captchaRef.current?.resetCaptcha()
-      setCaptchaToken(null)
-      
       // If user came from checkout, go to checkout. Otherwise check for pending cart item.
       if (redirectTo === '/checkout') {
         navigate('/checkout')
@@ -89,8 +91,6 @@ export default function LoginPage() {
     }
 
     setError(result.error)
-    captchaRef.current?.resetCaptcha()
-    setCaptchaToken(null)
   }
 
   const handleGoogleSignIn = async () => {
