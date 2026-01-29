@@ -13,6 +13,11 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   const { user, emailVerified, resendVerificationEmail } = useAuth()
   const [verificationMessage, setVerificationMessage] = useState('')
 
+  // Detect if we're viewing a product or service based on the URL
+  const isProduct = location.pathname.startsWith('/product/')
+  const backPath = isProduct ? '/products' : '/services'
+  const backLabel = isProduct ? 'Back to Products' : 'Back to Services'
+
   // Get service from props or location state
   // ID can be UUID (from DB) or number (legacy), so try both
   // Also handles products passed via location state
@@ -60,7 +65,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
       <section className="section services">
         <div style={{ textAlign: 'center', padding: '2rem' }}>
           <h2>Service not found</h2>
-          <button className="primary-btn" onClick={() => navigate('/services')}>Back to Services</button>
+          <button className="primary-btn" onClick={() => navigate(backPath)}>{backLabel}</button>
         </div>
       </section>
     )
@@ -124,8 +129,8 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
 
   return (
     <section className="section services" id="service-detail">
-      <button className="ghost-btn" onClick={() => navigate('/services')} style={{ marginBottom: '2rem' }}>
-        ← Back to Services
+      <button className="ghost-btn" onClick={() => navigate(backPath)} style={{ marginBottom: '2rem' }}>
+        ← {backLabel}
       </button>
 
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
