@@ -90,14 +90,28 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     // Check for existing Supabase session
+    // Supabase with persistSession: true will automatically restore from localStorage
     const checkSession = async () => {
       try {
-        // CRITICAL: Give Supabase time to restore session from localStorage
-        // This is especially important after a Stripe redirect which causes a page reload
-        await new Promise(resolve => setTimeout(resolve, 100))
+        console.log('📋 Starting session restoration...')
         
-        const { data: { session } } = await supabase.auth.getSession()
-        console.log('Initial session check:', { hasSession: !!session?.user, email: session?.user?.email })
+        // CRITICAL: Wait for Supabase to finish initializing and restoring session from localStorage
+        // By default, Supabase checks localStorage on first getSession() call
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        console.log('✅ Session check complete:', { 
+          hasSession: !!session?.user, 
+          email: session?.user?.email,
+          error: error?.message
+        })
+
+        if (error) {
+          console.error('❌ Session error:', error)
+          setUser(null)
+          setEmailVerified(false)
+          setLoading(false)
+          return
+        }
 
         if (session?.user) {
           // Verify the user actually exists in the database
@@ -116,6 +130,7 @@ export const AuthProvider = ({ children }) => {
           // Fetch display name from customers table
           const displayName = await fetchDisplayName(session.user.id)
           
+          console.log('✅ User session restored:', session.user.email)
           setUser({
             id: session.user.id,
             email: session.user.email,
@@ -127,14 +142,13 @@ export const AuthProvider = ({ children }) => {
           // Check admin status in the background (don't block page load)
           checkAdminStatus(session.user.id)
           
-          // Mark loading as done after we have the user
           setLoading(false)
         } else {
-          console.log('No session found during initial check')
+          console.log('ℹ️ No existing session found')
           setLoading(false)
         }
       } catch (err) {
-        console.error('Session check error:', err)
+        console.error('❌ Session check error:', err)
         // If session check fails, clear everything
         setUser(null)
         setEmailVerified(false)
@@ -146,94 +160,44 @@ export const AuthProvider = ({ children }) => {
     checkSession()
 
     // Listen for auth changes (login, logout, token refresh)
+    // This fires when:
+    // - User logs in (event: SIGNED_IN)
+    // - User logs out (event: SIGNED_OUT, session: null)
+    // - Token refreshes (event: TOKEN_REFRESHED)
+    // - Page loads after redirect (event: INITIAL_SESSION if session in localStorage)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('Auth state changed:', _event, !!session?.user, { event: _event })
+      console.log('🔔 Auth state change:', { event: _event, hasSession: !!session?.user, email: session?.user?.email })
       
       if (session?.user) {
-        // Fetch display name from customers table (same as initial load)
-        const displayName = await fetchDisplayName(session.user.id)
-        
-        setUser({
-          id: session.user.id,
-          email: session.user.email,
-          name: displayName || session.user.email.split('@')[0],
-          created_at: session.user.created_at
-        })
-        setEmailVerified(session.user.email_confirmed_at !== null)
-        
-        // Store user in localStorage for recovery during redirects
+        // User is logged in or session was restored
         try {
-          localStorage.setItem('authUserBackup', JSON.stringify({
+          // Fetch display name from customers table
+          const displayName = await fetchDisplayName(session.user.id)
+          
+          console.log('✅ Setting user from auth event:', session.user.email)
+          setUser({
             id: session.user.id,
             email: session.user.email,
             name: displayName || session.user.email.split('@')[0],
             created_at: session.user.created_at
-          }))
+          })
+          setEmailVerified(session.user.email_confirmed_at !== null)
+          
+          // Check admin status in background
+          checkAdminStatus(session.user.id)
         } catch (err) {
-          console.warn('Could not backup user to localStorage:', err)
+          console.error('❌ Error processing auth session:', err)
+          setUser(null)
         }
-        
-        // Check admin status in background (don't block)
-        checkAdminStatus(session.user.id)
-        
-        // CRITICAL: Clear the recovery flag when session is restored
-        // This allows CartPage to proceed with showing the success screen
-        setIsRecoveringFromRedirect(false)
-        setLoading(false)
       } else {
-        // Don't immediately clear user if we're on a payment success page
-        // The session might be temporarily lost during Stripe redirect
-        const isPaymentSuccess = typeof window !== 'undefined' && 
-                                 window.location.search.includes('success=true')
-        
-        console.log('Auth state null, isPaymentSuccess:', isPaymentSuccess, 'user:', user)
-        
-        // If on payment success page, try to restore user from backup
-        if (isPaymentSuccess) {
-          setIsRecoveringFromRedirect(true)
-          console.log('🔄 Payment success page detected, attempting auth recovery from localStorage')
-          
-          try {
-            const userBackup = localStorage.getItem('authUserBackup')
-            console.log('📦 authUserBackup in localStorage:', userBackup ? 'FOUND' : 'NOT FOUND')
-            
-            if (userBackup && !user) {
-              const restoredUser = JSON.parse(userBackup)
-              console.warn('✅ Restored user from localStorage backup:', restoredUser.email)
-              setUser(restoredUser)
-              setEmailVerified(false)
-              setIsRecoveringFromRedirect(false)
-              setLoading(false)
-              return // Don't clear the user
-            }
-          } catch (err) {
-            console.warn('❌ Could not restore user from localStorage:', err.message)
-          }
-          
-          if (user) {
-            console.warn('✅ Auth state recovered, keeping existing user session')
-            // Don't clear the user, just update verified status
-            setEmailVerified(false)
-            setIsRecoveringFromRedirect(false)
-            return
-          }
-          
-          // Couldn't restore - let it clear
-          console.error('❌ Could not recover auth state on payment success page - backup missing or empty')
-          setIsRecoveringFromRedirect(false)
-        }
-        
-        // Clear user and localStorage backup when actually logging out
-        try {
-          localStorage.removeItem('authUserBackup')
-        } catch (err) {
-          console.warn('Could not clear localStorage backup:', err)
-        }
-        
+        // User is logged out or session was cleared
+        console.log('❌ Auth session cleared')
         setUser(null)
         setEmailVerified(false)
         setIsAdmin(false)
-        setLoading(false)
+      }
+      
+      setLoading(false)
       }
     })
 

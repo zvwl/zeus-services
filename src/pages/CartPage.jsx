@@ -19,20 +19,18 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   const sessionId = searchParams.get('session_id')
 
   // Redirect to home if user logs out while on success page,
-  // but only after auth has finished loading AND recovery attempt is complete
   // UNLESS we have a valid session_id (proves payment succeeded)
   useEffect(() => {
-    // Don't redirect if we're on success page with a session_id
-    // The order fetch will handle showing results or fallback messaging
     if (success === 'true') {
-      console.log('Success page check:', { authLoading, isRecoveringFromRedirect, hasUser: !!user, hasSessionId: !!sessionId, hasOrderDetails: !!orderDetails, loadingOrder })
+      console.log('✅ Success page check:', { hasUser: !!user, hasSessionId: !!sessionId, authLoading })
       
-      if (!authLoading && !isRecoveringFromRedirect && !user && !sessionId && !orderDetails && !loadingOrder) {
-        console.log('Auth recovery failed, no session ID, no order yet, redirecting to home')
+      // Only redirect if we're truly logged out AND have no session ID
+      if (!authLoading && !user && !sessionId) {
+        console.log('⚠️ No user and no session ID, redirecting home')
         navigate('/')
       }
     }
-  }, [user, authLoading, isRecoveringFromRedirect, success, sessionId, navigate, orderDetails, loadingOrder])
+  }, [user, authLoading, success, sessionId, navigate])
 
   useEffect(() => {
     if (success === 'true') {
@@ -42,34 +40,25 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       }
       // Fetch the order by session ID (with retry logic for webhook delay)
       if (sessionId) {
-        console.log('Payment success, fetching order by sessionId:', sessionId, { authLoading, isRecoveringFromRedirect })
-        
-        // Only start fetching when auth is ready (not loading and not recovering)
-        if (!authLoading && !isRecoveringFromRedirect) {
-          console.log('Auth ready, starting order fetch immediately')
-          fetchOrderBySessionId(sessionId)
-        } else {
-          console.log('Waiting for auth to finish loading/recovery before fetching order...')
-        }
+        console.log('💳 Payment success! Fetching order:', sessionId)
+        fetchOrderBySessionId(sessionId)
         
         // Set a hard timeout of 60 seconds - stop retrying after that
         const hardTimeout = setTimeout(() => {
-          console.log('Hard timeout reached, stopping order fetch retries')
+          console.log('⏱️ Hard timeout reached, stopping order fetch')
           setLoadingOrder(false)
           if (!orderDetails) {
             setFetchError('Order is taking longer than expected. Please go to "Your Orders" to see your payment status.')
           }
         }, 60000)
         
-        return () => {
-          clearTimeout(hardTimeout)
-        }
+        return () => clearTimeout(hardTimeout)
       } else {
-        console.log('Payment success, fetching most recent order')
+        console.log('💳 Payment success, fetching most recent order')
         fetchMostRecentOrder()
       }
     }
-  }, [success, sessionId, authLoading, isRecoveringFromRedirect])
+  }, [success, sessionId])
 
   // Show message if payment was cancelled
   useEffect(() => {
