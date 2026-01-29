@@ -131,10 +131,10 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         return
       }
 
-      // Fetch all user orders and find the one with matching checkout_session_id
+      // Fetch order directly by checkout session ID using new edge function
       let res
       try {
-        res = await fetch(`${supabaseUrl}/functions/v1/get-user-orders`, {
+        res = await fetch(`${supabaseUrl}/functions/v1/get-order-by-session?session_id=${checkoutSessionId}`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
           }
         })
       } catch (fetchErr) {
-        console.error('Network error fetching orders:', fetchErr)
+        console.error('Network error fetching order:', fetchErr)
         if (retryCount < MAX_RETRIES) {
           setTimeout(() => {
             fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
@@ -169,23 +169,22 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         const errorMsg = body?.error || `Server error (${res.status})`
         console.error('Order fetch error:', errorMsg)
         if (retryCount < MAX_RETRIES) {
-          console.log(`Error fetching orders, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
+          console.log(`Error fetching order, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
           setTimeout(() => {
             fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
           }, RETRY_DELAY)
           return
         }
-        setFetchError('Failed to load orders. Please refresh the page.')
+        setFetchError('Failed to load order. Please check "Your Orders" page.')
         setLoadingOrder(false)
         return
       }
 
-      const orders = body.orders || []
-      const matchingOrder = orders.find(order => order.checkout_session_id === checkoutSessionId)
+      const order = body.order
 
-      if (matchingOrder) {
-        console.log('Order found:', matchingOrder)
-        setOrderDetails(matchingOrder)
+      if (order) {
+        console.log('✅ Order found:', order.id)
+        setOrderDetails(order)
         setLoadingOrder(false)
       } else if (retryCount < MAX_RETRIES) {
         // Order not found yet, webhook might still be processing
@@ -194,8 +193,8 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
           fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
         }, RETRY_DELAY)
       } else {
-        console.error('Max retries reached for order:', checkoutSessionId)
-        setFetchError('Order is taking longer than expected to process. Your order should be in "Your Orders" shortly.')
+        console.error('Max retries reached - order still not created. Webhook may have failed.')
+        setFetchError('Order is taking longer than expected. Please check "Your Orders" page.')
         setLoadingOrder(false)
       }
     } catch (err) {
