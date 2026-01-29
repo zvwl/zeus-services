@@ -16,6 +16,3 @@ SELECT
 FROM orders 
 GROUP BY DATE(created_at), payment_status, status
 ORDER BY DATE(created_at) DESC;
-
-
--- Check for orders with missing user
