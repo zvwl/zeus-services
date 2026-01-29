@@ -44,24 +44,13 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       if (sessionId) {
         console.log('Payment success, fetching order by sessionId:', sessionId, { authLoading, isRecoveringFromRedirect })
         
-        // Wait for auth to finish loading AND recovery to complete before fetching order
-        const checkAndFetch = async () => {
-          // If auth is still loading or recovering, wait a bit
-          if (authLoading || isRecoveringFromRedirect) {
-            console.log('Auth still loading or recovering, waiting...')
-            await new Promise(r => setTimeout(r, 500))
-            // Check again
-            if (authLoading || isRecoveringFromRedirect) {
-              console.log('Still loading, scheduling another check...')
-              setTimeout(checkAndFetch, 500)
-              return
-            }
-          }
-          console.log('Auth ready, starting order fetch')
+        // Only start fetching when auth is ready (not loading and not recovering)
+        if (!authLoading && !isRecoveringFromRedirect) {
+          console.log('Auth ready, starting order fetch immediately')
           fetchOrderBySessionId(sessionId)
+        } else {
+          console.log('Waiting for auth to finish loading/recovery before fetching order...')
         }
-        
-        checkAndFetch()
         
         // Set a hard timeout of 60 seconds - stop retrying after that
         const hardTimeout = setTimeout(() => {

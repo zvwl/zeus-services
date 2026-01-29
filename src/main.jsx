@@ -6,6 +6,25 @@ import { AuthProvider } from './contexts/AuthContext'
 import './index.css'
 import App from './App.jsx'
 
+// Clear outdated service workers and caches on load
+// This ensures users get the latest version of the app
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.getRegistrations().then(registrations => {
+    registrations.forEach(registration => {
+      registration.unregister()
+    })
+  })
+}
+
+// Clear old caches
+if ('caches' in window) {
+  caches.keys().then(cacheNames => {
+    cacheNames.forEach(cacheName => {
+      caches.delete(cacheName)
+    })
+  })
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <BrowserRouter>

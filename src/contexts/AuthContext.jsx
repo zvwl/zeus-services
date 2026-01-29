@@ -126,8 +126,12 @@ export const AuthProvider = ({ children }) => {
           
           // Check admin status in the background (don't block page load)
           checkAdminStatus(session.user.id)
+          
+          // Mark loading as done after we have the user
+          setLoading(false)
         } else {
           console.log('No session found during initial check')
+          setLoading(false)
         }
       } catch (err) {
         console.error('Session check error:', err)
@@ -135,8 +139,6 @@ export const AuthProvider = ({ children }) => {
         setUser(null)
         setEmailVerified(false)
         setIsAdmin(false)
-      } finally {
-        // Mark loading as done immediately
         setLoading(false)
       }
     }
