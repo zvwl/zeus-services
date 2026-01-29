@@ -88,20 +88,10 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
-    // Check for existing Supabase session with timeout
+    // Check for existing Supabase session
     const checkSession = async () => {
       try {
-        // Create timeout promise - if session check takes >12 seconds, give up
-        const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Session check timeout')), 12000)
-        )
-
-        const sessionPromise = supabase.auth.getSession()
-
-        const { data: { session } } = await Promise.race([
-          sessionPromise,
-          timeoutPromise
-        ])
+        const { data: { session } } = await supabase.auth.getSession()
 
         if (session?.user) {
           // Verify the user actually exists in the database
@@ -129,17 +119,16 @@ export const AuthProvider = ({ children }) => {
           setEmailVerified(session.user.email_confirmed_at !== null)
           
           // Check admin status in the background (don't block page load)
-          // If it times out or errors, isAdmin stays false
           checkAdminStatus(session.user.id)
         }
       } catch (err) {
         console.error('Session check error:', err)
-        // If session check fails or times out, clear everything
+        // If session check fails, clear everything
         setUser(null)
         setEmailVerified(false)
         setIsAdmin(false)
       } finally {
-        // Mark loading as done immediately - don't wait for admin check
+        // Mark loading as done immediately
         setLoading(false)
       }
     }
