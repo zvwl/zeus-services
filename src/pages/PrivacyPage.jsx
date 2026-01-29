@@ -28,10 +28,10 @@ export default function PrivacyPage() {
             <p>We collect information that you voluntarily provide, including:</p>
             <ul>
               <li><strong>Account Information:</strong> Email address, password, display name, and profile information</li>
-              <li><strong>Payment Information:</strong> Payment method details (processed securely by Stripe)</li>
+              <li><strong>Payment Information:</strong> Payment method details (processed securely by our payment partners)</li>
               <li><strong>Order Information:</strong> Items purchased, quantities, platforms, and delivery preferences</li>
               <li><strong>Communication Data:</strong> Messages, support requests, and feedback you send us</li>
-              <li><strong>Gaming Information:</strong> Gaming platform details (Steam, Epic Games, Xbox App, Rockstar Launcher) necessary to deliver services</li>
+              <li><strong>Gaming Information:</strong> Gaming platform details necessary to deliver our services</li>
             </ul>
 
             <h3>1.2 Information Automatically Collected</h3>
@@ -40,15 +40,15 @@ export default function PrivacyPage() {
               <li><strong>Device Information:</strong> IP address, browser type, operating system, and device identifiers</li>
               <li><strong>Usage Data:</strong> Pages visited, time spent on pages, clicks, and interactions</li>
               <li><strong>Location Data:</strong> General location based on IP address (country/region) to determine currency and local regulations</li>
-              <li><strong>Cookies & Tracking:</strong> Session cookies and analytics to improve user experience</li>
+              <li><strong>Cookies & Tracking:</strong> Session cookies to enhance your user experience</li>
             </ul>
 
             <h3>1.3 Third-Party Information</h3>
             <p>We may receive information about you from:</p>
             <ul>
-              <li><strong>Payment Processors:</strong> Stripe provides payment confirmation and transaction details</li>
-              <li><strong>Authentication Providers:</strong> Google OAuth and other providers for sign-up/login</li>
-              <li><strong>Analytics Services:</strong> Website analytics and user behavior data</li>
+              <li><strong>Payment Processors:</strong> Confirmation of payment transactions</li>
+              <li><strong>Authentication Providers:</strong> Third-party services used for sign-up/login</li>
+              <li><strong>Service Providers:</strong> Website hosting and related technical services</li>
             </ul>
           </section>
 
@@ -57,10 +57,10 @@ export default function PrivacyPage() {
             <p>We use collected information for the following purposes:</p>
             <ul>
               <li><strong>Service Delivery:</strong> Creating your account, processing orders, and delivering services</li>
-              <li><strong>Payment Processing:</strong> Handling transactions securely through Stripe</li>
+              <li><strong>Payment Processing:</strong> Handling transactions securely</li>
               <li><strong>Communication:</strong> Sending order confirmations, updates, notifications, and customer support</li>
               <li><strong>Security:</strong> Preventing fraud, verifying user identity, and protecting our systems</li>
-              <li><strong>Improvement:</strong> Analyzing usage patterns to improve website functionality and user experience</li>
+              <li><strong>Improvement:</strong> Analysing usage patterns to improve website functionality and user experience</li>
               <li><strong>Legal Compliance:</strong> Meeting legal obligations and regulatory requirements</li>
               <li><strong>Marketing:</strong> Sending promotional materials (only with your consent)</li>
               <li><strong>Account Management:</strong> Managing your profile, preferences, and account settings</li>
@@ -75,10 +75,9 @@ export default function PrivacyPage() {
             <ul>
               <li><strong>HTTPS Encryption:</strong> All data transmitted to/from our website is encrypted using SSL/TLS</li>
               <li><strong>Database Encryption:</strong> Sensitive data (passwords, payment details) are encrypted at rest</li>
-              <li><strong>Supabase Security:</strong> We use Supabase's enterprise-grade authentication and database security</li>
-              <li><strong>Row-Level Security:</strong> Data access is restricted to authorized users only</li>
-              <li><strong>Regular Audits:</strong> We regularly review and update our security practices</li>
-              <li><strong>Payment Security:</strong> Payment information is handled by PCI DSS-compliant Stripe</li>
+              <li><strong>Access Controls:</strong> Data access is restricted to authorised users only</li>
+              <li><strong>Regular Security Reviews:</strong> We regularly review and update our security practices</li>
+              <li><strong>Payment Security:</strong> Payment information is handled by industry-standard payment processors</li>
             </ul>
             <p>
               <strong>Note:</strong> While we implement robust security measures, no system is 100% secure. We encourage you to 
@@ -90,7 +89,7 @@ export default function PrivacyPage() {
             <h2>4. Data Sharing & Disclosure</h2>
             <p>We do <strong>not sell, trade, or rent</strong> your personal information. However, we may share data with:</p>
             <ul>
-              <li><strong>Service Providers:</strong> Stripe (payments), Supabase (hosting), Resend (email), Vercel (deployment)</li>
+              <li><strong>Service Providers:</strong> Third-party providers who help us operate our website and deliver services</li>
               <li><strong>Legal Compliance:</strong> Law enforcement or government agencies when required by law</li>
               <li><strong>Business Transfers:</strong> In the event of merger, acquisition, or asset sale (you will be notified)</li>
               <li><strong>With Your Consent:</strong> Any other sharing requires your explicit permission</li>
@@ -109,7 +108,7 @@ export default function PrivacyPage() {
               <li><strong>Right to Restrict Processing:</strong> Request limitation on how we process your data</li>
             </ul>
             <p>
-              To exercise any of these rights, please contact us at <strong>[INSERT CONTACT EMAIL]</strong>.
+              To exercise any of these rights, please contact us using the information provided below.
             </p>
           </section>
 
@@ -120,8 +119,8 @@ export default function PrivacyPage() {
             </p>
             <ul>
               <li><strong>Session Cookies:</strong> Maintain your login session and preferences</li>
-              <li><strong>Analytics Cookies:</strong> Track website usage and user behavior</li>
-              <li><strong>Security Cookies:</strong> Protect against fraud and unauthorized access</li>
+              <li><strong>Functionality Cookies:</strong> Improve website functionality and user experience</li>
+              <li><strong>Security Cookies:</strong> Protect against fraud and unauthorised access</li>
             </ul>
             <p>
               You can disable cookies in your browser settings, but this may affect website functionality. 
@@ -151,11 +150,11 @@ export default function PrivacyPage() {
           <section className="terms-section">
             <h2>9. Data Retention</h2>
             <p>
-              We retain your personal information for as long as necessary to provide our services and fulfill the purposes outlined 
+              We retain your personal information for as long as necessary to provide our services and fulfil the purposes outlined 
               in this policy. Specifically:
             </p>
             <ul>
-              <li><strong>Account Data:</strong> Retained for the duration of your account and for legal/tax purposes (up to 7 years)</li>
+              <li><strong>Account Data:</strong> Retained for the duration of your account and for legal/tax purposes</li>
               <li><strong>Transaction Data:</strong> Retained for accounting, tax, and dispute resolution purposes</li>
               <li><strong>Login/Session Data:</strong> Automatically deleted after account logout</li>
               <li><strong>Marketing Data:</strong> Retained until you opt-out</li>
@@ -167,8 +166,7 @@ export default function PrivacyPage() {
             <p>
               Your information may be transferred to, stored in, and processed in countries other than your country of residence. 
               These countries may have data protection laws that differ from your home country. By using our website, you consent 
-              to the transfer of your information to countries outside your country of residence, which may provide a different 
-              level of data protection than your home country.
+              to the transfer of your information to countries outside your country of residence.
             </p>
           </section>
 
@@ -179,7 +177,7 @@ export default function PrivacyPage() {
               you have additional rights under the General Data Protection Regulation (GDPR). Our legal basis for processing your data includes:
             </p>
             <ul>
-              <li><strong>Contract Performance:</strong> Processing necessary to fulfill service agreements</li>
+              <li><strong>Contract Performance:</strong> Processing necessary to fulfil service agreements</li>
               <li><strong>Legal Obligation:</strong> Compliance with applicable laws</li>
               <li><strong>Legitimate Interest:</strong> Business operations, fraud prevention, and security</li>
               <li><strong>Consent:</strong> Your explicit agreement for marketing communications</li>
@@ -210,7 +208,7 @@ export default function PrivacyPage() {
             <p>
               We may update this Privacy Policy from time to time to reflect changes in our practices, technology, or legal requirements. 
               When we make material changes, we will notify you by updating the "Last Updated" date at the top of this page or by sending 
-              you a notification email. Your continued use of our website after changes constitutes your acceptance of the updated Privacy Policy.
+              you a notification. Your continued use of our website after changes constitutes your acceptance of the updated Privacy Policy.
             </p>
           </section>
 
@@ -222,18 +220,9 @@ export default function PrivacyPage() {
             <ul>
               <li><strong>Email:</strong> [INSERT CONTACT EMAIL]</li>
               <li><strong>Website:</strong> www.zeuservices.com</li>
-              <li><strong>Mail:</strong> [INSERT PHYSICAL ADDRESS IF APPLICABLE]</li>
             </ul>
             <p>
               We will respond to your inquiry within 30 days of receipt.
-            </p>
-          </section>
-
-          <section className="terms-section">
-            <h2>15. Data Protection Officer</h2>
-            <p>
-              If you are in the EU/EEA and have data protection concerns, you may contact our Data Protection Officer at:
-              <strong>[INSERT DPO EMAIL IF APPLICABLE]</strong>
             </p>
           </section>
 
@@ -247,3 +236,4 @@ export default function PrivacyPage() {
     </section>
   )
 }
+
