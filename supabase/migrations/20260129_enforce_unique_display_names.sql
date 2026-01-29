@@ -7,6 +7,7 @@ DO $$
 DECLARE
   duplicate_record RECORD;
   counter INT;
+  i INT;
 BEGIN
   FOR duplicate_record IN 
     SELECT name, array_agg(user_id ORDER BY created_at) as user_ids
@@ -17,10 +18,12 @@ BEGIN
   LOOP
     counter := 1;
     -- Keep the first user's name unchanged, suffix others
-    FOREACH duplicate_record.user_ids[2:] AS user_id LOOP
+    -- Start from index 2 (second element) since arrays are 1-indexed in PostgreSQL
+    FOR i IN 2..array_length(duplicate_record.user_ids, 1)
+    LOOP
       UPDATE customers 
       SET name = duplicate_record.name || '_' || counter
-      WHERE user_id = user_id;
+      WHERE user_id = duplicate_record.user_ids[i];
       counter := counter + 1;
     END LOOP;
   END LOOP;

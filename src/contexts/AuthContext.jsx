@@ -333,6 +333,17 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password, captchaToken) => {
     try {
+      // Check if email already exists in customers table
+      const { data: existingCustomer } = await supabase
+        .from('customers')
+        .select('email')
+        .eq('email', email.toLowerCase())
+        .maybeSingle()
+
+      if (existingCustomer) {
+        return { success: false, error: 'An account with this email already exists. Please log in instead.' }
+      }
+
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -347,6 +358,12 @@ export const AuthProvider = ({ children }) => {
       
       if (error) {
         return { success: false, error: error.message }
+      }
+
+      // Check if user was actually created (not just returned existing unconfirmed user)
+      // Supabase returns identities: [] if email exists but unconfirmed
+      if (data?.user && !data.user.identities?.length) {
+        return { success: false, error: 'An account with this email already exists. Please check your email or log in.' }
       }
 
       // Explicitly sign out - require email verification before allowing access
