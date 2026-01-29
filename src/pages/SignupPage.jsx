@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
@@ -15,9 +15,90 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [captchaToken, setCaptchaToken] = useState(null)
+  const [isCheckingName, setIsCheckingName] = useState(false)
+  const [nameAvailable, setNameAvailable] = useState(null) // null = not checked, true = available, false = taken
+  const [nameError, setNameError] = useState('')
   const captchaRef = useRef(null)
+  const checkNameTimeoutRef = useRef(null)
   const { signup } = useAuth()
   const navigate = useNavigate()
+
+  // Check display name availability with debouncing
+  useEffect(() => {
+    // Clear any existing timeout
+    if (checkNameTimeoutRef.current) {
+      clearTimeout(checkNameTimeoutRef.current)
+    }
+
+    // Reset states if display name is empty
+    if (!displayName || displayName.trim().length === 0) {
+      setNameAvailable(null)
+      setNameError('')
+      setIsCheckingName(false)
+      return
+    }
+
+    // Validate display name format
+    const trimmedName = displayName.trim()
+    if (trimmedName.length < 3) {
+      setNameError('Display name must be at least 3 characters')
+      setNameAvailable(false)
+      setIsCheckingName(false)
+      return
+    }
+
+    if (trimmedName.length > 30) {
+      setNameError('Display name must be 30 characters or less')
+      setNameAvailable(false)
+      setIsCheckingName(false)
+      return
+    }
+
+    // Check for invalid characters
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmedName)) {
+      setNameError('Display name can only contain letters, numbers, underscores, and hyphens')
+      setNameAvailable(false)
+      setIsCheckingName(false)
+      return
+    }
+
+    // Debounce the API call
+    setIsCheckingName(true)
+    setNameError('')
+    
+    checkNameTimeoutRef.current = setTimeout(async () => {
+      try {
+        // Call the database function to check availability
+        const { data, error } = await supabase.rpc('is_display_name_available', {
+          check_name: trimmedName
+        })
+
+        if (error) {
+          console.error('Error checking display name:', error)
+          setNameError('Unable to verify display name. Please try again.')
+          setNameAvailable(null)
+        } else {
+          setNameAvailable(data)
+          if (!data) {
+            setNameError('This display name is already taken')
+          }
+        }
+      } catch (err) {
+        console.error('Error checking display name:', err)
+        setNameError('Unable to verify display name. Please try again.')
+        setNameAvailable(null)
+      } finally {
+        setIsCheckingName(false)
+      }
+    }, 500) // 500ms debounce
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (checkNameTimeoutRef.current) {
+        clearTimeout(checkNameTimeoutRef.current)
+      }
+    }
+  }, [displayName])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -25,6 +106,17 @@ export default function SignupPage() {
 
     if (!displayName || !email || !password || !confirmPassword) {
       setError('Please fill in all fields')
+      return
+    }
+
+    // Validate display name availability
+    if (nameAvailable === false || nameError) {
+      setError(nameError || 'Please choose an available display name')
+      return
+    }
+
+    if (nameAvailable === null || isCheckingName) {
+      setError('Please wait while we verify your display name')
       return
     }
 
@@ -48,29 +140,7 @@ export default function SignupPage() {
       return
     }
 
-    // Check if display name is already taken
-    const { data: existingUser, error: checkError } = await supabase
-      .from('customers')
-      .select('user_id')
-      .eq('name', displayName)
-      .maybeSingle()
-
-    if (checkError) {
-      console.error('Error checking display name:', checkError)
-      setError('Error checking display name availability')
-      captchaRef.current?.resetCaptcha()
-      setCaptchaToken(null)
-      return
-    }
-
-    if (existingUser) {
-      setError('This display name is already taken. Please choose a different name.')
-      captchaRef.current?.resetCaptcha()
-      setCaptchaToken(null)
-      return
-    }
-
-    const result = await signup(displayName, email, password, captchaToken)
+    const result = await signup(displayName.trim(), email, password, captchaToken)
     if (result.success) {
       captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
@@ -99,13 +169,64 @@ export default function SignupPage() {
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="form-group">
               <label htmlFor="displayName">Display Name</label>
-              <input
-                type="text"
-                id="displayName"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                placeholder="Choose your display name"
-              />
+              <div style={{ position: 'relative' }}>
+                <input
+                  type="text"
+                  id="displayName"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  placeholder="Choose your display name"
+                  style={{
+                    paddingRight: '2.5rem',
+                    borderColor: nameError ? '#ef4444' : nameAvailable === true ? '#10b981' : undefined
+                  }}
+                />
+                {isCheckingName && (
+                  <span style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    fontSize: '0.9rem'
+                  }}>
+                    ⏳
+                  </span>
+                )}
+                {!isCheckingName && nameAvailable === true && (
+                  <span style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#10b981',
+                    fontSize: '1.1rem'
+                  }}>
+                    ✓
+                  </span>
+                )}
+                {!isCheckingName && nameAvailable === false && (
+                  <span style={{
+                    position: 'absolute',
+                    right: '0.75rem',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    color: '#ef4444',
+                    fontSize: '1.1rem'
+                  }}>
+                    ✗
+                  </span>
+                )}
+              </div>
+              {nameError && (
+                <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                  {nameError}
+                </p>
+              )}
+              {nameAvailable === true && !isCheckingName && (
+                <p style={{ color: '#10b981', fontSize: '0.85rem', marginTop: '0.25rem' }}>
+                  Display name is available
+                </p>
+              )}
             </div>
 
             <div className="form-group">
@@ -186,7 +307,9 @@ export default function SignupPage() {
 
           <div className="auth-footer">
             <p>Already have an account? <a href="/login">Sign in</a></p>
-            <p style={{fontSize: '0.85rem', color: '#94a3b8', marginTop: '1rem'}}>💡 Set your display name in Settings after signing in. Once changed, you can only change it again after 60 days.</p>
+            <p style={{fontSize: '0.85rem', color: '#94a3b8', marginTop: '1rem'}}>
+              💡 Choose carefully - display names are unique and can only be changed once every 60 days.
+            </p>
           </div>
         </div>
       </div>

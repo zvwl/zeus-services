@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'
@@ -10,11 +10,16 @@ export default function SettingsPage() {
   
   // Profile state
   const [name, setName] = useState('')
+  const [originalName, setOriginalName] = useState('') // Track original name
   const [profileMessage, setProfileMessage] = useState('')
   const [profileLoading, setProfileLoading] = useState(false)
   const [lastNameChangeDate, setLastNameChangeDate] = useState(null)
   const [canChangeName, setCanChangeName] = useState(true)
   const [daysUntilCanChange, setDaysUntilCanChange] = useState(0)
+  const [isCheckingName, setIsCheckingName] = useState(false)
+  const [nameAvailable, setNameAvailable] = useState(null)
+  const [nameError, setNameError] = useState('')
+  const checkNameTimeoutRef = useRef(null)
   
   // Password state
   const [currentPassword, setCurrentPassword] = useState('')
@@ -72,6 +77,7 @@ export default function SettingsPage() {
 
         // Set current display name from database
         setName(data?.name || '')
+        setOriginalName(data?.name || '') // Store original name
 
         if (data?.display_name_changed_at) {
           setLastNameChangeDate(new Date(data.display_name_changed_at))
@@ -99,6 +105,82 @@ export default function SettingsPage() {
 
     checkDisplayNameChange()
   }, [user])
+
+  // Check display name availability when changed
+  useEffect(() => {
+    // Clear any existing timeout
+    if (checkNameTimeoutRef.current) {
+      clearTimeout(checkNameTimeoutRef.current)
+    }
+
+    // If name hasn't changed from original, don't check
+    if (!name || name === originalName) {
+      setNameAvailable(null)
+      setNameError('')
+      setIsCheckingName(false)
+      return
+    }
+
+    // Validate display name format
+    const trimmedName = name.trim()
+    if (trimmedName.length < 3) {
+      setNameError('Display name must be at least 3 characters')
+      setNameAvailable(false)
+      setIsCheckingName(false)
+      return
+    }
+
+    if (trimmedName.length > 30) {
+      setNameError('Display name must be 30 characters or less')
+      setNameAvailable(false)
+      setIsCheckingName(false)
+      return
+    }
+
+    // Check for invalid characters
+    if (!/^[a-zA-Z0-9_-]+$/.test(trimmedName)) {
+      setNameError('Display name can only contain letters, numbers, underscores, and hyphens')
+      setNameAvailable(false)
+      setIsCheckingName(false)
+      return
+    }
+
+    // Debounce the API call
+    setIsCheckingName(true)
+    setNameError('')
+    
+    checkNameTimeoutRef.current = setTimeout(async () => {
+      try {
+        // Call the database function to check availability
+        const { data, error } = await supabase.rpc('is_display_name_available', {
+          check_name: trimmedName
+        })
+
+        if (error) {
+          console.error('Error checking display name:', error)
+          setNameError('Unable to verify display name')
+          setNameAvailable(null)
+        } else {
+          setNameAvailable(data)
+          if (!data) {
+            setNameError('This display name is already taken')
+          }
+        }
+      } catch (err) {
+        console.error('Error checking display name:', err)
+        setNameError('Unable to verify display name')
+        setNameAvailable(null)
+      } finally {
+        setIsCheckingName(false)
+      }
+    }, 500)
+
+    return () => {
+      if (checkNameTimeoutRef.current) {
+        clearTimeout(checkNameTimeoutRef.current)
+      }
+    }
+  }, [name, originalName])
 
   const handleEnableMFA = async () => {
     setTwoFactorLoading(true)
@@ -218,11 +300,12 @@ export default function SettingsPage() {
       .eq('user_id', user.id)
       .maybeSingle()
 
-    const originalName = currentData?.name || ''
+    const dbOriginalName = currentData?.name || ''
 
     // Check if display name is being changed
-    if (name !== originalName) {
-      if (!canChangeName && originalName !== '') {
+    if (name !== dbOriginalName) {
+      // Check if user can change name (60 day limit)
+      if (!canChangeName && dbOriginalName !== '') {
         const nextChangeDate = lastNameChangeDate 
           ? new Date(lastNameChangeDate.getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString()
           : ''
@@ -231,32 +314,25 @@ export default function SettingsPage() {
         return
       }
 
-      // Check if the new display name is already taken
-      const { data: existingUser, error: checkError } = await supabase
-        .from('customers')
-        .select('user_id')
-        .eq('name', name)
-        .maybeSingle()
-
-      if (checkError) {
-        console.error('Error checking display name:', checkError)
-        setProfileMessage('❌ Error checking display name availability')
+      // Validate display name availability
+      if (nameAvailable === false || nameError) {
+        setProfileMessage(`❌ ${nameError || 'Please choose an available display name'}`)
         setProfileLoading(false)
         return
       }
 
-      if (existingUser && existingUser.user_id !== user.id) {
-        setProfileMessage('❌ This display name is already taken. Please choose a different name.')
+      if (nameAvailable === null || isCheckingName) {
+        setProfileMessage('❌ Please wait while we verify your display name')
         setProfileLoading(false)
         return
       }
     }
 
-    const result = await updateProfile({ name })
+    const result = await updateProfile({ name: name.trim() })
     
     if (result.success) {
       // Update the display_name_changed_at timestamp if name was changed
-      if (name !== originalName) {
+      if (name !== dbOriginalName) {
         try {
           await supabase
             .from('customers')
@@ -269,6 +345,9 @@ export default function SettingsPage() {
           setLastNameChangeDate(new Date())
           setCanChangeName(false)
           setDaysUntilCanChange(60)
+          setOriginalName(name.trim()) // Update original name to new name
+          setNameAvailable(null) // Reset validation state
+          setNameError('')
         } catch (err) {
           console.error('Error updating display name change timestamp:', err)
         }
@@ -470,15 +549,66 @@ export default function SettingsPage() {
                   Display Name
                   {!canChangeName && <span className="cooldown-badge">On Cooldown</span>}
                 </label>
-                <input
-                  type="text"
-                  id="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Your name"
-                  disabled={!canChangeName}
-                  className={!canChangeName ? 'disabled-input' : ''}
-                />
+                <div style={{ position: 'relative' }}>
+                  <input
+                    type="text"
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Your name"
+                    disabled={!canChangeName}
+                    className={!canChangeName ? 'disabled-input' : ''}
+                    style={{
+                      paddingRight: canChangeName && name !== originalName ? '2.5rem' : undefined,
+                      borderColor: nameError ? '#ef4444' : nameAvailable === true && name !== originalName ? '#10b981' : undefined
+                    }}
+                  />
+                  {canChangeName && name !== originalName && (
+                    <>
+                      {isCheckingName && (
+                        <span style={{
+                          position: 'absolute',
+                          right: '0.75rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          fontSize: '0.9rem'
+                        }}>
+                          ⏳
+                        </span>
+                      )}
+                      {!isCheckingName && nameAvailable === true && (
+                        <span style={{
+                          position: 'absolute',
+                          right: '0.75rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          color: '#10b981',
+                          fontSize: '1.1rem'
+                        }}>
+                          ✓
+                        </span>
+                      )}
+                      {!isCheckingName && nameAvailable === false && (
+                        <span style={{
+                          position: 'absolute',
+                          right: '0.75rem',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          color: '#ef4444',
+                          fontSize: '1.1rem'
+                        }}>
+                          ✗
+                        </span>
+                      )}
+                    </>
+                  )}
+                </div>
+                {nameError && canChangeName && name !== originalName && (
+                  <small style={{ color: '#ef4444' }}>{nameError}</small>
+                )}
+                {nameAvailable === true && !isCheckingName && canChangeName && name !== originalName && (
+                  <small style={{ color: '#10b981' }}>Display name is available</small>
+                )}
                 {!canChangeName && (
                   <small className="cooldown-message">
                     ⏱️ You can change your display name again in {daysUntilCanChange} day{daysUntilCanChange !== 1 ? 's' : ''}
