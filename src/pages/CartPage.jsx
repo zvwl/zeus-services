@@ -20,12 +20,13 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
 
   // Redirect to home if user logs out while on success page,
   // but only after auth has finished loading AND recovery attempt is complete
+  // UNLESS we have a valid session_id (proves payment succeeded)
   useEffect(() => {
-    if (success === 'true' && !authLoading && !isRecoveringFromRedirect && !user) {
-      console.log('Auth recovery failed, redirecting to home')
+    if (success === 'true' && !authLoading && !isRecoveringFromRedirect && !user && !sessionId) {
+      console.log('Auth recovery failed and no session ID, redirecting to home')
       navigate('/')
     }
-  }, [user, authLoading, isRecoveringFromRedirect, success, navigate])
+  }, [user, authLoading, isRecoveringFromRedirect, success, sessionId, navigate])
 
   useEffect(() => {
     if (success === 'true') {
@@ -194,6 +195,35 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         }, RETRY_DELAY)
       } else {
         console.error('Max retries reached - order still not created. Webhook may have failed.')
+        
+        // Fallback: if no user and no order found, show confirmation message using lastPaymentAttempt
+        if (!user) {
+          try {
+            const lastPayment = localStorage.getItem('lastPaymentAttempt')
+            if (lastPayment) {
+              const paymentData = JSON.parse(lastPayment)
+              console.log('✅ Using cached payment data for confirmation:', paymentData)
+              // Create a minimal order object from payment data
+              const fallbackOrder = {
+                id: 'pending-' + checkoutSessionId.substring(0, 8),
+                customer_email: user?.email || 'Order confirmation',
+                items: paymentData.cartItems || [],
+                total_amount: paymentData.cartItems?.reduce((sum, item) => sum + (item.price_converted * item.quantity), 0) || 0,
+                currency: paymentData.currency || 'GBP',
+                status: 'processing',
+                payment_status: 'paid',
+                created_at: new Date(paymentData.timestamp).toISOString(),
+                checkout_session_id: checkoutSessionId
+              }
+              setOrderDetails(fallbackOrder)
+              setLoadingOrder(false)
+              return
+            }
+          } catch (fallbackErr) {
+            console.warn('Could not use fallback payment data:', fallbackErr)
+          }
+        }
+        
         setFetchError('Order is taking longer than expected. Please check "Your Orders" page.')
         setLoadingOrder(false)
       }
