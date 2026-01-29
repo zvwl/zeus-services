@@ -120,31 +120,42 @@ export const AuthProvider = ({ children }) => {
         if (session?.user) {
           // Verify the user actually exists in the database
           const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser()
-          
-          if (userError || !verifiedUser) {
-            console.error('User verification failed:', userError)
-            // User doesn't exist - force logout
-            await supabase.auth.signOut({ scope: 'local' })
+
+          if (userError) {
+            console.warn('User verification warning:', userError)
+            const status = userError?.status
+            // Only force logout on definitive auth errors
+            if (status === 401 || status === 403) {
+              await supabase.auth.signOut({ scope: 'local' })
+              setUser(null)
+              setEmailVerified(false)
+              setLoading(false)
+              return
+            }
+          }
+
+          const effectiveUser = verifiedUser || session.user
+          if (!effectiveUser) {
             setUser(null)
             setEmailVerified(false)
             setLoading(false)
             return
           }
-          
+
           // Fetch display name from customers table
-          const displayName = await fetchDisplayName(session.user.id)
+          const displayName = await fetchDisplayName(effectiveUser.id)
           
-          console.log('✅ User session restored:', session.user.email)
+          console.log('✅ User session restored:', effectiveUser.email)
           setUser({
-            id: session.user.id,
-            email: session.user.email,
-            name: displayName || session.user.email.split('@')[0],
-            created_at: session.user.created_at
+            id: effectiveUser.id,
+            email: effectiveUser.email,
+            name: displayName || effectiveUser.email.split('@')[0],
+            created_at: effectiveUser.created_at
           })
-          setEmailVerified(session.user.email_confirmed_at !== null)
+          setEmailVerified(effectiveUser.email_confirmed_at !== null)
           
           // Check admin status in the background (don't block page load)
-          checkAdminStatus(session.user.id)
+          checkAdminStatus(effectiveUser.id)
           
           setLoading(false)
         } else {
