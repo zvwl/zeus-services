@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import './App.css'
@@ -11,27 +11,29 @@ import Home from './pages/Home'
 import ServicesPage from './pages/Services'
 import ServiceDetail from './pages/ServiceDetail'
 import ProductsPage from './pages/ProductsPage'
-import CartPage from './pages/CartPage'
-import CheckoutPage from './pages/CheckoutPage'
-import PlaceholderPage from './pages/PlaceholderPage'
-import LoginPage from './pages/LoginPage'
-import SignupPage from './pages/SignupPage'
-import VerifyEmailPage from './pages/VerifyEmailPage'
-import PendingVerificationPage from './pages/PendingVerificationPage'
-import SettingsPage from './pages/SettingsPage'
-import ForgotPasswordPage from './pages/ForgotPasswordPage'
-import ResetPasswordPage from './pages/ResetPasswordPage'
-import OrdersPage from './pages/OrdersPage'
-import AdminOrdersPage from './pages/AdminOrdersPage'
-import AdminDashboard from './pages/AdminDashboard'
-import AdminServicesPage from './pages/AdminServicesPage'
-import AdminProductsPage from './pages/AdminProductsPage'
-import TermsPage from './pages/TermsPage'
-import PrivacyPage from './pages/PrivacyPage'
-import RefundPage from './pages/RefundPage'
-import ReviewsPage from './pages/ReviewsPage'
-import ReviewForm from './pages/ReviewForm'
-import AdminReviewsPage from './pages/AdminReviewsPage'
+
+// Lazy load secondary routes to reduce initial bundle
+const CartPage = lazy(() => import('./pages/CartPage'))
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'))
+const PlaceholderPage = lazy(() => import('./pages/PlaceholderPage'))
+const LoginPage = lazy(() => import('./pages/LoginPage'))
+const SignupPage = lazy(() => import('./pages/SignupPage'))
+const VerifyEmailPage = lazy(() => import('./pages/VerifyEmailPage'))
+const PendingVerificationPage = lazy(() => import('./pages/PendingVerificationPage'))
+const SettingsPage = lazy(() => import('./pages/SettingsPage'))
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'))
+const OrdersPage = lazy(() => import('./pages/OrdersPage'))
+const AdminOrdersPage = lazy(() => import('./pages/AdminOrdersPage'))
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
+const AdminServicesPage = lazy(() => import('./pages/AdminServicesPage'))
+const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'))
+const TermsPage = lazy(() => import('./pages/TermsPage'))
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
+const RefundPage = lazy(() => import('./pages/RefundPage'))
+const ReviewsPage = lazy(() => import('./pages/ReviewsPage'))
+const ReviewForm = lazy(() => import('./pages/ReviewForm'))
+const AdminReviewsPage = lazy(() => import('./pages/AdminReviewsPage'))
 
 function App() {
   // Load cart from localStorage on mount
@@ -383,7 +385,8 @@ function App() {
         onCurrencyChange={setCurrency}
       />
 
-      <Routes>
+      <Suspense fallback={<div style={{ padding: '2rem', textAlign: 'center' }}>Loading...</div>}>
+        <Routes>
         <Route
           path="/"
           element={(
@@ -558,6 +561,7 @@ function App() {
           element={<ReviewForm />}
         />
       </Routes>
+      </Suspense>
       <Footer />
       <ScrollToTop />
     </div>

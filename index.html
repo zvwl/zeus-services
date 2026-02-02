@@ -106,13 +106,16 @@
     <style>
       * { margin: 0; padding: 0; box-sizing: border-box; }
       :root { --primary: #fbbf24; --bg: #0a0e1a; --text: #f1f5f9; }
-      body { font: 16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0e1a; color: var(--text); }
-      main { width: 100%; }
+      body { font: 16px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0a0e1a; color: var(--text); overflow-x: hidden; }
+      main { width: 100%; display: block; }
       img { max-width: 100%; height: auto; display: block; }
       [role="main"] { display: block; }
+      button, a { text-decoration: none; cursor: pointer; }
     </style>
-    <!-- Defer non-critical CSS -->
+    <!-- Defer non-critical CSS with async loading -->
     <link rel="preload" href="/src/main.jsx" as="script" type="module" />
+    <link rel="stylesheet" href="./src/index.css" media="print" onload="this.media='all'" />
+    <noscript><link rel="stylesheet" href="./src/index.css" /></noscript>
   </head>
     <main id="root"></main>
     <script type="module" src="/src/main.jsx"></script>
