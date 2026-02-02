@@ -11,18 +11,47 @@ export default defineConfig({
         entryFileNames: '[name]-[hash].js',
         chunkFileNames: '[name]-[hash].js',
         assetFileNames: '[name]-[hash][extname]',
-        manualChunks: {
-          'vendor-three': ['three', 'vanta'],
-          'vendor-supabase': ['@supabase/supabase-js'],
+        manualChunks(id) {
+          // Vendor chunks for better caching
+          if (id.includes('node_modules')) {
+            if (id.includes('three') || id.includes('vanta')) {
+              return 'vendor-three'
+            }
+            if (id.includes('supabase')) {
+              return 'vendor-supabase'
+            }
+            if (id.includes('react-router-dom')) {
+              return 'vendor-router'
+            }
+            // All other vendors together to reduce unused code
+            return 'vendor'
+          }
         }
+      },
+      // Tree-shake unused code more aggressively
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        tryCatchDeoptimization: false
       }
     },
     // Target modern browsers for smaller builds
     target: 'es2020',
-    // Increase chunk size limits slightly to reduce request overhead
-    chunkSizeWarningLimit: 600,
-    // Minify CSS
+    // Reduce unused CSS and JS
+    chunkSizeWarningLimit: 500,
+    // Minify CSS and JS aggressively
     cssCodeSplit: true,
-    minify: 'esbuild'
+    minify: 'esbuild',
+    // Enable compression
+    reportCompressedSize: true,
+    // Remove console logs in production
+    esbuild: {
+      drop: ['console', 'debugger']
+    }
+  },
+  // Optimize dependencies
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom'],
+    exclude: ['vanta', 'three'] // Lazy load heavy animation libraries
   }
 })
