@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import CartSummary from '../components/CartSummary'
+import SEO, { SEO_CONFIGS } from '../components/SEO'
 import '../App.css'
 import './CartPage.css'
 
@@ -475,8 +476,10 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   }
 
   return (
-    <section className="section services" id="cart">
-      <p className="eyebrow">Cart</p>
+    <>
+      <SEO {...SEO_CONFIGS.cart} />
+      <section className="section services" id="cart">
+        <p className="eyebrow">Cart</p>
       <h2 className="section-title">Your selections</h2>
       <p className="section-subtitle">Adjust quantities or remove items before checkout.</p>
       
@@ -494,5 +497,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         formatPrice={formatPrice}
       />
     </section>
+    </>
   )
 }

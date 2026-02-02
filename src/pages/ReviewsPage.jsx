@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
+import SEO, { SEO_CONFIGS } from '../components/SEO'
 import './ReviewsPage.css'
 
 export default function ReviewsPage() {
@@ -148,8 +149,10 @@ export default function ReviewsPage() {
   }
 
   return (
-    <section className="section reviews-section">
-      <div className="reviews-container">
+    <>
+      <SEO {...SEO_CONFIGS.reviews} />
+      <section className="section reviews-section">
+        <div className="reviews-container">
         <div className="reviews-header">
           <h1>Customer Reviews</h1>
           <p>See what our customers are saying about their experience</p>
@@ -259,5 +262,6 @@ export default function ReviewsPage() {
         )}
       </div>
     </section>
+    </>
   )
 }

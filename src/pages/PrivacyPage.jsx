@@ -1,9 +1,12 @@
+import SEO, { SEO_CONFIGS } from '../components/SEO'
 import '../App.css'
 import './TermsPage.css'
 
 export default function PrivacyPage() {
   return (
-    <section className="section terms-page">
+    <>
+      <SEO {...SEO_CONFIGS.privacy} />
+      <section className="section terms-page">
       <div className="terms-container">
         <h1>Privacy Policy</h1>
         <p className="last-updated">Last Updated: January 2026</p>
@@ -96,6 +99,7 @@ export default function PrivacyPage() {
         </div>
       </div>
     </section>
+    </>
   )
 }
 

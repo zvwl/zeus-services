@@ -1,6 +1,7 @@
 ﻿import { useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ServiceCard from '../components/ServiceCard'
+import SEO, { SEO_CONFIGS } from '../components/SEO'
 import '../App.css'
 
 export default function ServicesPage({ services, formatPrice }) {
@@ -45,8 +46,10 @@ export default function ServicesPage({ services, formatPrice }) {
   }, [services, filterPrice, searchQuery, sortBy])
 
   return (
-    <section className="section services" id="services">
-      <p className="eyebrow">Services</p>
+    <>
+      <SEO {...SEO_CONFIGS.services} />
+      <section className="section services" id="services">
+        <p className="eyebrow">Services</p>
       <h2 className="section-title">Choose your plan</h2>
       <p className="section-subtitle">Browse our services and click to view full details.</p>
 
@@ -108,5 +111,6 @@ export default function ServicesPage({ services, formatPrice }) {
         </main>
       )}
     </section>
+    </>
   )
 }

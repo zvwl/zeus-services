@@ -1,0 +1,29 @@
+# robots.txt for Zeus Services
+# https://zeuservices.com/robots.txt
+
+User-agent: *
+Allow: /
+
+# Disallow admin and private pages
+Disallow: /admin/
+Disallow: /settings/
+Disallow: /orders/
+Disallow: /checkout/
+
+# Disallow authentication pages (not useful for search engines)
+Disallow: /login
+Disallow: /signup
+Disallow: /verify-email
+Disallow: /forgot-password
+Disallow: /reset-password
+
+# Allow important pages
+Allow: /services
+Allow: /products
+Allow: /reviews
+Allow: /terms
+Allow: /privacy
+Allow: /refund
+
+# Sitemap location
+Sitemap: https://zeuservices.com/sitemap.xml

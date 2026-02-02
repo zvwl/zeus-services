@@ -1,9 +1,12 @@
+import SEO, { SEO_CONFIGS } from '../components/SEO'
 import '../App.css'
 import './RefundPage.css'
 
 export default function RefundPage() {
   return (
-    <section className="section refund-page">
+    <>
+      <SEO {...SEO_CONFIGS.refund} />
+      <section className="section refund-page">
       <div className="refund-container">
         <h1>Refund Policy</h1>
         <p className="last-updated">Last Updated: January 2026</p>
@@ -22,5 +25,6 @@ export default function RefundPage() {
         </div>
       </div>
     </section>
+    </>
   )
 }

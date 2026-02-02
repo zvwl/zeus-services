@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import Banner from '../components/Banner'
+import SEO, { SEO_CONFIGS } from '../components/SEO'
 import '../App.css'
 
 export default function Home({ onGetStarted }) {
@@ -13,6 +14,7 @@ export default function Home({ onGetStarted }) {
 
   return (
     <>
+      <SEO {...SEO_CONFIGS.home} />
       <Banner onGetStarted={onGetStarted} onScrollAbout={handleScrollAbout} />
 
       <section className="section safe-easy">

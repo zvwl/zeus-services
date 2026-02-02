@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
+import SEO, { SEO_CONFIGS } from '../components/SEO'
 import '../App.css'
 
 export default function ProductsPage({ formatPrice }) {
@@ -66,8 +67,10 @@ export default function ProductsPage({ formatPrice }) {
   }, [products, searchQuery, selectedPlatform, sortBy])
 
   return (
-    <section className="section services" id="products">
-      <p className="eyebrow">Products</p>
+    <>
+      <SEO {...SEO_CONFIGS.products} />
+      <section className="section services" id="products">
+        <p className="eyebrow">Products</p>
       <h2 className="section-title">Browse packaged offerings</h2>
       <p className="section-subtitle">Discover bundles, add-ons, and complete packages tailored for Zeus clients.</p>
 
@@ -170,5 +173,6 @@ export default function ProductsPage({ formatPrice }) {
         </>
       )}
     </section>
+    </>
   )
 }
