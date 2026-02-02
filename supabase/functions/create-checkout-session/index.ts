@@ -97,7 +97,7 @@ Deno.serve(async (req) => {
       mode: "payment",
       customer_email: customer_email ?? undefined,
       line_items: lineItems,
-      payment_method_types: ["card", "link", "klarna"],
+      payment_method_types: ["card", "link"],
       billing_address_collection: "required",
       metadata,
       success_url: `${FRONTEND_URL}/cart?success=true&session_id={CHECKOUT_SESSION_ID}`,
