@@ -29,7 +29,6 @@
 }
 
 .logo-icon {
-  animation: float 3s ease-in-out infinite;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -303,15 +302,6 @@
 .menu-icon {
   font-size: 1.5rem;
   line-height: 1;
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0px);
-  }
-  50% {
-    transform: translateY(-8px);
-  }
 }
 
 /* Tablet */
