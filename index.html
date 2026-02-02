@@ -112,10 +112,7 @@
       [role="main"] { display: block; }
       button, a { text-decoration: none; cursor: pointer; }
     </style>
-    <!-- Defer non-critical CSS with async loading -->
     <link rel="preload" href="/src/main.jsx" as="script" type="module" />
-    <link rel="stylesheet" href="./src/index.css" media="print" onload="this.media='all'" />
-    <noscript><link rel="stylesheet" href="./src/index.css" /></noscript>
   </head>
     <main id="root"></main>
     <script type="module" src="/src/main.jsx"></script>

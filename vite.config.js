@@ -1,10 +1,46 @@
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  build: {
+export default defineConfig(({ mode }) => {
+  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  let supabaseOrigin = ''
+
+  try {
+    if (env.VITE_SUPABASE_URL) {
+      supabaseOrigin = new URL(env.VITE_SUPABASE_URL).origin
+    }
+  } catch {
+    supabaseOrigin = ''
+  }
+
+  const asyncCssAndPreconnectPlugin = {
+    name: 'async-css-and-preconnect',
+    apply: 'build',
+    transformIndexHtml(html) {
+      let updated = html.replace(
+        /<link rel="stylesheet" href="([^"]+\.css)">/g,
+        (match, href) => (
+          `<link rel="preload" as="style" href="${href}">\n` +
+          `<link rel="stylesheet" href="${href}" media="print" onload="this.media='all'">\n` +
+          `<noscript><link rel="stylesheet" href="${href}"></noscript>`
+        )
+      )
+
+      if (supabaseOrigin && !updated.includes(supabaseOrigin)) {
+        const preconnectTag = `    <link rel="preconnect" href="${supabaseOrigin}" crossorigin />\n`
+        if (updated.includes('</head>')) {
+          updated = updated.replace('</head>', `${preconnectTag}  </head>`)
+        }
+      }
+
+      return updated
+    }
+  }
+
+  return {
+    plugins: [react(), asyncCssAndPreconnectPlugin],
+    build: {
     // Optimize bundle size with code splitting
     rollupOptions: {
       output: {
@@ -48,10 +84,11 @@ export default defineConfig({
     esbuild: {
       drop: ['console', 'debugger']
     }
-  },
-  // Optimize dependencies
-  optimizeDeps: {
-    include: ['react', 'react-dom', 'react-router-dom'],
-    exclude: ['vanta', 'three'] // Lazy load heavy animation libraries
+    },
+    // Optimize dependencies
+    optimizeDeps: {
+      include: ['react', 'react-dom', 'react-router-dom'],
+      exclude: ['vanta', 'three'] // Lazy load heavy animation libraries
+    }
   }
 })
