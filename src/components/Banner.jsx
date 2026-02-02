@@ -10,6 +10,11 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
 
     async function loadVanta() {
       if (!bannerRef.current || typeof window === 'undefined') return
+      
+      // Skip Vanta on mobile devices to improve performance
+      const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      if (isMobile) return
+      
       const [THREE, VANTA] = await Promise.all([
         import('three'),
         import('vanta/dist/vanta.halo.min'),
