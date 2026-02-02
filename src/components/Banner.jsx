@@ -7,6 +7,7 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
   useEffect(() => {
     let effect
     let cancelled = false
+    let resizeTimeout
 
     async function loadVanta() {
       if (!bannerRef.current || typeof window === 'undefined') return
@@ -39,8 +40,23 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
 
     loadVanta()
 
+    // Reinitialize Vanta on window resize (including zoom)
+    const handleResize = () => {
+      clearTimeout(resizeTimeout)
+      resizeTimeout = setTimeout(() => {
+        if (effect && typeof effect.destroy === 'function') {
+          effect.destroy()
+        }
+        loadVanta()
+      }, 300)
+    }
+
+    window.addEventListener('resize', handleResize)
+
     return () => {
       cancelled = true
+      clearTimeout(resizeTimeout)
+      window.removeEventListener('resize', handleResize)
       if (effect && typeof effect.destroy === 'function') effect.destroy()
     }
   }, [])
