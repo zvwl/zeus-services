@@ -383,9 +383,10 @@ function App() {
         onCurrencyChange={setCurrency}
       />
 
-      <Routes>
-        <Route
-          path="/"
+      <main>
+        <Routes>
+          <Route
+            path="/"
           element={(
             <Home
               onGetStarted={() => navigate('/services')}
@@ -558,6 +559,7 @@ function App() {
           element={<ReviewForm />}
         />
       </Routes>
+      </main>
       <Footer />
       <ScrollToTop />
     </div>
