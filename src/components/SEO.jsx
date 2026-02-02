@@ -6,9 +6,9 @@ import { useLocation } from 'react-router-dom';
  * Usage: Add <SEO /> component to each page with appropriate props
  */
 export default function SEO({ 
-  title = "Zeus Services - Premium GTA 5 Online Services",
-  description = "Premium GTA 5 Online services, modded accounts, money drops, rank boosts, and unlocks. Fast, secure, and reliable delivery.",
-  keywords = "GTA 5 services, GTA Online, modded accounts, money drop, rank boost",
+  title = "ZeuServices - Premium GTA 5 Online Services",
+  description = "Premium GTA 5 Online services, modded accounts, rank boosts, and unlocks. Fast, secure, and reliable delivery.",
+  keywords = "GTA 5 services, GTA Online, modded accounts, rank boost",
   image = "https://zeuservices.com/zeus-logo.png",
   type = "website"
 }) {
@@ -70,53 +70,53 @@ export default function SEO({
  */
 export const SEO_CONFIGS = {
   home: {
-    title: "Zeus Services - Premium GTA 5 Online Services & Modded Accounts",
-    description: "Premium GTA 5 Online services, modded accounts, money drops, rank boosts, and unlocks. Fast, secure, and reliable delivery. Trusted by thousands of gamers worldwide.",
-    keywords: "GTA 5 services, GTA Online, modded accounts, money drop, rank boost, GTA 5 unlocks, gaming services"
+    title: "ZeuServices - Premium GTA 5 Online Services & Modded Accounts",
+    description: "Premium GTA 5 Online services, modded accounts, rank boosts, and unlocks. Fast, secure, and reliable delivery. Trusted by thousands of gamers worldwide.",
+    keywords: "GTA 5 services, GTA Online, modded accounts, rank boost, GTA 5 unlocks, gaming services"
   },
   services: {
-    title: "GTA 5 Services - Money Drops, Rank Boosts & Unlocks | Zeus Services",
-    description: "Browse our complete catalog of GTA 5 Online services including money drops, rank boosts, vehicle unlocks, and more. Instant delivery and 24/7 support.",
-    keywords: "GTA 5 services, money drop service, rank boost, vehicle unlocks, GTA modding"
+    title: "GTA 5 Services - Rank Boosts & Unlocks | ZeuServices",
+    description: "Browse our complete catalog of GTA 5 Online services including rank boosts, vehicle unlocks, and more. Instant delivery and 24/7 support.",
+    keywords: "GTA 5 services, rank boost, vehicle unlocks, GTA modding"
   },
   products: {
-    title: "GTA 5 Modded Accounts & Products | Zeus Services",
+    title: "GTA 5 Modded Accounts & Products | ZeuServices",
     description: "Premium GTA 5 modded accounts with millions in cash, high ranks, and exclusive unlocks. Safe, secure, and instantly delivered.",
     keywords: "GTA 5 modded accounts, modded GTA account, GTA 5 products, gaming accounts"
   },
   reviews: {
-    title: "Customer Reviews & Testimonials | Zeus Services",
-    description: "Read reviews from thousands of satisfied customers. See why Zeus Services is the most trusted provider for GTA 5 Online services.",
-    keywords: "Zeus Services reviews, GTA 5 service reviews, customer testimonials"
+    title: "Customer Reviews & Testimonials | ZeuServices",
+    description: "Read reviews from thousands of satisfied customers. See why ZeuServices is the most trusted provider for GTA 5 Online services.",
+    keywords: "ZeuServices reviews, GTA 5 service reviews, customer testimonials"
   },
   cart: {
-    title: "Shopping Cart | Zeus Services",
+    title: "Shopping Cart | ZeuServices",
     description: "Review your selected GTA 5 services and proceed to secure checkout.",
     keywords: "cart, checkout, GTA 5 services"
   },
   terms: {
-    title: "Terms of Service | Zeus Services",
-    description: "Read our terms of service and understand our policies for using Zeus Services.",
+    title: "Terms of Service | ZeuServices",
+    description: "Read our terms of service and understand our policies for using ZeuServices.",
     keywords: "terms of service, user agreement, policies"
   },
   privacy: {
-    title: "Privacy Policy | Zeus Services",
-    description: "Learn how Zeus Services protects your privacy and handles your personal information.",
+    title: "Privacy Policy | ZeuServices",
+    description: "Learn how ZeuServices protects your privacy and handles your personal information.",
     keywords: "privacy policy, data protection, user privacy"
   },
   refund: {
-    title: "Refund Policy | Zeus Services",
+    title: "Refund Policy | ZeuServices",
     description: "Understand our refund and return policy for all GTA 5 services and products.",
     keywords: "refund policy, returns, money back guarantee"
   },
   orders: {
-    title: "My Orders | Zeus Services",
+    title: "My Orders | ZeuServices",
     description: "View and track your GTA 5 service orders.",
     keywords: "order history, track orders"
   },
   settings: {
-    title: "Account Settings | Zeus Services",
-    description: "Manage your Zeus Services account settings and preferences.",
+    title: "Account Settings | ZeuServices",
+    description: "Manage your ZeuServices account settings and preferences.",
     keywords: "account settings, user profile"
   }
 };
