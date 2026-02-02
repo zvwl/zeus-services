@@ -32,7 +32,22 @@ export default function Footer() {
               rel="noreferrer"
               className="discord-link"
             >
-              <img src="/discordLogo.png" alt="Discord" className="discord-icon" />
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet="/discordLogo-40.webp 40w, /discordLogo-80.webp 80w"
+                  sizes="20px"
+                />
+                <img
+                  src="/discordLogo.png"
+                  alt="Discord"
+                  className="discord-icon"
+                  width="20"
+                  height="20"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
               Join our Discord
             </a>
           </div>

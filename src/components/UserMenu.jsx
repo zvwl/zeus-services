@@ -179,7 +179,22 @@ export default function UserMenu({ isOpen, onClose }) {
             target="_blank"
             rel="noreferrer"
           >
-            <img src="/discordLogo.png" alt="Discord" className="discord-icon-small" />
+            <picture>
+              <source
+                type="image/webp"
+                srcSet="/discordLogo-40.webp 40w, /discordLogo-80.webp 80w"
+                sizes="20px"
+              />
+              <img
+                src="/discordLogo.png"
+                alt="Discord"
+                className="discord-icon-small"
+                width="20"
+                height="20"
+                loading="lazy"
+                decoding="async"
+              />
+            </picture>
             <span className="menu-label">Join our Discord</span>
           </a>
         </div>
