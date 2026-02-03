@@ -6,9 +6,9 @@ import { useLocation } from 'react-router-dom';
  * Usage: Add <SEO /> component to each page with appropriate props
  */
 export default function SEO({ 
-  title = "ZeuServices - Premium GTA 5 Online Services",
-  description = "Premium GTA 5 Online services, modded accounts, rank boosts, and unlocks. Fast, secure, and reliable delivery.",
-  keywords = "GTA 5 services, GTA Online, modded accounts, rank boost",
+  title = "zeuservices",
+  description = "Full-service studio. Unleash the Power of Zeus. Web, mobile, brand, and growth services delivered as fast, tangible outcomes.",
+  keywords = "web services, mobile development, brand services, growth services, digital studio",
   image = "https://zeuservices.com/zeus-logo.png",
   type = "website"
 }) {
@@ -70,8 +70,8 @@ export default function SEO({
  */
 export const SEO_CONFIGS = {
   home: {
-    title: "ZeuServices - Premium GTA 5 Online Services & Modded Accounts",
-    description: "Premium GTA 5 Online services, modded accounts, rank boosts, and unlocks. Fast, secure, and reliable delivery. Trusted by thousands of gamers worldwide.",
+    title: "zeuservices",
+    description: "Full-service studio. Unleash the Power of Zeus. Web, mobile, brand, and growth services delivered as fast, tangible outcomes. Get started. About us.",
     keywords: "GTA 5 services, GTA Online, modded accounts, rank boost, GTA 5 unlocks, gaming services"
   },
   services: {
