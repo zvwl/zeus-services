@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
+import Breadcrumb from '../components/Breadcrumb'
 import './ReviewsPage.css'
 
 export default function ReviewsPage() {
@@ -152,6 +153,7 @@ export default function ReviewsPage() {
     <>
       <SEO {...SEO_CONFIGS.reviews} />
       <section className="section reviews-section">
+        <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Reviews', path: '/reviews' }]} />
         <div className="reviews-container">
         <div className="reviews-header">
           <h1>Customer Reviews</h1>

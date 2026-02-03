@@ -72,51 +72,51 @@ export const SEO_CONFIGS = {
   home: {
     title: "zeuservices",
     description: "Full-service studio. Unleash the Power of Zeus. Web, mobile, brand, and growth services delivered as fast, tangible outcomes. Get started. About us.",
-    keywords: "GTA 5 services, GTA Online, modded accounts, rank boost, GTA 5 unlocks, gaming services"
+    keywords: "web services, mobile development, brand services, growth services, digital studio, zeus services"
   },
   services: {
-    title: "GTA 5 Services - Rank Boosts & Unlocks | ZeuServices",
-    description: "Browse our complete catalog of GTA 5 Online services including rank boosts, vehicle unlocks, and more. Instant delivery and 24/7 support.",
-    keywords: "GTA 5 services, rank boost, vehicle unlocks, GTA modding"
+    title: "Zeus Services - GTA Online Account Services",
+    description: "GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple. Get started. Safe & Easy.",
+    keywords: "GTA 5 services, rank boost, vehicle unlocks, GTA modding, gaming services, account boosting"
   },
   products: {
-    title: "GTA 5 Modded Accounts & Products | ZeuServices",
-    description: "Premium GTA 5 modded accounts with millions in cash, high ranks, and exclusive unlocks. Safe, secure, and instantly delivered.",
-    keywords: "GTA 5 modded accounts, modded GTA account, GTA 5 products, gaming accounts"
+    title: "GTA Online Products | zeuservices",
+    description: "Premium GTA 5 modded accounts and products. Browse our selection of high-quality gaming accounts with instant delivery.",
+    keywords: "GTA 5 modded accounts, modded GTA account, GTA 5 products, gaming accounts, GTA Online accounts"
   },
   reviews: {
-    title: "Customer Reviews & Testimonials | ZeuServices",
-    description: "Read reviews from thousands of satisfied customers. See why ZeuServices is the most trusted provider for GTA 5 Online services.",
-    keywords: "ZeuServices reviews, GTA 5 service reviews, customer testimonials"
+    title: "Customer Reviews | zeuservices",
+    description: "Read reviews from satisfied customers. See why zeuservices is trusted by thousands of gamers for GTA 5 Online services.",
+    keywords: "zeuservices reviews, GTA 5 service reviews, customer testimonials, gaming service reviews"
   },
   cart: {
-    title: "Shopping Cart | ZeuServices",
-    description: "Review your selected GTA 5 services and proceed to secure checkout.",
-    keywords: "cart, checkout, GTA 5 services"
+    title: "Shopping Cart | zeuservices",
+    description: "Review your selected items and proceed to secure checkout. Fast and safe payment processing.",
+    keywords: "cart, checkout, shopping cart, secure payment"
   },
   terms: {
-    title: "Terms of Service | ZeuServices",
-    description: "Read our terms of service and understand our policies for using ZeuServices.",
-    keywords: "terms of service, user agreement, policies"
+    title: "Terms of Service | zeuservices",
+    description: "Read our terms of service and understand our policies for using zeuservices platform.",
+    keywords: "terms of service, user agreement, policies, terms and conditions"
   },
   privacy: {
-    title: "Privacy Policy | ZeuServices",
-    description: "Learn how ZeuServices protects your privacy and handles your personal information.",
-    keywords: "privacy policy, data protection, user privacy"
+    title: "Privacy Policy | zeuservices",
+    description: "Learn how zeuservices protects your privacy and handles your personal information securely.",
+    keywords: "privacy policy, data protection, user privacy, GDPR compliance"
   },
   refund: {
-    title: "Refund Policy | ZeuServices",
-    description: "Understand our refund and return policy for all GTA 5 services and products.",
-    keywords: "refund policy, returns, money back guarantee"
+    title: "Refund Policy | zeuservices",
+    description: "Understand our refund and return policy for all services and products purchased on zeuservices.",
+    keywords: "refund policy, returns, money back guarantee, customer protection"
   },
   orders: {
-    title: "My Orders | ZeuServices",
-    description: "View and track your GTA 5 service orders.",
-    keywords: "order history, track orders"
+    title: "My Orders | zeuservices",
+    description: "View and track your service orders and purchase history on zeuservices.",
+    keywords: "order history, track orders, my purchases"
   },
   settings: {
-    title: "Account Settings | ZeuServices",
-    description: "Manage your ZeuServices account settings and preferences.",
-    keywords: "account settings, user profile"
+    title: "Account Settings | zeuservices",
+    description: "Manage your zeuservices account settings, preferences, and security options.",
+    keywords: "account settings, user profile, account management"
   }
 };

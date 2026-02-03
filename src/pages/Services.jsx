@@ -2,6 +2,7 @@
 import { useNavigate } from 'react-router-dom'
 import ServiceCard from '../components/ServiceCard'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
+import Breadcrumb from '../components/Breadcrumb'
 import '../App.css'
 
 export default function ServicesPage({ services, formatPrice }) {
@@ -49,6 +50,7 @@ export default function ServicesPage({ services, formatPrice }) {
     <>
       <SEO {...SEO_CONFIGS.services} />
       <section className="section services" id="services">
+        <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Services', path: '/services' }]} />
         <p className="eyebrow">Services</p>
       <h2 className="section-title">Choose your plan</h2>
       <p className="section-subtitle">Browse our services and click to view full details.</p>
