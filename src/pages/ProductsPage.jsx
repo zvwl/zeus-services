@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import '../App.css'
+import '../components/ServiceCard.css'
 
 export default function ProductsPage({ formatPrice }) {
   const navigate = useNavigate()
