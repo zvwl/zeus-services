@@ -3,6 +3,8 @@
   border-top: 1px solid var(--border-color);
   padding: 3rem 2rem 2rem;
   margin-top: 4rem;
+  min-height: 280px;
+  contain: layout;
 }
 
 .footer-container {
@@ -11,6 +13,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
+  min-height: 140px;
 }
 
 .footer-section h3 {
@@ -72,10 +75,12 @@
 @media (max-width: 768px) {
   .footer {
     padding: 2rem 1rem 1.5rem;
+    min-height: 400px;
   }
 
   .footer-container {
     grid-template-columns: 1fr;
     gap: 1.5rem;
+    min-height: 320px;
   }
 }
