@@ -4,7 +4,8 @@
   padding: 3rem 2rem 2rem;
   margin-top: 4rem;
   min-height: 280px;
-  contain: layout;
+  contain: layout style paint;
+  will-change: auto;
 }
 
 .footer-container {
@@ -21,12 +22,14 @@
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
+  min-height: 1.5rem;
 }
 
 .footer-links {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  min-height: 100px;
 }
 
 .footer-links a {
@@ -47,6 +50,7 @@
   text-align: center;
   color: var(--text-secondary);
   font-size: 0.875rem;
+  min-height: 3rem;
 }
 
 .discord-link {
