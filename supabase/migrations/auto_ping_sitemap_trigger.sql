@@ -1,24 +1,40 @@
 -- Database trigger to automatically ping sitemap when content changes
 -- Run this SQL in your Supabase SQL Editor
 
--- Function to call the ping-sitemap edge function
+-- STEP 1: Enable pg_net extension
+-- Run this first if you haven't already:
+-- CREATE EXTENSION IF NOT EXISTS pg_net;
+
+-- Function to ping Google and Bing when content changes
 CREATE OR REPLACE FUNCTION ping_sitemap_on_change()
 RETURNS TRIGGER AS $$
+DECLARE
+  sitemap_url TEXT := 'https://zeuservices.com/sitemap.xml';
+  google_ping_url TEXT;
+  bing_ping_url TEXT;
 BEGIN
-  -- Make HTTP request to ping-sitemap function
-  PERFORM
-    net.http_post(
-      url := 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/ping-sitemap',
-      headers := jsonb_build_object(
-        'Content-Type', 'application/json',
-        'Authorization', 'Bearer YOUR_ANON_KEY'
-      ),
-      body := jsonb_build_object('timestamp', NOW())
-    );
+  -- Build ping URLs
+  google_ping_url := 'https://www.google.com/ping?sitemap=' || sitemap_url;
+  bing_ping_url := 'https://www.bing.com/ping?sitemap=' || sitemap_url;
+  
+  -- Ping Google (asynchronous, won't block the transaction)
+  PERFORM net.http_get(
+    url := google_ping_url
+  );
+  
+  -- Ping Bing (asynchronous)
+  PERFORM net.http_get(
+    url := bing_ping_url
+  );
   
   RETURN NEW;
+EXCEPTION
+  WHEN OTHERS THEN
+    -- If ping fails, don't block the actual insert/update
+    RAISE WARNING 'Failed to ping sitemap: %', SQLERRM;
+    RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 -- Trigger for products table
 DROP TRIGGER IF EXISTS products_sitemap_ping ON products;
@@ -33,6 +49,3 @@ CREATE TRIGGER services_sitemap_ping
   AFTER INSERT OR UPDATE OR DELETE ON services
   FOR EACH STATEMENT
   EXECUTE FUNCTION ping_sitemap_on_change();
-
--- Note: Make sure to enable the pg_net extension first
--- Run: CREATE EXTENSION IF NOT EXISTS pg_net;

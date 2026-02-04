@@ -7,8 +7,8 @@ import { useLocation } from 'react-router-dom';
  */
 export default function SEO({ 
   title = "zeuservices",
-  description = "Full-service studio. Unleash the Power of Zeus. Web, mobile, brand, and growth services delivered as fast, tangible outcomes.",
-  keywords = "web services, mobile development, brand services, growth services, digital studio",
+  description = "GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple.",
+  keywords = "GTA 5 services, GTA Online, modded accounts, rank boost, gaming services, account boosting",
   image = "https://zeuservices.com/zeus-logo.png",
   type = "website"
 }) {
@@ -71,8 +71,8 @@ export default function SEO({
 export const SEO_CONFIGS = {
   home: {
     title: "zeuservices",
-    description: "Full-service studio. Unleash the Power of Zeus. Web, mobile, brand, and growth services delivered as fast, tangible outcomes. Get started. About us.",
-    keywords: "web services, mobile development, brand services, growth services, digital studio, zeus services"
+    description: "GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple. Get started. Safe & Easy.",
+    keywords: "GTA 5 services, GTA Online, modded accounts, rank boost, gaming services, account boosting, zeus services"
   },
   services: {
     title: "Zeus Services - GTA Online Account Services",
