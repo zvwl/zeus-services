@@ -10,15 +10,18 @@ export default function ServiceCard({ service, formatPrice }) {
 
   return (
     <div className="service-card" onClick={handleViewDetails}>
-      <img
-        src="/zeusservicesPackage.png"
-        alt={`${service.name} package`}
-        className="card-image"
-        width="600"
-        height="300"
-        loading="lazy"
-        decoding="async"
-      />
+      <picture>
+        <source type="image/webp" srcSet="/zeusservicesPackage.webp" />
+        <img
+          src="/zeusservicesPackage.png"
+          alt={`${service.name} package`}
+          className="card-image"
+          width="600"
+          height="300"
+          loading="lazy"
+          decoding="async"
+        />
+      </picture>
       <h3 className="card-title">{service.name}</h3>
       <p className="card-description">{service.description}</p>
 
