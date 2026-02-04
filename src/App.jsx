@@ -7,10 +7,10 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute'
-import Home from './pages/Home'
-import ServicesPage from './pages/Services'
-import ServiceDetail from './pages/ServiceDetail'
-import ProductsPage from './pages/ProductsPage'
+const Home = lazy(() => import('./pages/Home'))
+const ServicesPage = lazy(() => import('./pages/Services'))
+const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
+const ProductsPage = lazy(() => import('./pages/ProductsPage'))
 
 // Lazy load secondary routes to reduce initial bundle
 const CartPage = lazy(() => import('./pages/CartPage'))
