@@ -400,6 +400,7 @@ function App() {
           element={(
             <ServicesPage
               services={services}
+              servicesLoading={servicesLoading}
               formatPrice={formatPrice}
             />
           )}

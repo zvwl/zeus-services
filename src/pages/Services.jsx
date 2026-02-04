@@ -5,7 +5,7 @@ import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import '../App.css'
 
-export default function ServicesPage({ services, formatPrice }) {
+export default function ServicesPage({ services, formatPrice, servicesLoading }) {
   const navigate = useNavigate()
   const [filterPrice, setFilterPrice] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
@@ -45,6 +45,8 @@ export default function ServicesPage({ services, formatPrice }) {
 
     return filtered
   }, [services, filterPrice, searchQuery, sortBy])
+
+  const showSkeletons = servicesLoading && (!services || services.length === 0)
 
   return (
     <>
@@ -97,7 +99,22 @@ export default function ServicesPage({ services, formatPrice }) {
         </div>
       </div>
 
-      {filteredServices.length === 0 ? (
+      {showSkeletons ? (
+        <main className="services-grid services-grid--loading" aria-busy="true" aria-live="polite">
+          {Array.from({ length: 6 }).map((_, index) => (
+            <div className="service-card skeleton" key={`skeleton-${index}`}>
+              <div className="skeleton-image" />
+              <div className="skeleton-line" />
+              <div className="skeleton-line short" />
+              <div className="skeleton-line" />
+              <div className="skeleton-footer">
+                <div className="skeleton-pill" />
+                <div className="skeleton-button" />
+              </div>
+            </div>
+          ))}
+        </main>
+      ) : filteredServices.length === 0 ? (
         <div className="no-results">
           <p>No services match your filters. Try adjusting your search.</p>
         </div>

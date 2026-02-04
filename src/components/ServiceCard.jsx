@@ -14,6 +14,8 @@ export default function ServiceCard({ service, formatPrice }) {
         src="/zeusservicesPackage.png"
         alt={`${service.name} package`}
         className="card-image"
+        width="600"
+        height="300"
         loading="lazy"
         decoding="async"
       />
