@@ -749,6 +749,30 @@
   }
 }
 
+/* Stripe Element styling */
+.stripe-payment-container {
+  margin: 1.5rem 0;
+}
+
+.StripeElement {
+  padding: 12px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+  background: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 16px;
+  transition: border-color 0.2s ease;
+}
+
+.StripeElement:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
+.StripeElement--invalid {
+  border-color: #fca5a5;
+}
+
 @media (max-width: 640px) {
   .checkout-container {
     padding: 0 0.75rem;
