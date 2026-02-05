@@ -216,6 +216,38 @@ Deno.serve(async (req) => {
       } catch (emailErr) {
         console.error('❌ Email send error:', emailErr);
       }
+
+      // Assign Discord role if user has connected Discord account
+      if (userId) {
+        try {
+          console.log(`🎮 Attempting to assign Discord role for user ${userId}`);
+          const discordRoleUrl = `${SUPABASE_URL}/functions/v1/assign-discord-role`;
+          const discordRes = await fetch(discordRoleUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ 
+              userId: userId,
+              orderId: newOrder.id 
+            })
+          });
+          
+          const discordText = await discordRes.text();
+          console.log(`🎮 Discord role response: status=${discordRes.status}, body=${discordText}`);
+          
+          if (!discordRes.ok) {
+            console.error(`❌ Failed to assign Discord role for user ${userId}`);
+          } else {
+            console.log(`✅ Discord role assignment completed for user ${userId}`);
+          }
+        } catch (discordErr) {
+          console.error('❌ Discord role assignment error:', discordErr);
+        }
+      } else {
+        console.log(`ℹ️ No userId provided - skipping Discord role assignment`);
+      }
     } else if (event.type === "payment_intent.payment_failed") {
       // Payment failed - nothing to do since order was never created
       console.log(`ℹ️ [payment_intent.payment_failed] Payment failed, no order created`);
