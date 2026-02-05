@@ -43,29 +43,13 @@
     <meta name="twitter:description" content="GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple." />
     <meta name="twitter:image" content="https://zeuservices.com/zeus-logo.png" />
     
-    <!-- Google Analytics 4 - Lazy loaded for performance -->
-    <script>
-      // Defer GTM loading until after page load
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-G180N96QPX', { send_page_view: false });
-      
-      // Delay GTM script loading until page is interactive
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', loadGTM);
-      } else {
-        setTimeout(loadGTM, 100);
-      }
-      
-      function loadGTM() {
-        var script = document.createElement('script');
-        script.async = true;
-        script.src = 'https://www.googletagmanager.com/gtag/js?id=G-G180N96QPX';
-        document.head.appendChild(script);
-        gtag('event', 'page_view');
-      }
-    </script>
+    <!-- Google Tag Manager -->
+    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+    j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+    'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+    })(window,document,'script','dataLayer','GTM-5BRVX8DR');</script>
+    <!-- End Google Tag Manager -->
     
     <!-- Google Search Console Verification -->
     <meta name="google-site-verification" content="vpn1AG73aR7pQSZWGcSssbcwJwM--yQHM4LV0uHh5xU" />
@@ -247,6 +231,11 @@
     </style>
     <link rel="preload" href="/src/main.jsx" as="script" type="module" />
   </head>
+  <body>
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-5BRVX8DR"
+    height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <main id="root"></main>
     <script type="module" src="/src/main.jsx"></script>
   </body>
