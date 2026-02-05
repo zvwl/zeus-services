@@ -92,7 +92,7 @@ export default function ProcessPage() {
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#60a5fa' }}>Platforms:</strong> PC (Steam/Epic/Rockstar), PlayStation (PS4/PS5), Xbox (One/Series X|S)
+                      <strong style={{ color: '#60a5fa' }}>Platforms:</strong> PC only (Steam, Epic Games, Xbox App, Rockstar Social Club)
                     </p>
                   </div>
                 </div>
@@ -357,8 +357,8 @@ export default function ProcessPage() {
                 <tbody>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>Setup Time</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}><strong>2-4 hours</strong></td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}><strong>2-14 days</strong></td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}><strong>40 minutes - 2 hours</strong></td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}><strong>30 minutes - 2 hours</strong></td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>Control</td>
@@ -367,13 +367,13 @@ export default function ProcessPage() {
                   </tr>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>Cost</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Higher upfront</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Lower, by item</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Higher (includes game purchase)</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Cheaper (uses your account)</td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>What You Get</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Pre-built account</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Specific items/progress</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Brand new account with everything</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Choose specific items or full build</td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>Best For</td>
@@ -382,8 +382,8 @@ export default function ProcessPage() {
                   </tr>
                   <tr>
                     <td style={{ padding: '1rem' }}>Safety</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Proven safe methods</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Proven safe methods</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Same ban risk (luck-based)</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Same ban risk (luck-based)</td>
                   </tr>
                 </tbody>
               </table>

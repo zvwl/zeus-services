@@ -51,28 +51,28 @@ export default function SafetyPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #fbbf24' }}>
                 <h3 style={{ color: '#fbbf24', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Manual Progression Only (No Cheats/Bots)
+                  ✓ 9+ Years of Experience
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
-                  We use legitimate gameplay methods, not cheats or bots. This reduces detection risk, but does NOT eliminate it. Rockstar can still detect and act on abnormal account activity patterns.
+                  We've been operating GTA services for over 9 years. This experience means we understand what patterns Rockstar looks for and how to minimize detection risk. However, bans are ultimately luck-based and cannot be prevented.
                 </p>
               </div>
 
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #60a5fa' }}>
                 <h3 style={{ color: '#60a5fa', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Professional Operators with Experience
+                  ✓ PC Platform Support
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
-                  9+ years of operating means we understand what patterns Rockstar looks for and how to avoid obvious red flags. We've learned what typically gets flagged. But Rockstar changes their detection regularly.
+                  We support all major PC platforms: Steam, Epic Games, Xbox App (Microsoft Store), and Rockstar Social Club. Accounts are created and delivered for your specific platform.
                 </p>
               </div>
 
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #a78bfa' }}>
                 <h3 style={{ color: '#a78bfa', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Daily Cash Spending Limits
+                  ✓ Safe Money Limits on Account Creation
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
-                  <strong>CRITICAL:</strong> Do NOT spend more than <strong>30-50 million GTA$ per day</strong>. Going over 50 million significantly increases your ban risk. Rockstar's monitoring systems flag massive spending. This is the #1 thing you can control.
+                  <strong>CRITICAL:</strong> We can only safely add up to <strong>50 million GTA$ per day</strong> when building your account. You can request more, but anything over 50M significantly increases ban risk. We're not responsible for bans if you choose higher amounts.
                 </p>
               </div>
 
@@ -99,7 +99,7 @@ export default function SafetyPage() {
                   ✓ Possible Free Recovery (Conditions Apply)
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
-                  If you follow the daily cash guidelines AND get banned, we may offer a free one-time service to help. <strong>This is discretionary, not guaranteed.</strong> If you ignore spending limits, there's no recovery offered.
+                  If you follow our guidelines when using the account AND get banned, we may offer a discretionary free replacement. <strong>This is NOT guaranteed.</strong> If you requested over 50M on the account or violate our guidelines, there's no recovery offered.
                 </p>
               </div>
             </div>
@@ -163,10 +163,10 @@ export default function SafetyPage() {
 
               <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px', marginBottom: '1rem' }}>
                 <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.7' }}>
-                  <strong style={{ color: '#fbbf24' }}>To minimize additional ban risk:</strong><br/>
-                  • Spend money gradually (30-50M per day max)<br/>
-                  • Don't use cheats or mods on the account<br/>
-                  • Keep normal playing patterns<br/>
+                  <strong style={{ color: '#fbbf24' }}>To minimize ban risk after delivery:</strong><br/>
+                  • Don't spend large amounts of cash rapidly in-game<br/>
+                  • Don't use cheats or additional mods on the account<br/>
+                  • Play normally and avoid suspicious behavior<br/>
                   • Don't brag about the account publicly<br/>
                   • Don't share login with others
                 </p>

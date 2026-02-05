@@ -9,7 +9,7 @@ export default function FAQPage() {
   const faqs = [
     {
       question: "Is GTA Online account boosting safe?",
-      answer: "Yes, our GTA account boosting services are completely safe. We use manual progression methods and verified techniques that have been tested over 9+ years. We never use cheats or exploits that could get your account banned. All boosting is done securely through your Discord contact, and you maintain full account access throughout the process."
+      answer: "Our services come with ban risk - this is always a possibility and it's luck-based. We have 9+ years of experience minimizing detection risk, but Rockstar enforcement is unpredictable. We're honest about these risks upfront. All boosting is done through your Discord contact, and you maintain full account access throughout the process."
     },
     {
       question: "What is the difference between boosting and modded accounts?",
@@ -20,8 +20,8 @@ export default function FAQPage() {
       answer: "Our rank boosting service typically takes 2-7 days depending on target rank and current level. Money farming can be done in 24-48 hours. Vehicle unlocks are usually completed within 24 hours. Account progression speed depends on the complexity of your request. Contact us for an exact timeline for your specific boosting needs."
     },
     {
-      question: "Can you boost my PS4 or Xbox GTA account?",
-      answer: "We currently specialize in PC GTA Online boosting services. We support Steam, Epic Games, Xbox App, and Rockstar Launcher. Console versions (PS4, PS5, Xbox One, Xbox Series X) are not supported at this time. For PC accounts, we support all major launchers."
+      question: "What platforms do you support?",
+      answer: "We support PC only: Steam, Epic Games, Xbox App (Microsoft Store), and Rockstar Social Club. We do not support console versions (PlayStation or Xbox consoles). All modded accounts and boosting services are for PC platforms only."
     },
     {
       question: "Will I get banned for buying a modded GTA account?",

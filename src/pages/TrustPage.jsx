@@ -27,25 +27,25 @@ export default function TrustPage() {
                 9+
               </div>
               <div style={{ color: '#cbd5e1', fontSize: '0.95rem' }}>
-                Years Operating
+                Years Experience
               </div>
             </div>
 
             <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', color: '#60a5fa', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                1000+
+                200+
               </div>
               <div style={{ color: '#cbd5e1', fontSize: '0.95rem' }}>
-                Verified Customers
+                Satisfied Customers
               </div>
             </div>
 
             <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
               <div style={{ fontSize: '2.5rem', color: '#34d399', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                5.0★
+                <a href="/reviews" style={{ color: '#34d399', textDecoration: 'none' }}>See Reviews</a>
               </div>
               <div style={{ color: '#cbd5e1', fontSize: '0.95rem' }}>
-                Average Rating
+                Real Customer Ratings
               </div>
             </div>
 
@@ -175,10 +175,10 @@ export default function TrustPage() {
           {/* CTA */}
           <div style={{ backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center' }}>
             <h2 style={{ fontSize: '1.8rem', color: '#fbbf24', marginBottom: '1rem' }}>
-              Join 1000+ Satisfied Customers
+              Join Our Growing Community
             </h2>
             <p style={{ color: '#cbd5e1', fontSize: '1.05rem', marginBottom: '1.5rem', lineHeight: '1.8' }}>
-              Experience the same safe, reliable, professional service that has earned us a 5.0★ rating and 9+ years of continuous operation.
+              Experience the honest, transparent service backed by 9+ years of experience. Check our real customer reviews and see why people trust us.
             </p>
             <button 
               style={{
@@ -225,7 +225,7 @@ export default function TrustPage() {
                 Is zeuservices a legitimate service?
               </summary>
               <p style={{ color: '#cbd5e1', marginTop: '1rem', lineHeight: '1.7' }}>
-                Yes. 9+ years of operation, 1000+ verified customers, 5.0★ rating, zero scam reports. We have a documented track record of safe, reliable service. Check Discord for community discussion.
+                Yes. 9+ years of experience, 200+ satisfied customers, zero scam reports. We have a documented track record of reliable service. Check our <a href="/reviews" style={{ color: '#fbbf24', textDecoration: 'none' }}>real customer reviews</a> and Discord for community discussion.
               </p>
             </details>
 
@@ -234,7 +234,7 @@ export default function TrustPage() {
                 Will my account get banned?
               </summary>
               <p style={{ color: '#cbd5e1', marginTop: '1rem', lineHeight: '1.7' }}>
-                Not from our service. We use proven safe methods, manual only, no exploits. However, if YOU use cheats or mods after delivery, that risk is on you. We provide safe accounts; you keep them safe.
+                Bans are always possible - it's luck-based. We have 9+ years of experience minimizing risk, but Rockstar enforcement is unpredictable. We're honest about this risk upfront. If YOU use additional cheats or mods after delivery, that increases ban risk significantly.
               </p>
             </details>
 
