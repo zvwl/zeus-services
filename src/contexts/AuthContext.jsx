@@ -95,6 +95,52 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Function to check if user has Discord connected and existing orders, assign role if needed
+  const checkDiscordRoleAssignment = async (userId) => {
+    try {
+      console.log('🎮 Checking Discord role assignment for user:', userId)
+      
+      // Check if user has any paid orders
+      const { data: orders, error: ordersError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('payment_status', 'paid')
+        .limit(1)
+      
+      if (ordersError) {
+        console.error('Error checking orders:', ordersError)
+        return
+      }
+      
+      const hasPaidOrders = orders && orders.length > 0
+      
+      if (!hasPaidOrders) {
+        console.log('ℹ️ User has no paid orders, skipping Discord role check')
+        return
+      }
+      
+      console.log('✅ User has paid orders, calling assign-discord-role function')
+      
+      // Call the edge function to assign Discord role (it will check if Discord is connected)
+      const { data, error } = await supabase.functions.invoke('assign-discord-role', {
+        body: { 
+          userId: userId,
+          retroactive: true 
+        }
+      })
+      
+      if (error) {
+        console.error('Error calling assign-discord-role:', error)
+        return
+      }
+      
+      console.log('🎮 Discord role assignment response:', data)
+    } catch (err) {
+      console.error('Discord role check error:', err)
+    }
+  }
+
   useEffect(() => {
     // Check for existing Supabase session
     // Supabase with persistSession: true will automatically restore from localStorage
@@ -230,6 +276,13 @@ export const AuthProvider = ({ children }) => {
           checkAdminStatus(session.user.id).catch(err => {
             console.warn('Admin check failed:', err)
           })
+          
+          // Check if user just connected Discord and has existing orders (assign role retroactively)
+          if (_event === 'SIGNED_IN') {
+            checkDiscordRoleAssignment(session.user.id).catch(err => {
+              console.warn('Discord role check failed:', err)
+            })
+          }
         } catch (err) {
           console.error('❌ Error processing auth session:', err)
           // Don't clear user on error - keep them logged in with minimal data
