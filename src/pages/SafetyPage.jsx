@@ -33,11 +33,11 @@ export default function SafetyPage() {
                 Rockstar actively enforces against this, which means:
               </p>
               <ul style={{ marginLeft: '1.5rem', color: '#f3f4f6' }}>
-                <li>Your account can be <strong>reset, suspended, or permanently banned</strong> at any time</li>
-                <li>Rockstar enforces this <strong>without warning</strong></li>
-                <li>We <strong>cannot prevent, stop, or reverse</strong> Rockstar's actions</li>
-                <li>There is <strong>no guarantee of safety</strong> - only experience and best practices</li>
-                <li><strong>There are no refunds</strong> if this happens - you accept this risk</li>
+                <li>Your account <strong>CAN be reset, suspended, or permanently banned</strong> at any time</li>
+                <li>Bans happen <strong>without warning</strong> - this is completely <strong>luck-based</strong></li>
+                <li>We <strong>cannot prevent, stop, or reverse</strong> Rockstar's actions - no one can</li>
+                <li><strong>Risk increases significantly</strong> if you spend over <strong>50 million GTA$ in one day</strong></li>
+                <li><strong>There are NO refunds</strong> if your account gets banned - you accept this risk</li>
               </ul>
             </div>
           </div>
@@ -72,7 +72,7 @@ export default function SafetyPage() {
                   ✓ Daily Cash Spending Limits
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
-                  We recommend not spending more than <strong>30-50 million GTA$ per day</strong>. Sudden massive spending sprees trigger Rockstar's monitoring. Following this guideline significantly reduces (but does not eliminate) ban risk.
+                  <strong>CRITICAL:</strong> Do NOT spend more than <strong>30-50 million GTA$ per day</strong>. Going over 50 million significantly increases your ban risk. Rockstar's monitoring systems flag massive spending. This is the #1 thing you can control.
                 </p>
               </div>
 

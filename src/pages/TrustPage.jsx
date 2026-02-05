@@ -2,67 +2,22 @@ import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 
 export default function TrustPage() {
-  const reviews = [
-    {
-      name: 'Jake M.',
-      platform: 'PC',
-      rating: 5,
-      title: 'Fast and professional service',
-      review: 'Got my boosted account within the timeframe. Account worked perfectly. Service was professional and staff responded quickly.'
-    },
-    {
-      name: 'Alex D.',
-      platform: 'PlayStation',
-      rating: 5,
-      title: 'Solid experience, no issues',
-      review: 'Modded account arrived as described. Staff was helpful answering my questions. Have been using for 2 weeks without problems.'
-    },
-    {
-      name: 'Mike T.',
-      platform: 'Xbox',
-      rating: 5,
-      title: 'Reliable repeat customer',
-      review: 'Second time ordering. Both times smooth transaction, account worked immediately, support through Discord was professional.'
-    },
-    {
-      name: 'Sarah K.',
-      platform: 'PC',
-      rating: 5,
-      title: 'Good communication throughout',
-      review: 'Clear explanation of the process. Staff answered all my questions in Discord. Account delivered as promised. No surprises.'
-    },
-    {
-      name: 'Chris L.',
-      platform: 'PlayStation',
-      rating: 5,
-      title: 'Professional operation',
-      review: 'Professional from start to finish. Clear T&Cs upfront. No hidden fees. Support actually responded. Good transaction.'
-    },
-    {
-      name: 'Ryan W.',
-      platform: 'PC',
-      rating: 5,
-      title: 'Honest about the risks',
-      review: 'They were upfront about the Rockstar ToS violation and ban risks. Appreciated the honesty. Proceeded with eyes open.'
-    }
-  ]
-
   return (
     <>
       <SEO 
-        title="zeuservices Customer Reviews - Real Feedback from Buyers | GTA Account Service"
-        description="Read honest customer reviews. zeuservices has 9+ years of service with professional support. See what actual customers say about delivery, support, and service quality."
-        keywords="zeuservices reviews, customer feedback, service reviews, quality, professional support"
+        title="Why Customers Trust zeuservices - 9+ Years of GTA Account Services"
+        description="Discover why customers choose zeuservices. 9+ years of proven service, transparent policies, professional Discord support, and hundreds of satisfied customers."
+        keywords="zeuservices trust, reliable service, customer satisfaction, professional support"
       />
       
       <section className="section">
-        <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Trust & Reviews', path: '/trust' }]} />
+        <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Why Trust Us', path: '/trust' }]} />
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '3rem 2rem' }}>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#f1f5f9', textAlign: 'center' }}>
-            Why 1000+ Customers Trust zeuservices
+            Why Customers Trust zeuservices
           </h1>
           <p style={{ fontSize: '1.1rem', color: '#cbd5e1', marginBottom: '3rem', lineHeight: '1.8', textAlign: 'center' }}>
-            Real reviews from real customers. No fake testimonials. Just 9+ years of proven, reliable GTA Online account boosting and modded account delivery.
+            9+ years of proven service. Transparent policies. Professional support. See what makes us different.
           </p>
 
           {/* Trust Stats */}
@@ -104,37 +59,29 @@ export default function TrustPage() {
             </div>
           </div>
 
-          {/* Reviews Section */}
-          <div style={{ marginBottom: '3rem' }}>
-            <h2 style={{ fontSize: '2rem', color: '#fbbf24', marginBottom: '2rem', textAlign: 'center' }}>
-              What Our Customers Say
+          {/* Reviews Section - Link to Real Reviews */}
+          <div style={{ marginBottom: '3rem', backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', borderTop: '3px solid #fbbf24' }}>
+            <h2 style={{ fontSize: '2rem', color: '#fbbf24', marginBottom: '1.5rem' }}>
+              Read Real Customer Reviews
             </h2>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              {reviews.map((review, idx) => (
-                <div key={idx} style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', marginBottom: '1rem' }}>
-                    <div>
-                      <h4 style={{ color: '#f1f5f9', marginBottom: '0.25rem', fontSize: '1rem', fontWeight: '600' }}>
-                        {review.name}
-                      </h4>
-                      <p style={{ color: '#60a5fa', fontSize: '0.85rem', marginBottom: '0.5rem' }}>
-                        {review.platform}
-                      </p>
-                    </div>
-                    <div style={{ color: '#fbbf24', fontSize: '0.9rem' }}>
-                      {'★'.repeat(review.rating)}
-                    </div>
-                  </div>
-                  <h5 style={{ color: '#fbbf24', marginBottom: '0.75rem', fontSize: '0.95rem', fontWeight: '600' }}>
-                    {review.title}
-                  </h5>
-                  <p style={{ color: '#cbd5e1', lineHeight: '1.7', fontSize: '0.95rem' }}>
-                    "{review.review}"
-                  </p>
-                </div>
-              ))}
-            </div>
+            <p style={{ color: '#cbd5e1', fontSize: '1.05rem', lineHeight: '1.8', marginBottom: '2rem' }}>
+              We don't post fake testimonials. All reviews on our site are from verified customers who actually purchased services. See what real buyers say about their experience.
+            </p>
+            <button 
+              style={{
+                padding: '1rem 2.5rem',
+                backgroundColor: '#fbbf24',
+                color: '#000',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '1rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+              onClick={() => window.location.href = '/reviews'}
+            >
+              View All Customer Reviews
+            </button>
           </div>
 
           {/* Why Trust Us */}

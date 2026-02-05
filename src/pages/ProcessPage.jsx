@@ -85,14 +85,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    Choose Your Account
+                    Purchase Your Modded Account
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    Browse our inventory of modded accounts. Each account has specific stats, money, RP level, vehicles, and properties listed. Pick the exact account that fits what you want.
+                    Browse our modded accounts inventory and select the package you want. Complete your purchase securely through Stripe. You'll receive an order confirmation.
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#60a5fa' }}>What You'll See:</strong> Platform (PC, PlayStation, Xbox), RP level, money amount, properties owned, vehicles owned, rank recommendations
+                      <strong style={{ color: '#60a5fa' }}>Platforms:</strong> PC (Steam/Epic/Rockstar), PlayStation (PS4/PS5), Xbox (One/Series X|S)
                     </p>
                   </div>
                 </div>
@@ -117,14 +117,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    Place Order & Pay
+                    Create Discord Ticket
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    Click "Order Now", confirm the account details, and proceed to checkout. We use secure Stripe for all payments. Your payment is encrypted and safe.
+                    <strong>MANDATORY:</strong> After purchase, join our Discord server (link on website) and create a ticket. Send your order number in the ticket. A staff member will respond and begin creating your account.
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#a78bfa' }}>Payment Options:</strong> Credit/Debit Card via Stripe. No payment info stored by us. Encrypted end-to-end.
+                      <strong style={{ color: '#a78bfa' }}>Required:</strong> Discord ticket with order number. Service WILL NOT start without this.
                     </p>
                   </div>
                 </div>
@@ -149,14 +149,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    Account Delivered
+                    We Create Your Account
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    We test the account on a live Rockstar server. Everything is verified working. Then we securely deliver it to you with instructions. You get login details and we immediately change the password to something only you know.
+                    Staff purchases the game and creates your account from scratch. We build the account with the stats, money, and unlocks you ordered. This is done manually during our service hours (6 PM - 1 AM UK time).
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#34d399' }}>Typical Timeline:</strong> Same day or next day depending on order time. Modded accounts usually ship 2-4 hours after order.
+                      <strong style={{ color: '#34d399' }}>Timeline:</strong> 40 minutes to 2 hours depending on the package
                     </p>
                   </div>
                 </div>
@@ -181,14 +181,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    Play & Enjoy
+                    Receive Login Details
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    Log in and start playing. Your account is fully yours. Change the password to something you'll remember. We recommend enabling 2FA for extra security. Now you have a fully modded account ready to go.
+                    We send you the account login details, email access, and any other required information through the Discord ticket. The account is now completely yours. Change the password immediately.
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#fbbf24' }}>Remember:</strong> Play legitimately after delivery. No mods, cheats, or exploits. Just enjoy your modded account accounts normally and safely.
+                      <strong style={{ color: '#fbbf24' }}>IMPORTANT:</strong> Don't spend over 50M GTA$ per day or your ban risk increases significantly.
                     </p>
                   </div>
                 </div>
@@ -222,14 +222,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    Choose Your Service
+                    Purchase Boosting Service
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    Browse our boosting services. Choose what you want boosted: RP, Money, Unlock vehicles, Reach specific rank, or full progression. Each service has a clear price and timeline.
+                    Choose the boosting service you want (RP, money, unlocks, rank, etc.). Complete your purchase securely through Stripe. You'll receive an order confirmation.
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#60a5fa' }}>Popular Services:</strong> RNG (Rank, Money, Progress), RP Boost, Money Grind, Vehicle Unlock Packages, Full Progression
+                      <strong style={{ color: '#60a5fa' }}>Services Available:</strong> Money grinding, RP boosting, vehicle unlocks, rank progression, full account builds
                     </p>
                   </div>
                 </div>
@@ -254,14 +254,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    Place Order & Grant Access
+                    Create Discord Ticket & Share Account Details
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    Order your service and pay securely via Stripe. After payment, we'll contact you on Discord to set up account access. You stay in control - we never have your password. Access is only through Discord share/join.
+                    <strong>MANDATORY:</strong> Join our Discord server and create a ticket. Send your order number + account login details securely in the ticket. Staff will respond and attempt to log in. You'll need to provide any 2FA codes when requested.
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#a78bfa' }}>Your Control:</strong> You're in your account the whole time. Operator can play while you watch or play offline. You can revoke access anytime.
+                      <strong style={{ color: '#a78bfa' }}>Required:</strong> Order number, account credentials, 2FA codes. You must be responsive to messages.
                     </p>
                   </div>
                 </div>
@@ -286,14 +286,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    We Start Boosting
+                    We Boost Your Account
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    Our operator starts boosting your account. Manual progression only. We mimic real player behavior with natural playtime. You'll see progress updates through Discord. Typical boosting takes 2-14 days depending on service.
+                    Staff logs into your account and starts the service. We provide proof (screenshots) in your Discord ticket showing progress. Service happens during our hours (6 PM - 1 AM UK time).
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#34d399' }}>Timeline Varies:</strong> Money/RP typically 2-7 days. Full progression often 10-14 days. We meet your deadline.
+                      <strong style={{ color: '#34d399' }}>Timeline:</strong> Most services take 30 minutes to 2 hours
                     </p>
                   </div>
                 </div>
@@ -318,14 +318,14 @@ export default function ProcessPage() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <h3 style={{ color: '#f1f5f9', marginBottom: '0.75rem', fontSize: '1.3rem', fontWeight: '600' }}>
-                    Done! Your Account is Boosted
+                    Service Complete!
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    Boosting complete! You now have the RP, money, unlocks, or rank you wanted. We revoke our access, and it's just your account again. Play with your new resources immediately.
+                    We notify you in the Discord ticket that the service is complete. Your account now has the progression/money/unlocks you ordered. Change your password immediately after service completion.
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#fbbf24' }}>Enjoy Your Account:</strong> Everything is clean, safe, and untraceable. Play normally from here on.
+                      <strong style={{ color: '#fbbf24' }}>IMPORTANT:</strong> Don't spend over 50M GTA$ per day or your ban risk increases significantly.
                     </p>
                   </div>
                 </div>
