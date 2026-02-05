@@ -6,6 +6,12 @@ const DISCORD_BOT_TOKEN = Deno.env.get("DISCORD_BOT_TOKEN");
 const DISCORD_GUILD_ID = Deno.env.get("DISCORD_GUILD_ID");
 const DISCORD_ROLE_ID = Deno.env.get("DISCORD_ROLE_ID");
 
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
+};
+
 if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
   console.error("Missing Supabase env vars");
 }
@@ -56,8 +62,13 @@ async function assignDiscordRole(discordUserId: string): Promise<boolean> {
 }
 
 Deno.serve(async (req) => {
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response("ok", { headers: corsHeaders });
+  }
+
   if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405 });
+    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
   }
 
   try {
@@ -66,7 +77,7 @@ Deno.serve(async (req) => {
     if (!userId) {
       return new Response(
         JSON.stringify({ error: "userId is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -82,7 +93,7 @@ Deno.serve(async (req) => {
       console.error(`❌ Error fetching Discord ID:`, discordIdError);
       return new Response(
         JSON.stringify({ error: "Failed to fetch Discord ID" }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -93,7 +104,7 @@ Deno.serve(async (req) => {
           success: false, 
           message: "User has not connected Discord account" 
         }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -109,7 +120,7 @@ Deno.serve(async (req) => {
           message: "Discord role assigned successfully",
           discordUserId: discordIdData
         }),
-        { status: 200, headers: { "Content-Type": "application/json" } }
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     } else {
       return new Response(
@@ -117,14 +128,14 @@ Deno.serve(async (req) => {
           success: false, 
           message: "Failed to assign Discord role (check bot permissions and user membership)" 
         }),
-        { status: 500, headers: { "Content-Type": "application/json" } }
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
   } catch (error) {
     console.error("❌ Error in assign-discord-role function:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 });
