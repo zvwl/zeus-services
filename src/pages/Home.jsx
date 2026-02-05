@@ -17,6 +17,18 @@ export default function Home({ onGetStarted }) {
       <SEO {...SEO_CONFIGS.home} />
       <Banner onGetStarted={onGetStarted} onScrollAbout={handleScrollAbout} />
 
+      <section className="section intro">
+        <div className="intro-container" style={{maxWidth: '900px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center'}}>
+          <h2 style={{fontSize: '1.8rem', marginBottom: '1rem', color: '#f1f5f9'}}>Professional GTA Online Account Boosting & Modded Accounts</h2>
+          <p style={{fontSize: '1.1rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1.5rem'}}>
+            Welcome to zeuservices, your trusted partner for GTA Online account services. We specialize in professional GTA Online account boosting and premium modded accounts for PC. Whether you're looking for a high-rank account, need rank boosting, vehicle unlocks, or complete GTA5 account progression services, we've got you covered. With over 9 years of experience in the gaming services industry, we offer safe, secure, and reliable GTA Online account solutions.
+          </p>
+          <p style={{fontSize: '1.1rem', lineHeight: '1.8', color: '#cbd5e1'}}>
+            Our GTA account boosting services support all major platforms including Steam, Epic Games, Xbox App, and Rockstar Launcher. We deliver instant, pre-ranked GTA5 modded accounts with all vehicles unlocked, or we'll boost your existing account safely. Every account and service is handled manually for maximum security and reliability. Looking for the fast way to get rank 500+, millions in GTA money, or specific vehicle collections? zeuservices makes it simple, safe, and fast.
+          </p>
+        </div>
+      </section>
+
       <section className="section safe-easy">
         <div className="safe-easy-container">
           <h2 className="section-title">Safe & Easy</h2>

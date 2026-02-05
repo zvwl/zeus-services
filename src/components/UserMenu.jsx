@@ -85,6 +85,32 @@ export default function UserMenu({ isOpen, onClose }) {
             </button>
           </div>
 
+          {/* Information section */}
+          <div className="menu-section">
+            <div className="menu-section-title">Information</div>
+            <button
+              className={`menu-item ${isActive('/safety') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/safety')}
+            >
+              <span className="menu-icon">🛡️</span>
+              <span className="menu-label">Safety & Security</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/trust') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/trust')}
+            >
+              <span className="menu-icon">✓</span>
+              <span className="menu-label">Why Trust Us</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/process') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/process')}
+            >
+              <span className="menu-icon">📍</span>
+              <span className="menu-label">How It Works</span>
+            </button>
+          </div>
+
           {user ? (
             <>
               <div className="menu-section">

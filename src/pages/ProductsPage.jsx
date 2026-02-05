@@ -77,6 +77,15 @@ export default function ProductsPage({ formatPrice }) {
       <h1 className="section-title">GTA Online Products - Premium Modded Accounts</h1>
       <p className="section-subtitle">Discover premium GTA 5 modded accounts, bundles, and complete packages. Available for Steam, Epic Games, Xbox App, and Rockstar Launcher. Instant delivery with secure payment processing.</p>
 
+      <div style={{maxWidth: '900px', margin: '2rem auto 3rem', padding: '0 2rem', textAlign: 'left'}}>
+        <p style={{fontSize: '1.05rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1rem'}}>
+          Looking for a pre-ranked GTA Online account? Browse our collection of premium modded accounts ready for instant delivery. Each GTA5 modded account comes with high rank (500D+), millions in cash, all vehicles unlocked, properties owned, and full customization. Our modded accounts are safe, secure, and verified before delivery on all platforms.
+        </p>
+        <p style={{fontSize: '1.05rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1rem'}}>
+          We offer GTA Online modded accounts for Steam, Epic Games, Xbox App, and Rockstar Launcher. Every account is tested thoroughly and delivered with full documentation. Choose between our pre-made modded accounts or request a custom GTA account with specific rank, money, vehicles, or properties. All purchases are secure, instant, and backed by our 9+ year track record in account services.
+        </p>
+      </div>
+
       {loading ? (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
           Loading products...

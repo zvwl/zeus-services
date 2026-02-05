@@ -24,6 +24,15 @@ export default function Footer() {
         </div>
 
         <div className="footer-section">
+          <h3>Information</h3>
+          <div className="footer-links">
+            <Link to="/safety">Safety & Security</Link>
+            <Link to="/trust">Why Trust Us</Link>
+            <Link to="/process">How It Works</Link>
+          </div>
+        </div>
+
+        <div className="footer-section">
           <h3>Support</h3>
           <div className="footer-links">
             <a

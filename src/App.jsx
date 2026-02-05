@@ -34,6 +34,9 @@ const RefundPage = lazy(() => import('./pages/RefundPage'))
 const ReviewsPage = lazy(() => import('./pages/ReviewsPage'))
 const ReviewForm = lazy(() => import('./pages/ReviewForm'))
 const AdminReviewsPage = lazy(() => import('./pages/AdminReviewsPage'))
+const SafetyPage = lazy(() => import('./pages/SafetyPage'))
+const TrustPage = lazy(() => import('./pages/TrustPage'))
+const ProcessPage = lazy(() => import('./pages/ProcessPage'))
 
 function App() {
   // Load cart from localStorage on mount
@@ -560,6 +563,18 @@ function App() {
         <Route
           path="/review"
           element={<ReviewForm />}
+        />
+        <Route
+          path="/safety"
+          element={<SafetyPage />}
+        />
+        <Route
+          path="/trust"
+          element={<TrustPage />}
+        />
+        <Route
+          path="/process"
+          element={<ProcessPage />}
         />
       </Routes>
       </Suspense>
