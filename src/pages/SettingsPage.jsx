@@ -43,6 +43,12 @@ export default function SettingsPage() {
   const [disableCode, setDisableCode] = useState('')
   const [showDisablePrompt, setShowDisablePrompt] = useState(false)
 
+  // Discord connection state
+  const [discordConnected, setDiscordConnected] = useState(false)
+  const [discordUsername, setDiscordUsername] = useState('')
+  const [discordLoading, setDiscordLoading] = useState(false)
+  const [discordMessage, setDiscordMessage] = useState('')
+
   // Check if user has MFA enabled
   useEffect(() => {
     const checkMFAStatus = async () => {
@@ -57,6 +63,32 @@ export default function SettingsPage() {
       }
     }
     if (user) checkMFAStatus()
+  }, [user])
+
+  // Check if Discord is connected
+  useEffect(() => {
+    const checkDiscordConnection = async () => {
+      if (!user?.id) return
+      
+      try {
+        const { data, error } = await supabase.rpc('get_discord_id', { p_user_id: user.id })
+        
+        if (error) {
+          console.error('Error checking Discord connection:', error)
+          return
+        }
+        
+        if (data) {
+          setDiscordConnected(true)
+          // Discord ID is just a number, we don't have the username directly
+          setDiscordUsername(`Discord User (${data})`)
+        }
+      } catch (err) {
+        console.error('Discord connection check error:', err)
+      }
+    }
+    
+    if (user) checkDiscordConnection()
   }, [user])
 
   // Check display name change eligibility and load current display name
@@ -367,6 +399,68 @@ export default function SettingsPage() {
     setTimeout(() => setProfileMessage(''), 5000)
   }
 
+  const handleConnectDiscord = async () => {
+    setDiscordLoading(true)
+    setDiscordMessage('')
+    
+    try {
+      const { data, error } = await supabase.auth.linkIdentity({ 
+        provider: 'discord'
+      })
+      
+      if (error) {
+        setDiscordMessage(`❌ ${error.message}`)
+        setDiscordLoading(false)
+        return
+      }
+      
+      // Supabase will redirect to Discord OAuth, then back
+      // The page will reload and Discord will be connected
+    } catch (err) {
+      setDiscordMessage('❌ Failed to connect Discord')
+      setDiscordLoading(false)
+    }
+  }
+
+  const handleDisconnectDiscord = async () => {
+    if (!confirm('Are you sure you want to disconnect your Discord account? You will lose your Customer role on the Discord server.')) {
+      return
+    }
+    
+    setDiscordLoading(true)
+    setDiscordMessage('')
+    
+    try {
+      // Get the Discord identity ID
+      const { data: identities } = await supabase.auth.getUserIdentities()
+      const discordIdentity = identities?.identities?.find(i => i.provider === 'discord')
+      
+      if (!discordIdentity) {
+        setDiscordMessage('❌ Discord account not found')
+        setDiscordLoading(false)
+        return
+      }
+      
+      const { error } = await supabase.auth.unlinkIdentity(discordIdentity)
+      
+      if (error) {
+        setDiscordMessage(`❌ ${error.message}`)
+        setDiscordLoading(false)
+        return
+      }
+      
+      setDiscordConnected(false)
+      setDiscordUsername('')
+      setDiscordMessage('✅ Discord disconnected successfully')
+      setTimeout(() => setDiscordMessage(''), 5000)
+    } catch (err) {
+      console.error('Discord disconnect error:', err)
+      setDiscordMessage('❌ Failed to disconnect Discord')
+    }
+    
+    setDiscordLoading(false)
+  }
+
   const handlePasswordChange = async (e) => {
     e.preventDefault()
     setPasswordLoading(true)
@@ -629,6 +723,103 @@ export default function SettingsPage() {
                 {profileLoading ? 'Saving...' : 'Save Changes'}
               </button>
             </form>
+
+            {/* Discord Connection Section */}
+            <div style={{ marginTop: '2rem', paddingTop: '2rem', borderTop: '1px solid #2a3f5f' }}>
+              <h3 style={{ marginBottom: '1rem' }}>Discord Connection</h3>
+              
+              {discordConnected ? (
+                <div style={{ 
+                  backgroundColor: '#1a2332', 
+                  padding: '1.5rem', 
+                  borderRadius: '8px',
+                  border: '1px solid #34d399'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                    <svg style={{ width: '40px', height: '40px' }} viewBox="0 0 127.14 96.36" fill="#5865F2">
+                      <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+                    </svg>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ color: '#34d399', fontWeight: '600', marginBottom: '0.25rem' }}>✓ Discord Connected</p>
+                      <p style={{ color: '#cbd5e1', fontSize: '0.9rem' }}>{discordUsername}</p>
+                      <p style={{ color: '#94a3b8', fontSize: '0.85rem', marginTop: '0.5rem' }}>
+                        When you purchase, you'll automatically get the "Customer" role on our Discord server.
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {discordMessage && (
+                    <div className="message" style={{ marginBottom: '1rem' }}>{discordMessage}</div>
+                  )}
+                  
+                  <button 
+                    type="button"
+                    onClick={handleDisconnectDiscord}
+                    disabled={discordLoading}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: '#dc2626',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: discordLoading ? 'not-allowed' : 'pointer',
+                      opacity: discordLoading ? 0.6 : 1,
+                      fontSize: '0.95rem',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {discordLoading ? 'Disconnecting...' : 'Disconnect Discord'}
+                  </button>
+                </div>
+              ) : (
+                <div style={{ 
+                  backgroundColor: '#1a2332', 
+                  padding: '1.5rem', 
+                  borderRadius: '8px',
+                  border: '1px solid #2a3f5f'
+                }}>
+                  <div style={{ marginBottom: '1rem' }}>
+                    <p style={{ color: '#cbd5e1', marginBottom: '0.75rem' }}>
+                      Connect your Discord account to automatically receive the "Customer" role when you make a purchase.
+                    </p>
+                    <p style={{ color: '#94a3b8', fontSize: '0.9rem' }}>
+                      • Get exclusive access to customer-only channels<br/>
+                      • Receive order notifications and support directly on Discord<br/>
+                      • Role is assigned instantly after payment
+                    </p>
+                  </div>
+                  
+                  {discordMessage && (
+                    <div className="message" style={{ marginBottom: '1rem' }}>{discordMessage}</div>
+                  )}
+                  
+                  <button 
+                    type="button"
+                    onClick={handleConnectDiscord}
+                    disabled={discordLoading}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: '#5865F2',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: discordLoading ? 'not-allowed' : 'pointer',
+                      opacity: discordLoading ? 0.6 : 1,
+                      fontSize: '0.95rem',
+                      fontWeight: '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                  >
+                    <svg style={{ width: '20px', height: '20px' }} viewBox="0 0 127.14 96.36" fill="currentColor">
+                      <path d="M107.7,8.07A105.15,105.15,0,0,0,81.47,0a72.06,72.06,0,0,0-3.36,6.83A97.68,97.68,0,0,0,49,6.83,72.37,72.37,0,0,0,45.64,0,105.89,105.89,0,0,0,19.39,8.09C2.79,32.65-1.71,56.6.54,80.21h0A105.73,105.73,0,0,0,32.71,96.36,77.7,77.7,0,0,0,39.6,85.25a68.42,68.42,0,0,1-10.85-5.18c.91-.66,1.8-1.34,2.66-2a75.57,75.57,0,0,0,64.32,0c.87.71,1.76,1.39,2.66,2a68.68,68.68,0,0,1-10.87,5.19,77,77,0,0,0,6.89,11.1A105.25,105.25,0,0,0,126.6,80.22h0C129.24,52.84,122.09,29.11,107.7,8.07ZM42.45,65.69C36.18,65.69,31,60,31,53s5-12.74,11.43-12.74S54,46,53.89,53,48.84,65.69,42.45,65.69Zm42.24,0C78.41,65.69,73.25,60,73.25,53s5-12.74,11.44-12.74S96.23,46,96.12,53,91.08,65.69,84.69,65.69Z"/>
+                    </svg>
+                    {discordLoading ? 'Connecting...' : 'Connect Discord'}
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         )}
 
