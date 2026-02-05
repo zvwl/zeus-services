@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { useAuth } from '../contexts/AuthContext'
 import googleLogo from '../assets/google-logo.svg'
+import discordLogo from '../assets/discord-logo.svg'
 import './AuthPages.css'
 
 export default function LoginPage() {
@@ -23,7 +24,7 @@ export default function LoginPage() {
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
   const captchaRef = useRef(null)
-  const { login, loginWithGoogle, verifyMfaChallenge } = useAuth()
+  const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
 
   const handleSubmit = async (e) => {
@@ -113,6 +114,26 @@ export default function LoginPage() {
     }
   }
 
+  const handleDiscordSignIn = async () => {
+    setError('')
+    try {
+      // Store the redirect destination before OAuth redirect
+      localStorage.setItem('oauthRedirect', redirectTo)
+      
+      const result = await loginWithDiscord()
+      if (result.success) {
+        // If Discord OAuth redirects, the stored redirect will be used in AuthContext
+        navigate(redirectTo)
+      } else if (result.error) {
+        setError(result.error)
+        localStorage.removeItem('oauthRedirect')
+      }
+    } catch (err) {
+      setError('Could not start Discord sign-in')
+      localStorage.removeItem('oauthRedirect')
+    }
+  }
+
   const handleVerifyMfa = async (e) => {
     e.preventDefault()
     setMfaError('')
@@ -192,6 +213,10 @@ export default function LoginPage() {
             <button type="button" className="oauth-btn" onClick={handleGoogleSignIn}>
               <img className="oauth-icon" src={googleLogo} alt="Google logo" />
               Continue with Google
+            </button>
+            <button type="button" className="oauth-btn" onClick={handleDiscordSignIn}>
+              <img className="oauth-icon" src={discordLogo} alt="Discord logo" />
+              Continue with Discord
             </button>
             <div className="oauth-divider"><span>or</span></div>
           </div>

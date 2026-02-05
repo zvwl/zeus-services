@@ -395,6 +395,26 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const loginWithDiscord = async () => {
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'discord',
+        options: {
+          redirectTo: import.meta.env.VITE_FRONTEND_URL || window.location.origin,
+          scopes: 'identify email'
+        }
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      return { success: true, url: data?.url }
+    } catch (err) {
+      return { success: false, error: 'Could not start Discord sign-in' }
+    }
+  }
+
   const createSessionRecord = async (userId) => {
     try {
       // Get device info
@@ -576,6 +596,7 @@ export const AuthProvider = ({ children }) => {
       user, 
       login, 
       loginWithGoogle,
+      loginWithDiscord,
       signup, 
       logout, 
       loading, 
