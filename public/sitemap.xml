@@ -9,7 +9,7 @@
   <!-- Home Page -->
   <url>
     <loc>https://zeuservices.com/</loc>
-    <lastmod>2026-02-03</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -17,75 +17,45 @@
   <!-- Main Navigation Pages - High Priority -->
   <url>
     <loc>https://zeuservices.com/services</loc>
-    <lastmod>2026-02-03</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   
   <url>
     <loc>https://zeuservices.com/products</loc>
-    <lastmod>2026-02-03</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   
   <url>
     <loc>https://zeuservices.com/reviews</loc>
-    <lastmod>2026-02-03</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
-  </url>
-  
-  <!-- Customer Pages -->
-  <url>
-    <loc>https://zeuservices.com/cart</loc>
-    <lastmod>2026-02-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
-  
-  <url>
-    <loc>https://zeuservices.com/orders</loc>
-    <lastmod>2026-02-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
   </url>
   
   <!-- Legal & Policy Pages -->
   <url>
     <loc>https://zeuservices.com/terms</loc>
-    <lastmod>2026-02-03</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://zeuservices.com/privacy</loc>
-    <lastmod>2026-02-03</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
+    <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://zeuservices.com/refund</loc>
-    <lastmod>2026-02-03</lastmod>
+    <lastmod>2026-02-05</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  
-  <!-- Auth Pages - Lower Priority -->
-  <url>
-    <loc>https://zeuservices.com/login</loc>
-    <lastmod>2026-02-03</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
-  </url>
-  
-  <url>
-    <loc>https://zeuservices.com/signup</loc>
-    <lastmod>2026-02-03</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.5</priority>
   </url>
 
 </urlset>

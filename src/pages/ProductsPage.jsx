@@ -74,8 +74,8 @@ export default function ProductsPage({ formatPrice }) {
       <section className="section services" id="products">
         <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Products', path: '/products' }]} />
         <p className="eyebrow">Products</p>
-      <h2 className="section-title">Browse packaged offerings</h2>
-      <p className="section-subtitle">Discover bundles, add-ons, and complete packages tailored for Zeus clients.</p>
+      <h1 className="section-title">GTA Online Products - Premium Modded Accounts</h1>
+      <p className="section-subtitle">Discover premium GTA 5 modded accounts, bundles, and complete packages. Available for Steam, Epic Games, Xbox App, and Rockstar Launcher. Instant delivery with secure payment processing.</p>
 
       {loading ? (
         <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>

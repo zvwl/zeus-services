@@ -67,8 +67,8 @@
       }
     </script>
     
-    <!-- Google Search Console Verification - Replace YOUR_VERIFICATION_CODE with your actual code -->
-    <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE" />
+    <!-- Google Search Console Verification -->
+    <meta name="google-site-verification" content="vpn1AG73aR7pQSZWGcSssbcwJwM--yQHM4LV0uHh5xU" />
     
     <!-- Structured Data (JSON-LD) -->
     <script type="application/ld+json">
@@ -146,6 +146,88 @@
           "name": "Cart",
           "description": "Shopping cart and checkout",
           "url": "https://zeuservices.com/cart"
+        }
+      ]
+    }
+    </script>
+
+    <!-- Service Provider Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "LocalBusiness",
+      "name": "zeuservices",
+      "image": "https://zeuservices.com/zeus-logo.png",
+      "@id": "https://zeuservices.com",
+      "url": "https://zeuservices.com",
+      "telephone": "",
+      "priceRange": "£",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "GB"
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 51.5074,
+        "longitude": -0.1278
+      },
+      "openingHoursSpecification": {
+        "@type": "OpeningHoursSpecification",
+        "dayOfWeek": [
+          "Monday",
+          "Tuesday",
+          "Wednesday",
+          "Thursday",
+          "Friday",
+          "Saturday",
+          "Sunday"
+        ],
+        "opens": "00:00",
+        "closes": "23:59"
+      },
+      "sameAs": [
+        "https://www.zeuservices.com"
+      ]
+    }
+    </script>
+
+    <!-- FAQ Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What services does zeuservices offer?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We offer GTA Online account services including rank boosting, vehicle unlocks, progression services, and modded accounts for multiple platforms including Steam, Epic Games, Xbox App, and Rockstar Launcher."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is it safe to use zeuservices?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, we prioritize safety and use secure methods for all our services. All payments are processed securely through Stripe, and we have thousands of satisfied customers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How long does delivery take?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most services are delivered within 24-48 hours. Product accounts are typically delivered instantly after payment confirmation."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What platforms do you support?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We support Steam, Epic Games, Xbox App (Microsoft Store), and Rockstar Launcher for GTA Online on PC."
+          }
         }
       ]
     }

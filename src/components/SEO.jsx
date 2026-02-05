@@ -70,53 +70,53 @@ export default function SEO({
  */
 export const SEO_CONFIGS = {
   home: {
-    title: "zeuservices",
-    description: "GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple. Get started. Safe & Easy.",
-    keywords: "GTA 5 services, GTA Online, modded accounts, rank boost, gaming services, account boosting, zeus services"
+    title: "zeuservices - GTA Online Services & Modded Accounts | Play Smarter",
+    description: "GTA Online Account Services. Play Smarter, Not Harder. Premium GTA Online account boosting, rank unlocks, and modded accounts. Safe, fast delivery with secure payment. Trusted by thousands of gamers.",
+    keywords: "GTA 5 services, GTA Online, modded accounts, rank boost, gaming services, account boosting, zeus services, GTA PC modded account"
   },
   services: {
-    title: "Zeus Services - GTA Online Account Services",
-    description: "GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple. Get started. Safe & Easy.",
-    keywords: "GTA 5 services, rank boost, vehicle unlocks, GTA modding, gaming services, account boosting"
+    title: "GTA Online Services - Account Boosting & Rank Services | zeuservices",
+    description: "Professional GTA Online services including rank boosting, vehicle unlocks, progression services, and account enhancement. Safe, secure, and trusted by thousands. Multiple platforms supported: Steam, Epic, Xbox App.",
+    keywords: "GTA 5 services, rank boost, vehicle unlocks, GTA modding, gaming services, account boosting, GTA progression, GTA unlock all"
   },
   products: {
-    title: "GTA Online Products | zeuservices",
-    description: "Premium GTA 5 modded accounts and products. Browse our selection of high-quality gaming accounts with instant delivery.",
-    keywords: "GTA 5 modded accounts, modded GTA account, GTA 5 products, gaming accounts, GTA Online accounts"
+    title: "GTA Online Modded Accounts - Premium Products | zeuservices",
+    description: "Premium GTA 5 modded accounts for PC. Available for Steam, Epic Games, Xbox App, and Rockstar Launcher. High-rank accounts, unlocked vehicles, instant delivery. Browse our collection of ready-to-play accounts.",
+    keywords: "GTA 5 modded accounts, modded GTA account, GTA 5 products, gaming accounts, GTA Online accounts, GTA PC accounts, GTA Steam account"
   },
   reviews: {
-    title: "Customer Reviews | zeuservices",
-    description: "Read reviews from satisfied customers. See why zeuservices is trusted by thousands of gamers for GTA 5 Online services.",
-    keywords: "zeuservices reviews, GTA 5 service reviews, customer testimonials, gaming service reviews"
+    title: "Customer Reviews & Testimonials - See Why Gamers Trust Us | zeuservices",
+    description: "Read authentic reviews from satisfied customers. See why zeuservices is trusted by thousands of gamers for GTA 5 Online services. Real feedback, verified purchases, 5-star ratings.",
+    keywords: "zeuservices reviews, GTA 5 service reviews, customer testimonials, gaming service reviews, trustpilot, customer feedback"
   },
   cart: {
-    title: "Shopping Cart | zeuservices",
-    description: "Review your selected items and proceed to secure checkout. Fast and safe payment processing.",
-    keywords: "cart, checkout, shopping cart, secure payment"
+    title: "Shopping Cart - Review Your Order | zeuservices",
+    description: "Review your selected GTA Online services and products. Secure checkout powered by Stripe. Fast processing and instant delivery. Multiple payment methods accepted.",
+    keywords: "cart, checkout, shopping cart, secure payment, stripe payment"
   },
   terms: {
-    title: "Terms of Service | zeuservices",
-    description: "Read our terms of service and understand our policies for using zeuservices platform.",
-    keywords: "terms of service, user agreement, policies, terms and conditions"
+    title: "Terms of Service - User Agreement | zeuservices",
+    description: "Read our terms of service and understand the rules, policies, and agreements for using zeuservices platform. Clear terms for GTA Online services and products.",
+    keywords: "terms of service, user agreement, policies, terms and conditions, service terms"
   },
   privacy: {
-    title: "Privacy Policy | zeuservices",
-    description: "Learn how zeuservices protects your privacy and handles your personal information securely.",
-    keywords: "privacy policy, data protection, user privacy, GDPR compliance"
+    title: "Privacy Policy - How We Protect Your Data | zeuservices",
+    description: "Learn how zeuservices protects your privacy and handles your personal information securely. GDPR compliant data protection. Your information is safe with us.",
+    keywords: "privacy policy, data protection, user privacy, GDPR compliance, data security"
   },
   refund: {
-    title: "Refund Policy | zeuservices",
-    description: "Understand our refund and return policy for all services and products purchased on zeuservices.",
-    keywords: "refund policy, returns, money back guarantee, customer protection"
+    title: "Refund & Return Policy - Customer Guarantee | zeuservices",
+    description: "Understand our refund and return policy for all GTA Online services and products. Customer satisfaction guaranteed. Clear refund terms and conditions.",
+    keywords: "refund policy, returns, money back guarantee, customer protection, satisfaction guarantee"
   },
   orders: {
-    title: "My Orders | zeuservices",
-    description: "View and track your service orders and purchase history on zeuservices.",
-    keywords: "order history, track orders, my purchases"
+    title: "My Orders - Track Your Services & Products | zeuservices",
+    description: "View and track your GTA Online service orders and purchase history. Check order status, download products, and manage your purchases.",
+    keywords: "order history, track orders, my purchases, order status, purchase history"
   },
   settings: {
-    title: "Account Settings | zeuservices",
-    description: "Manage your zeuservices account settings, preferences, and security options.",
-    keywords: "account settings, user profile, account management"
+    title: "Account Settings - Manage Your Profile | zeuservices",
+    description: "Manage your zeuservices account settings, update your profile, change password, and configure security preferences. Full control over your account.",
+    keywords: "account settings, user profile, account management, profile settings, security"
   }
 };
