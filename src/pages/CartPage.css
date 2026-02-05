@@ -773,6 +773,46 @@
   border-color: #fca5a5;
 }
 
+/* Ensure checkout buttons stay visible after Stripe redirect */
+.checkout-btn,
+button.checkout-btn {
+  background: #fbbf24 !important;
+  color: #0a0e1a !important;
+  border: none !important;
+  padding: 1rem 2rem !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 1.1rem !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3) !important;
+  width: 100% !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  z-index: 10 !important;
+}
+
+.checkout-btn:hover,
+button.checkout-btn:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 20px rgba(251, 191, 36, 0.4) !important;
+  background: #f9b524 !important;
+}
+
+.checkout-btn:active,
+button.checkout-btn:active {
+  transform: translateY(0) !important;
+}
+
+.checkout-btn:disabled,
+button.checkout-btn:disabled {
+  opacity: 0.55 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 @media (max-width: 640px) {
   .checkout-container {
     padding: 0 0.75rem;
