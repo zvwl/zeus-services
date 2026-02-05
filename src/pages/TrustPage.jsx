@@ -1,7 +1,33 @@
+import { useState, useEffect } from 'react'
+import { supabase } from '../supabaseClient'
 import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 
 export default function TrustPage() {
+  const [reviewCount, setReviewCount] = useState(0)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    fetchReviewCount()
+  }, [])
+
+  const fetchReviewCount = async () => {
+    try {
+      const { count, error } = await supabase
+        .from('reviews')
+        .select('*', { count: 'exact', head: true })
+        .eq('status', 'approved')
+
+      if (error) throw error
+      setReviewCount(count || 0)
+    } catch (err) {
+      console.error('Error fetching review count:', err)
+      setReviewCount(0)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <>
       <SEO 
@@ -22,7 +48,24 @@ export default function TrustPage() {
 
           {/* Trust Stats */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1.5rem', marginBottom: '3rem' }}>
-            <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
+            <div 
+              style={{ 
+                backgroundColor: '#1a2332', 
+                padding: '1.5rem', 
+                borderRadius: '8px', 
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                border: '2px solid transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#0f1720'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a2332'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
               <div style={{ fontSize: '2.5rem', color: '#fbbf24', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                 9+
               </div>
@@ -31,7 +74,24 @@ export default function TrustPage() {
               </div>
             </div>
 
-            <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
+            <div 
+              style={{ 
+                backgroundColor: '#1a2332', 
+                padding: '1.5rem', 
+                borderRadius: '8px', 
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                border: '2px solid transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#0f1720'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a2332'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
               <div style={{ fontSize: '2.5rem', color: '#60a5fa', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                 200+
               </div>
@@ -40,16 +100,54 @@ export default function TrustPage() {
               </div>
             </div>
 
-            <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
+            <div 
+              style={{ 
+                backgroundColor: '#1a2332', 
+                padding: '1.5rem', 
+                borderRadius: '8px', 
+                textAlign: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                border: '2px solid transparent'
+              }}
+              onClick={() => window.location.href = '/reviews'}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#0f1720'
+                e.currentTarget.style.borderColor = '#34d399'
+                e.currentTarget.style.transform = 'translateY(-4px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a2332'
+                e.currentTarget.style.borderColor = 'transparent'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
               <div style={{ fontSize: '2.5rem', color: '#34d399', fontWeight: 'bold', marginBottom: '0.5rem' }}>
-                <a href="/reviews" style={{ color: '#34d399', textDecoration: 'none' }}>See Reviews</a>
+                {loading ? '...' : reviewCount}
               </div>
               <div style={{ color: '#cbd5e1', fontSize: '0.95rem' }}>
-                Real Customer Ratings
+                Customer Reviews
               </div>
             </div>
 
-            <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', textAlign: 'center' }}>
+            <div 
+              style={{ 
+                backgroundColor: '#1a2332', 
+                padding: '1.5rem', 
+                borderRadius: '8px', 
+                textAlign: 'center',
+                transition: 'all 0.3s ease',
+                border: '2px solid transparent'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.backgroundColor = '#0f1720'
+                e.currentTarget.style.transform = 'translateY(-2px)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.backgroundColor = '#1a2332'
+                e.currentTarget.style.transform = 'translateY(0)'
+              }}
+            >
               <div style={{ fontSize: '2.5rem', color: '#a78bfa', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                 0
               </div>
