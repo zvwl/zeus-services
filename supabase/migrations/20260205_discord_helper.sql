@@ -2,7 +2,9 @@
 -- This allows us to retrieve a user's Discord ID after they connect via OAuth
 
 CREATE OR REPLACE FUNCTION public.get_discord_id(p_user_id UUID)
-RETURNS TEXT AS $$
+RETURNS TEXT
+SET search_path = public
+AS $$
 BEGIN
   RETURN (
     SELECT identity_data->>'provider_id'

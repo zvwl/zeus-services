@@ -2,7 +2,9 @@
 -- This handles the case where someone purchases first, then connects Discord later
 
 CREATE OR REPLACE FUNCTION public.handle_discord_connection()
-RETURNS trigger AS $$
+RETURNS trigger
+SET search_path = public
+AS $$
 DECLARE
   has_orders BOOLEAN;
   order_count INT;
