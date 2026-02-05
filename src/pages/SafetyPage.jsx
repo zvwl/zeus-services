@@ -36,7 +36,7 @@ export default function SafetyPage() {
                 <li>Your account <strong>CAN be reset, suspended, or permanently banned</strong> at any time</li>
                 <li>Bans happen <strong>without warning</strong> - this is completely <strong>luck-based</strong></li>
                 <li>We <strong>cannot prevent, stop, or reverse</strong> Rockstar's actions - no one can</li>
-                <li><strong>Risk increases significantly</strong> if you spend over <strong>50 million GTA$ in one day</strong></li>
+                <li><strong>Risk increases</strong> if we add more than <strong>50M to your account per day</strong></li>
                 <li><strong>There are NO refunds</strong> if your account gets banned - you accept this risk</li>
               </ul>
             </div>
