@@ -55,6 +55,7 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
         <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Services', path: '/services' }]} />
         <p className="eyebrow">Services</p>
       <h1 className="section-title">GTA Online Services - Choose Your Plan</h1>
+      <p className="section-subtitle">GTA Online boosting services for fast, professional progression across all platforms.</p>
       
 
       <div className="filters-container">

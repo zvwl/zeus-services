@@ -75,6 +75,7 @@ export default function ProductsPage({ formatPrice }) {
         <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Products', path: '/products' }]} />
         <p className="eyebrow">Products</p>
       <h1 className="section-title">GTA Online Products - Premium Modded Accounts</h1>
+      <p className="section-subtitle">Premium GTA Online modded accounts and bundles for Steam, Epic Games, Xbox App, and Rockstar Launcher.</p>
       
 
       {loading ? (
