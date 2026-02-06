@@ -28,7 +28,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   }) || location.state?.service || location.state?.product
 
   const [fetchedProduct, setFetchedProduct] = useState(null)
-  const [fetchingProduct, setFetchingProduct] = useState(false)
+  const [fetchingProduct, setFetchingProduct] = useState(isProduct && !itemFromProps)
 
   useEffect(() => {
     let cancelled = false
