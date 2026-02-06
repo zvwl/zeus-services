@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../supabaseClient'
 import '../App.css'
 import './CartPage.css'
 
@@ -21,10 +22,43 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   // Get service from props or location state
   // ID can be UUID (from DB) or number (legacy), so try both
   // Also handles products passed via location state
-  const service = services.find(s => {
+  const itemFromProps = services.find(s => {
     const paramId = id
     return s.id === paramId || s.id === parseInt(paramId)
   }) || location.state?.service || location.state?.product
+
+  const [fetchedProduct, setFetchedProduct] = useState(null)
+  const [fetchingProduct, setFetchingProduct] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+
+    const fetchProduct = async () => {
+      if (!isProduct || itemFromProps || !id) return
+      setFetchingProduct(true)
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .eq('id', id)
+        .maybeSingle()
+
+      if (!cancelled) {
+        if (error) {
+          console.error('Error fetching product:', error)
+        }
+        setFetchedProduct(data || null)
+        setFetchingProduct(false)
+      }
+    }
+
+    fetchProduct()
+
+    return () => {
+      cancelled = true
+    }
+  }, [isProduct, itemFromProps, id])
+
+  const service = itemFromProps || fetchedProduct
 
   const versionOptions = service?.versions?.length ? service.versions : ['Legacy', 'Enhanced']
 
@@ -64,7 +98,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
     return (
       <section className="section services">
         <div style={{ textAlign: 'center', padding: '2rem' }}>
-          <h2>Service not found</h2>
+          <h2>{fetchingProduct && isProduct ? 'Loading product...' : isProduct ? 'Product not found' : 'Service not found'}</h2>
           <button className="primary-btn" onClick={() => navigate(backPath)}>{backLabel}</button>
         </div>
       </section>
