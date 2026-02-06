@@ -217,6 +217,12 @@ export default function AdminOrdersPage() {
       // Clear notes after logging
       setAdminNotes(prev => ({ ...prev, [orderId]: '' }))
 
+      if (newStatus === 'completed' && oldStatus !== 'completed') {
+        sendOrderCompleteEmail(orderId).catch(err => {
+          console.error('Failed to send completion email:', err)
+        })
+      }
+
       // Update local state
       setOrders(orders.map(order => 
         order.id === orderId ? { ...order, status: newStatus } : order
@@ -225,6 +231,26 @@ export default function AdminOrdersPage() {
       setError('Error updating order: ' + err.message)
     } finally {
       setUpdatingOrderId(null)
+    }
+  }
+
+  const sendOrderCompleteEmail = async (orderId) => {
+    const { data: sessionData } = await supabase.auth.getSession()
+    const accessToken = sessionData?.session?.access_token
+
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-complete`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {})
+      },
+      body: JSON.stringify({ orderId })
+    })
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}))
+      throw new Error(body?.error || 'Failed to send order completion email')
     }
   }
 
