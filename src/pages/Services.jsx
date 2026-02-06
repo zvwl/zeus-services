@@ -55,14 +55,11 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
         <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Services', path: '/services' }]} />
         <p className="eyebrow">Services</p>
       <h1 className="section-title">GTA Online Services - Choose Your Plan</h1>
-      <p className="section-subtitle">Browse our premium GTA Online account boosting services. From rank boosts to vehicle unlocks, we offer safe and efficient gaming services. Click any service to view full details and pricing.</p>
+      <p className="section-subtitle">GTA Online boosting services for fast, professional progression across all platforms.</p>
 
       <div className="section-description">
         <p>
-          At zeuservices, we offer a complete range of GTA Online boosting services designed to help you progress faster and achieve your gaming goals. Our professional rank boosting service will take your account from zero to hero with all the unlocks you need. We handle everything safely and securely, with manual account progression by experienced operators.
-        </p>
-        <p>
-          Whether you want rank progression, vehicle unlocks, GTA Online modding services, or complete account customization, our GTA boosting team delivers results fast. All services are tested, verified, and backed by 9+ years of experience in account boosting. We support all platforms: Steam, Epic Games, Xbox App, and Rockstar Launcher. Choose from our pre-set boosting packages below, or contact us for custom GTA Online progression services.
+          Rank boosts, vehicle unlocks, and custom builds delivered quickly with clear options and pricing.
         </p>
       </div>
 
