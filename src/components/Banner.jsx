@@ -19,13 +19,9 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
           detectRetina: true,
           interactivity: {
             events: {
-              onHover: { enable: true, mode: 'repulse' },
-              onClick: { enable: true, mode: 'push' },
+              onHover: { enable: false },
+              onClick: { enable: false },
               resize: true,
-            },
-            modes: {
-              repulse: { distance: 120, duration: 0.2 },
-              push: { quantity: 3 },
             },
           },
           particles: {
