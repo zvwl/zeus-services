@@ -1,68 +1,57 @@
-import { useEffect, useRef } from 'react'
+import { useCallback } from 'react'
+import Particles from 'react-tsparticles'
+import { loadSlim } from 'tsparticles-slim'
 import './Banner.css'
 
 export default function Banner({ onGetStarted, onScrollAbout }) {
-  const bannerRef = useRef(null)
-
-  useEffect(() => {
-    let effect
-    let cancelled = false
-    let resizeTimeout
-
-    async function loadVanta() {
-      if (!bannerRef.current || typeof window === 'undefined') return
-      
-      // Skip Vanta on mobile devices to improve performance
-      const isMobile = window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      if (isMobile) return
-      
-      const [THREE, VANTA] = await Promise.all([
-        import('three'),
-        import('vanta/dist/vanta.halo.min'),
-      ])
-
-      if (cancelled) return
-
-       effect = VANTA.default({
-        el: bannerRef.current,
-        THREE: THREE.default || THREE,
-        mouseControls: true,
-        touchControls: true,
-        gyroControls: false,
-        minHeight: 200.0,
-        minWidth: 200.0,
-        color: 0x66ccff,           // electric blue
-        backgroundColor: 0x050914, // deep navy
-        amplitudeFactor: 2.2,      // more ripple energy
-        size: 1.9,                 // larger halo arcs
-      })
-    }
-
-    loadVanta()
-
-    // Reinitialize Vanta on window resize (including zoom)
-    const handleResize = () => {
-      clearTimeout(resizeTimeout)
-      resizeTimeout = setTimeout(() => {
-        if (effect && typeof effect.destroy === 'function') {
-          effect.destroy()
-        }
-        loadVanta()
-      }, 300)
-    }
-
-    window.addEventListener('resize', handleResize)
-
-    return () => {
-      cancelled = true
-      clearTimeout(resizeTimeout)
-      window.removeEventListener('resize', handleResize)
-      if (effect && typeof effect.destroy === 'function') effect.destroy()
-    }
+  const particlesInit = useCallback(async (engine) => {
+    await loadSlim(engine)
   }, [])
 
   return (
-    <div className="banner" ref={bannerRef}>
+    <div className="banner">
+      <Particles
+        className="banner-particles"
+        init={particlesInit}
+        options={{
+          background: { color: { value: 'transparent' } },
+          fpsLimit: 60,
+          detectRetina: true,
+          interactivity: {
+            events: {
+              onHover: { enable: true, mode: 'repulse' },
+              onClick: { enable: true, mode: 'push' },
+              resize: true,
+            },
+            modes: {
+              repulse: { distance: 120, duration: 0.2 },
+              push: { quantity: 3 },
+            },
+          },
+          particles: {
+            color: { value: ['#38bdf8', '#60a5fa', '#fbbf24'] },
+            links: {
+              enable: true,
+              color: '#60a5fa',
+              distance: 140,
+              opacity: 0.2,
+              width: 1,
+            },
+            move: {
+              enable: true,
+              speed: 1.2,
+              outModes: { default: 'out' },
+            },
+            number: {
+              value: 55,
+              density: { enable: true, area: 800 },
+            },
+            opacity: { value: 0.6 },
+            shape: { type: 'circle' },
+            size: { value: { min: 1, max: 3 } },
+          },
+        }}
+      />
       <div className="banner-overlay"></div>
       <div className="banner-content">
         <p className="eyebrow">GTA Online Account Services</p>
