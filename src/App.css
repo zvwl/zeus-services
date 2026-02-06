@@ -108,6 +108,23 @@ body {
   margin-bottom: 2rem;
 }
 
+.section-description {
+  max-width: 900px;
+  margin: 1.5rem 0 2.5rem;
+  text-align: left;
+}
+
+.section-description p {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #cbd5e1;
+  margin-bottom: 1rem;
+}
+
+.section-description p:last-child {
+  margin-bottom: 0;
+}
+
 .about-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));

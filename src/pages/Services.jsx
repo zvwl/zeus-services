@@ -57,11 +57,11 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
       <h1 className="section-title">GTA Online Services - Choose Your Plan</h1>
       <p className="section-subtitle">Browse our premium GTA Online account boosting services. From rank boosts to vehicle unlocks, we offer safe and efficient gaming services. Click any service to view full details and pricing.</p>
 
-      <div style={{maxWidth: '900px', margin: '2rem auto 3rem', padding: '0 2rem', textAlign: 'left'}}>
-        <p style={{fontSize: '1.05rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1rem'}}>
+      <div className="section-description">
+        <p>
           At zeuservices, we offer a complete range of GTA Online boosting services designed to help you progress faster and achieve your gaming goals. Our professional rank boosting service will take your account from zero to hero with all the unlocks you need. We handle everything safely and securely, with manual account progression by experienced operators.
         </p>
-        <p style={{fontSize: '1.05rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1rem'}}>
+        <p>
           Whether you want rank progression, vehicle unlocks, GTA Online modding services, or complete account customization, our GTA boosting team delivers results fast. All services are tested, verified, and backed by 9+ years of experience in account boosting. We support all platforms: Steam, Epic Games, Xbox App, and Rockstar Launcher. Choose from our pre-set boosting packages below, or contact us for custom GTA Online progression services.
         </p>
       </div>
