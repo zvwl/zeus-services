@@ -94,6 +94,14 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
     }
   }, [user, service, addToCart, location.pathname])
 
+  const cartItem = useMemo(() => {
+    if (!service || !platform || !version) return null
+    const fullPlatform = `${platform} ${version}`
+    return cartItems.find(item => 
+      item.id === service.id && item.platform === fullPlatform
+    )
+  }, [cartItems, service?.id, platform, version])
+
   if (!service) {
     return (
       <section className="section services">
@@ -104,14 +112,6 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
       </section>
     )
   }
-
-  const cartItem = useMemo(() => {
-    if (!platform || !version) return null
-    const fullPlatform = `${platform} ${version}`
-    return cartItems.find(item => 
-      item.id === service.id && item.platform === fullPlatform
-    )
-  }, [cartItems, service.id, platform, version])
 
   const handleAddToCart = () => {
     console.log('handleAddToCart called - user:', user, 'platform:', platform, 'version:', version)
