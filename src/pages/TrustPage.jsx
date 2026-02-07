@@ -47,8 +47,9 @@ export default function TrustPage() {
           </p>
 
           {/* Trust Stats */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1.5rem', marginBottom: '3rem' }}>
+          <div className="trust-stats-grid" style={{ marginBottom: '3rem' }}>
             <div 
+              className="trust-stat-card"
               style={{ 
                 backgroundColor: '#1a2332', 
                 padding: '1.5rem', 
@@ -75,6 +76,7 @@ export default function TrustPage() {
             </div>
 
             <div 
+              className="trust-stat-card"
               style={{ 
                 backgroundColor: '#1a2332', 
                 padding: '1.5rem', 
@@ -101,6 +103,7 @@ export default function TrustPage() {
             </div>
 
             <div 
+              className="trust-stat-card"
               style={{ 
                 backgroundColor: '#1a2332', 
                 padding: '1.5rem', 
@@ -131,6 +134,7 @@ export default function TrustPage() {
             </div>
 
             <div 
+              className="trust-stat-card"
               style={{ 
                 backgroundColor: '#1a2332', 
                 padding: '1.5rem', 
