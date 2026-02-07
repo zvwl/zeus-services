@@ -59,6 +59,10 @@ function App() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  if (import.meta.env.DEV) {
+    console.log('[turnstile] VITE_TURNSTILE_SITEKEY present:', Boolean(import.meta.env.VITE_TURNSTILE_SITEKEY))
+  }
+
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
 
   // Fetch services from database
