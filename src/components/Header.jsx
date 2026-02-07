@@ -24,21 +24,14 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
       <div className="header-content">
         <button className="brand" onClick={() => navigate('/')}> 
           <span className="logo-icon">
-            <picture>
-              <source
-                type="image/webp"
-                srcSet="/zeus-logo-96.webp 96w, /zeus-logo-192.webp 192w"
-                sizes="86px"
-              />
-              <img
-                src="/zeus-logo.png"
-                alt="Zeus Services"
-                width="86"
-                height="86"
-                decoding="async"
-                fetchpriority="high"
-              />
-            </picture>
+            <img
+              src="/zeus-logo-main.webp"
+              alt="Zeus Services"
+              width="86"
+              height="86"
+              decoding="async"
+              fetchpriority="high"
+            />
           </span>
           <span className="brand-name">Zeus Services</span>
         </button>

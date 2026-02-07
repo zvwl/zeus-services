@@ -29,21 +29,6 @@ async function optimizeImage(inputPath, outputPath, width, options = {}) {
 async function main() {
   console.log('Optimizing images...\n');
   
-  // Optimize logo files with proper sizing
-  await optimizeImage(
-    join(publicDir, 'zeus-logo.png'),
-    join(publicDir, 'zeus-logo-96.webp'),
-    96,
-    { quality: 75, effort: 6 }
-  );
-  
-  await optimizeImage(
-    join(publicDir, 'zeus-logo.png'),
-    join(publicDir, 'zeus-logo-192.webp'),
-    192,
-    { quality: 75, effort: 6 }
-  );
-  
   // Optimize package image
   await optimizeImage(
     join(publicDir, 'zeusservicesPackage.png'),

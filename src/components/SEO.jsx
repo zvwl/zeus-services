@@ -9,7 +9,7 @@ export default function SEO({
   title = "zeuservices",
   description = "GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple.",
   keywords = "GTA 5 services, GTA Online, modded accounts, rank boost, gaming services, account boosting",
-  image = "https://zeuservices.com/zeus-logo.png",
+  image = "https://zeuservices.com/zeus-logo-main.webp",
   type = "website"
 }) {
   const location = useLocation();
