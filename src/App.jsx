@@ -59,9 +59,6 @@ function App() {
   const navigate = useNavigate()
   const location = useLocation()
 
-  if (import.meta.env.DEV) {
-    console.log('[turnstile] VITE_TURNSTILE_SITEKEY present:', Boolean(import.meta.env.VITE_TURNSTILE_SITEKEY))
-  }
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
 
@@ -70,7 +67,6 @@ function App() {
     const fetchServices = async () => {
       setServicesLoading(true)
       try {
-        console.log('Fetching services...')
         const { data, error } = await supabase
           .from('services')
           .select('*')
@@ -81,7 +77,6 @@ function App() {
           console.error('Services fetch error:', error.message, error.code)
           throw error
         }
-        console.log('Services fetched:', data?.length, 'services')
         setServices(data || [])
       } catch (err) {
         console.error('Error fetching services:', err)
@@ -125,7 +120,6 @@ function App() {
         setUserCountry(data.country_code)
         setCurrency(data.currency)
       } catch (err) {
-        console.log('Location detection failed, defaulting to GBP:', err)
         setCurrency('GBP')
       }
     }
@@ -170,7 +164,6 @@ function App() {
       if (pendingItem) {
         try {
           const { serviceId, platform: fullPlatform } = JSON.parse(pendingItem)
-          console.log('Found pending item in App - serviceId:', serviceId, 'platform:', fullPlatform)
           // Redirect to the service detail page to trigger auto-add
           navigate(`/service/${serviceId}`)
           // Don't remove from localStorage here - let ServiceDetail handle it
@@ -255,12 +248,6 @@ function App() {
       const sessionUser = sessionData?.session?.user
       const accessToken = sessionData?.session?.access_token
       
-      console.log('Checkout session check:', {
-        hasSessionUser: !!sessionUser,
-        hasAccessToken: !!accessToken,
-        sessionUserId: sessionUser?.id,
-        currentUserId: user?.id
-      })
       
       if (!sessionUser?.id) {
         console.error('Checkout failed: Session expired or invalid')
@@ -364,7 +351,6 @@ function App() {
           return
         }
 
-        console.log('Redirecting to Stripe checkout:', url)
         setCheckoutStatus({ state: 'loading', message: 'Redirecting to Stripe...' })
         
         // Store payment info in case session is lost during redirect

@@ -98,7 +98,6 @@ export const AuthProvider = ({ children }) => {
   // Function to check if user has Discord connected and existing orders, assign role if needed
   const checkDiscordRoleAssignment = async (userId) => {
     try {
-      console.log('🎮 Checking Discord role assignment for user:', userId)
       
       // Check if user has any paid orders
       const { data: orders, error: ordersError } = await supabase
@@ -116,11 +115,9 @@ export const AuthProvider = ({ children }) => {
       const hasPaidOrders = orders && orders.length > 0
       
       if (!hasPaidOrders) {
-        console.log('ℹ️ User has no paid orders, skipping Discord role check')
         return
       }
       
-      console.log('✅ User has paid orders, calling assign-discord-role function')
       
       // Call the edge function to assign Discord role (it will check if Discord is connected)
       const { data, error } = await supabase.functions.invoke('assign-discord-role', {
@@ -135,7 +132,6 @@ export const AuthProvider = ({ children }) => {
         return
       }
       
-      console.log('🎮 Discord role assignment response:', data)
     } catch (err) {
       console.error('Discord role check error:', err)
     }
@@ -146,7 +142,6 @@ export const AuthProvider = ({ children }) => {
     // Supabase with persistSession: true will automatically restore from localStorage
     const checkSession = async () => {
       try {
-        console.log('📋 Starting session restoration...')
         
         // CRITICAL: Give Supabase time to initialize and restore session from localStorage
         // Without this delay, getSession() might run before Supabase reads from storage
@@ -156,11 +151,6 @@ export const AuthProvider = ({ children }) => {
         // By default, Supabase checks localStorage on first getSession() call
         const { data: { session }, error } = await supabase.auth.getSession()
         
-        console.log('✅ Session check complete:', { 
-          hasSession: !!session?.user, 
-          email: session?.user?.email,
-          error: error?.message
-        })
 
         if (error) {
           console.error('❌ Session error:', error)
@@ -198,7 +188,6 @@ export const AuthProvider = ({ children }) => {
           // Fetch display name from customers table
           const displayName = await fetchDisplayName(effectiveUser.id)
           
-          console.log('✅ User session restored:', effectiveUser.email)
           setUser({
             id: effectiveUser.id,
             email: effectiveUser.email,
@@ -212,7 +201,6 @@ export const AuthProvider = ({ children }) => {
           
           setLoading(false)
         } else {
-          console.log('ℹ️ No existing session found')
           setLoading(false)
         }
       } catch (err) {
@@ -234,19 +222,16 @@ export const AuthProvider = ({ children }) => {
     // - Token refreshes (event: TOKEN_REFRESHED)
     // - Session restored from localStorage (event: INITIAL_SESSION)
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      console.log('🔔 Auth state change:', { event: _event, hasSession: !!session?.user, email: session?.user?.email })
       
       // Skip INITIAL_SESSION - checkSession() handles the initial restore
       // We only want to respond to explicit user actions (SIGNED_IN, SIGNED_OUT, TOKEN_REFRESHED)
       if (_event === 'INITIAL_SESSION') {
-        console.log('ℹ️ Initial session event - skipping (handled by checkSession)')
         return
       }
       
       if (session?.user) {
         // User is logged in (SIGNED_IN, TOKEN_REFRESHED, etc)
         try {
-          console.log('🔍 Processing auth event for:', session.user.email)
           
           // Set user state IMMEDIATELY without waiting for display name
           const userObject = {
@@ -256,12 +241,10 @@ export const AuthProvider = ({ children }) => {
             created_at: session.user.created_at
           }
           
-          console.log('✅ Setting user from auth event:', session.user.email, 'User object:', userObject)
           setUser(userObject)
           setEmailVerified(session.user.email_confirmed_at !== null)
           setLoading(false)
           
-          console.log('✅ User state set successfully')
           
           // Fetch display name in background and update if found (non-blocking)
           fetchDisplayName(session.user.id).then(displayName => {
@@ -292,13 +275,11 @@ export const AuthProvider = ({ children }) => {
             name: session.user.email.split('@')[0],
             created_at: session.user.created_at
           }
-          console.log('⚠️ Using fallback user object')
           setUser(fallbackUser)
           setLoading(false)
         }
       } else {
         // User is logged out (SIGNED_OUT)
-        console.log('❌ Auth session cleared')
         setUser(null)
         setEmailVerified(false)
         setIsAdmin(false)
@@ -317,7 +298,6 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'Please complete the CAPTCHA' }
       }
 
-      console.log('Attempting login with email:', email, 'captchaToken:', captchaToken ? 'present' : 'missing')
 
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -529,7 +509,6 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Explicitly sign out - require email verification before allowing access
-      console.log('Signing out user after signup...')
       const { error: signOutError } = await supabase.auth.signOut()
       if (signOutError) {
         console.error('Signout error:', signOutError)
@@ -538,7 +517,6 @@ export const AuthProvider = ({ children }) => {
       setUser(null)
       setEmailVerified(false)
 
-      console.log('Signup successful, user must verify email')
       // Supabase will send confirmation email via SMTP settings
       return { success: true, requiresVerification: true, message: 'Please check your email to verify your account' }
     } catch (err) {
