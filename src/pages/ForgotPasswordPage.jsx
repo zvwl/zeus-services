@@ -1,14 +1,18 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
+import HCaptcha from '@hcaptcha/react-hcaptcha'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 
 export default function ForgotPasswordPage() {
+  const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const captchaRef = useRef(null)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -22,10 +26,26 @@ export default function ForgotPasswordPage() {
       return
     }
 
+    if (!siteKey) {
+      setError('Captcha is unavailable. Please contact support.')
+      setLoading(false)
+      return
+    }
+
+    if (!captchaToken) {
+      setError('Please complete the CAPTCHA')
+      setLoading(false)
+      return
+    }
+
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${import.meta.env.VITE_FRONTEND_URL || window.location.origin}/reset-password`
+        redirectTo: `${import.meta.env.VITE_FRONTEND_URL || window.location.origin}/reset-password`,
+        captchaToken
       })
+
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
 
       if (error) {
         setError(error.message)
@@ -35,6 +55,8 @@ export default function ForgotPasswordPage() {
       }
     } catch (err) {
       setError('An error occurred. Please try again.')
+      captchaRef.current?.resetCaptcha()
+      setCaptchaToken(null)
     }
 
     setLoading(false)
@@ -64,6 +86,24 @@ export default function ForgotPasswordPage() {
                   placeholder="you@example.com"
                   autoComplete="email"
                 />
+              </div>
+
+              <div className="form-group">
+                <label>Security check</label>
+                {siteKey ? (
+                  <HCaptcha
+                    sitekey={siteKey}
+                    onVerify={(token) => {
+                      setCaptchaToken(token)
+                      setError('')
+                    }}
+                    onExpire={() => setCaptchaToken(null)}
+                    onError={() => setCaptchaToken(null)}
+                    ref={captchaRef}
+                  />
+                ) : (
+                  <div className="error-message">Captcha key missing. Please contact support.</div>
+                )}
               </div>
 
               <button type="submit" className="auth-btn" disabled={loading}>
