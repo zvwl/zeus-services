@@ -141,6 +141,8 @@ export default function ProductsPage({ formatPrice }) {
                     src={product.icon || '/zeusservicesPackage.png'} 
                     alt={product.name} 
                     className="card-image" 
+                    width="600"
+                    height="300"
                     onError={(e) => {
                       e.target.src = '/zeusservicesPackage.png'
                     }}
