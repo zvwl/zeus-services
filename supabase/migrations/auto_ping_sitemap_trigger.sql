@@ -49,3 +49,4 @@ CREATE TRIGGER services_sitemap_ping
   AFTER INSERT OR UPDATE OR DELETE ON services
   FOR EACH STATEMENT
   EXECUTE FUNCTION ping_sitemap_on_change();
+
