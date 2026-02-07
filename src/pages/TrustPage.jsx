@@ -192,7 +192,7 @@ export default function TrustPage() {
               Why People Trust zeuservices
             </h2>
 
-            <div className="trust-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+            <div className="trust-grid" style={{ display: 'grid', gap: '1.5rem' }}>
               <div className="trust-card" style={{ borderLeft: '3px solid #fbbf24', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#fbbf24', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   🏆 Proven Track Record
