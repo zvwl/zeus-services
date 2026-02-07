@@ -424,6 +424,11 @@
     width: 100%;
   }
 
+  .item-quantity {
+    width: max-content;
+    align-self: flex-start;
+  }
+
   .item-subtotal {
     text-align: left;
   }
