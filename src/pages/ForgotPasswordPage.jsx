@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import Turnstile from '@marsidev/react-turnstile'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 

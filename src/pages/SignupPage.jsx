@@ -1,7 +1,7 @@
 import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DOMPurify from 'dompurify'
-import Turnstile from '@marsidev/react-turnstile'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'

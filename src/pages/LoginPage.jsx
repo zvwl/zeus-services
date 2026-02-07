@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import Turnstile from '@marsidev/react-turnstile'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import googleLogo from '../assets/google-logo.svg'
 import discordLogo from '../assets/discord-logo.svg'
