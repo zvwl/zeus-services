@@ -275,14 +275,16 @@ export default function TrustPage() {
           </div>
 
           {/* CTA */}
-          <div style={{ backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center' }}>
+          <div className="trust-cta" style={{ backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center' }}>
             <h2 style={{ fontSize: '1.8rem', color: '#fbbf24', marginBottom: '1rem' }}>
               Join Our Growing Community
             </h2>
             <p style={{ color: '#cbd5e1', fontSize: '1.05rem', marginBottom: '1.5rem', lineHeight: '1.8' }}>
               Experience the honest, transparent service backed by 9+ years of experience. Check our real customer reviews and see why people trust us.
             </p>
-            <button 
+            <div className="trust-cta-actions">
+            <button
+              className="trust-cta-btn trust-cta-btn--primary"
               style={{
                 padding: '1rem 2.5rem',
                 backgroundColor: '#fbbf24',
@@ -299,7 +301,8 @@ export default function TrustPage() {
             >
               Get Modded Accounts
             </button>
-            <button 
+            <button
+              className="trust-cta-btn trust-cta-btn--secondary"
               style={{
                 padding: '1rem 2.5rem',
                 backgroundColor: '#334155',
@@ -314,6 +317,7 @@ export default function TrustPage() {
             >
               Boost Your Account
             </button>
+            </div>
           </div>
 
           {/* FAQ */}

@@ -65,7 +65,7 @@ Deno.serve(async (req) => {
         const lastmod = product.updated_at?.split('T')[0] || now
         xml += `  
   <url>
-    <loc>${baseUrl}/products/${product.id}</loc>
+    <loc>${baseUrl}/product/${product.id}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -79,7 +79,7 @@ Deno.serve(async (req) => {
         const lastmod = service.updated_at?.split('T')[0] || now
         xml += `  
   <url>
-    <loc>${baseUrl}/services/${service.id}</loc>
+    <loc>${baseUrl}/service/${service.id}</loc>
     <lastmod>${lastmod}</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>

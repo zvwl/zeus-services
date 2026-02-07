@@ -139,6 +139,17 @@ body {
   min-width: 0;
 }
 
+.trust-cta-actions {
+  display: inline-flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.trust-cta-btn {
+  min-width: 220px;
+}
+
 .section-description {
   max-width: 900px;
   margin: 1.5rem 0 2.5rem;
@@ -500,6 +511,20 @@ body {
   .trust-stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1rem;
+  }
+
+  .trust-cta-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trust-cta-btn {
+    width: 100%;
+  }
+
+  .trust-cta-btn--primary {
+    margin-right: 0 !important;
   }
 }
 
