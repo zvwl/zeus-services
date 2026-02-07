@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import HCaptcha from '@hcaptcha/react-hcaptcha'
+import Turnstile from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import googleLogo from '../assets/google-logo.svg'
 import discordLogo from '../assets/discord-logo.svg'
@@ -11,7 +11,7 @@ export default function LoginPage() {
   // Validate redirect parameter to prevent open redirect attacks
   const rawRedirect = searchParams.get('redirect') || '/services'
   const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/services'
-  const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -23,7 +23,7 @@ export default function LoginPage() {
   const [mfaChallengeId, setMfaChallengeId] = useState(null)
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
-  const captchaRef = useRef(null)
+  const [captchaKey, setCaptchaKey] = useState(0)
   const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
 
@@ -54,8 +54,8 @@ export default function LoginPage() {
     const result = await login(email, password, captchaToken)
     
     // Reset CAPTCHA immediately after login attempt (success or failure)
-    captchaRef.current?.resetCaptcha()
     setCaptchaToken(null)
+    setCaptchaKey((prev) => prev + 1)
     
     if (result.success) {
       // If user came from checkout, go to checkout. Otherwise check for pending cart item.
@@ -163,8 +163,8 @@ export default function LoginPage() {
       if (result.success) {
         setMfaRequired(false)
         setMfaCode('')
-        captchaRef.current?.resetCaptcha()
         setCaptchaToken(null)
+        setCaptchaKey((prev) => prev + 1)
         
         // If user came from checkout, go to checkout. Otherwise check for pending cart item.
         if (redirectTo === '/checkout') {
@@ -260,15 +260,16 @@ export default function LoginPage() {
             <div className="form-group">
               <label>Security check</label>
               {siteKey ? (
-                <HCaptcha
-                  sitekey={siteKey}
-                  onVerify={(token) => {
+                <Turnstile
+                  key={captchaKey}
+                  siteKey={siteKey}
+                  onSuccess={(token) => {
                     setCaptchaToken(token)
                     setError('')
                   }}
                   onExpire={() => setCaptchaToken(null)}
                   onError={() => setCaptchaToken(null)}
-                  ref={captchaRef}
+                  options={{ theme: 'dark' }}
                 />
               ) : (
                 <div className="error-message">Captcha key missing. Please contact support.</div>

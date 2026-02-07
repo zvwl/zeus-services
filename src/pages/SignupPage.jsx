@@ -1,13 +1,13 @@
 import { useRef, useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import DOMPurify from 'dompurify'
-import HCaptcha from '@hcaptcha/react-hcaptcha'
+import Turnstile from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 
 export default function SignupPage() {
-  const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -16,10 +16,10 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [captchaToken, setCaptchaToken] = useState(null)
+  const [captchaKey, setCaptchaKey] = useState(0)
   const [isCheckingName, setIsCheckingName] = useState(false)
   const [nameAvailable, setNameAvailable] = useState(null) // null = not checked, true = available, false = taken
   const [nameError, setNameError] = useState('')
-  const captchaRef = useRef(null)
   const checkNameTimeoutRef = useRef(null)
   const { signup } = useAuth()
   const navigate = useNavigate()
@@ -148,16 +148,16 @@ export default function SignupPage() {
 
     const result = await signup(displayName.trim(), email, password, captchaToken)
     if (result.success) {
-      captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
+      setCaptchaKey((prev) => prev + 1)
       console.log('Signup success, navigating to pending-verification')
       // Redirect to pending verification page
       navigate('/pending-verification', { state: { email } })
     } else {
       console.log('Signup failed:', result.error)
       setError(result.error)
-      captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
+      setCaptchaKey((prev) => prev + 1)
     }
   }
 
@@ -291,15 +291,16 @@ export default function SignupPage() {
             <div className="form-group">
               <label>Security check</label>
               {siteKey ? (
-                <HCaptcha
-                  sitekey={siteKey}
-                  onVerify={(token) => {
+                <Turnstile
+                  key={captchaKey}
+                  siteKey={siteKey}
+                  onSuccess={(token) => {
                     setCaptchaToken(token)
                     setError('')
                   }}
                   onExpire={() => setCaptchaToken(null)}
                   onError={() => setCaptchaToken(null)}
-                  ref={captchaRef}
+                  options={{ theme: 'dark' }}
                 />
               ) : (
                 <div className="error-message">Captcha key missing. Please contact support.</div>

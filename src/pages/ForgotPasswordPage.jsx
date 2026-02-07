@@ -1,18 +1,18 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
-import HCaptcha from '@hcaptcha/react-hcaptcha'
+import Turnstile from '@marsidev/react-turnstile'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 
 export default function ForgotPasswordPage() {
-  const siteKey = import.meta.env.VITE_HCAPTCHA_SITEKEY
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [emailSent, setEmailSent] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
-  const captchaRef = useRef(null)
+  const [captchaKey, setCaptchaKey] = useState(0)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -44,8 +44,8 @@ export default function ForgotPasswordPage() {
         captchaToken
       })
 
-      captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
+      setCaptchaKey((prev) => prev + 1)
 
       if (error) {
         setError(error.message)
@@ -55,8 +55,8 @@ export default function ForgotPasswordPage() {
       }
     } catch (err) {
       setError('An error occurred. Please try again.')
-      captchaRef.current?.resetCaptcha()
       setCaptchaToken(null)
+      setCaptchaKey((prev) => prev + 1)
     }
 
     setLoading(false)
@@ -91,15 +91,16 @@ export default function ForgotPasswordPage() {
               <div className="form-group">
                 <label>Security check</label>
                 {siteKey ? (
-                  <HCaptcha
-                    sitekey={siteKey}
-                    onVerify={(token) => {
+                  <Turnstile
+                    key={captchaKey}
+                    siteKey={siteKey}
+                    onSuccess={(token) => {
                       setCaptchaToken(token)
                       setError('')
                     }}
                     onExpire={() => setCaptchaToken(null)}
                     onError={() => setCaptchaToken(null)}
-                    ref={captchaRef}
+                    options={{ theme: 'dark' }}
                   />
                 ) : (
                   <div className="error-message">Captcha key missing. Please contact support.</div>
