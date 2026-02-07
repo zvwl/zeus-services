@@ -401,14 +401,16 @@ export default function ProcessPage() {
           </div>
 
           {/* CTA */}
-          <div style={{ backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center' }}>
+          <div className="process-cta" style={{ backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center' }}>
             <h2 style={{ fontSize: '1.8rem', color: '#fbbf24', marginBottom: '1.5rem' }}>
               Ready to Get Started?
             </h2>
             <p style={{ color: '#cbd5e1', fontSize: '1.05rem', marginBottom: '1.5rem', lineHeight: '1.8' }}>
               Choose modded accounts for instant progression or boosting for targeted improvements. Either way, the process is simple and safe.
             </p>
-            <button 
+            <div className="process-cta-actions">
+            <button
+              className="process-cta-btn process-cta-btn--primary"
               style={{
                 padding: '1rem 2.5rem',
                 backgroundColor: '#fbbf24',
@@ -424,7 +426,8 @@ export default function ProcessPage() {
             >
               Shop Modded Accounts
             </button>
-            <button 
+            <button
+              className="process-cta-btn process-cta-btn--secondary"
               style={{
                 padding: '1rem 2.5rem',
                 backgroundColor: '#334155',
@@ -439,6 +442,7 @@ export default function ProcessPage() {
             >
               Browse Boosting Services
             </button>
+            </div>
           </div>
         </div>
       </section>

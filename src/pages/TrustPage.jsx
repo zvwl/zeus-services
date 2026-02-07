@@ -188,8 +188,8 @@ export default function TrustPage() {
               Why People Trust zeuservices
             </h2>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-              <div style={{ borderLeft: '3px solid #fbbf24', paddingLeft: '1rem' }}>
+            <div className="trust-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+              <div className="trust-card" style={{ borderLeft: '3px solid #fbbf24', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#fbbf24', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   🏆 Proven Track Record
                 </h4>
@@ -198,7 +198,7 @@ export default function TrustPage() {
                 </p>
               </div>
 
-              <div style={{ borderLeft: '3px solid #60a5fa', paddingLeft: '1rem' }}>
+              <div className="trust-card" style={{ borderLeft: '3px solid #60a5fa', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#60a5fa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   ✓ Honest About Risks
                 </h4>
@@ -207,7 +207,7 @@ export default function TrustPage() {
                 </p>
               </div>
 
-              <div style={{ borderLeft: '3px solid #a78bfa', paddingLeft: '1rem' }}>
+              <div className="trust-card" style={{ borderLeft: '3px solid #a78bfa', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#a78bfa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   💬 Real Professional Support
                 </h4>
@@ -216,7 +216,7 @@ export default function TrustPage() {
                 </p>
               </div>
 
-              <div style={{ borderLeft: '3px solid #34d399', paddingLeft: '1rem' }}>
+              <div className="trust-card" style={{ borderLeft: '3px solid #34d399', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#34d399', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   🔒 Account Security First
                 </h4>
@@ -225,7 +225,7 @@ export default function TrustPage() {
                 </p>
               </div>
 
-              <div style={{ borderLeft: '3px solid #f97316', paddingLeft: '1rem' }}>
+              <div className="trust-card" style={{ borderLeft: '3px solid #f97316', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#f97316', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   🎯 No Hidden Fees
                 </h4>
@@ -234,7 +234,7 @@ export default function TrustPage() {
                 </p>
               </div>
 
-              <div style={{ borderLeft: '3px solid #06b6d4', paddingLeft: '1rem' }}>
+              <div className="trust-card" style={{ borderLeft: '3px solid #06b6d4', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#06b6d4', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   ⚡ Fast Reliable Delivery
                 </h4>
