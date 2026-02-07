@@ -84,7 +84,7 @@
   align-items: center;
   gap: 0.6rem;
   margin-left: 0.5rem;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
 }
 
 /* Right cluster alignment */
@@ -139,6 +139,9 @@
   cursor: pointer;
   position: relative;
   transition: all 0.2s ease;
+  min-width: 56px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .currency-badge:hover {
@@ -262,6 +265,9 @@
   font-size: 1.1rem;
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(251, 191, 36, 0.28);
+  min-width: 150px;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 
 .cart-button:hover {
@@ -365,6 +371,7 @@
     padding: 0.4rem 0.7rem;
     font-size: 0.8rem;
     white-space: nowrap;
+    min-width: 52px;
   }
 
   .discord-link {
@@ -380,6 +387,7 @@
     padding: 0.55rem 0.8rem;
     font-size: 0.95rem;
     white-space: nowrap;
+    min-width: 120px;
   }
 
   .menu-button {

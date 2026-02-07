@@ -28,7 +28,43 @@ async function optimizeImage(inputPath, outputPath, width, options = {}) {
 
 async function main() {
   console.log('Optimizing images...\n');
-  
+
+  // Optimize logo variants for UI and icons
+  await optimizeImage(
+    join(publicDir, 'zeus-logo-main.webp'),
+    join(publicDir, 'zeus-logo-main-16.webp'),
+    16,
+    { quality: 80, effort: 6 }
+  );
+
+  await optimizeImage(
+    join(publicDir, 'zeus-logo-main.webp'),
+    join(publicDir, 'zeus-logo-main-32.webp'),
+    32,
+    { quality: 80, effort: 6 }
+  );
+
+  await optimizeImage(
+    join(publicDir, 'zeus-logo-main.webp'),
+    join(publicDir, 'zeus-logo-main-96.webp'),
+    96,
+    { quality: 80, effort: 6 }
+  );
+
+  await optimizeImage(
+    join(publicDir, 'zeus-logo-main.webp'),
+    join(publicDir, 'zeus-logo-main-192.webp'),
+    192,
+    { quality: 80, effort: 6 }
+  );
+
+  await optimizeImage(
+    join(publicDir, 'zeus-logo-main.webp'),
+    join(publicDir, 'zeus-logo-main-180.webp'),
+    180,
+    { quality: 80, effort: 6 }
+  );
+
   // Optimize package image
   await optimizeImage(
     join(publicDir, 'zeusservicesPackage.png'),
