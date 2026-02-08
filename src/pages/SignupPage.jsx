@@ -106,6 +106,11 @@ export default function SignupPage() {
     }
   }, [displayName])
 
+  const resetCaptcha = () => {
+    setCaptchaToken(null)
+    setCaptchaKey((prev) => prev + 1)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -148,16 +153,14 @@ export default function SignupPage() {
 
     const result = await signup(displayName.trim(), email, password, captchaToken)
     if (result.success) {
-      setCaptchaToken(null)
-      setCaptchaKey((prev) => prev + 1)
+      resetCaptcha()
       console.log('Signup success, navigating to pending-verification')
       // Redirect to pending verification page
       navigate('/pending-verification', { state: { email } })
     } else {
       console.log('Signup failed:', result.error)
       setError(result.error)
-      setCaptchaToken(null)
-      setCaptchaKey((prev) => prev + 1)
+      resetCaptcha()
     }
   }
 
@@ -182,6 +185,7 @@ export default function SignupPage() {
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
                   placeholder="Choose your display name"
+                  autoComplete="username"
                   style={{
                     paddingRight: '2.5rem',
                     borderColor: nameError ? '#ef4444' : nameAvailable === true ? '#10b981' : undefined
@@ -243,6 +247,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                autoComplete="email"
               />
             </div>
 
@@ -255,6 +260,7 @@ export default function SignupPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -276,6 +282,7 @@ export default function SignupPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="new-password"
                 />
                 <button
                   type="button"
@@ -298,9 +305,14 @@ export default function SignupPage() {
                     setCaptchaToken(token)
                     setError('')
                   }}
-                  onExpire={() => setCaptchaToken(null)}
-                  onError={() => setCaptchaToken(null)}
-                  options={{ theme: 'dark' }}
+                  onExpire={resetCaptcha}
+                  onError={resetCaptcha}
+                  options={{
+                    theme: 'dark',
+                    retry: 'auto',
+                    retryInterval: 2000,
+                    refreshExpired: 'auto'
+                  }}
                 />
               ) : (
                 <div className="error-message">Captcha key missing. Please contact support.</div>

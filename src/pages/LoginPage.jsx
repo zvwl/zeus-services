@@ -27,6 +27,11 @@ export default function LoginPage() {
   const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
 
+  const resetCaptcha = () => {
+    setCaptchaToken(null)
+    setCaptchaKey((prev) => prev + 1)
+  }
+
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
@@ -54,8 +59,7 @@ export default function LoginPage() {
     const result = await login(email, password, captchaToken)
     
     // Reset CAPTCHA immediately after login attempt (success or failure)
-    setCaptchaToken(null)
-    setCaptchaKey((prev) => prev + 1)
+    resetCaptcha()
     
     if (result.success) {
       // If user came from checkout, go to checkout. Otherwise check for pending cart item.
@@ -230,6 +234,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
+                autoComplete="email"
               />
             </div>
 
@@ -242,6 +247,7 @@ export default function LoginPage() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••"
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
@@ -267,9 +273,14 @@ export default function LoginPage() {
                     setCaptchaToken(token)
                     setError('')
                   }}
-                  onExpire={() => setCaptchaToken(null)}
-                  onError={() => setCaptchaToken(null)}
-                  options={{ theme: 'dark' }}
+                  onExpire={resetCaptcha}
+                  onError={resetCaptcha}
+                  options={{
+                    theme: 'dark',
+                    retry: 'auto',
+                    retryInterval: 2000,
+                    refreshExpired: 'auto'
+                  }}
                 />
               ) : (
                 <div className="error-message">Captcha key missing. Please contact support.</div>
