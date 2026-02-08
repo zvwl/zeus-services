@@ -47,6 +47,7 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
   }, [services, filterPrice, searchQuery, sortBy])
 
   const showSkeletons = servicesLoading && (!services || services.length === 0)
+  const skeletonCount = 9
 
   return (
     <>
@@ -102,7 +103,7 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
 
       {showSkeletons ? (
         <main className="services-grid services-grid--loading" aria-busy="true" aria-live="polite">
-          {Array.from({ length: 6 }).map((_, index) => (
+          {Array.from({ length: skeletonCount }).map((_, index) => (
             <div className="service-card skeleton" key={`skeleton-${index}`}>
               <div className="skeleton-image" />
               <div className="skeleton-line" />

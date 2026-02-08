@@ -653,6 +653,10 @@ body {
   width: 100%;
 }
 
+.services-grid--loading {
+  min-height: 70vh;
+}
+
 @media (max-width: 768px) {
   .services-grid {
     grid-template-columns: 1fr;
