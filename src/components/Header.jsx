@@ -26,8 +26,8 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
           <span className="logo-icon">
             <img
               src="/zeus-logo-main-96.webp"
-              srcSet="/zeus-logo-main-96.webp 96w, /zeus-logo-main-192.webp 192w"
-              sizes="86px"
+              srcSet="/zeus-logo-main-64.webp 64w, /zeus-logo-main-96.webp 96w, /zeus-logo-main-128.webp 128w, /zeus-logo-main-192.webp 192w"
+              sizes="(max-width: 480px) 56px, (max-width: 768px) 62px, (max-width: 1024px) 120px, 86px"
               alt="Zeus Services"
               width="86"
               height="86"

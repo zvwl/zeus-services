@@ -46,8 +46,22 @@ async function main() {
 
   await optimizeImage(
     join(publicDir, 'zeus-logo-main.webp'),
+    join(publicDir, 'zeus-logo-main-64.webp'),
+    64,
+    { quality: 80, effort: 6 }
+  );
+
+  await optimizeImage(
+    join(publicDir, 'zeus-logo-main.webp'),
     join(publicDir, 'zeus-logo-main-96.webp'),
     96,
+    { quality: 80, effort: 6 }
+  );
+
+  await optimizeImage(
+    join(publicDir, 'zeus-logo-main.webp'),
+    join(publicDir, 'zeus-logo-main-128.webp'),
+    128,
     { quality: 80, effort: 6 }
   );
 
