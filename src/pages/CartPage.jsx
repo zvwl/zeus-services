@@ -389,7 +389,15 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
                 target="_blank"
                 rel="noreferrer"
               >
-                <img src="/discordLogo.png" alt="Discord" className="discord-btn-icon" />
+                <img
+                  src="/discordLogo.png"
+                  alt="Discord"
+                  className="discord-btn-icon"
+                  width="22"
+                  height="22"
+                  loading="lazy"
+                  decoding="async"
+                />
                 Join Discord & Create Ticket
               </a>
             </div>

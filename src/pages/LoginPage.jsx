@@ -215,11 +215,11 @@ export default function LoginPage() {
 
           <div className="oauth-block">
             <button type="button" className="oauth-btn" onClick={handleGoogleSignIn}>
-              <img className="oauth-icon" src={googleLogo} alt="Google logo" />
+              <img className="oauth-icon" src={googleLogo} alt="Google logo" width="24" height="24" loading="lazy" decoding="async" />
               Continue with Google
             </button>
             <button type="button" className="oauth-btn" onClick={handleDiscordSignIn}>
-              <img className="oauth-icon" src={discordLogo} alt="Discord logo" />
+              <img className="oauth-icon" src={discordLogo} alt="Discord logo" width="24" height="24" loading="lazy" decoding="async" />
               Continue with Discord
             </button>
             <div className="oauth-divider"><span>or</span></div>

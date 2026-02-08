@@ -918,6 +918,10 @@ export default function SettingsPage() {
                     <img 
                       src={qrCode} 
                       alt="2FA QR Code" 
+                      width="250"
+                      height="250"
+                      loading="lazy"
+                      decoding="async"
                       style={{ 
                         maxWidth: '250px', 
                         border: '2px solid #fbbf24', 

@@ -177,6 +177,10 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
               src="/zeusservicesPackage.png"
               alt={service.name}
               className="service-detail-image"
+              width="600"
+              height="300"
+              loading="lazy"
+              decoding="async"
             />
           </div>
 
