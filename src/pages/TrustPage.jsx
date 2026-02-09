@@ -200,45 +200,45 @@ export default function TrustPage() {
 
             <div className="trust-grid" style={{ display: 'grid', gap: '1.5rem' }}>
               <div className="trust-card" style={{ borderLeft: '3px solid #fbbf24', paddingLeft: '1rem' }}>
-                <h4 style={{ color: '#fbbf24', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#fbbf24', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   🏆 Proven Track Record
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   9+ years of consistent, reliable service. We've been around longer than 99% of competing services. That longevity speaks to our legitimacy and consistency.
                 </p>
               </div>
 
               <div className="trust-card" style={{ borderLeft: '3px solid #60a5fa', paddingLeft: '1rem' }}>
-                <h4 style={{ color: '#60a5fa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#60a5fa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   ✓ Honest About Risks
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   We don't hide that Rockstar enforces against boosted/modded accounts. We tell you upfront the risks involved. This honesty is why people trust us - we don't overpromise safety.
                 </p>
               </div>
 
               <div className="trust-card" style={{ borderLeft: '3px solid #a78bfa', paddingLeft: '1rem' }}>
-                <h4 style={{ color: '#a78bfa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#a78bfa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   💬 Real Professional Support
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   Responsive Discord support from real people. Not bots. Not automated responses. You get actual help from staff who care about your experience.
                 </p>
               </div>
 
               <div className="trust-card" style={{ borderLeft: '3px solid #34d399', paddingLeft: '1rem' }}>
-                <h4 style={{ color: '#34d399', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#34d399', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   🔒 Account Security First
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   We prioritize your security over everything. Immediate password reset, no retained access, encrypted communications. Your account is always yours.
                 </p>
               </div>
 
               <div className="trust-card" style={{ borderLeft: '3px solid #f97316', paddingLeft: '1rem' }}>
-                <h4 style={{ color: '#f97316', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#f97316', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   🎯 No Hidden Fees
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   Price upfront, no surprises. What you see is what you pay. No extra charges at delivery, no "expedite fees." Full transparency always.
                 </p>

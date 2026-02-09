@@ -21,18 +21,18 @@ export default function SafetyPage() {
           </p>
 
           {/* The Hard Truth */}
-          <div style={{ marginBottom: '3rem', backgroundColor: '#dc2626', padding: '2rem', borderRadius: '8px' }}>
+          <div style={{ marginBottom: '3rem', backgroundColor: '#991b1b', padding: '2rem', borderRadius: '8px' }}>
             <h2 style={{ fontSize: '1.8rem', color: '#fff', marginBottom: '1rem' }}>
               The Reality You Need to Know
             </h2>
-            <div style={{ color: '#f3f4f6', lineHeight: '1.9', fontSize: '1.05rem' }}>
+            <div style={{ color: '#f9fafb', lineHeight: '1.9', fontSize: '1.05rem' }}>
               <p style={{ marginBottom: '1rem' }}>
                 <strong>Modded accounts and account boosting violate Rockstar Games' Terms of Service.</strong>
               </p>
               <p style={{ marginBottom: '1rem' }}>
                 Rockstar actively enforces against this, which means:
               </p>
-              <ul style={{ marginLeft: '1.5rem', color: '#f3f4f6' }}>
+              <ul style={{ marginLeft: '1.5rem', color: '#f9fafb' }}>
                 <li>Your account <strong>CAN be reset, suspended, or permanently banned</strong> at any time</li>
                 <li>Bans happen <strong>without warning</strong> - this is completely <strong>luck-based</strong></li>
                 <li>We <strong>cannot prevent, stop, or reverse</strong> Rockstar's actions - no one can</li>
@@ -113,36 +113,36 @@ export default function SafetyPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               <div>
-                <h4 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   ❌ No Ban Guarantee
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   Despite our best efforts, bans can happen. We cannot prevent them or guarantee your account won't be banned.
                 </p>
               </div>
 
               <div>
-                <h4 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   ❌ No Account Recovery Warranty
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   If banned, we may help, but there's no guarantee your account can be recovered or that Rockstar will lift the ban.
                 </p>
               </div>
 
               <div>
-                <h4 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   ❌ No Refunds for Any Reason
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   All sales are final. Bans, disappointment, change of mind - no refunds. This is in our T&Cs.
                 </p>
               </div>
 
               <div>
-                <h4 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
+                <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
                   ❌ No Control Over Rockstar
-                </h4>
+                </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   We have zero influence on Rockstar's enforcement decisions. Their actions are outside our control completely.
                 </p>

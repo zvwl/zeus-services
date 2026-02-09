@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import './ServiceCard.css'
 
-export default function ServiceCard({ service, formatPrice }) {
+export default function ServiceCard({ service, formatPrice, eagerImage = false }) {
   const navigate = useNavigate()
 
   const handleViewDetails = () => {
@@ -18,11 +18,12 @@ export default function ServiceCard({ service, formatPrice }) {
           className="card-image"
           width="600"
           height="300"
-          loading="lazy"
+          loading={eagerImage ? "eager" : "lazy"}
+          fetchpriority={eagerImage ? "high" : "auto"}
           decoding="async"
         />
       </picture>
-      <h3 className="card-title">{service.name}</h3>
+      <h2 className="card-title">{service.name}</h2>
       <p className="card-description">{service.description}</p>
 
       <div className="card-footer">

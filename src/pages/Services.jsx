@@ -122,11 +122,12 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
         </div>
       ) : (
         <main className="services-grid">
-          {filteredServices.map(service => (
+          {filteredServices.map((service, index) => (
             <ServiceCard
               key={service.id}
               service={service}
               formatPrice={formatPrice}
+              eagerImage={index === 0}
             />
           ))}
         </main>
