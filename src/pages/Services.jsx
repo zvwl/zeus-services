@@ -58,18 +58,6 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
       <h1 className="section-title">GTA Online Services - Choose Your Plan</h1>
       <p className="section-subtitle">GTA Online boosting services for fast, professional progression across all platforms.</p>
 
-      <div className="services-hero">
-        <img
-          src="/zeusservicesPackage.webp"
-          alt="GTA Online services packages"
-          className="services-hero-image"
-          width="1200"
-          height="600"
-          loading="eager"
-          fetchpriority="high"
-          decoding="async"
-        />
-      </div>
       
 
       <div className="filters-container">

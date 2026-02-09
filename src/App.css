@@ -659,21 +659,6 @@ body {
   min-height: 70vh;
 }
 
-.services-hero {
-  display: flex;
-  justify-content: center;
-  margin: 2rem 2rem 0;
-}
-
-.services-hero-image {
-  width: 100%;
-  max-width: 980px;
-  height: auto;
-  border-radius: 16px;
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  box-shadow: 0 12px 32px rgba(251, 191, 36, 0.2);
-  object-fit: cover;
-}
 
 @media (max-width: 768px) {
   .services-grid {
@@ -682,9 +667,6 @@ body {
     padding: 2rem 1rem;
   }
 
-  .services-hero {
-    margin: 1.5rem 1rem 0;
-  }
 }
 
 @media (max-width: 480px) {
@@ -721,9 +703,6 @@ body {
   }
 
 
-  .services-hero {
-    margin: 1.25rem 0.75rem 0;
-  }
   #service-detail .service-detail-image-wrap {
     max-width: 420px;
     margin: 0 auto;
