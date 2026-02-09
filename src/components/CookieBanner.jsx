@@ -21,9 +21,6 @@ function CookieBanner() {
     } catch {
       // ignore storage errors
     }
-    if (value === 'accepted') {
-      window.dispatchEvent(new Event('cookie-consent-accepted'))
-    }
     setVisible(false)
   }
 

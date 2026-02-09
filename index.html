@@ -45,7 +45,7 @@
     <meta name="twitter:description" content="GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple." />
     <meta name="twitter:image" content="https://zeuservices.com/zeus-logo-main.webp" />
     
-    <!-- Google Tag Manager (deferred + consent gated) -->
+    <!-- Google Tag Manager (deferred) -->
     <script>
       window.dataLayer = window.dataLayer || [];
       const loadGTM = () => {
@@ -58,24 +58,10 @@
         document.head.appendChild(gtmScript);
       };
 
-      const scheduleGtmLoad = () => {
-        if ('requestIdleCallback' in window) {
-          requestIdleCallback(loadGTM, { timeout: 3000 });
-        } else {
-          window.addEventListener('load', loadGTM, { once: true });
-        }
-      };
-
-      try {
-        const consent = localStorage.getItem('cookieConsent');
-        if (consent === 'accepted') {
-          scheduleGtmLoad();
-        } else {
-          window.addEventListener('cookie-consent-accepted', scheduleGtmLoad, { once: true });
-        }
-      } catch {
-        // If storage fails, do not load GTM until explicit consent event.
-        window.addEventListener('cookie-consent-accepted', scheduleGtmLoad, { once: true });
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(loadGTM, { timeout: 3000 });
+      } else {
+        window.addEventListener('load', loadGTM);
       }
     </script>
     <!-- End Google Tag Manager -->
