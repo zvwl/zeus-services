@@ -7,6 +7,7 @@ import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute'
+import CookieBanner from './components/CookieBanner'
 import Home from './pages/Home'
 const ServicesPage = lazy(() => import('./pages/Services'))
 const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
@@ -568,6 +569,7 @@ function App() {
         />
       </Routes>
       </Suspense>
+      <CookieBanner />
       <Footer />
       <ScrollToTop />
     </div>

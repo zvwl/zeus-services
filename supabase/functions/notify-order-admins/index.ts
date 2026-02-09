@@ -31,39 +31,62 @@ async function sendAdminEmail(adminEmail: string, orderDetails: any) {
         to: adminEmail,
         subject: `[ADMIN] New Order #${orderDetails.order_id} - ${orderDetails.currency}${orderDetails.total_amount}`,
         html: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #f8fafc; padding: 20px; border-radius: 10px;">
-            <h2 style="color: #1e40af; margin-bottom: 20px;">🎉 New Order Received</h2>
-            
-            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #fbbf24;">
-              <p style="margin: 8px 0;"><strong>Order ID:</strong> ${orderDetails.order_id}</p>
-              <p style="margin: 8px 0;"><strong>Customer:</strong> ${orderDetails.customer_name || orderDetails.customer_email}</p>
-              <p style="margin: 8px 0;"><strong>Email:</strong> <a href="mailto:${orderDetails.customer_email}">${orderDetails.customer_email}</a></p>
-              <p style="margin: 8px 0;"><strong>Amount:</strong> <span style="font-size: 1.3em; color: #fbbf24; font-weight: bold;">${orderDetails.currency}${orderDetails.total_amount}</span></p>
-              <p style="margin: 8px 0;"><strong>Payment Method:</strong> ${orderDetails.payment_method === 'stripe_checkout' ? '💳 Stripe' : orderDetails.payment_method}</p>
-              <p style="margin: 8px 0;"><strong>Date:</strong> ${new Date(orderDetails.created_at).toLocaleString()}</p>
+          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 20px; text-align: center; color: white;">
+              <h1 style="margin: 0; font-size: 26px; letter-spacing: 0.5px;">Zeus Services</h1>
+              <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">New Order Received</p>
             </div>
 
-            <div style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-              <h3 style="color: #1e40af; margin-top: 0;">Items Ordered:</h3>
-              <ul style="margin: 10px 0; padding-left: 20px;">
-                ${orderDetails.items.map((item: any) => `
-                  <li style="margin: 8px 0;">
-                    ${item.icon || '📦'} <strong>${item.name}</strong> (${item.platform}) 
-                    <br/><span style="color: #666; font-size: 0.9em;">Qty: ${item.quantity} | Price: ${item.currency || 'GBP'}${item.price}</span>
-                  </li>
-                `).join('')}
-              </ul>
-            </div>
+            <div style="padding: 32px 20px; max-width: 640px; margin: 0 auto; background: #f8fafc;">
+              <p style="font-size: 16px; margin: 0 0 12px;">Hello Admin,</p>
+              <p style="font-size: 15px; color: #555; margin: 0 0 16px;">A new order has been placed. Details are below.</p>
 
-            <div style="text-align: center; padding: 20px; background: #e0f2fe; border-radius: 8px;">
-              <a href="https://zeuservices.com/admin/orders" style="display: inline-block; background: #1e40af; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold;">
-                View in Admin Panel
-              </a>
-            </div>
+              <div style="background: white; border-left: 4px solid #fbbf24; padding: 16px; border-radius: 6px; margin: 20px 0;">
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Order ID:</strong> ${orderDetails.order_id}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Customer:</strong> ${orderDetails.customer_name || orderDetails.customer_email}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> <a href="mailto:${orderDetails.customer_email}" style="color: #0066cc; text-decoration: none;">${orderDetails.customer_email}</a></p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Amount:</strong> ${orderDetails.currency}${orderDetails.total_amount}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Payment Method:</strong> ${orderDetails.payment_method === 'stripe_checkout' ? 'Stripe' : orderDetails.payment_method}</p>
+                <p style="margin: 4px 0; font-size: 14px;"><strong>Date:</strong> ${new Date(orderDetails.created_at).toLocaleString()}</p>
+              </div>
 
-            <p style="color: #666; font-size: 0.9em; text-align: center; margin-top: 20px;">
-              This is an automated notification. Do not reply to this email.
-            </p>
+              <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
+                <p style="margin: 0 0 10px; font-size: 14px;"><strong>Items Ordered</strong></p>
+                <ul style="margin: 0; padding-left: 18px; font-size: 14px; color: #555;">
+                  ${orderDetails.items.map((item: any) => `
+                    <li style="margin: 8px 0;">
+                      ${item.icon || '📦'} <strong>${item.name}</strong> (${item.platform})
+                      <br/><span style="color: #666; font-size: 13px;">Qty: ${item.quantity} | Price: ${(() => {
+                        const rawPrice = item?.price_converted ?? item?.price ?? item?.price_usd ?? item?.unit_price ?? null;
+                        const numeric = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
+                        if (!Number.isFinite(numeric)) return "N/A";
+                        const currency = item?.currency || orderDetails.currency || "GBP";
+                        return `${currency}${numeric.toFixed(2)}`;
+                      })()}</span>
+                    </li>
+                  `).join('')}
+                </ul>
+              </div>
+
+              <div style="text-align: center; margin: 28px 0;">
+                <a href="https://zeuservices.com/admin/orders" style="display: inline-block; background-color: #FFD700; color: #000; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
+                  View in Admin Panel
+                </a>
+              </div>
+
+              <p style="font-size: 12px; color: #999; text-align: center; margin: 0 0 18px;">
+                This is an automated notification. Do not reply to this email.
+              </p>
+
+              <div style="text-align: center; padding-top: 18px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #999;">
+                <p style="margin: 12px 0; font-size: 14px; color: #555;"><strong>Need help?</strong> Join our Discord for instant support:</p>
+                <p style="margin: 12px 0;">
+                  <a href="http://discord.gg/zeusservices" style="display: inline-block; background-color: #5865f2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Join Discord Server</a>
+                </p>
+                <p style="margin: 6px 0;">2026 Zeus Services. All rights reserved.</p>
+                <p style="margin: 6px 0;"><a href="https://zeuservices.com" style="color: #0066cc; text-decoration: none;">Visit Our Website</a></p>
+              </div>
+            </div>
           </div>
         `
       })
