@@ -21,37 +21,37 @@ export default function ProcessPage() {
           </p>
 
           {/* CRITICAL REQUIREMENTS */}
-          <div style={{ marginBottom: '4rem', backgroundColor: '#dc2626', padding: '2rem', borderRadius: '8px' }}>
+          <div style={{ marginBottom: '4rem', backgroundColor: '#991b1b', padding: '2rem', borderRadius: '8px' }}>
             <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '1.5rem' }}>
               ⚠️ MANDATORY Requirements Before You Order
             </h2>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', color: '#f3f4f6' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', color: '#f9fafb' }}>
               <div>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🎫 Discord Ticket Required</h4>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🎫 Discord Ticket Required</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   After purchase, you MUST open a Discord ticket to begin service. Services will NOT start without an active Discord ticket. This is how we communicate with you.
                 </p>
               </div>
               <div>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🕐 Service Hours: 6 PM - 1 AM UK Time</h4>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🕐 Service Hours: 6 PM - 1 AM UK Time</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   We operate ONLY during these hours. Boosting/account delivery happens within this window. Orders placed outside these hours start processing when service resumes.
                 </p>
               </div>
               <div>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>⏰ 24-Hour Unresponsive Rule</h4>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>⏰ 24-Hour Unresponsive Rule</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   If you don't respond to Discord messages for 24+ hours, your order is CANCELLED. No refund. You must stay responsive during service.
                 </p>
               </div>
               <div>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🔐 2FA Codes Required</h4>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🔐 2FA Codes Required</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   For boosting, you must provide 2FA codes when requested. You'll need to be available to verify logins. This is for YOUR account security.
                 </p>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <h4 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>💰 ALL SALES FINAL - NO REFUNDS</h4>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>💰 ALL SALES FINAL - NO REFUNDS</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   Once purchase is made, there are NO refunds for ANY reason. This includes account bans, service delays, cancellations (due to unresponsiveness), or change of mind. YOU ACCEPT THIS RISK.
                 </p>
