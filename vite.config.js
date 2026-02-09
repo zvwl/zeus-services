@@ -85,8 +85,8 @@ export default defineConfig(({ mode }) => {
         tryCatchDeoptimization: false
       }
     },
-    // Target modern browsers for smaller builds
-    target: 'es2020',
+    // Target older Chromium for prerendering compatibility (react-snap)
+    target: 'es2018',
     // Reduce unused CSS and JS
     chunkSizeWarningLimit: 500,
     // Minify CSS and JS aggressively

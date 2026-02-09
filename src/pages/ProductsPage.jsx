@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
+import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 import '../components/ServiceCard.css'
 
@@ -18,6 +19,11 @@ export default function ProductsPage({ formatPrice }) {
   // Fetch products from database
   useEffect(() => {
     const fetchProducts = async () => {
+      if (isPrerender()) {
+        setProducts([])
+        setLoading(false)
+        return
+      }
       setLoading(true)
       try {
         const { data, error } = await supabase

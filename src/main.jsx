@@ -6,6 +6,7 @@ import { SpeedInsights } from '@vercel/speed-insights/react'
 import { AuthProvider } from './contexts/AuthContext'
 import './index.css'
 import App from './App.jsx'
+import { isPrerender } from './utils/isPrerender'
 
 // Clear outdated service workers and caches on load
 // This ensures users get the latest version of the app
@@ -31,8 +32,8 @@ createRoot(document.getElementById('root')).render(
     <BrowserRouter>
       <AuthProvider>
         <App />
-        <Analytics />
-        <SpeedInsights />
+        {!isPrerender() && <Analytics />}
+        {!isPrerender() && <SpeedInsights />}
       </AuthProvider>
     </BrowserRouter>
   </StrictMode>,

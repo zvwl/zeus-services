@@ -3,6 +3,7 @@ import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import './App.css'
 import { supabase } from './supabaseClient'
+import { isPrerender } from './utils/isPrerender'
 import Header from './components/Header'
 import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
@@ -66,6 +67,11 @@ function App() {
   // Fetch services from database
   useEffect(() => {
     const fetchServices = async () => {
+      if (isPrerender()) {
+        setServices([])
+        setServicesLoading(false)
+        return
+      }
       setServicesLoading(true)
       try {
         const { data, error } = await supabase
@@ -115,6 +121,7 @@ function App() {
   // Detect user's country and set currency accordingly via backend
   useEffect(() => {
     const detectLocation = async () => {
+      if (isPrerender()) return
       try {
         const response = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/detect-location')
         const data = await response.json()

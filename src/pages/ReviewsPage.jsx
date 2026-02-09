@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
+import { isPrerender } from '../utils/isPrerender'
 import './ReviewsPage.css'
 
 export default function ReviewsPage() {
@@ -13,6 +14,11 @@ export default function ReviewsPage() {
   const [sortBy, setSortBy] = useState('newest')
 
   useEffect(() => {
+    if (isPrerender()) {
+      setReviews([])
+      setLoading(false)
+      return
+    }
     fetchReviews()
   }, [])
 

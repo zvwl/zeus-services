@@ -2,12 +2,18 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
+import { isPrerender } from '../utils/isPrerender'
 
 export default function TrustPage() {
   const [reviewCount, setReviewCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (isPrerender()) {
+      setReviewCount(0)
+      setLoading(false)
+      return
+    }
     fetchReviewCount()
   }, [])
 
