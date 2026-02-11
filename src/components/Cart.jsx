@@ -88,15 +88,15 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
         <div className="order-note">
           <div className="order-note-header">
             <h3>Order notes</h3>
-            <p>Share account email, login details, or specific instructions for this order.</p>
+            <p>Share account email, login details, or specific instructions for this order. Login details are encrypted and handled securely.</p>
           </div>
           <textarea
             value={orderNote}
             onChange={(e) => onOrderNoteChange?.(e.target.value)}
-            placeholder="Example: Account email is user@example.com, please add cars to Slot 1 and keep outfits #3 and #4."
+            placeholder="Example: Account email is user@example.com, password is ********, please add cars to Slot 1 and keep outfits #3 and #4."
             maxLength={1000}
           />
-          <div className="order-note-hint">Up to 1000 characters. Sent securely with your order.</div>
+          <div className="order-note-hint">Up to 1000 characters. Login details are encrypted and sent securely with your order.</div>
         </div>
 
           {isDevUser && (
@@ -224,15 +224,15 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
         <div className="order-note">
           <div className="order-note-header">
             <h3>Order notes</h3>
-            <p>Share account email, login details, or specific instructions for this order.</p>
+              <p>Share account email, login details, or specific instructions for this order. Login details are encrypted and handled securely.</p>
           </div>
           <textarea
             value={orderNote}
             onChange={(e) => onOrderNoteChange?.(e.target.value)}
-            placeholder="Example: Account email is user@example.com, please add cars to Slot 1 and keep outfits #3 and #4."
+              placeholder="Example: Account email is user@example.com, password is ********, please add cars to Slot 1 and keep outfits #3 and #4."
             maxLength={1000}
           />
-          <div className="order-note-hint">Up to 1000 characters. Sent securely with your order.</div>
+            <div className="order-note-hint">Up to 1000 characters. Login details are encrypted and sent securely with your order.</div>
         </div>
 
           {isDevUser && (
