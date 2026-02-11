@@ -9,6 +9,7 @@ import Footer from './components/Footer'
 import ScrollToTop from './components/ScrollToTop'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import CookieBanner from './components/CookieBanner'
+import StatusBanner from './components/StatusBanner'
 import Home from './pages/Home'
 const ServicesPage = lazy(() => import('./pages/Services'))
 const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
@@ -379,6 +380,7 @@ function App() {
 
   return (
     <div className="app">
+      <StatusBanner />
       <Header
         cartCount={cartItems.length}
         user={user}
