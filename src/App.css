@@ -30,6 +30,13 @@ body {
   min-height: 100vh;
 }
 
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 .app {
   width: 100%;
   min-height: 100vh;
@@ -87,6 +94,33 @@ body {
 .ghost-btn:hover {
   transform: translateY(-2px);
   background: rgba(255, 255, 255, 0.2);
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .primary-btn:hover,
+  .ghost-btn:hover,
+  .add-to-cart-btn:hover,
+  .qty-btn:hover,
+  .checkout-btn:hover,
+  .remove-btn:hover,
+  .payment-option:hover,
+  .discord-btn:hover,
+  .tab-btn:hover,
+  .auth-btn:hover,
+  .oauth-btn:hover,
+  .btn-submit:hover,
+  .btn-cancel:hover,
+  .btn-back:hover,
+  .btn-review:hover,
+  .save-btn:hover,
+  .danger-btn:hover,
+  .secondary-btn:hover,
+  .primary-btn:hover,
+  .process-cta-btn:hover,
+  .trust-cta-btn:hover {
+    transform: none !important;
+    box-shadow: none !important;
+  }
 }
 
 .eyebrow {
