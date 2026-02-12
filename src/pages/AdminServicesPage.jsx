@@ -41,6 +41,26 @@ export default function AdminServicesPage() {
     fetchServices()
   }, [isAdmin, authLoading, user, navigate])
 
+  // Realtime subscription for services
+  useEffect(() => {
+    if (!isAdmin) return
+
+    const channel = supabase
+      .channel('admin_services')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'services' },
+        () => {
+          fetchServices()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [isAdmin])
+
   const fetchServices = async () => {
     setLoading(true)
     setError('')

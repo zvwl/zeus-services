@@ -189,6 +189,26 @@ export default function AdminOrdersPage() {
     }
   }, [isAdmin, fetchOrders])
 
+  // Realtime subscription for orders
+  useEffect(() => {
+    if (!isAdmin) return
+
+    const channel = supabase
+      .channel('admin_orders')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'orders' },
+        () => {
+          fetchOrders()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [isAdmin, fetchOrders])
+
   // Debounce search input to reduce requests while typing
   useEffect(() => {
     const t = setTimeout(() => {

@@ -42,6 +42,26 @@ export default function AdminProductsPage() {
     fetchProducts()
   }, [isAdmin, authLoading, user, navigate])
 
+  // Realtime subscription for products
+  useEffect(() => {
+    if (!isAdmin) return
+
+    const channel = supabase
+      .channel('admin_products')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          fetchProducts()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [isAdmin])
+
   const fetchProducts = async () => {
     setLoading(true)
     setError('')

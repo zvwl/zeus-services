@@ -86,6 +86,26 @@ export default function AdminReviewsPage() {
     }
   }, [isAdmin, statusFilter])
 
+  // Realtime subscription for reviews
+  useEffect(() => {
+    if (!isAdmin) return
+
+    const channel = supabase
+      .channel('admin_reviews')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'reviews' },
+        () => {
+          fetchReviews()
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [isAdmin])
+
   const updateReviewStatus = async (reviewId, newStatus) => {
     setUpdatingReviewId(reviewId)
     try {
