@@ -389,7 +389,7 @@ function App() {
         onCurrencyChange={setCurrency}
       />
 
-      <Suspense fallback={<LoadingSpinner fullScreen message="Loading page..." />}>
+      <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
         <Routes>
         <Route
           path="/"
