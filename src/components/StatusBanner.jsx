@@ -8,6 +8,7 @@ const STATUS_LABELS = {
   warning: 'Notice',
   outage: 'Outage',
   success: 'Update',
+  maintenance: 'Maintenance',
 }
 
 export default function StatusBanner() {
