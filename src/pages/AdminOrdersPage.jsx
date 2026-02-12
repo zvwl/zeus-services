@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
+import LoadingSpinner from '../components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
 export default function AdminOrdersPage() {
@@ -339,7 +340,7 @@ export default function AdminOrdersPage() {
     return (
       <section className="section admin-section">
         <div className="admin-container">
-          <div className="loading">Loading...</div>
+          <LoadingSpinner message="Loading orders..." />
         </div>
       </section>
     )

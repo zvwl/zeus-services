@@ -10,6 +10,7 @@ import ScrollToTop from './components/ScrollToTop'
 import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import CookieBanner from './components/CookieBanner'
 import StatusBanner from './components/StatusBanner'
+import LoadingSpinner from './components/LoadingSpinner'
 import Home from './pages/Home'
 const ServicesPage = lazy(() => import('./pages/Services'))
 const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
@@ -388,7 +389,7 @@ function App() {
         onCurrencyChange={setCurrency}
       />
 
-      <Suspense fallback={<div className="page-loading" aria-busy="true">Loading...</div>}>
+      <Suspense fallback={<LoadingSpinner fullScreen message="Loading page..." />}>
         <Routes>
         <Route
           path="/"

@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import ProtectedAdminRoute from '../components/ProtectedAdminRoute'
+import LoadingSpinner from '../components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
 export default function AdminProductsPage() {
@@ -218,7 +219,7 @@ export default function AdminProductsPage() {
   if (authLoading) {
     return (
       <div className="admin-orders-container">
-        <div className="loading">Verifying admin access...</div>
+        <LoadingSpinner message="Verifying admin access..." />
       </div>
     )
   }
@@ -519,7 +520,7 @@ export default function AdminProductsPage() {
         </div>
       )}
 
-      {loading && <div className="loading">Loading products...</div>}
+      {loading && <LoadingSpinner message="Loading products..." />}
 
       {!loading && products.length === 0 && (
         <div style={{ textAlign: 'center', color: '#9ca3af', padding: '2rem' }}>
