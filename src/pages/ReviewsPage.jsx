@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { isPrerender } from '../utils/isPrerender'
 import './ReviewsPage.css'
 
@@ -149,7 +150,7 @@ export default function ReviewsPage() {
     return (
       <section className="section reviews-section">
         <div className="reviews-container">
-          <div className="loading-message">Loading reviews...</div>
+          <LoadingSpinner message="Loading reviews..." />
         </div>
       </section>
     )

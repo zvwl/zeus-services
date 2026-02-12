@@ -4,6 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import CartSummary from '../components/CartSummary'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
+import LoadingSpinner from '../components/LoadingSpinner'
 import '../App.css'
 import './CartPage.css'
 
@@ -337,7 +338,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       return (
         <section className="section services" id="cart">
           <div className="order-summary-container">
-            <div className="loading-message">Loading order details...</div>
+            <LoadingSpinner message="Loading order details..." />
           </div>
         </section>
       )

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
+import LoadingSpinner from '../components/LoadingSpinner'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 import '../components/ServiceCard.css'
@@ -85,9 +86,7 @@ export default function ProductsPage({ formatPrice }) {
       
 
       {loading ? (
-        <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>
-          Loading products...
-        </div>
+        <LoadingSpinner message="Loading products..." />
       ) : (
         <>
           <div className="filters-container">

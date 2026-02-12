@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
+import LoadingSpinner from '../components/LoadingSpinner'
 import './ReviewForm.css'
 
 export default function ReviewForm() {
@@ -146,7 +147,7 @@ export default function ReviewForm() {
     return (
       <section className="section review-form-section">
         <div className="review-form-container">
-          <div className="loading-message">Loading...</div>
+          <LoadingSpinner message="Loading order details..." />
         </div>
       </section>
     )

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import LoadingSpinner from '../components/LoadingSpinner'
 import './CartPage.css'
 
 export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
@@ -39,7 +40,7 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
     return (
       <section className="section services" id="checkout">
         <div className="order-summary-container">
-          <div className="loading-message">Loading...</div>
+          <LoadingSpinner message="Verifying authentication..." />
         </div>
       </section>
     )

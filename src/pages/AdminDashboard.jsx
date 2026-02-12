@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
+import LoadingSpinner from '../components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
 export default function AdminDashboard() {
@@ -109,7 +110,7 @@ export default function AdminDashboard() {
   if (authLoading) {
     return (
       <div className="admin-orders-container">
-        <div className="loading">Verifying admin access...</div>
+        <LoadingSpinner message="Verifying admin access..." />
       </div>
     )
   }
@@ -133,7 +134,7 @@ export default function AdminDashboard() {
   if (loading) {
     return (
       <div className="admin-orders-container">
-        <div className="loading">Loading dashboard...</div>
+        <LoadingSpinner message="Loading dashboard..." />
       </div>
     )
   }

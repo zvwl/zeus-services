@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
+import LoadingSpinner from '../components/LoadingSpinner'
 import './OrdersPage.css'
 
 export default function OrdersPage() {
@@ -153,7 +154,7 @@ export default function OrdersPage() {
     return (
       <section className="section orders-section">
         <div className="orders-container">
-          <div className="loading-message">Loading your orders...</div>
+          <LoadingSpinner message="Loading your orders..." />
         </div>
       </section>
     )
