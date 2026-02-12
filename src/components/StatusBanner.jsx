@@ -11,7 +11,8 @@ const STATUS_LABELS = {
 }
 
 export default function StatusBanner() {
-  const [announcement, setAnnouncement] = useState(null)
+  const [announcements, setAnnouncements] = useState([])
+  const [activeIndex, setActiveIndex] = useState(0)
 
   const fetchLatest = useCallback(async () => {
     try {
@@ -20,21 +21,33 @@ export default function StatusBanner() {
         .select('id, message, status, active')
         .eq('active', true)
         .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle()
 
       if (error) {
         console.error('Status banner fetch error:', error.message, error.code)
-        setAnnouncement(null)
+        setAnnouncements([])
         return
       }
 
-      setAnnouncement(data || null)
+      const nextAnnouncements = data || []
+      setAnnouncements((prev) => {
+        const currentId = prev[activeIndex]?.id
+        if (!nextAnnouncements.length) {
+          setActiveIndex(0)
+          return []
+        }
+
+        const nextIndex = currentId
+          ? nextAnnouncements.findIndex((item) => item.id === currentId)
+          : -1
+
+        setActiveIndex(nextIndex >= 0 ? nextIndex : 0)
+        return nextAnnouncements
+      })
     } catch (err) {
       console.error('Status banner fetch failed:', err)
-      setAnnouncement(null)
+      setAnnouncements([])
     }
-  }, [])
+  }, [activeIndex])
 
   useEffect(() => {
     if (isPrerender()) return
@@ -57,6 +70,18 @@ export default function StatusBanner() {
     }
   }, [fetchLatest])
 
+  useEffect(() => {
+    if (announcements.length <= 1) return
+
+    const intervalId = setInterval(() => {
+      setActiveIndex((index) => (index + 1) % announcements.length)
+    }, 6000)
+
+    return () => clearInterval(intervalId)
+  }, [announcements.length])
+
+  const announcement = announcements[activeIndex]
+
   if (!announcement?.message) return null
 
   const status = announcement.status || 'info'
@@ -64,8 +89,10 @@ export default function StatusBanner() {
 
   return (
     <div className={`status-banner status-banner--${status}`} role="status" aria-live="polite">
-      <span className="status-pill">{label}</span>
-      <span className="status-message">{announcement.message}</span>
+      <div className="status-banner__content" key={announcement.id}>
+        <span className="status-pill">{label}</span>
+        <span className="status-message">{announcement.message}</span>
+      </div>
     </div>
   )
 }
