@@ -605,6 +605,27 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  const resendVerificationEmailForEmail = async (email) => {
+    try {
+      if (!email) {
+        return { success: false, error: 'Please enter your email first' }
+      }
+
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email
+      })
+
+      if (error) {
+        return { success: false, error: error.message }
+      }
+
+      return { success: true, message: 'Verification email sent! Check your inbox.' }
+    } catch (err) {
+      return { success: false, error: 'Failed to resend verification email' }
+    }
+  }
+
   const updateProfile = async ({ name }) => {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser()
@@ -659,6 +680,7 @@ export const AuthProvider = ({ children }) => {
       isAdmin,
       isRecoveringFromRedirect,
       resendVerificationEmail,
+      resendVerificationEmailForEmail,
       updateProfile,
       changePassword,
       verifyMfaChallenge,
