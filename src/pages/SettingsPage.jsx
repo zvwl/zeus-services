@@ -836,6 +836,7 @@ export default function SettingsPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder="Enter new password"
+                  autoComplete="new-password"
                 />
                 <small>Must be at least 6 characters</small>
               </div>
@@ -848,6 +849,7 @@ export default function SettingsPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Confirm new password"
+                  autoComplete="new-password"
                 />
               </div>
 
