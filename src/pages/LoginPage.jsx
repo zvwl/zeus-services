@@ -24,9 +24,7 @@ export default function LoginPage() {
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
   const [captchaKey, setCaptchaKey] = useState(0)
-  const [resendStatus, setResendStatus] = useState('')
-  const [isResending, setIsResending] = useState(false)
-  const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge, resendVerificationEmailForEmail } = useAuth()
+  const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge } = useAuth()
   const navigate = useNavigate()
 
   const resetCaptcha = () => {
@@ -38,7 +36,6 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setMfaError('')
-    setResendStatus('')
     setMfaRequired(false)
     setMfaFactorId(null)
     setMfaChallengeId(null)
@@ -205,21 +202,6 @@ export default function LoginPage() {
     }
   }
 
-  const handleResendVerification = async () => {
-    setResendStatus('')
-    setIsResending(true)
-    try {
-      const result = await resendVerificationEmailForEmail(email.trim())
-      if (result.success) {
-        setResendStatus(result.message)
-      } else {
-        setResendStatus(result.error)
-      }
-    } finally {
-      setIsResending(false)
-    }
-  }
-
   return (
     <section className="section auth-section">
       <div className="auth-container">
@@ -230,21 +212,6 @@ export default function LoginPage() {
           </div>
 
           {error && <div className="error-message">{error}</div>}
-          {resendStatus && <div className="resend-message">{resendStatus}</div>}
-          {!mfaRequired && (
-            <div className="resend-block">
-              <p>Didn’t get the verification email?</p>
-              <button
-                type="button"
-                className="resend-btn"
-                onClick={handleResendVerification}
-                disabled={isResending}
-              >
-                {isResending ? 'Sending...' : 'Resend verification email'}
-              </button>
-            </div>
-          )}
-
           <div className="oauth-block">
             <button type="button" className="oauth-btn" onClick={handleGoogleSignIn}>
               <img className="oauth-icon" src={googleLogo} alt="Google logo" width="24" height="24" loading="lazy" decoding="async" />

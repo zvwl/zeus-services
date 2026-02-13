@@ -153,6 +153,28 @@
   transform: none;
 }
 
+.resend-field {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.resend-input {
+  flex: 1;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: rgba(10, 14, 26, 0.6);
+  color: #f8fafc;
+  font-size: 0.95rem;
+}
+
+.resend-input:focus {
+  outline: none;
+  border-color: rgba(251, 191, 36, 0.7);
+  box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

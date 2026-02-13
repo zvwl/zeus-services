@@ -1,12 +1,17 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
+import { useAuth } from '../contexts/AuthContext'
 import './AuthPages.css'
 
 export default function VerifyEmailPage() {
   const [status, setStatus] = useState('verifying')
   const [message, setMessage] = useState('Verifying your email...')
+  const [resendEmail, setResendEmail] = useState('')
+  const [resendStatus, setResendStatus] = useState('')
+  const [isResending, setIsResending] = useState(false)
   const navigate = useNavigate()
+  const { resendVerificationEmailForEmail } = useAuth()
 
   useEffect(() => {
     // Handle the email verification callback
@@ -149,6 +154,21 @@ export default function VerifyEmailPage() {
     handleEmailVerification()
   }, [navigate])
 
+  const handleResendVerification = async () => {
+    setResendStatus('')
+    setIsResending(true)
+    try {
+      const result = await resendVerificationEmailForEmail(resendEmail.trim())
+      if (result.success) {
+        setResendStatus(result.message)
+      } else {
+        setResendStatus(result.error)
+      }
+    } finally {
+      setIsResending(false)
+    }
+  }
+
   return (
     <section className="section auth-section">
       <div className="auth-container">
@@ -169,20 +189,44 @@ export default function VerifyEmailPage() {
           )}
 
           {status === 'error' && (
-            <div className="auth-actions">
-              <button 
-                onClick={() => navigate('/login')}
-                className="primary-btn"
-              >
-                Go to Login
-              </button>
-              <button 
-                onClick={() => navigate('/signup')}
-                className="secondary-btn"
-              >
-                Sign Up Again
-              </button>
-            </div>
+            <>
+              <div className="auth-actions">
+                <button 
+                  onClick={() => navigate('/login')}
+                  className="primary-btn"
+                >
+                  Go to Login
+                </button>
+                <button 
+                  onClick={() => navigate('/signup')}
+                  className="secondary-btn"
+                >
+                  Sign Up Again
+                </button>
+              </div>
+              {resendStatus && <div className="resend-message">{resendStatus}</div>}
+              <div className="resend-block">
+                <p>Resend verification email</p>
+                <div className="resend-field">
+                  <input
+                    type="email"
+                    value={resendEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    className="resend-input"
+                  />
+                  <button
+                    type="button"
+                    className="resend-btn"
+                    onClick={handleResendVerification}
+                    disabled={isResending}
+                  >
+                    {isResending ? 'Sending...' : 'Resend'}
+                  </button>
+                </div>
+              </div>
+            </>
           )}
         </div>
       </div>
