@@ -159,6 +159,25 @@ export default function ReviewsPage() {
   return (
     <>
       <SEO {...SEO_CONFIGS.reviews} />
+      
+      {/* Aggregate Rating Schema for SEO */}
+      {reviews.length > 0 && (
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "name": "ZeuServices",
+            "aggregateRating": {
+              "@type": "AggregateRating",
+              "ratingValue": averageRating,
+              "bestRating": "5",
+              "worstRating": "1",
+              "ratingCount": reviews.length
+            }
+          })}
+        </script>
+      )}
+      
       <section className="section reviews-section">
         <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'Reviews', path: '/reviews' }]} />
         <div className="reviews-container">

@@ -9,7 +9,7 @@
   <!-- Home Page -->
   <url>
     <loc>https://zeuservices.com/</loc>
-    <lastmod>2026-02-05</lastmod>
+    <lastmod>2026-02-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
@@ -17,21 +17,21 @@
   <!-- Main Navigation Pages - High Priority -->
   <url>
     <loc>https://zeuservices.com/services</loc>
-    <lastmod>2026-02-05</lastmod>
+    <lastmod>2026-02-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   
   <url>
     <loc>https://zeuservices.com/products</loc>
-    <lastmod>2026-02-05</lastmod>
+    <lastmod>2026-02-13</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.95</priority>
   </url>
   
   <url>
     <loc>https://zeuservices.com/reviews</loc>
-    <lastmod>2026-02-05</lastmod>
+    <lastmod>2026-02-13</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.85</priority>
   </url>
@@ -39,14 +39,14 @@
   <!-- Information & Trust Pages - High Priority -->
   <url>
     <loc>https://zeuservices.com/safety</loc>
-    <lastmod>2026-02-05</lastmod>
+    <lastmod>2026-02-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
 
   <url>
     <loc>https://zeuservices.com/trust</loc>
-    <lastmod>2026-02-05</lastmod>
+    <lastmod>2026-02-13</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>

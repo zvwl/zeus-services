@@ -163,6 +163,32 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
 
   return (
     <section className="section services" id="service-detail">
+      {/* Product Schema for SEO */}
+      <script type="application/ld+json">
+        {JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Product",
+          "name": service.name,
+          "description": service.description,
+          "image": "https://zeuservices.com/zeusservicesPackage.png",
+          "brand": {
+            "@type": "Brand",
+            "name": "ZeuServices"
+          },
+          "offers": {
+            "@type": "Offer",
+            "url": `https://zeuservices.com${isProduct ? '/product/' : '/service/'}${service.id}`,
+            "priceCurrency": currency,
+            "price": service.price,
+            "availability": "https://schema.org/InStock",
+            "seller": {
+              "@type": "Organization",
+              "name": "ZeuServices"
+            }
+          }
+        })}
+      </script>
+
       <button className="ghost-btn" onClick={() => navigate(backPath)} style={{ marginBottom: '2rem' }}>
         ← {backLabel}
       </button>
