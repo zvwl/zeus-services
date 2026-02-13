@@ -306,6 +306,39 @@
   background: rgba(251, 191, 36, 0.1);
 }
 
+/* Pending Verification */
+.pending-body {
+  padding: 30px;
+  text-align: center;
+}
+
+.pending-email {
+  font-weight: 700;
+  color: #fbbf24;
+  margin-top: 10px;
+}
+
+.pending-copy {
+  margin-bottom: 20px;
+  line-height: 1.6;
+  color: #cbd5e1;
+}
+
+.pending-hint {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin-bottom: 30px;
+}
+
+.pending-actions {
+  justify-content: center;
+}
+
+.pending-actions .primary-btn,
+.pending-actions .secondary-btn {
+  max-width: 200px;
+}
+
 /* Password visibility toggle */
 .password-input-wrapper {
   position: relative;

@@ -11,20 +11,66 @@ export default function VerifyEmailPage() {
   useEffect(() => {
     // Handle the email verification callback
     const handleEmailVerification = async () => {
+      const completeSuccess = async (session) => {
+        setStatus('success')
+        setMessage('Email verified successfully! Redirecting...')
+
+        if (session?.user?.id) {
+          try {
+            await supabase.from('sessions').insert({
+              user_id: session.user.id,
+              last_activity: new Date().toISOString()
+            })
+          } catch (err) {
+            console.warn('Session record creation error:', err)
+          }
+        }
+
+        setTimeout(() => navigate('/services'), 2000)
+      }
+
+      const completeError = (text) => {
+        setStatus('error')
+        setMessage(text)
+      }
+
+      const waitForSession = async () => {
+        const { data: sessionData } = await supabase.auth.getSession()
+        if (sessionData?.session) {
+          return sessionData.session
+        }
+
+        return new Promise((resolve) => {
+          const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            if (session) {
+              subscription.unsubscribe()
+              resolve(session)
+            }
+          })
+
+          setTimeout(() => {
+            subscription.unsubscribe()
+            resolve(null)
+          }, 1500)
+        })
+      }
+
       try {
         // Check hash parameters first (Supabase magic link format)
         const hashParams = new URLSearchParams(window.location.hash.substring(1))
-        const hashToken = hashParams.get('access_token')
+        const hashAccessToken = hashParams.get('access_token')
+        const hashRefreshToken = hashParams.get('refresh_token')
         const hashType = hashParams.get('type')
         
         // Also check query parameters (alternative format)
         const queryParams = new URLSearchParams(window.location.search)
-        const token = queryParams.get('token')
-        const tokenHash = queryParams.get('token_hash')
+        const token = queryParams.get('token') || hashParams.get('token')
+        const tokenHash = queryParams.get('token_hash') || hashParams.get('token_hash')
         const type = queryParams.get('type') || hashType
         
         console.log('Verification params:', {
-          hashToken,
+          hashAccessToken,
+          hashRefreshToken,
           hashType,
           token,
           tokenHash,
@@ -35,64 +81,68 @@ export default function VerifyEmailPage() {
 
         // Handle token_hash format (email confirmation)
         if (tokenHash && type) {
-          const { error } = await supabase.auth.verifyOtp({
+          const { data, error } = await supabase.auth.verifyOtp({
             token_hash: tokenHash,
             type: type
           })
           
           if (error) {
             console.error('Verification error:', error)
-            setStatus('error')
-            setMessage('Verification failed: ' + error.message)
+            completeError('Verification failed: ' + error.message)
             return
           }
-          
-          setStatus('success')
-          setMessage('Email verified successfully! Redirecting...')
-          setTimeout(() => navigate('/services'), 2000)
+
+          const session = data?.session || await waitForSession()
+          await completeSuccess(session)
           return
         }
 
-        if (type === 'signup' || type === 'email' || type === 'magiclink' || hashToken) {
-          // Get the current session to verify
-          const { data: { session }, error } = await supabase.auth.getSession()
-          
+        if (token && type) {
+          const { data, error } = await supabase.auth.verifyOtp({
+            token,
+            type: type
+          })
+
           if (error) {
-            setStatus('error')
-            setMessage('Verification failed. Please try again.')
+            console.error('Verification error:', error)
+            completeError('Verification failed: ' + error.message)
             return
           }
 
+          const session = data?.session || await waitForSession()
+          await completeSuccess(session)
+          return
+        }
+
+        if (hashAccessToken && hashRefreshToken) {
+          const { data, error } = await supabase.auth.setSession({
+            access_token: hashAccessToken,
+            refresh_token: hashRefreshToken
+          })
+
+          if (error) {
+            console.error('Verification session error:', error)
+            completeError('Verification failed: ' + error.message)
+            return
+          }
+
+          await completeSuccess(data?.session)
+          return
+        }
+
+        if (type === 'signup' || type === 'email' || type === 'magiclink') {
+          const session = await waitForSession()
           if (session) {
-            setStatus('success')
-            setMessage('Email verified successfully! Redirecting...')
-            
-            // Create session record after email verification
-            try {
-              await supabase.from('sessions').insert({
-                user_id: session.user.id,
-                last_activity: new Date().toISOString()
-              })
-            } catch (err) {
-              console.warn('Session record creation error:', err)
-            }
-            
-            // Redirect to services page after 2 seconds
-            setTimeout(() => {
-              navigate('/services')
-            }, 2000)
+            await completeSuccess(session)
           } else {
-            setStatus('error')
-            setMessage('Verification failed. The link may have expired.')
+            completeError('Verification failed. The link may have expired.')
           }
         } else {
-          setStatus('error')
-          setMessage('Invalid verification link.')
+          completeError('Invalid verification link.')
         }
       } catch (err) {
         console.error('Verification error:', err)
-        setStatus('error')
-        setMessage('An error occurred during verification.')
+        completeError('An error occurred during verification.')
       }
     }
 

@@ -185,6 +185,17 @@ export const AuthProvider = ({ children }) => {
             return
           }
 
+          const isVerified = effectiveUser.email_confirmed_at !== null
+
+          if (!isVerified) {
+            await supabase.auth.signOut({ scope: 'local' })
+            setUser(null)
+            setEmailVerified(false)
+            setIsAdmin(false)
+            setLoading(false)
+            return
+          }
+
           // Fetch display name from customers table
           const displayName = await fetchDisplayName(effectiveUser.id)
           
@@ -194,7 +205,7 @@ export const AuthProvider = ({ children }) => {
             name: displayName || effectiveUser.email.split('@')[0],
             created_at: effectiveUser.created_at
           })
-          setEmailVerified(effectiveUser.email_confirmed_at !== null)
+          setEmailVerified(true)
           
           // Check admin status in the background (don't block page load)
           checkAdminStatus(effectiveUser.id)
@@ -232,6 +243,14 @@ export const AuthProvider = ({ children }) => {
       if (session?.user) {
         // User is logged in (SIGNED_IN, TOKEN_REFRESHED, etc)
         try {
+          if (!session.user.email_confirmed_at) {
+            await supabase.auth.signOut({ scope: 'local' })
+            setUser(null)
+            setEmailVerified(false)
+            setIsAdmin(false)
+            setLoading(false)
+            return
+          }
           
           // Set user state IMMEDIATELY without waiting for display name
           const userObject = {
@@ -242,7 +261,7 @@ export const AuthProvider = ({ children }) => {
           }
           
           setUser(userObject)
-          setEmailVerified(session.user.email_confirmed_at !== null)
+          setEmailVerified(true)
           setLoading(false)
           
           
@@ -310,6 +329,11 @@ export const AuthProvider = ({ children }) => {
       if (error) {
         console.error('Login error details:', { status: error.status, message: error.message, code: error.code })
         return { success: false, error: error.message || 'Login failed. Please check your credentials.' }
+      }
+
+      if (!data?.user?.email_confirmed_at) {
+        await supabase.auth.signOut({ scope: 'local' })
+        return { success: false, error: 'Please verify your email before logging in.' }
       }
 
       // If the user has verified MFA factors, force a challenge before completing login
