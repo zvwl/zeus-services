@@ -157,9 +157,8 @@
 }
 
 .resend-field {
-  displaybottom: 1.2
+  display: flex;
   gap: 0.5rem;
-  margin-top: 0.5rem;
 }
 
 .resend-input {
@@ -181,7 +180,7 @@
 .resend-captcha {
   display: flex;
   justify-content: center;
-  padding-top: 0.5rem;
+  margin-top: 1.5rem;
 }
 
 .form-group {

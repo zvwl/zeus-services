@@ -98,14 +98,14 @@ export default function PendingVerificationPage() {
                   {isResending ? 'Sending...' : 'Resend'}
                 </button>
               </div>
-              <div className="resend-captcha">
-                <Turnstile
-                  key={captchaKey}
-                  siteKey={siteKey || ''}
-                  onSuccess={setCaptchaToken}
-                  onExpire={() => setCaptchaToken(null)}
-                />
-              </div>
+            </div>
+            <div className="resend-captcha">
+              <Turnstile
+                key={captchaKey}
+                siteKey={siteKey || ''}
+                onSuccess={setCaptchaToken}
+                onExpire={() => setCaptchaToken(null)}
+              />
             </div>
           </div>
         </div>
