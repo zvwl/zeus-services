@@ -828,6 +828,15 @@ export default function SettingsPage() {
           <div className="settings-card">
             <h2>Change Password</h2>
             <form onSubmit={handlePasswordChange} className="settings-form">
+              {/* Hidden username field for password managers */}
+              <input 
+                type="email" 
+                autoComplete="username" 
+                value={user?.email || ''} 
+                readOnly 
+                style={{ display: 'none' }}
+                aria-hidden="true"
+              />
               <div className="form-group">
                 <label htmlFor="newPassword">New Password</label>
                 <input
