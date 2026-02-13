@@ -17,6 +17,12 @@ export default function OrdersPage() {
     // Wait for auth to finish loading before checking if user is logged in
     if (authLoading) return
 
+    // Redirect to login if not authenticated
+    if (!user) {
+      navigate('/login', { state: { from: '/orders' } })
+      return
+    }
+
     let isActive = true
 
     const init = async () => {
@@ -52,7 +58,7 @@ export default function OrdersPage() {
     return () => {
       isActive = false
     }
-  }, [user, authLoading])
+  }, [user, authLoading, navigate])
 
   const fetchOrders = async (sessionOverride = null) => {
     try {
@@ -181,16 +187,7 @@ export default function OrdersPage() {
   }
 
   if (!user) {
-    return (
-      <section className="section orders-section">
-        <div className="orders-container">
-          <div className="empty-state">
-            <h2>Please log in</h2>
-            <p>You need to be logged in to view your orders.</p>
-          </div>
-        </div>
-      </section>
-    )
+    return null
   }
 
   return (

@@ -1,11 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import DOMPurify from 'dompurify'
+import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 import './SettingsPage.css'
 
 export default function SettingsPage() {
+  const navigate = useNavigate()
   const { user, emailVerified, resendVerificationEmail, updateProfile, changePassword } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
   
@@ -557,19 +559,15 @@ export default function SettingsPage() {
     setTimeout(() => setVerificationMessage(''), 5000)
   }
 
+  // Redirect to login if not authenticated
+  useEffect(() => {
+    if (!user) {
+      navigate('/login', { state: { from: '/settings' } })
+    }
+  }, [user, navigate])
+
   if (!user) {
-    return (
-      <section className="section auth-section">
-        <div className="auth-container">
-          <div className="auth-card">
-            <div className="auth-header">
-              <h2>Access Denied</h2>
-              <p>Please log in to view your settings</p>
-            </div>
-          </div>
-        </div>
-      </section>
-    )
+    return null
   }
 
   return (
