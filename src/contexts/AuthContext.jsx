@@ -592,10 +592,14 @@ export const AuthProvider = ({ children }) => {
 
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email: currentUser.email
+        email: currentUser.email,
+        options: {
+          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`
+        }
       })
 
       if (error) {
+        console.error('Resend verification error:', error)
         return { success: false, error: error.message }
       }
 
@@ -613,10 +617,14 @@ export const AuthProvider = ({ children }) => {
 
       const { error } = await supabase.auth.resend({
         type: 'signup',
-        email
+        email,
+        options: {
+          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`
+        }
       })
 
       if (error) {
+        console.error('Resend verification error:', error)
         return { success: false, error: error.message }
       }
 
