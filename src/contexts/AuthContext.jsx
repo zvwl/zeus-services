@@ -582,7 +582,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const resendVerificationEmail = async () => {
+  const resendVerificationEmail = async (captchaToken) => {
     try {
       const { data: { user: currentUser } } = await supabase.auth.getUser()
       
@@ -590,11 +590,16 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'No user logged in' }
       }
 
+      if (!captchaToken) {
+        return { success: false, error: 'Please complete the CAPTCHA' }
+      }
+
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: currentUser.email,
         options: {
-          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`
+          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
+          captchaToken
         }
       })
 
@@ -609,17 +614,22 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const resendVerificationEmailForEmail = async (email) => {
+  const resendVerificationEmailForEmail = async (email, captchaToken) => {
     try {
       if (!email) {
         return { success: false, error: 'Please enter your email first' }
+      }
+
+      if (!captchaToken) {
+        return { success: false, error: 'Please complete the CAPTCHA' }
       }
 
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`
+          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
+          captchaToken
         }
       })
 

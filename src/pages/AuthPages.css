@@ -175,6 +175,12 @@
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.15);
 }
 
+.resend-captcha {
+  margin-top: 0.75rem;
+  display: flex;
+  justify-content: center;
+}
+
 .form-group {
   display: flex;
   flex-direction: column;

@@ -1,5 +1,6 @@
 import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
+import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import './AuthPages.css'
 
@@ -7,18 +8,33 @@ export default function PendingVerificationPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const email = location.state?.email || 'your email'
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
   const [resendEmail, setResendEmail] = useState(location.state?.email || '')
   const [resendStatus, setResendStatus] = useState('')
   const [isResending, setIsResending] = useState(false)
+  const [captchaToken, setCaptchaToken] = useState(null)
+  const [captchaKey, setCaptchaKey] = useState(0)
   const { resendVerificationEmailForEmail } = useAuth()
 
   const handleResendVerification = async () => {
     setResendStatus('')
     setIsResending(true)
     try {
-      const result = await resendVerificationEmailForEmail(resendEmail.trim())
+      if (!siteKey) {
+        setResendStatus('Captcha is unavailable. Please contact support.')
+        return
+      }
+
+      if (!captchaToken) {
+        setResendStatus('Please complete the CAPTCHA')
+        return
+      }
+
+      const result = await resendVerificationEmailForEmail(resendEmail.trim(), captchaToken)
       if (result.success) {
         setResendStatus(result.message)
+        setCaptchaToken(null)
+        setCaptchaKey((prev) => prev + 1)
       } else {
         setResendStatus(result.error)
       }
@@ -81,6 +97,14 @@ export default function PendingVerificationPage() {
                 >
                   {isResending ? 'Sending...' : 'Resend'}
                 </button>
+              </div>
+              <div className="resend-captcha">
+                <Turnstile
+                  key={captchaKey}
+                  siteKey={siteKey || ''}
+                  onSuccess={setCaptchaToken}
+                  onExpire={() => setCaptchaToken(null)}
+                />
               </div>
             </div>
           </div>
