@@ -1,10 +1,31 @@
 import { useLocation, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
 import './AuthPages.css'
 
 export default function PendingVerificationPage() {
   const location = useLocation()
   const navigate = useNavigate()
   const email = location.state?.email || 'your email'
+  const [resendEmail, setResendEmail] = useState(location.state?.email || '')
+  const [resendStatus, setResendStatus] = useState('')
+  const [isResending, setIsResending] = useState(false)
+  const { resendVerificationEmailForEmail } = useAuth()
+
+  const handleResendVerification = async () => {
+    setResendStatus('')
+    setIsResending(true)
+    try {
+      const result = await resendVerificationEmailForEmail(resendEmail.trim())
+      if (result.success) {
+        setResendStatus(result.message)
+      } else {
+        setResendStatus(result.error)
+      }
+    } finally {
+      setIsResending(false)
+    }
+  }
 
   return (
     <section className="section auth-section">
@@ -38,6 +59,29 @@ export default function PendingVerificationPage() {
               >
                 Try Again
               </button>
+            </div>
+
+            {resendStatus && <div className="resend-message">{resendStatus}</div>}
+            <div className="resend-block">
+              <p>Resend verification email</p>
+              <div className="resend-field">
+                <input
+                  type="email"
+                  value={resendEmail}
+                  onChange={(e) => setResendEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  autoComplete="email"
+                  className="resend-input"
+                />
+                <button
+                  type="button"
+                  className="resend-btn"
+                  onClick={handleResendVerification}
+                  disabled={isResending}
+                >
+                  {isResending ? 'Sending...' : 'Resend'}
+                </button>
+              </div>
             </div>
           </div>
         </div>
