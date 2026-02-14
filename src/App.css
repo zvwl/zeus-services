@@ -12,6 +12,12 @@
   --bg-light: #1a1f35;
   --text: #f1f5f9;
   --text-muted: #94a3b8;
+  --primary-color: var(--primary);
+  --text-primary: var(--text);
+  --text-secondary: var(--text-muted);
+  --card-bg: var(--bg-light);
+  --bg-color: #0f1729;
+  --border-color: rgba(148, 163, 184, 0.3);
 }
 
 html {
