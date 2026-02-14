@@ -24,9 +24,11 @@ export default function UserMenu({ isOpen, onClose }) {
   if (!isOpen) return null
 
   return (
-    <>
-      <div className="user-menu-overlay" onClick={onClose}></div>
-      <div className={`user-menu ${isOpen ? 'open' : ''}`}>
+    <div className="user-menu-backdrop" onClick={onClose}>
+      <div
+        className={`user-menu ${isOpen ? 'open' : ''}`}
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="user-menu-header">
           <button className="close-btn" onClick={onClose}>×</button>
           {user ? (
@@ -225,6 +227,6 @@ export default function UserMenu({ isOpen, onClose }) {
           </a>
         </div>
       </div>
-    </>
+    </div>
   )
 }
