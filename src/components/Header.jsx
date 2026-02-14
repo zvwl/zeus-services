@@ -20,65 +20,67 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   }
 
   return (
-    <header className="header">
-      <div className="header-content">
-        <button className="brand" onClick={() => navigate('/')}> 
-          <span className="logo-icon">
-            <img
-              src="/zeus-logo-main-96.webp"
-              srcSet="/zeus-logo-main-64.webp 64w, /zeus-logo-main-96.webp 96w, /zeus-logo-main-128.webp 128w, /zeus-logo-main-192.webp 192w"
-              sizes="(max-width: 480px) 56px, (max-width: 768px) 62px, (max-width: 1024px) 120px, 86px"
-              alt="Zeus Services"
-              width="86"
-              height="86"
-              decoding="async"
-              fetchpriority="high"
-            />
-          </span>
-          <span className="brand-name">Zeus Services</span>
-        </button>
+    <>
+      <header className="header">
+        <div className="header-content">
+          <button className="brand" onClick={() => navigate('/')}>
+            <span className="logo-icon">
+              <img
+                src="/zeus-logo-main-96.webp"
+                srcSet="/zeus-logo-main-64.webp 64w, /zeus-logo-main-96.webp 96w, /zeus-logo-main-128.webp 128w, /zeus-logo-main-192.webp 192w"
+                sizes="(max-width: 480px) 56px, (max-width: 768px) 62px, (max-width: 1024px) 120px, 86px"
+                alt="Zeus Services"
+                width="86"
+                height="86"
+                decoding="async"
+                fetchpriority="high"
+              />
+            </span>
+            <span className="brand-name">Zeus Services</span>
+          </button>
 
-        <nav className="nav">
-          <NavLink to="/" className={navLinkClass}>Home</NavLink>
-          <NavLink to="/products" className={navLinkClass}>Products</NavLink>
-          <NavLink to="/services" className={navLinkClass}>Services</NavLink>
-          <NavLink to="/reviews" className={navLinkClass}>Reviews</NavLink>
-          {user && <NavLink to="/settings" className={navLinkClass}>Settings</NavLink>}
-        </nav>
+          <nav className="nav">
+            <NavLink to="/" className={navLinkClass}>Home</NavLink>
+            <NavLink to="/products" className={navLinkClass}>Products</NavLink>
+            <NavLink to="/services" className={navLinkClass}>Services</NavLink>
+            <NavLink to="/reviews" className={navLinkClass}>Reviews</NavLink>
+            {user && <NavLink to="/settings" className={navLinkClass}>Settings</NavLink>}
+          </nav>
 
-        <div className="nav-actions">
-          <div className="currency-badge" onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}>
-            {currency}
-            {isCurrencyOpen && (
-              <div className="currency-dropdown">
-                {currencies.map((curr) => (
-                  <button
-                    key={curr}
-                    className={`currency-option ${curr === currency ? 'active' : ''}`}
-                    onClick={(e) => {
-                      e.stopPropagation()
-                      onCurrencyChange?.(curr)
-                      setIsCurrencyOpen(false)
-                    }}
-                  >
-                    {curr}
-                  </button>
-                ))}
-              </div>
-            )}
+          <div className="nav-actions">
+            <div className="currency-badge" onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}>
+              {currency}
+              {isCurrencyOpen && (
+                <div className="currency-dropdown">
+                  {currencies.map((curr) => (
+                    <button
+                      key={curr}
+                      className={`currency-option ${curr === currency ? 'active' : ''}`}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onCurrencyChange?.(curr)
+                        setIsCurrencyOpen(false)
+                      }}
+                    >
+                      {curr}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <button className="cart-button" onClick={() => navigate('/cart')}>
+              🛒 Cart ({cartCount})
+            </button>
+
+            <button className="menu-button" onClick={() => setIsMenuOpen(true)}>
+              <span className="menu-icon">☰</span>
+            </button>
           </div>
-          
-          <button className="cart-button" onClick={() => navigate('/cart')}>
-            🛒 Cart ({cartCount})
-          </button>
-
-          <button className="menu-button" onClick={() => setIsMenuOpen(true)}>
-            <span className="menu-icon">☰</span>
-          </button>
         </div>
-      </div>
+      </header>
 
       <UserMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
-    </header>
+    </>
   )
 }
