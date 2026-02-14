@@ -795,6 +795,7 @@ button.checkout-btn {
   transition: all 0.3s ease !important;
   box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3) !important;
   width: 100% !important;
+  max-width: none !important;
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
