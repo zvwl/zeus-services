@@ -24,7 +24,8 @@ export default function ReviewForm() {
     if (authLoading) return
     
     if (!user) {
-      navigate('/login')
+      const redirectTarget = orderId ? `/review?order=${orderId}` : '/orders'
+      navigate(`/login?redirect=${encodeURIComponent(redirectTarget)}`)
       return
     }
     

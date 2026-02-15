@@ -128,6 +128,12 @@ Deno.serve(async (req) => {
       <a href="https://zeuservices.com/orders" style="display: inline-block; background-color: #FFD700; color: #000; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">View Your Order</a>
     </div>
 
+    <div style="background: #fff7ed; border: 1px solid #fdba74; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
+      <p style="margin: 0 0 8px; font-size: 15px; color: #9a3412;"><strong>Enjoyed your service?</strong></p>
+      <p style="margin: 0 0 12px; font-size: 14px; color: #9a3412;">Please leave a review in the <strong>My Orders</strong> section on our website. It helps a lot.</p>
+      <a href="https://zeuservices.com/orders" style="display: inline-block; background-color: #f97316; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Leave a Review</a>
+    </div>
+
     <div style="background: #f1f5f9; border-left: 4px solid #667eea; padding: 16px; border-radius: 6px; margin: 24px 0;">
       <p style="font-size: 14px; color: #334155; margin: 0 0 12px;"><strong>Need help or have questions?</strong></p>
       <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Join our Discord community for instant support and updates:</p>

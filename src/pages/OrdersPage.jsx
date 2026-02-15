@@ -19,7 +19,7 @@ export default function OrdersPage() {
 
     // Redirect to login if not authenticated
     if (!user) {
-      navigate('/login', { state: { from: '/orders' } })
+      navigate('/login?redirect=/orders')
       return
     }
 
@@ -175,7 +175,7 @@ export default function OrdersPage() {
             {error.toLowerCase().includes('log in') && (
               <button
                 className="view-orders-btn"
-                onClick={() => window.location.assign('/login')}
+                onClick={() => window.location.assign('/login?redirect=/orders')}
               >
                 Go to Login
               </button>
