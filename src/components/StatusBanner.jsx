@@ -15,11 +15,26 @@ export default function StatusBanner() {
   const [announcements, setAnnouncements] = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
 
+  const reconcileAnnouncements = useCallback((prev, next) => {
+    if (!next.length) {
+      setActiveIndex(0)
+      return []
+    }
+
+    const currentId = prev[activeIndex]?.id
+    const nextIndex = currentId
+      ? next.findIndex((item) => item.id === currentId)
+      : -1
+
+    setActiveIndex(nextIndex >= 0 ? nextIndex : 0)
+    return next
+  }, [activeIndex])
+
   const fetchLatest = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('status_announcements')
-        .select('id, message, status, active')
+        .select('id, message, status, active, created_at')
         .eq('active', true)
         .order('created_at', { ascending: false })
 
@@ -30,25 +45,12 @@ export default function StatusBanner() {
       }
 
       const nextAnnouncements = data || []
-      setAnnouncements((prev) => {
-        const currentId = prev[activeIndex]?.id
-        if (!nextAnnouncements.length) {
-          setActiveIndex(0)
-          return []
-        }
-
-        const nextIndex = currentId
-          ? nextAnnouncements.findIndex((item) => item.id === currentId)
-          : -1
-
-        setActiveIndex(nextIndex >= 0 ? nextIndex : 0)
-        return nextAnnouncements
-      })
+      setAnnouncements((prev) => reconcileAnnouncements(prev, nextAnnouncements))
     } catch (err) {
       console.error('Status banner fetch failed:', err)
       setAnnouncements([])
     }
-  }, [activeIndex])
+  }, [reconcileAnnouncements])
 
   useEffect(() => {
     if (isPrerender()) return
@@ -60,8 +62,28 @@ export default function StatusBanner() {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'status_announcements' },
-        () => {
-          fetchLatest()
+        (payload) => {
+          const eventType = payload?.eventType
+          const nextRow = payload?.new
+          const prevRow = payload?.old
+
+          setAnnouncements((prev) => {
+            let next = [...prev]
+
+            if (eventType === 'DELETE' && prevRow?.id) {
+              next = next.filter((item) => item.id !== prevRow.id)
+            }
+
+            if ((eventType === 'INSERT' || eventType === 'UPDATE') && nextRow?.id) {
+              next = next.filter((item) => item.id !== nextRow.id)
+              if (nextRow.active) {
+                next = [nextRow, ...next]
+              }
+            }
+
+            next.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+            return reconcileAnnouncements(prev, next)
+          })
         }
       )
       .subscribe()
@@ -69,7 +91,7 @@ export default function StatusBanner() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [fetchLatest])
+  }, [fetchLatest, reconcileAnnouncements])
 
   useEffect(() => {
     if (announcements.length <= 1) return
