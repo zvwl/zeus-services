@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { isPrerender } from '../utils/isPrerender'
 import './StatusBanner.css'
@@ -14,6 +14,11 @@ const STATUS_LABELS = {
 export default function StatusBanner() {
   const [announcements, setAnnouncements] = useState([])
   const [activeIndex, setActiveIndex] = useState(0)
+  const activeIndexRef = useRef(0)
+
+  useEffect(() => {
+    activeIndexRef.current = activeIndex
+  }, [activeIndex])
 
   const reconcileAnnouncements = useCallback((prev, next) => {
     if (!next.length) {
@@ -21,14 +26,14 @@ export default function StatusBanner() {
       return []
     }
 
-    const currentId = prev[activeIndex]?.id
+    const currentId = prev[activeIndexRef.current]?.id
     const nextIndex = currentId
       ? next.findIndex((item) => item.id === currentId)
       : -1
 
     setActiveIndex(nextIndex >= 0 ? nextIndex : 0)
     return next
-  }, [activeIndex])
+  }, [])
 
   const fetchLatest = useCallback(async () => {
     try {
