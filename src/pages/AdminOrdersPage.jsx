@@ -69,6 +69,24 @@ export default function AdminOrdersPage() {
           ? { ...order, status: 'cancelled', payment_status: 'refunded' }
           : order
       ))
+
+      // Send refund email to customer
+      try {
+        const emailResponse = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/send-order-refunded', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+          },
+          body: JSON.stringify({ orderId }),
+        });
+        if (!emailResponse.ok) {
+          console.error('Failed to send refund email');
+        }
+      } catch (emailErr) {
+        console.error('Email send error:', emailErr);
+        // Don't fail the whole operation if email fails
+      }
     } catch (err) {
       setError('Refund error: ' + err.message);
     } finally {
@@ -100,6 +118,26 @@ export default function AdminOrdersPage() {
     setAdminNotes(prev => ({ ...prev, [orderId]: '' }))
     
     await updateOrderStatus(orderId, 'cancelled');
+
+    // Send cancellation email to customer (no refund)
+    try {
+      const session = await supabase.auth.getSession();
+      const accessToken = session?.data?.session?.access_token;
+      const emailResponse = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/send-order-cancelled', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {}),
+        },
+        body: JSON.stringify({ orderId }),
+      });
+      if (!emailResponse.ok) {
+        console.error('Failed to send cancellation email');
+      }
+    } catch (emailErr) {
+      console.error('Email send error:', emailErr);
+      // Don't fail the whole operation if email fails
+    }
   };
 
   useEffect(() => {
