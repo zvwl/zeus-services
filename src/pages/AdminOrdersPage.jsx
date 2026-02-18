@@ -13,6 +13,7 @@ export default function AdminOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [searchDebounced, setSearchDebounced] = useState('')
+  const [sortOrder, setSortOrder] = useState('newest') // newest, oldest
   const [updatingOrderId, setUpdatingOrderId] = useState(null)
   const [adminNotes, setAdminNotes] = useState({}) // State for admin notes per order
   const [confirmDialog, setConfirmDialog] = useState({
@@ -421,6 +422,16 @@ export default function AdminOrdersPage() {
             <option value="completed">Completed</option>
             <option value="cancelled">Cancelled</option>
           </select>
+          <label htmlFor="sortOrder">Sort by date:</label>
+          <select
+            id="sortOrder"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+            className="filter-select"
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+          </select>
           <input
             type="text"
             className="search-input"
@@ -453,7 +464,11 @@ export default function AdminOrdersPage() {
           </div>
         ) : (
           <div className="orders-grid">
-            {orders.map(order => {
+            {[...orders].sort((a, b) => {
+              const dateA = new Date(a.created_at).getTime()
+              const dateB = new Date(b.created_at).getTime()
+              return sortOrder === 'newest' ? dateB - dateA : dateA - dateB
+            }).map(order => {
               const { currency: orderCurrency, subtotal, recordedTotal } = getOrderTotals(order)
               return (
                 <div key={order.id} className="order-card">
