@@ -472,6 +472,20 @@ export default function AdminOrdersPage() {
                   <span className="value">{order.customer_email || <em>Unknown</em>}</span>
                 </div>
 
+                <div className="customer-info">
+                  <span className="label">Purchased:</span>
+                  <span className="value">
+                    {new Date(order.created_at).toLocaleString('en-GB', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      hour12: false
+                    })}
+                  </span>
+                </div>
+
                 <div className="order-actions">
                   <label htmlFor={`status-${order.id}`}>Update Status:</label>
                   <select
@@ -584,6 +598,14 @@ export default function AdminOrdersPage() {
                 <p><strong>Order ID:</strong> {confirmDialog.orderInfo?.id.slice(0, 12)}...</p>
                 <p><strong>Customer Email:</strong> {confirmDialog.orderInfo?.customer_email || 'Unknown'}</p>
                 <p><strong>Customer Name:</strong> {confirmDialog.orderInfo?.customer_name || 'Not provided'}</p>
+                <p><strong>Purchased:</strong> {new Date(confirmDialog.orderInfo?.created_at).toLocaleString('en-GB', {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                })}</p>
                 <p><strong>Total Amount:</strong> {formatCurrency(confirmDialog.orderInfo?.total_amount, confirmDialog.orderInfo?.currency)}</p>
               </div>
               {confirmDialog.action === 'refund' && (

@@ -125,8 +125,8 @@ Deno.serve(async (req) => {
     </div>
 
     <div style="background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
-      <p style="margin: 0 0 8px; font-size: 15px; color: #991b1b;"><strong>No Payment Made</strong></p>
-      <p style="margin: 0; font-size: 14px; color: #991b1b;">You have not been charged for this order. No refund is necessary.</p>
+      <p style="margin: 0 0 8px; font-size: 15px; color: #991b1b;"><strong>No Refund Issued</strong></p>
+      <p style="margin: 0; font-size: 14px; color: #991b1b;">Your payment has been processed and will not be refunded. This order has been cancelled as per our policy.</p>
     </div>
 
     <div style="text-align: center; margin: 28px 0;">
