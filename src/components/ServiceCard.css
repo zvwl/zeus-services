@@ -141,7 +141,6 @@
 .card-description {
   color: #94a3b8;
   margin-bottom: 0.25rem;
-  flex-grow: 1;
   line-height: 1.5;
 }
 
