@@ -155,14 +155,6 @@ export default function ProductsPage({ formatPrice }) {
                   <h3 className="card-title">{product.name}</h3>
                   <p className="card-description">{product.description}</p>
 
-                  {product.platforms && product.platforms.length > 0 && (
-                    <div className="product-platforms">
-                      {product.platforms.map(platform => (
-                        <span key={platform} className="platform-badge">{platform}</span>
-                      ))}
-                    </div>
-                  )}
-
                   <div className="card-footer">
                     <span className="card-price">
                       {formatPrice ? formatPrice(product.price) : `£${product.price}`}

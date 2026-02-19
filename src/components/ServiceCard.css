@@ -140,7 +140,7 @@
 
 .card-description {
   color: #94a3b8;
-  margin-bottom: 1rem;
+  margin-bottom: 0.25rem;
   flex-grow: 0;
   line-height: 1.5;
 }
