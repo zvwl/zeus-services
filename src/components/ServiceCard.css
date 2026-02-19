@@ -9,6 +9,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  max-height: 750px;
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
 }
 
@@ -150,6 +151,7 @@
   gap: 1rem;
   padding-top: 0.5rem;
   border-top: 1px solid rgba(251, 191, 36, 0.2);
+  margin-top: auto;
 }
 
 .card-price {
