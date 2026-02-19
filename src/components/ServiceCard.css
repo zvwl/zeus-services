@@ -140,8 +140,8 @@
 
 .card-description {
   color: #94a3b8;
-  margin-bottom: 1.5rem;
-  flex-grow: 1;
+  margin-bottom: 1rem;
+  flex-grow: 0;
   line-height: 1.5;
 }
 
