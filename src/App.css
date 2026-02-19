@@ -1049,20 +1049,19 @@ a,
   flex-wrap: wrap;
   gap: 0.5rem;
   margin: 0;
-  margin-bottom: 0.5rem;
 }
 
 .platform-badge {
-  display: inline-block;
-  padding: 0.35rem 0.75rem;
-  background: rgba(251, 191, 36, 0.15);
-  border: 1px solid rgba(251, 191, 36, 0.4);
-  border-radius: 6px;
-  color: #fbbf24;
-  font-size: 0.75rem;
-  font-weight: 600;
+  display: inline;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 400;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .card-footer {
