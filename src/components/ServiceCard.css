@@ -161,7 +161,6 @@
   font-weight: 700;
   color: #fbbf24;
   min-width: fit-content;
-  flex-basis: 100%;
 }
 
 .view-details-btn {
@@ -176,8 +175,9 @@
   font-size: 0.95rem;
   white-space: nowrap;
   box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
-  flex-basis: 100%;
   text-align: center;
+  flex-grow: 1;
+  min-width: 150px;
 }
 
 @media (max-width: 640px) {
