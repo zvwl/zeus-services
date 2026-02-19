@@ -153,7 +153,6 @@
   margin-top: auto;
   padding-top: 1rem;
   border-top: 1px solid rgba(251, 191, 36, 0.2);
-  flex-wrap: wrap;
 }
 
 .card-price {
@@ -176,14 +175,23 @@
   white-space: nowrap;
   box-shadow: 0 4px 15px rgba(251, 191, 36, 0.4);
   text-align: center;
-  flex-grow: 1;
-  min-width: 150px;
 }
 
 @media (max-width: 640px) {
+  .card-footer {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .card-price {
+    font-size: 1.6rem;
+  }
+
   .view-details-btn {
-    padding: 0.35rem 1rem;
-    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+    width: 100%;
   }
 }
 
