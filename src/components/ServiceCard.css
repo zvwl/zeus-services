@@ -9,7 +9,7 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 650px;
+  max-height: 760px;
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
   contain: layout style paint;
   will-change: transform;
@@ -46,7 +46,7 @@
   background: rgba(148, 163, 184, 0.1);
   border-bottom: 2px solid rgba(251, 191, 36, 0.25);
   flex-shrink: 0;
-  padding: 0.75rem;
+  padding: 1rem;
 }
 
 picture {
@@ -149,12 +149,12 @@ picture {
 
 .card-description {
   color: #94a3b8;
-  margin: 0 1.5rem 0.6rem;
-  line-height: 1.4;
-  font-size: 0.85rem;
+  margin: 0 1.5rem 0.8rem;
+  line-height: 1.5;
+  font-size: 0.9rem;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
