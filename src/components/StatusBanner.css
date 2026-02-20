@@ -26,6 +26,7 @@
   animation: statusFade 0.45s ease;
   white-space: nowrap;
   overflow: hidden;
+  width: 100%;
 }
 
 .status-pill {
