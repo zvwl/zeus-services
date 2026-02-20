@@ -41,7 +41,9 @@
 .logo-icon img {
   width: 86px;
   height: 86px;
+  aspect-ratio: 1;
   object-fit: contain;
+  display: block;
 }
 
 .brand-name {

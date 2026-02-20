@@ -3,7 +3,8 @@
   align-items: center;
   justify-content: center;
   padding: 3rem 1rem;
-  min-height: 200px;
+  height: 200px;
+  contain: layout style paint;
 }
 
 .loading-spinner--fullscreen {

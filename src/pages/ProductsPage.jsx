@@ -142,16 +142,18 @@ export default function ProductsPage({ formatPrice }) {
                   className="service-card"
                   onClick={() => navigate(`/product/${product.id}`, { state: { product } })}
                 >
-                  <img 
-                    src={product.icon || '/zeusservicesPackage.png'} 
-                    alt={product.name} 
-                    className="card-image" 
-                    width="600"
-                    height="300"
-                    onError={(e) => {
-                      e.target.src = '/zeusservicesPackage.png'
-                    }}
-                  />
+                  <picture>
+                    <source type="image/webp" srcSet="/zeusservicesPackage.webp" />
+                    <img 
+                      src={product.icon || '/zeusservicesPackage.png'} 
+                      alt={product.name} 
+                      className="card-image" 
+                      width="600"
+                      height="300"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </picture>
                   <h3 className="card-title">{product.name}</h3>
                   <p className="card-description">{product.description}</p>
 
