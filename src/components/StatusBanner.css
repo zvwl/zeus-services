@@ -14,8 +14,6 @@
   font-size: 0.95rem;
   letter-spacing: 0.01em;
   text-align: center;
-  height: 52px;
-  contain: layout style;
 }
 
 .status-banner__content {
@@ -23,9 +21,6 @@
   align-items: center;
   gap: 0.75rem;
   animation: statusFade 0.45s ease;
-  white-space: nowrap;
-  overflow: hidden;
-  width: 100%;
 }
 
 .status-pill {
@@ -44,10 +39,6 @@
 .status-message {
   color: #e2e8f0;
   line-height: 1.4;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
 }
 
 @keyframes statusFade {
@@ -106,29 +97,8 @@
 }
 
 @media (max-width: 768px) {
-  .status-banner {
-    padding: 0.65rem 1rem;
-    height: 44px;
-    font-size: 0.85rem;
-  }
-
   .status-banner__content {
-    gap: 0.5rem;
-    width: 100%;
-  }
-
-  .status-pill {
-    padding: 0.15rem 0.5rem;
-    font-size: 0.65rem;
-    flex-shrink: 0;
-  }
-
-  .status-message {
-    flex: 1;
-    min-width: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    flex-direction: column;
   }
 }
 

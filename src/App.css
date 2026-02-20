@@ -22,7 +22,6 @@
 
 html {
   scroll-behavior: smooth;
-  scrollbar-gutter: stable;
 }
 
 html, body, #root {
@@ -65,7 +64,6 @@ a,
   padding: 4rem 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
-  contain: layout style;
 }
 
 .section.services {
@@ -151,8 +149,6 @@ a,
   font-weight: 800;
   color: var(--text);
   margin-bottom: 0.6rem;
-  line-height: 1.1;
-  height: auto;
 }
 
 .section-subtitle {
@@ -698,7 +694,6 @@ a,
   padding: 3rem 2rem;
   width: 100%;
   min-height: 70vh;
-  contain: layout style;
 }
 
 .services-grid--loading {
@@ -736,12 +731,10 @@ a,
 
 #service-detail .service-detail-image {
   width: 100%;
-  aspect-ratio: 600 / 300;
   border-radius: 15px;
   border: 2px solid rgba(251, 191, 36, 0.25);
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
   display: block;
-  object-fit: cover;
 }
 
 @media (max-width: 900px) {
