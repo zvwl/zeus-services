@@ -41,7 +41,7 @@
   width: 100%;
   max-width: 100%;
   height: auto;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1.5 / 1;
   object-fit: cover;
   border-radius: 12px;
   margin: 0 auto 1rem;
@@ -54,7 +54,7 @@
 
 picture {
   display: block;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1.5 / 1;
   margin-bottom: 0.5rem;
 }
 
@@ -71,7 +71,7 @@ picture {
 
 .service-card.skeleton .skeleton-image {
   width: 100%;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 1.5 / 1;
   border-radius: 12px;
   background: rgba(148, 163, 184, 0.12);
   margin-bottom: 1rem;

@@ -17,6 +17,9 @@
   text-align: center;
   height: 52px;
   contain: layout style;
+  position: relative;
+  left: 50%;
+  transform: translateX(-50%);
 }
 
 .status-banner__content {
