@@ -2,14 +2,14 @@
   background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
   border: 2px solid rgba(251, 191, 36, 0.25);
   border-radius: 15px;
-  padding: 2rem;
+  padding: 1.5rem;
   cursor: pointer;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   position: relative;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  max-height: 750px;
+  min-height: 420px;
   box-shadow: 0 8px 32px rgba(59, 130, 246, 0.15);
   contain: layout style paint;
   will-change: transform;
@@ -41,7 +41,7 @@
   width: 100%;
   max-width: 100%;
   height: auto;
-  aspect-ratio: 600 / 300;
+  aspect-ratio: 1.5 / 1;
   object-fit: cover;
   border-radius: 12px;
   margin: 0 auto 1rem;
@@ -54,7 +54,8 @@
 
 picture {
   display: block;
-  aspect-ratio: 600 / 300;
+  aspect-ratio: 1.5 / 1;
+  margin-bottom: 0.5rem;
 }
 
 .service-card.skeleton {
@@ -70,7 +71,7 @@ picture {
 
 .service-card.skeleton .skeleton-image {
   width: 100%;
-  height: 300px;
+  aspect-ratio: 1.5 / 1;
   border-radius: 12px;
   background: rgba(148, 163, 184, 0.12);
   margin-bottom: 1rem;
