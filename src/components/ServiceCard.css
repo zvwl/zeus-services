@@ -40,7 +40,7 @@
 .card-image {
   width: 100%;
   height: auto;
-  aspect-ratio: 5 / 8;
+  aspect-ratio: 3 / 4;
   object-fit: cover;
   display: block;
   background: rgba(148, 163, 184, 0.1);
@@ -50,7 +50,7 @@
 
 picture {
   display: block;
-  aspect-ratio: 5 / 8;
+  aspect-ratio: 3 / 4;
   overflow: hidden;
   flex-shrink: 0;
 }
@@ -68,7 +68,7 @@ picture {
 
 .service-card.skeleton .skeleton-image {
   width: 100%;
-  aspect-ratio: 5 / 8;
+  aspect-ratio: 3 / 4;
   border-radius: 12px;
   background: rgba(148, 163, 184, 0.12);
   margin-bottom: 1rem;
