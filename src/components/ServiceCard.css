@@ -187,6 +187,7 @@ picture {
   text-align: center;
 }
 
+
 @media (max-width: 640px) {
   .card-footer {
     flex-direction: column;
