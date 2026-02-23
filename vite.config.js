@@ -14,8 +14,42 @@ export default defineConfig(({ mode }) => {
     supabaseOrigin = ''
   }
 
+  const asyncCssAndPreconnectPlugin = {
+    name: 'async-css-and-preconnect',
+    apply: 'build',
+    enforce: 'post',
+    transformIndexHtml(html) {
+      let updated = html.replace(
+        /<link\s+([^>]*?)rel="stylesheet"([^>]*?)href="([^"]+\.css)"([^>]*)>/g,
+        (match, _before, _middle, href) => {
+          let extraAttrs = ''
+
+          if (/\scrossorigin(=|\s|>)/.test(match)) {
+            extraAttrs += ' crossorigin'
+          }
+
+          const referrerPolicyMatch = match.match(/referrerpolicy="([^"]+)"/)
+          if (referrerPolicyMatch) {
+            extraAttrs += ` referrerpolicy="${referrerPolicyMatch[1]}"`
+          }
+
+          return `<link rel="stylesheet" href="${href}"${extraAttrs}>`
+        }
+      )
+
+      if (supabaseOrigin && !updated.includes(supabaseOrigin)) {
+        const preconnectTag = `    <link rel="preconnect" href="${supabaseOrigin}" crossorigin />\n`
+        if (updated.includes('</head>')) {
+          updated = updated.replace('</head>', `${preconnectTag}  </head>`)
+        }
+      }
+
+      return updated
+    }
+  }
+
   return {
-    plugins: [react()],
+    plugins: [react(), asyncCssAndPreconnectPlugin],
     build: {
     // Optimize bundle size with code splitting
     rollupOptions: {
