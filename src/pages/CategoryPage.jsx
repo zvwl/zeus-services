@@ -158,13 +158,23 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
     )
   }
 
+  if (gameSlug && !game) {
+    return (
+      <div className="section">
+        <h1>Not Found</h1>
+        <p>The requested game could not be found.</p>
+      </div>
+    )
+  }
+
   const isAllGamesView = !gameSlug
+  const gameName = game?.name || 'Game'
   const pageTitle = isAllGamesView 
     ? `${category.name} - All Games` 
-    : `${game.name} ${category.name}`
+    : `${gameName} ${category.name}`
   const pageDescription = isAllGamesView
     ? `Browse ${category.name.toLowerCase()} across all games.`
-    : `Browse ${category.name.toLowerCase()} for ${game.name}. Premium ${category.name.toLowerCase()} available now.`
+    : `Browse ${category.name.toLowerCase()} for ${gameName}. Premium ${category.name.toLowerCase()} available now.`
 
   return (
     <>
@@ -180,7 +190,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
             { label: category.name, path: `/${categorySlug}` }
           ] : [
             { label: 'Home', path: '/' },
-            { label: game.name, path: `/${categorySlug}/${gameSlug}` }
+            { label: gameName, path: `/${categorySlug}/${gameSlug}` }
           ]}
         />
         
@@ -197,7 +207,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
           )}
           <div>
             <p className="eyebrow">{category.name}</p>
-            <h1 className="section-title">{isAllGamesView ? `${category.name}` : `${game.name} ${category.name}`}</h1>
+            <h1 className="section-title">{isAllGamesView ? `${category.name}` : `${gameName} ${category.name}`}</h1>
             <p className="section-subtitle">{pageDescription}</p>
           </div>
         </div>
