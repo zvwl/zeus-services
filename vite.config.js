@@ -14,46 +14,8 @@ export default defineConfig(({ mode }) => {
     supabaseOrigin = ''
   }
 
-  const asyncCssAndPreconnectPlugin = {
-    name: 'async-css-and-preconnect',
-    apply: 'build',
-    enforce: 'post',
-    transformIndexHtml(html) {
-      let updated = html.replace(
-        /<link\s+([^>]*?)rel="stylesheet"([^>]*?)href="([^"]+\.css)"([^>]*)>/g,
-        (match, _before, _middle, href) => {
-          let extraAttrs = ''
-
-          if (/\scrossorigin(=|\s|>)/.test(match)) {
-            extraAttrs += ' crossorigin'
-          }
-
-          const referrerPolicyMatch = match.match(/referrerpolicy="([^"]+)"/)
-          if (referrerPolicyMatch) {
-            extraAttrs += ` referrerpolicy="${referrerPolicyMatch[1]}"`
-          }
-
-          return (
-            `<link rel="preload" as="style" href="${href}"${extraAttrs}>\n` +
-            `<link rel="stylesheet" href="${href}" media="print" onload="this.media='all'"${extraAttrs}>\n` +
-            `<noscript><link rel="stylesheet" href="${href}"${extraAttrs}></noscript>`
-          )
-        }
-      )
-
-      if (supabaseOrigin && !updated.includes(supabaseOrigin)) {
-        const preconnectTag = `    <link rel="preconnect" href="${supabaseOrigin}" crossorigin />\n`
-        if (updated.includes('</head>')) {
-          updated = updated.replace('</head>', `${preconnectTag}  </head>`)
-        }
-      }
-
-      return updated
-    }
-  }
-
   return {
-    plugins: [react(), asyncCssAndPreconnectPlugin],
+    plugins: [react()],
     build: {
     // Optimize bundle size with code splitting
     rollupOptions: {
