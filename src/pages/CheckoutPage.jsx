@@ -79,7 +79,20 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
             {cartItems.map((item) => (
               <div key={item.cartId} className="checkout-item">
                 <div className="checkout-item-info">
-                  <span className="checkout-item-icon">{item.icon}</span>
+                  <div className="checkout-item-icon">
+                    {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http')) ? (
+                      <img
+                        src={item.icon}
+                        alt={item.name}
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                          e.target.parentElement.textContent = '🎮'
+                        }}
+                      />
+                    ) : (
+                      <span>{item.icon || '🎮'}</span>
+                    )}
+                  </div>
                   <div>
                     <h4>{item.name}</h4>
                     <p className="platform">Platform: {item.platform}</p>
