@@ -36,7 +36,20 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
         {items.map(item => (
           <div key={item.cartId} className="cart-item">
             <div className="item-info">
-              <span className="item-icon">{item.icon}</span>
+              <div className="item-icon">
+                {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http')) ? (
+                  <img 
+                    src={item.icon} 
+                    alt={item.name}
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      e.target.parentElement.textContent = '🎮'
+                    }}
+                  />
+                ) : (
+                  <span>{item.icon || '🎮'}</span>
+                )}
+              </div>
               <div>
                 <h4>{item.name}</h4>
                 <p className="platform">Platform: {item.platform}</p>

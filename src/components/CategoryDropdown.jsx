@@ -47,16 +47,9 @@ export default function CategoryDropdown({ category }) {
 
   const handleTriggerClick = (e) => {
     e.preventDefault()
-    // On mobile, toggle dropdown; on desktop, navigate to first available game
-    if (window.innerWidth <= 768) {
-      setMobileOpen(!mobileOpen)
-    } else {
-      // Navigate to the first active game for this category
-      const firstGame = games.find(g => !g.is_coming_soon)
-      if (firstGame) {
-        navigate(`/${category.slug}/${firstGame.game_slug}`)
-      }
-    }
+    // Click category name = show ALL items from all games in this category
+    navigate(`/${category.slug}`)
+    setMobileOpen(false)
   }
 
   return (

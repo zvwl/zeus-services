@@ -382,7 +382,17 @@ function App() {
           path="/products"
           element={<Navigate to="/accounts/gta5" replace />}
         />
-        {/* New multi-game category routes */}
+        {/* New multi-game category routes - order: most specific first */}
+        <Route
+          path="/:categorySlug/:gameSlug/:itemSlug"
+          element={(
+            <ItemDetailPage
+              formatPrice={formatPrice}
+              addToCart={addToCart}
+              platformOptions={platformOptions}
+            />
+          )}
+        />
         <Route
           path="/:categorySlug/:gameSlug"
           element={(
@@ -394,9 +404,9 @@ function App() {
           )}
         />
         <Route
-          path="/:categorySlug/:gameSlug/:itemSlug"
+          path="/:categorySlug"
           element={(
-            <ItemDetailPage
+            <CategoryPage
               formatPrice={formatPrice}
               addToCart={addToCart}
               platformOptions={platformOptions}

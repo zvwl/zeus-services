@@ -14,11 +14,13 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   const navigate = useNavigate()
   const { user } = useAuth()
   const [items, setItems] = useState([])
-  const [game, setGame] = useState(null)
+  const [games, setGames] = useState([]) // For "all games" view
+  const [game, setGame] = useState(null) // Single game
   const [category, setCategory] = useState(null)
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState('all')
+  const [selectedGameId, setSelectedGameId] = useState('all') // Game ID for filtering
   const [sortBy, setSortBy] = useState('none')
 
   // Fetch game, category, and items
@@ -31,16 +33,6 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
       }
       setLoading(true)
       try {
-        // Fetch game
-        const { data: gameData, error: gameError } = await supabase
-          .from('games')
-          .select('*')
-          .eq('slug', gameSlug)
-          .single()
-
-        if (gameError) throw gameError
-        setGame(gameData)
-
         // Fetch category
         const { data: categoryData, error: categoryError } = await supabase
           .from('categories')
@@ -51,18 +43,56 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
         if (categoryError) throw categoryError
         setCategory(categoryData)
 
-        // Fetch items
-        const { data: itemsData, error: itemsError } = await supabase
-          .from('items')
-          .select('*')
-          .eq('game_id', gameData.id)
-          .eq('category_id', categoryData.id)
-          .eq('active', true)
-          .order('featured', { ascending: false })
-          .order('created_at', { ascending: true })
+        // If gameSlug is provided, fetch single game view
+        if (gameSlug) {
+          // Fetch game
+          const { data: gameData, error: gameError } = await supabase
+            .from('games')
+            .select('*')
+            .eq('slug', gameSlug)
+            .single()
 
-        if (itemsError) throw itemsError
-        setItems(itemsData || [])
+          if (gameError) throw gameError
+          setGame(gameData)
+
+          // Fetch items for this game
+          const { data: itemsData, error: itemsError } = await supabase
+            .from('items')
+            .select('*')
+            .eq('game_id', gameData.id)
+            .eq('category_id', categoryData.id)
+            .eq('active', true)
+            .order('featured', { ascending: false })
+            .order('created_at', { ascending: true })
+
+          if (itemsError) throw itemsError
+          setItems(itemsData || [])
+        } else {
+          // Fetch all games with items in this category
+          const { data: gamesData, error: gamesError } = await supabase
+            .rpc('get_games_for_category', { category_slug_param: categorySlug })
+
+          if (gamesError) throw gamesError
+          const mappedGames = (gamesData || []).map(game => ({
+            id: game.game_id,
+            name: game.game_name,
+            slug: game.game_slug,
+            icon_url: game.game_icon_url
+          }))
+          setGames(mappedGames)
+
+          // Fetch items for all games in this category
+          const { data: itemsData, error: itemsError } = await supabase
+            .from('items')
+            .select('*')
+            .eq('category_id', categoryData.id)
+            .eq('active', true)
+            .order('featured', { ascending: false })
+            .order('created_at', { ascending: true })
+
+          if (itemsError) throw itemsError
+          setItems(itemsData || [])
+        }
       } catch (err) {
         console.error('Error fetching data:', err)
         setItems([])
@@ -76,6 +106,11 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
 
   const filteredItems = useMemo(() => {
     let filtered = items
+
+    // Game filter (when viewing all games)
+    if (!gameSlug && selectedGameId !== 'all') {
+      filtered = filtered.filter(item => String(item.game_id) === selectedGameId)
+    }
 
     // Search filter
     if (searchQuery.trim()) {
@@ -101,46 +136,56 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
     }
 
     return filtered
-  }, [items, searchQuery, selectedPlatform, sortBy])
+  }, [items, searchQuery, selectedPlatform, sortBy, selectedGameId, gameSlug])
 
   const handleItemClick = (item) => {
-    // Navigate to item detail page (viewable by anyone, auth required only for add to cart)
-    navigate(`/${categorySlug}/${gameSlug}/${item.slug}`)
+    // Navigate to item detail page
+    // If in "all games" view, use the item's game slug
+    const itemGameSlug = gameSlug || games.find(g => g.id === item.game_id)?.slug || 'gta5'
+    navigate(`/${categorySlug}/${itemGameSlug}/${item.slug}`)
   }
 
   if (loading) {
     return <LoadingSpinner message="Loading items..." />
   }
 
-  if (!game || !category) {
+  if (!category) {
     return (
       <div className="section">
         <h1>Not Found</h1>
-        <p>The requested game or category could not be found.</p>
+        <p>The requested category could not be found.</p>
       </div>
     )
   }
 
-  const pageTitle = `${game.name} ${category.name}`
-  const pageDescription = `Browse ${category.name.toLowerCase()} for ${game.name}. Premium ${category.name.toLowerCase()} available now.`
+  const isAllGamesView = !gameSlug
+  const pageTitle = isAllGamesView 
+    ? `${category.name} - All Games` 
+    : `${game.name} ${category.name}`
+  const pageDescription = isAllGamesView
+    ? `Browse ${category.name.toLowerCase()} across all games.`
+    : `Browse ${category.name.toLowerCase()} for ${game.name}. Premium ${category.name.toLowerCase()} available now.`
 
   return (
     <>
       <SEO
         title={pageTitle}
         description={pageDescription}
-        path={`/${categorySlug}/${gameSlug}`}
+        path={isAllGamesView ? `/${categorySlug}` : `/${categorySlug}/${gameSlug}`}
       />
-      <section className="section services" id={`${categorySlug}-${gameSlug}`}>
+      <section className="section services" id={isAllGamesView ? categorySlug : `${categorySlug}-${gameSlug}`}>
         <Breadcrumb
-          customItems={[
+          customItems={isAllGamesView ? [
+            { label: 'Home', path: '/' },
+            { label: category.name, path: `/${categorySlug}` }
+          ] : [
             { label: 'Home', path: '/' },
             { label: game.name, path: `/${categorySlug}/${gameSlug}` }
           ]}
         />
         
         <div className="game-header">
-          {game.icon_url && (
+          {!isAllGamesView && game?.icon_url && (
             <img
               src={game.icon_url}
               alt={game.name}
@@ -152,7 +197,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
           )}
           <div>
             <p className="eyebrow">{category.name}</p>
-            <h1 className="section-title">{game.name} {category.name}</h1>
+            <h1 className="section-title">{isAllGamesView ? `${category.name}` : `${game.name} ${category.name}`}</h1>
             <p className="section-subtitle">{pageDescription}</p>
           </div>
         </div>
@@ -167,6 +212,23 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
               className="search-input"
             />
           </div>
+
+          {isAllGamesView && (
+            <div className="filter-controls">
+              <label htmlFor="game-filter">Game:</label>
+              <select
+                id="game-filter"
+                value={selectedGameId}
+                onChange={(e) => setSelectedGameId(e.target.value)}
+                className="filter-select"
+              >
+                <option value="all">All Games</option>
+                {games.map(g => (
+                  <option key={g.id} value={String(g.id)}>{g.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
 
           <div className="filter-controls">
             <label htmlFor="platform-filter">Platform:</label>
@@ -201,22 +263,27 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
         {filteredItems.length === 0 ? (
           <div className="no-items-message">
             <p>No items found{searchQuery ? ' matching your search' : ''}.</p>
-            {game.is_coming_soon && (
+            {!isAllGamesView && game?.is_coming_soon && (
               <p>This game is coming soon. Check back later!</p>
             )}
           </div>
         ) : (
           <div className="services-grid">
-            {filteredItems.map((item) => (
+            {filteredItems.map((item) => {
+              const itemGameIcon = isAllGamesView 
+                ? games.find(g => g.id === item.game_id)?.icon_url || '/zeusservicesPackage.webp'
+                : game?.icon_url || '/zeusservicesPackage.webp'
+              
+              return (
               <div
                 key={item.id}
                 className="service-card"
                 onClick={() => handleItemClick(item)}
               >
                 <picture>
-                  <source type="image/webp" srcSet={item.icon || game?.icon_url || '/zeusservicesPackage.webp'} />
+                  <source type="image/webp" srcSet={item.icon || itemGameIcon} />
                   <img
-                    src={item.icon || game?.icon_url || '/zeusservicesPackage.png'}
+                    src={item.icon || itemGameIcon}
                     alt={item.name}
                     className="card-image"
                     loading="lazy"
@@ -224,7 +291,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                     onError={(e) => {
                       if (e.target.dataset.fallbackApplied === '1') return
                       e.target.dataset.fallbackApplied = '1'
-                      e.target.src = game?.icon_url || '/zeusservicesPackage.png'
+                      e.target.src = itemGameIcon
                     }}
                   />
                 </picture>
@@ -253,7 +320,8 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                   View Details
                 </button>
               </div>
-            ))}
+            )
+            })}
           </div>
         )}
       </section>

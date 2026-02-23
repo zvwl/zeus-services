@@ -207,8 +207,9 @@
     max-width: none;
   }
 
-  .category-dropdown:hover .category-dropdown-content {
-    transform: none;
+  .category-dropdown-content.mobile-open {
+    opacity: 1;
+    pointer-events: all;
   }
 
   .games-grid {
@@ -224,5 +225,5 @@
 
   .category-dropdown:hover .category-dropdown-content {
     display: block;
-  }
-}
+    opacity: 1;
+    pointer-events: all;
