@@ -14,3 +14,4 @@ DROP TABLE IF EXISTS public.services CASCADE;
 -- Step 3: Verification queries
 -- SELECT COUNT(*) as total_items FROM public.items;
 -- SELECT legacy_type, COUNT(*) FROM public.items GROUP BY legacy_type;
+
