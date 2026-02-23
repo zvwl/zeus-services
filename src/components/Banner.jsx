@@ -50,9 +50,9 @@ export default function Banner({ onGetStarted, onScrollAbout }) {
       />
       <div className="banner-overlay"></div>
       <div className="banner-content">
-        <p className="eyebrow">GTA Online Account Services</p>
-        <h2 className="banner-title">Play Smarter, Not Harder</h2>
-        <p className="banner-subtitle">GTA Online account boosting and progression made simple.</p>
+        <p className="eyebrow">Multi-Game Account Services</p>
+        <h2 className="banner-title">Level Up Your Game</h2>
+        <p className="banner-subtitle">Professional boosting and account services for GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more.</p>
         <div className="banner-actions">
           <button className="primary-btn" onClick={onGetStarted}>Get started</button>
         </div>

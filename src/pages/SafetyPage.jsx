@@ -212,7 +212,7 @@ export default function SafetyPage() {
                 fontWeight: '600',
                 cursor: 'pointer'
               }}
-              onClick={() => window.location.href = '/products'}
+              onClick={() => window.location.href = '/accounts/gta5'}
             >
               I Understand - Browse Products
             </button>

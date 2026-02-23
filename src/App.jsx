@@ -1,5 +1,5 @@
 import { useEffect, useState, lazy, Suspense } from 'react'
-import { Routes, Route, useNavigate, useLocation } from 'react-router-dom'
+import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import './App.css'
 import { supabase } from './supabaseClient'
@@ -12,9 +12,8 @@ import CookieBanner from './components/CookieBanner'
 import StatusBanner from './components/StatusBanner'
 import LoadingSpinner from './components/LoadingSpinner'
 import Home from './pages/Home'
-const ServicesPage = lazy(() => import('./pages/Services'))
-const ServiceDetail = lazy(() => import('./pages/ServiceDetail'))
-const ProductsPage = lazy(() => import('./pages/ProductsPage'))
+const CategoryPage = lazy(() => import('./pages/CategoryPage'))
+const ItemDetailPage = lazy(() => import('./pages/ItemDetailPage'))
 
 // Lazy load secondary routes to reduce initial bundle
 const CartPage = lazy(() => import('./pages/CartPage'))
@@ -32,6 +31,8 @@ const AdminOrdersPage = lazy(() => import('./pages/AdminOrdersPage'))
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'))
 const AdminServicesPage = lazy(() => import('./pages/AdminServicesPage'))
 const AdminProductsPage = lazy(() => import('./pages/AdminProductsPage'))
+const AdminGamesPage = lazy(() => import('./pages/AdminGamesPage'))
+const AdminItemsPage = lazy(() => import('./pages/AdminItemsPage'))
 const TermsPage = lazy(() => import('./pages/TermsPage'))
 const PrivacyPage = lazy(() => import('./pages/PrivacyPage'))
 const RefundPage = lazy(() => import('./pages/RefundPage'))
@@ -52,8 +53,7 @@ function App() {
       return []
     }
   })
-  const [services, setServices] = useState([])
-  const [servicesLoading, setServicesLoading] = useState(true)
+  const [servicesLoading, setServicesLoading] = useState(false)
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
   const [userCountry, setUserCountry] = useState(null)
@@ -65,39 +65,6 @@ function App() {
 
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
-
-  // Fetch services from database
-  useEffect(() => {
-    const fetchServices = async () => {
-      if (isPrerender()) {
-        setServices([])
-        setServicesLoading(false)
-        return
-      }
-      setServicesLoading(true)
-      try {
-        const { data, error } = await supabase
-          .from('services')
-          .select('*')
-          .eq('active', true)
-          .order('created_at', { ascending: true })
-
-        if (error) {
-          console.error('Services fetch error:', error.message, error.code)
-          throw error
-        }
-        setServices(data || [])
-      } catch (err) {
-        console.error('Error fetching services:', err)
-        // Fallback to empty array if database fails
-        setServices([])
-      } finally {
-        setServicesLoading(false)
-      }
-    }
-
-    fetchServices()
-  }, [])
 
   // Persist cart to localStorage whenever it changes
   useEffect(() => {
@@ -111,7 +78,7 @@ function App() {
       if (storedRedirect) {
         localStorage.removeItem('oauthRedirect')
         // Validate redirect is internal path only to prevent open redirect
-        const validRedirect = storedRedirect.startsWith('/') && !storedRedirect.startsWith('//') ? storedRedirect : '/services'
+        const validRedirect = storedRedirect.startsWith('/') && !storedRedirect.startsWith('//') ? storedRedirect : '/boosting/gta5'
         navigate(validRedirect)
       }
     }
@@ -173,10 +140,10 @@ function App() {
       const pendingItem = localStorage.getItem('pendingCartItem')
       if (pendingItem) {
         try {
-          const { serviceId, platform: fullPlatform } = JSON.parse(pendingItem)
-          // Redirect to the service detail page to trigger auto-add
-          navigate(`/service/${serviceId}`)
-          // Don't remove from localStorage here - let ServiceDetail handle it
+          const { itemSlug, gameSlug, categorySlug } = JSON.parse(pendingItem)
+          if (itemSlug && gameSlug && categorySlug) {
+            navigate(`/${categorySlug}/${gameSlug}/${itemSlug}`)
+          }
         } catch (err) {
           console.error('Error processing pending cart item in App:', err)
           localStorage.removeItem('pendingCartItem')
@@ -395,52 +362,45 @@ function App() {
           path="/"
           element={(
             <Home
-              onGetStarted={() => navigate('/services')}
+              onGetStarted={() => navigate('/boosting/gta5')}
             />
           )}
         />
         <Route
           path="/services"
-          element={(
-            <ServicesPage
-              services={services}
-              servicesLoading={servicesLoading}
-              formatPrice={formatPrice}
-            />
-          )}
+          element={<Navigate to="/boosting/gta5" replace />}
         />
         <Route
           path="/service/:id"
-          element={(
-            <ServiceDetail
-              services={services}
-              cartItems={cartItems}
-              addToCart={addToCart}
-              removeFromCart={removeFromCart}
-              updateQuantity={updateQuantity}
-              currency={currency}
-              formatPrice={formatPrice}
-            />
-          )}
+          element={<Navigate to="/boosting/gta5" replace />}
         />
         <Route
           path="/product/:id"
+          element={<Navigate to="/accounts/gta5" replace />}
+        />
+        <Route
+          path="/products"
+          element={<Navigate to="/accounts/gta5" replace />}
+        />
+        {/* New multi-game category routes */}
+        <Route
+          path="/:categorySlug/:gameSlug"
           element={(
-            <ServiceDetail
-              services={services}
-              cartItems={cartItems}
-              addToCart={addToCart}
-              removeFromCart={removeFromCart}
-              updateQuantity={updateQuantity}
-              currency={currency}
+            <CategoryPage
               formatPrice={formatPrice}
+              addToCart={addToCart}
+              platformOptions={platformOptions}
             />
           )}
         />
         <Route
-          path="/products"
+          path="/:categorySlug/:gameSlug/:itemSlug"
           element={(
-            <ProductsPage formatPrice={formatPrice} />
+            <ItemDetailPage
+              formatPrice={formatPrice}
+              addToCart={addToCart}
+              platformOptions={platformOptions}
+            />
           )}
         />
         <Route
@@ -526,6 +486,22 @@ function App() {
           element={
             <ProtectedAdminRoute>
               <AdminProductsPage />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/games"
+          element={
+            <ProtectedAdminRoute>
+              <AdminGamesPage />
+            </ProtectedAdminRoute>
+          }
+        />
+        <Route
+          path="/admin/items"
+          element={
+            <ProtectedAdminRoute>
+              <AdminItemsPage />
             </ProtectedAdminRoute>
           }
         />

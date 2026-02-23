@@ -1,12 +1,17 @@
+import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import DOMPurify from 'dompurify'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../supabaseClient'
 import './UserMenu.css'
 
 export default function UserMenu({ isOpen, onClose }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user, isAdmin, logout } = useAuth()
+  const [expandedCategory, setExpandedCategory] = useState(null)
+  const [games, setGames] = useState({})
+  const [loadingGames, setLoadingGames] = useState(false)
 
   const handleNavigation = (path) => {
     navigate(path)
@@ -20,6 +25,50 @@ export default function UserMenu({ isOpen, onClose }) {
   }
 
   const isActive = (path) => location.pathname === path
+
+  // Load games for a category when it's expanded
+  const handleExpandCategory = async (categorySlug) => {
+    if (expandedCategory === categorySlug) {
+      setExpandedCategory(null)
+      return
+    }
+
+    setExpandedCategory(categorySlug)
+    
+    if (games[categorySlug]) {
+      return // Already loaded
+    }
+
+    setLoadingGames(true)
+    try {
+      // Fetch games that have items in this category
+      const { data, error } = await supabase
+        .rpc('get_games_for_category', { category_slug_param: categorySlug })
+
+      if (error) throw error
+      
+      // Map the RPC response to the expected format
+      const mappedGames = (data || []).map(game => ({
+        id: game.game_id,
+        name: game.game_name,
+        slug: game.game_slug,
+        icon_url: game.game_icon_url
+      }))
+      
+      setGames(prev => ({
+        ...prev,
+        [categorySlug]: mappedGames
+      }))
+    } catch (err) {
+      console.error(`Error loading games for ${categorySlug}:`, err)
+      setGames(prev => ({
+        ...prev,
+        [categorySlug]: []
+      }))
+    } finally {
+      setLoadingGames(false)
+    }
+  }
 
   if (!isOpen) return null
 
@@ -57,20 +106,106 @@ export default function UserMenu({ isOpen, onClose }) {
               <span className="menu-icon">🏠</span>
               <span className="menu-label">Home</span>
             </button>
-            <button
-              className={`menu-item ${isActive('/services') ? 'active' : ''}`}
-              onClick={() => handleNavigation('/services')}
-            >
-              <span className="menu-icon">🛍️</span>
-              <span className="menu-label">Services</span>
-            </button>
-            <button
-              className={`menu-item ${isActive('/products') ? 'active' : ''}`}
-              onClick={() => handleNavigation('/products')}
-            >
-              <span className="menu-icon">📦</span>
-              <span className="menu-label">Products</span>
-            </button>
+            
+            {/* Boosting with game submenu */}
+            <div className="menu-category-group">
+              <button
+                className={`menu-item ${expandedCategory === 'boosting' ? 'expanded' : ''}`}
+                onClick={() => handleExpandCategory('boosting')}
+              >
+                <span className="menu-icon">🛍️</span>
+                <span className="menu-label">Boosting</span>
+                <span className="menu-expand-arrow">▶</span>
+              </button>
+              {expandedCategory === 'boosting' && (
+                <div className="game-submenu">
+                  {loadingGames ? (
+                    <div className="submenu-item loading">Loading games...</div>
+                  ) : games['boosting']?.length > 0 ? (
+                    games['boosting'].map(game => (
+                      <button
+                        key={game.id}
+                        className={`submenu-item ${
+                          location.pathname === `/boosting/${game.slug}` ? 'active' : ''
+                        }`}
+                        onClick={() => handleNavigation(`/boosting/${game.slug}`)}
+                      >
+                        {game.name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="submenu-item empty">No games available</div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            {/* Accounts with game submenu */}
+            <div className="menu-category-group">
+              <button
+                className={`menu-item ${expandedCategory === 'accounts' ? 'expanded' : ''}`}
+                onClick={() => handleExpandCategory('accounts')}
+              >
+                <span className="menu-icon">📦</span>
+                <span className="menu-label">Accounts</span>
+                <span className="menu-expand-arrow">▶</span>
+              </button>
+              {expandedCategory === 'accounts' && (
+                <div className="game-submenu">
+                  {loadingGames ? (
+                    <div className="submenu-item loading">Loading games...</div>
+                  ) : games['accounts']?.length > 0 ? (
+                    games['accounts'].map(game => (
+                      <button
+                        key={game.id}
+                        className={`submenu-item ${
+                          location.pathname === `/accounts/${game.slug}` ? 'active' : ''
+                        }`}
+                        onClick={() => handleNavigation(`/accounts/${game.slug}`)}
+                      >
+                        {game.name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="submenu-item empty">No games available</div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* Topups with game submenu */}
+            <div className="menu-category-group">
+              <button
+                className={`menu-item ${expandedCategory === 'topups' ? 'expanded' : ''}`}
+                onClick={() => handleExpandCategory('topups')}
+              >
+                <span className="menu-icon">💰</span>
+                <span className="menu-label">Topups</span>
+                <span className="menu-expand-arrow">▶</span>
+              </button>
+              {expandedCategory === 'topups' && (
+                <div className="game-submenu">
+                  {loadingGames ? (
+                    <div className="submenu-item loading">Loading games...</div>
+                  ) : games['topups']?.length > 0 ? (
+                    games['topups'].map(game => (
+                      <button
+                        key={game.id}
+                        className={`submenu-item ${
+                          location.pathname === `/topups/${game.slug}` ? 'active' : ''
+                        }`}
+                        onClick={() => handleNavigation(`/topups/${game.slug}`)}
+                      >
+                        {game.name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="submenu-item empty">No games available</div>
+                  )}
+                </div>
+              )}
+            </div>
+
             <button
               className={`menu-item ${isActive('/reviews') ? 'active' : ''}`}
               onClick={() => handleNavigation('/reviews')}
@@ -143,18 +278,19 @@ export default function UserMenu({ isOpen, onClose }) {
                     <span className="menu-icon">👨‍💼</span>
                     <span className="menu-label">Manage Orders</span>
                   </button>
-                  <button                    className={`menu-item ${isActive('/admin/services') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/admin/services')}
+                  <button
+                    className={`menu-item ${isActive('/admin/items') ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/admin/items')}
                   >
-                    <span className="menu-icon">⚙️</span>
-                    <span className="menu-label">Manage Services</span>
+                    <span className="menu-icon">🎮</span>
+                    <span className="menu-label">Manage Items</span>
                   </button>
                   <button
-                    className={`menu-item ${isActive('/admin/products') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/admin/products')}
+                    className={`menu-item ${isActive('/admin/games') ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/admin/games')}
                   >
-                    <span className="menu-icon">📦</span>
-                    <span className="menu-label">Manage Products</span>
+                    <span className="menu-icon">🎯</span>
+                    <span className="menu-label">Manage Games</span>
                   </button>
                   <button
                     className={`menu-item ${isActive('/admin/reviews') ? 'active' : ''}`}
@@ -163,7 +299,8 @@ export default function UserMenu({ isOpen, onClose }) {
                     <span className="menu-icon">⭐</span>
                     <span className="menu-label">Manage Reviews</span>
                   </button>
-                  <button                    className={`menu-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
+                  <button
+                    className={`menu-item ${isActive('/admin/dashboard') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/admin/dashboard')}
                   >
                     <span className="menu-icon">📊</span>

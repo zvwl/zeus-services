@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
+import { isTurnstileBypassed } from '../utils/turnstile'
 
 const AuthContext = createContext(null)
 
@@ -311,9 +312,10 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password, captchaToken) => {
     try {
+      const requireCaptcha = !isTurnstileBypassed()
       // Note: captchaToken validation would ideally be done server-side
       // For now, we just require it to be present
-      if (!captchaToken) {
+      if (requireCaptcha && !captchaToken) {
         return { success: false, error: 'Please complete the CAPTCHA' }
       }
 
@@ -322,7 +324,7 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
         options: {
-          captchaToken
+          captchaToken: captchaToken || undefined
         }
       })
       
@@ -499,6 +501,7 @@ export const AuthProvider = ({ children }) => {
 
   const signup = async (name, email, password, captchaToken) => {
     try {
+      const requireCaptcha = !isTurnstileBypassed()
       // Check if email already exists in customers table
       const { data: existingCustomer } = await supabase
         .from('customers')
@@ -518,7 +521,7 @@ export const AuthProvider = ({ children }) => {
             display_name: name
           },
           emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
-          captchaToken
+          captchaToken: requireCaptcha ? captchaToken : undefined
         }
       })
       
@@ -590,7 +593,7 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'No user logged in' }
       }
 
-      if (!captchaToken) {
+      if (!captchaToken && !isTurnstileBypassed()) {
         return { success: false, error: 'Please complete the CAPTCHA' }
       }
 
@@ -599,7 +602,7 @@ export const AuthProvider = ({ children }) => {
         email: currentUser.email,
         options: {
           emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
-          captchaToken
+          captchaToken: captchaToken || undefined
         }
       })
 
@@ -620,7 +623,7 @@ export const AuthProvider = ({ children }) => {
         return { success: false, error: 'Please enter your email first' }
       }
 
-      if (!captchaToken) {
+      if (!captchaToken && !isTurnstileBypassed()) {
         return { success: false, error: 'Please complete the CAPTCHA' }
       }
 
@@ -629,7 +632,7 @@ export const AuthProvider = ({ children }) => {
         email,
         options: {
           emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
-          captchaToken
+          captchaToken: captchaToken || undefined
         }
       })
 

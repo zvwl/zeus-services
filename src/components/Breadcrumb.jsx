@@ -29,11 +29,20 @@ export default function Breadcrumb({ customItems }) {
         <nav className="breadcrumb" aria-label="Breadcrumb">
           <ol className="breadcrumb-list">
             {customItems.map((item, index) => (
-              <li key={item.path} className="breadcrumb-item">
+              <li key={`breadcrumb-item-${index}`} className="breadcrumb-item">
                 {index < customItems.length - 1 ? (
                   <>
-                    <Link to={item.path}>{item.label}</Link>
-                    <span className="breadcrumb-separator">/</span>
+                    {item.path ? (
+                      <>
+                        <Link to={item.path}>{item.label}</Link>
+                        <span className="breadcrumb-separator">/</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="breadcrumb-label">{item.label}</span>
+                        <span className="breadcrumb-separator">/</span>
+                      </>
+                    )}
                   </>
                 ) : (
                   <span className="breadcrumb-current" aria-current="page">{item.label}</span>

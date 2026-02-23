@@ -4,14 +4,16 @@ import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import googleLogo from '../assets/google-logo.svg'
 import discordLogo from '../assets/discord-logo.svg'
+import { isTurnstileBypassed } from '../utils/turnstile'
 import './AuthPages.css'
 
 export default function LoginPage() {
   const [searchParams] = useSearchParams()
   // Validate redirect parameter to prevent open redirect attacks
-  const rawRedirect = searchParams.get('redirect') || '/services'
-  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/services'
+  const rawRedirect = searchParams.get('redirect') || '/boosting/gta5'
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/boosting/gta5'
   const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
+  const bypassTurnstile = isTurnstileBypassed()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
@@ -46,17 +48,17 @@ export default function LoginPage() {
       return
     }
 
-    if (!siteKey) {
+    if (!siteKey && !bypassTurnstile) {
       setError('Captcha is unavailable. Please contact support.')
       return
     }
 
-    if (!captchaToken) {
+    if (!captchaToken && !bypassTurnstile) {
       setError('Please complete the CAPTCHA')
       return
     }
 
-    const result = await login(email, password, captchaToken)
+    const result = await login(email, password, bypassTurnstile ? 'bypass' : captchaToken)
     
     // Reset CAPTCHA immediately after login attempt (success or failure)
     resetCaptcha()
@@ -71,11 +73,12 @@ export default function LoginPage() {
       // Check if there's a pending cart item to add
       const pendingItem = localStorage.getItem('pendingCartItem')
       if (pendingItem) {
-        // Don't remove it here - let ServiceDetail handle it after auto-adding
         try {
-          const { serviceId } = JSON.parse(pendingItem)
-          // Navigate to the service detail page with the ID
-          navigate(`/service/${serviceId}`)
+          const { itemSlug, gameSlug, categorySlug } = JSON.parse(pendingItem)
+          if (itemSlug && gameSlug && categorySlug) {
+            navigate(`/${categorySlug}/${gameSlug}/${itemSlug}`)
+            return
+          }
         } catch (err) {
           console.error('Error processing pending cart item:', err)
           localStorage.removeItem('pendingCartItem')
@@ -179,10 +182,12 @@ export default function LoginPage() {
         // Check if there's a pending cart item to add
         const pendingItem = localStorage.getItem('pendingCartItem')
         if (pendingItem) {
-          // Don't remove it here - let ServiceDetail handle it after auto-adding
           try {
-            const { serviceId } = JSON.parse(pendingItem)
-            navigate(`/service/${serviceId}`)
+            const { itemSlug, gameSlug, categorySlug } = JSON.parse(pendingItem)
+            if (itemSlug && gameSlug && categorySlug) {
+              navigate(`/${categorySlug}/${gameSlug}/${itemSlug}`)
+              return
+            }
           } catch (err) {
             console.error('Error processing pending cart item:', err)
             localStorage.removeItem('pendingCartItem')
@@ -264,7 +269,7 @@ export default function LoginPage() {
 
             <div className="form-group">
               <label>Security check</label>
-              {siteKey ? (
+              {siteKey && !bypassTurnstile ? (
                 <Turnstile
                   key={captchaKey}
                   siteKey={siteKey}
@@ -281,6 +286,8 @@ export default function LoginPage() {
                     refreshExpired: 'auto'
                   }}
                 />
+              ) : bypassTurnstile ? (
+                <div className="success-message">Captcha disabled for localhost.</div>
               ) : (
                 <div className="error-message">Captcha key missing. Please contact support.</div>
               )}

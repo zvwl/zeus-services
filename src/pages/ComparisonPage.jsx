@@ -184,7 +184,7 @@ export default function ComparisonPage() {
                   fontWeight: '600',
                   cursor: 'pointer'
                 }}
-                onClick={() => window.location.href = '/products'}
+                onClick={() => window.location.href = '/accounts/gta5'}
               >
                 Browse Modded Accounts
               </button>
@@ -199,7 +199,7 @@ export default function ComparisonPage() {
                   fontWeight: '600',
                   cursor: 'pointer'
                 }}
-                onClick={() => window.location.href = '/services'}
+                onClick={() => window.location.href = '/boosting/gta5'}
               >
                 View Boosting Services
               </button>

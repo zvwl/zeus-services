@@ -21,7 +21,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
         <div className="empty-cart">
           <p>Your cart is empty</p>
           <span className="empty-icon">🛒</span>
-          <button onClick={() => navigate('/services')} className="primary-btn">
+          <button onClick={() => navigate('/boosting/gta5')} className="primary-btn">
             Start Shopping
           </button>
         </div>

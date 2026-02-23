@@ -58,7 +58,7 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
         <h2 className="section-title">Your cart is empty</h2>
         <p className="section-subtitle">Add items to your cart to proceed to checkout.</p>
         <div className="empty-checkout">
-          <button onClick={() => navigate('/services')} className="primary-btn">
+          <button onClick={() => navigate('/boosting/gta5')} className="primary-btn">
             Continue Shopping
           </button>
         </div>

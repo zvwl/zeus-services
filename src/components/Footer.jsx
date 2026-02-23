@@ -6,9 +6,9 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3>Services</h3>
+          <h3>Boosting</h3>
           <div className="footer-links">
-            <Link to="/services">Browse Services</Link>
+            <Link to="/boosting/gta5">Browse Boosting</Link>
             <Link to="/cart">Your Cart</Link>
             <Link to="/orders">Your Orders</Link>
           </div>

@@ -19,10 +19,42 @@ export default function Home({ onGetStarted }) {
 
       <section className="section intro">
         <div className="intro-container" style={{maxWidth: '900px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center'}}>
-          <h2 style={{fontSize: '1.8rem', marginBottom: '1rem', color: '#f1f5f9'}}>Professional GTA Online Account Boosting & Modded Accounts</h2>
+          <h2 style={{fontSize: '1.8rem', marginBottom: '1rem', color: '#f1f5f9'}}>Professional Multi-Game Account Services & Boosting</h2>
           <p style={{fontSize: '1.1rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1.5rem'}}>
-            Welcome to zeuservices - trusted GTA Online account services for PC. We provide premium modded accounts and professional boosting across Steam, Epic Games, Xbox App, and Rockstar Launcher. With 9+ years of experience, we deliver safe, manual, and reliable progression.
+            Welcome to Zeus Services - your trusted partner for professional gaming services across multiple platforms. We provide premium account services and boosting for GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more. With 9+ years of experience, we deliver safe, manual, and reliable services tailored to each game.
           </p>
+        </div>
+      </section>
+
+      <section className="section" style={{backgroundColor: '#0f1720', padding: '3rem 2rem'}}>
+        <div style={{maxWidth: '1200px', margin: '0 auto'}}>
+          <h2 style={{fontSize: '2rem', marginBottom: '1rem', color: '#fbbf24', textAlign: 'center'}}>Our Services</h2>
+          <p style={{fontSize: '1.05rem', color: '#cbd5e1', textAlign: 'center', marginBottom: '3rem', maxWidth: '700px', margin: '0 auto 3rem'}}>
+            Choose the service type that fits your gaming needs. Available across all our supported games.
+          </p>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem'}}>
+            {/* Topups */}
+            <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
+              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>💰</div>
+              <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Topups</h3>
+              <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>In-game currency and credits. Get the currency you need instantly for faster gameplay and better gear.</p>
+              <a href="/topups/gta5" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#fbbf24', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Topups</a>
+            </div>
+            {/* Boosting */}
+            <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
+              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>⚡</div>
+              <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Boosting</h3>
+              <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Rank progression, level boosting, and achievement grinding. Let us handle the grind while you relax.</p>
+              <a href="/boosting/gta5" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#60a5fa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Boosting</a>
+            </div>
+            {/* Accounts */}
+            <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
+              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>👤</div>
+              <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Accounts</h3>
+              <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Pre-built accounts with progression ready to play. Skip the grind and jump straight into fun.</p>
+              <a href="/accounts/gta5" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#a78bfa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Accounts</a>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -36,14 +68,14 @@ export default function Home({ onGetStarted }) {
               <div className="safe-easy-number">1</div>
               <div className="safe-easy-icon">🛍️</div>
               <h3>Pick your product/service</h3>
-              <p>Choose the GTA Online PC account or service that fits what you want.</p>
+              <p>Browse and select from our catalog of accounts and services across all supported games.</p>
             </div>
 
             <div className="safe-easy-card">
               <div className="safe-easy-number">2</div>
               <div className="safe-easy-icon">💻</div>
-              <h3>Select Platform & Version</h3>
-              <p>Choose your platform: Steam, Social Club, Epic Games, or Xbox App – then select your preferred version and add to cart.</p>
+              <h3>Select Your Game & Version</h3>
+              <p>Choose your game, version, and platform, then add to cart. We support multiple launchers and editions.</p>
             </div>
 
             <div className="safe-easy-card">
@@ -56,8 +88,8 @@ export default function Home({ onGetStarted }) {
             <div className="safe-easy-card">
               <div className="safe-easy-number">4</div>
               <div className="safe-easy-icon">⚡</div>
-              <h3>Delivery</h3>
-              <p>Accounts and services are delivered manually. We'll contact you via Discord to provide full details and guide you through the process.</p>
+              <h3>Quick Delivery</h3>
+              <p>Accounts and services are delivered manually via Discord. Timelines vary from 20 minutes to 5 hours depending on the game and service type. Full updates provided.</p>
             </div>
           </div>
         </div>
@@ -66,7 +98,7 @@ export default function Home({ onGetStarted }) {
       <section className="section why-zeus">
         <div className="why-zeus-container">
           <h2 className="section-title">Why run with Zeus Services?</h2>
-          <p className="section-subtitle">Over 9 years of experience in account boosting and services. Been supporting GTA 5 since the PS3 and Xbox 360 days.</p>
+          <p className="section-subtitle">Over 9 years of experience across multiple gaming platforms. Expert knowledge in boosting, account services, and game-specific methods.</p>
           
           <div className="why-zeus-grid">
             <div className="why-zeus-card">
@@ -83,8 +115,8 @@ export default function Home({ onGetStarted }) {
 
             <div className="why-zeus-card">
               <div className="why-zeus-icon">⚡</div>
-              <h3>Fast delivery window</h3>
-              <p>For in-stock accounts and services, delivery starts as soon as payment is confirmed – no long waits, no delays.</p>
+              <h3>Reliable Delivery</h3>
+              <p>Orders are handled personally with attention to detail. Timelines vary by game and service - from 20 minutes to 5 hours. You'll get updates throughout the process.</p>
             </div>
 
             <div className="why-zeus-card">
@@ -96,7 +128,7 @@ export default function Home({ onGetStarted }) {
             <div className="why-zeus-card">
               <div className="why-zeus-icon">🛠️</div>
               <h3>Experience That Actually Matters</h3>
-              <p>Not new sellers chasing quick cash. We've been around since PS3/Xbox 360 days and adapted through every GTA era, patch, and ban wave. That experience means smarter methods, safer execution, and fewer mistakes.</p>
+              <p>Not new sellers chasing quick cash. Years of experience adapting to game updates, patches, and safety practices across multiple platforms. That experience means smarter methods, safer execution, and fewer mistakes.</p>
             </div>
 
             <div className="why-zeus-card">
@@ -120,7 +152,7 @@ export default function Home({ onGetStarted }) {
 
             <details className="faq-item">
               <summary>How do I buy from Zeus Services?</summary>
-              <p>Browse our services, select your platform and version, add to cart, and checkout securely via Stripe. Once payment is confirmed, we'll contact you via Discord for account delivery.</p>
+              <p>Browse our games and services, select your version and platform, add to cart, and checkout securely via Stripe. Once payment is confirmed, we'll contact you via Discord for delivery.</p>
             </details>
 
             <details className="faq-item">
@@ -130,7 +162,7 @@ export default function Home({ onGetStarted }) {
 
             <details className="faq-item">
               <summary>Is this safe and legit?</summary>
-              <p>Yes. All transactions are secured via Stripe, and delivery is handled manually through Discord so you have full transparency and communication history. See our Terms & Conditions for important details about account responsibility.</p>
+              <p>Yes. All transactions are secured via Stripe, delivery is handled manually through Discord with full transparency and communication history. We follow industry best practices and game-specific safety guidelines. See our Terms & Conditions for important details.</p>
             </details>
 
             <details className="faq-item">

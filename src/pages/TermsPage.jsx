@@ -24,29 +24,40 @@ export default function TermsPage() {
           <section className="terms-section">
             <h2>1. Nature of Our Services</h2>
             <p>
-              Zeus Services provides <strong>digital in-game services and/or modded accounts for GTA Online (PC)</strong>. 
+              Zeus Services provides <strong>digital in-game services across multiple games</strong>, including:
+            </p>
+            <ul>
+              <li><strong>Account Services:</strong> Modded or premium accounts with unlocks and progression</li>
+              <li><strong>Boosting Services:</strong> Rank progression, leveling, seasonal progression</li>
+              <li><strong>Topup Services:</strong> In-game currency, premium currency, and credits</li>
+              <li><strong>Supported Games:</strong> GTA 5, Fortnite, Rocket League, Forza Horizon 6, and additional games as added</li>
+            </ul>
+            <p>
               All services are delivered digitally and are considered <strong>intangible goods</strong> once started or completed.
             </p>
           </section>
 
           <section className="terms-section critical">
-            <h2>2. Rockstar Games Disclaimer & Risk Acceptance</h2>
+            <h2>2. Game Publisher Disclaimer & Risk Acceptance</h2>
             <p>
-              <strong>CRITICAL:</strong> Purchasing modded accounts or modding services is <strong>against Rockstar Games' Terms of Service</strong>.
+              <strong>CRITICAL:</strong> Services provided by Zeus Services may violate the Terms of Service of game publishers 
+              including Rockstar Games, Epic Games, Psyonix, and others.
             </p>
             <ul>
-              <li>Zeus Services is <strong>NOT affiliated with, endorsed by, or associated with Rockstar Games</strong> in any way</li>
-              <li>Rockstar Games actively enforces their ToS against modded accounts and modifications</li>
-              <li>We cannot prevent, predict, or guarantee protection against Rockstar Games enforcement</li>
+              <li>Zeus Services is <strong>NOT affiliated with, endorsed by, or associated with any game publisher</strong></li>
+              <li>Game publishers actively enforce their Terms of Service against third-party services</li>
+              <li>We cannot prevent, predict, or guarantee protection against publisher enforcement</li>
+              <li>Each publisher has different policies and risk levels</li>
             </ul>
             <p>
               By purchasing from us, you <strong>fully acknowledge and accept</strong> that:
             </p>
             <ul>
-              <li>Your account may be <strong>reset, suspended, or permanently banned</strong></li>
-              <li>Rockstar Games may take enforcement action <strong>at any time</strong> without warning</li>
+              <li>Your account may be <strong>reset, suspended, or permanently banned</strong> by the game publisher</li>
+              <li>Game publishers may take enforcement action <strong>at any time</strong> without warning</li>
               <li>These consequences are <strong>entirely outside our control</strong></li>
-              <li>We cannot reverse Rockstar Games actions or provide compensation for them</li>
+              <li>We cannot reverse game publisher actions or provide compensation for them</li>
+              <li>Different games have different ban risk levels - research the specific game's policies before purchasing</li>
             </ul>
             <p>
               <strong>You proceed at your own risk and accept full responsibility for any outcomes.</strong>
@@ -62,12 +73,13 @@ export default function TermsPage() {
               <strong>NO refunds</strong> are provided under any circumstances, including but not limited to:
             </p>
             <ul>
-              <li>Account bans, suspensions, or resets</li>
+              <li>Account bans, suspensions, or resets by game publishers</li>
               <li>Failure to follow instructions</li>
               <li>Buyer regret or change of mind</li>
               <li>Delays caused by the buyer</li>
-              <li>Rockstar Games enforcement actions</li>
+              <li>Game publisher enforcement actions</li>
               <li>Service incompleteness due to buyer factors</li>
+              <li>Any publisher penalties or restrictions</li>
             </ul>
             <p>
               Once a service has been started or completed, it is considered <strong>fulfilled</strong>.
@@ -79,16 +91,19 @@ export default function TermsPage() {
             <p>
               We may offer <strong>free recovery services only if</strong> the buyer strictly follows our guidance.
             </p>
-            <h3>Daily Cash Safety Guidelines:</h3>
+            <h3>Safety Guidelines:</h3>
             <ul>
-              <li><strong>30–50 million GTA$ per day maximum</strong> is the recommended safe limit</li>
-              <li>Exceeding this daily limit significantly increases ban risk</li>
+              <li>Follow all instructions provided by Zeus Services staff</li>
+              <li>Respect activity limits specific to your game (e.g., daily spending, progression rates)</li>
+              <li>Do not engage in suspicious activity that could trigger publisher detection</li>
+              <li>Maintain normal gameplay patterns and avoid rapid account changes</li>
             </ul>
             <h3>Free Service Eligibility:</h3>
             <ul>
-              <li>If you follow our daily cash guidance AND receive a ban → you <strong>may</strong> be eligible for a <strong>free one-time service</strong></li>
-              <li>If you <strong>exceed</strong> the daily cash limit → <strong>no free service will be provided</strong></li>
+              <li>If you follow our safety guidance AND receive a ban → you <strong>may</strong> be eligible for a <strong>free one-time service</strong></li>
+              <li>If you <strong>ignore</strong> our guidance → <strong>no free service will be provided</strong></li>
               <li>Any ban caused by ignoring instructions → buyer accepts full responsibility</li>
+              <li>Eligibility is determined at Zeus Services' sole discretion</li>
             </ul>
           </section>
 
@@ -244,8 +259,8 @@ export default function TermsPage() {
           <section className="terms-section disclaimer">
             <p>
               <strong>DISCLAIMER:</strong> By completing a purchase, you explicitly acknowledge that you have read, 
-              understood, and agree to all terms outlined above, including the risks associated with modded accounts, 
-              the final nature of all sales, and the potential for Rockstar Games enforcement actions.
+              understood, and agree to all terms outlined above, including the risks associated with third-party services, 
+              the final nature of all sales, and the potential for game publisher enforcement actions.
             </p>
           </section>
         </div>

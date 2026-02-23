@@ -26,7 +26,7 @@ export default function VerifyEmailPage() {
           }
         }
 
-        setTimeout(() => navigate('/services'), 2000)
+        setTimeout(() => navigate('/boosting/gta5'), 2000)
       }
 
       const completeError = (text) => {

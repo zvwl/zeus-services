@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
+import { isTurnstileBypassed } from '../utils/turnstile'
 import './AuthPages.css'
 
 export default function PendingVerificationPage() {
@@ -9,6 +10,7 @@ export default function PendingVerificationPage() {
   const navigate = useNavigate()
   const email = location.state?.email || 'your email'
   const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
+  const bypassTurnstile = isTurnstileBypassed()
   const [resendEmail, setResendEmail] = useState(location.state?.email || '')
   const [resendStatus, setResendStatus] = useState('')
   const [isResending, setIsResending] = useState(false)
@@ -20,17 +22,17 @@ export default function PendingVerificationPage() {
     setResendStatus('')
     setIsResending(true)
     try {
-      if (!siteKey) {
+      if (!siteKey && !bypassTurnstile) {
         setResendStatus('Captcha is unavailable. Please contact support.')
         return
       }
 
-      if (!captchaToken) {
+      if (!captchaToken && !bypassTurnstile) {
         setResendStatus('Please complete the CAPTCHA')
         return
       }
 
-      const result = await resendVerificationEmailForEmail(resendEmail.trim(), captchaToken)
+      const result = await resendVerificationEmailForEmail(resendEmail.trim(), bypassTurnstile ? 'bypass' : captchaToken)
       if (result.success) {
         setResendStatus(result.message)
         setCaptchaToken(null)
@@ -100,12 +102,18 @@ export default function PendingVerificationPage() {
               </div>
             </div>
             <div className="resend-captcha">
-              <Turnstile
-                key={captchaKey}
-                siteKey={siteKey || ''}
-                onSuccess={setCaptchaToken}
-                onExpire={() => setCaptchaToken(null)}
-              />
+              {siteKey && !bypassTurnstile ? (
+                <Turnstile
+                  key={captchaKey}
+                  siteKey={siteKey}
+                  onSuccess={setCaptchaToken}
+                  onExpire={() => setCaptchaToken(null)}
+                />
+              ) : bypassTurnstile ? (
+                <div className="success-message">Captcha disabled for localhost.</div>
+              ) : (
+                <div className="error-message">Captcha key missing. Please contact support.</div>
+              )}
             </div>
           </div>
         </div>

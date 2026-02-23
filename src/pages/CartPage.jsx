@@ -475,7 +475,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
 
               <div className="order-actions">
                 <a href="/orders" className="primary-btn">View All Orders</a>
-                <a href="/services" className="secondary-btn">Continue Shopping</a>
+                <a href="/boosting/gta5" className="secondary-btn">Continue Shopping</a>
               </div>
             </div>
           </div>

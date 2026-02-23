@@ -1,7 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
+import { supabase } from '../supabaseClient'
 import UserMenu from './UserMenu'
+import CategoryDropdown from './CategoryDropdown'
 import './Header.css'
 
 export default function Header({ cartCount, currency, onCurrencyChange }) {
@@ -9,10 +11,36 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   const { user, logout } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
+  const [categories, setCategories] = useState([])
 
   const currencies = ['GBP', 'USD', 'EUR']
 
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`
+
+  // Fetch categories
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('categories')
+          .select('*')
+          .order('display_order', { ascending: true })
+
+        if (error) throw error
+        setCategories(data || [])
+      } catch (err) {
+        console.error('Error fetching categories:', err)
+        // Fallback to default categories
+        setCategories([
+          { id: '1', name: 'Topups', slug: 'topups', display_order: 1 },
+          { id: '2', name: 'Boosting', slug: 'boosting', display_order: 2 },
+          { id: '3', name: 'Accounts', slug: 'accounts', display_order: 3 }
+        ])
+      }
+    }
+
+    fetchCategories()
+  }, [])
 
   const handleLogout = async () => {
     await logout()
@@ -33,7 +61,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
                 width="86"
                 height="86"
                 decoding="async"
-                fetchpriority="high"
+                fetchPriority="high"
               />
             </span>
             <span className="brand-name">Zeus Services</span>
@@ -41,8 +69,9 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
 
           <nav className="nav">
             <NavLink to="/" className={navLinkClass}>Home</NavLink>
-            <NavLink to="/products" className={navLinkClass}>Products</NavLink>
-            <NavLink to="/services" className={navLinkClass}>Services</NavLink>
+            {categories.map(category => (
+              <CategoryDropdown key={category.id} category={category} />
+            ))}
             <NavLink to="/reviews" className={navLinkClass}>Reviews</NavLink>
             {user && <NavLink to="/settings" className={navLinkClass}>Settings</NavLink>}
           </nav>

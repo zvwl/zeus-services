@@ -4,10 +4,12 @@ import DOMPurify from 'dompurify'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
+import { isTurnstileBypassed } from '../utils/turnstile'
 import './AuthPages.css'
 
 export default function SignupPage() {
   const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
+  const bypassTurnstile = isTurnstileBypassed()
   const [displayName, setDisplayName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -141,17 +143,17 @@ export default function SignupPage() {
       return
     }
 
-    if (!siteKey) {
+    if (!siteKey && !bypassTurnstile) {
       setError('Captcha is unavailable. Please contact support.')
       return
     }
 
-    if (!captchaToken) {
+    if (!captchaToken && !bypassTurnstile) {
       setError('Please complete the CAPTCHA')
       return
     }
 
-    const result = await signup(displayName.trim(), email, password, captchaToken)
+    const result = await signup(displayName.trim(), email, password, bypassTurnstile ? 'bypass' : captchaToken)
     if (result.success) {
       resetCaptcha()
       console.log('Signup success, navigating to pending-verification')
@@ -297,7 +299,7 @@ export default function SignupPage() {
 
             <div className="form-group">
               <label>Security check</label>
-              {siteKey ? (
+              {siteKey && !bypassTurnstile ? (
                 <Turnstile
                   key={captchaKey}
                   siteKey={siteKey}
@@ -314,6 +316,8 @@ export default function SignupPage() {
                     refreshExpired: 'auto'
                   }}
                 />
+              ) : bypassTurnstile ? (
+                <div className="success-message">Captcha disabled for localhost.</div>
               ) : (
                 <div className="error-message">Captcha key missing. Please contact support.</div>
               )}

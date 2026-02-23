@@ -5,17 +5,20 @@ export default function ProcessPage() {
   return (
     <>
       <SEO 
-        title="How zeuservices Works - Step-by-Step Process for GTA Account Services"
-        description="Learn how our GTA account service process works. Discord-based transactions, safe payment through Stripe, service hours 6 PM-1 AM UK time. Professional delivery explained."
-        keywords="how zeuservices works, service process, account delivery, Discord ticket, payment process"
+        title="How Zeus Services Works - Multi-Game Account Services & Boosting"
+        description="Learn how Zeus Services works across all games. Simple 4-step process: purchase, create ticket, we complete service, you receive. Discord-based support, secure payment."
+        keywords="how zeus services works, service process, account boosting, Discord support, payment process, multi-game"
       />
       
       <section className="section">
         <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'How It Works', path: '/process' }]} />
         <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '3rem 2rem' }}>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '1rem', color: '#f1f5f9', textAlign: 'center' }}>
-            How zeuservices Process Works
+            How Zeus Services Works
           </h1>
+          <p style={{ fontSize: '1.1rem', color: '#cbd5e1', marginBottom: '1rem', lineHeight: '1.8', textAlign: 'center' }}>
+            We support <strong>GTA 5, Fortnite, Rocket League, Forza Horizon 6</strong>, and more games coming soon.
+          </p>
           <p style={{ fontSize: '1.1rem', color: '#cbd5e1', marginBottom: '3rem', lineHeight: '1.8', textAlign: 'center' }}>
             Simple, professional, transparent. Here's exactly what happens when you order from us.
           </p>
@@ -92,7 +95,7 @@ export default function ProcessPage() {
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#60a5fa' }}>Platforms:</strong> PC only (Steam, Epic Games, Xbox App, Rockstar Social Club)
+                      <strong style={{ color: '#60a5fa' }}>Platforms:</strong> PC (Steam, Epic Games, Xbox App, platform-specific launchers)
                     </p>
                   </div>
                 </div>
@@ -188,7 +191,7 @@ export default function ProcessPage() {
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#fbbf24' }}>IMPORTANT:</strong> Don't spend over 50M GTA$ per day or your ban risk increases significantly.
+                      <strong style={{ color: '#fbbf24' }}>IMPORTANT:</strong> Follow safety guidelines provided for your specific game. Gameplay patterns should stay normal to reduce ban risk.
                     </p>
                   </div>
                 </div>
@@ -229,7 +232,7 @@ export default function ProcessPage() {
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#60a5fa' }}>Services Available:</strong> Money grinding, RP boosting, vehicle unlocks, rank progression, full account builds
+                      <strong style={{ color: '#60a5fa' }}>Services Available:</strong> Game-specific boosting services - ranking, progression, currency, unlocks, and full account builds. Varies by game.
                     </p>
                   </div>
                 </div>
@@ -293,7 +296,7 @@ export default function ProcessPage() {
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#34d399' }}>Timeline:</strong> Most services take 30 minutes to 2 hours
+                      <strong style={{ color: '#34d399' }}>Timeline:</strong> 20 minutes to 5 hours depending on game and service
                     </p>
                   </div>
                 </div>
@@ -321,11 +324,11 @@ export default function ProcessPage() {
                     Service Complete!
                   </h3>
                   <p style={{ color: '#cbd5e1', lineHeight: '1.7', marginBottom: '1rem' }}>
-                    We notify you in the Discord ticket that the service is complete. Your account now has the progression/money/unlocks you ordered. Change your password immediately after service completion.
+                    We notify you in the Discord ticket that the service is complete. Your account now has the progression/currency/unlocks you ordered. Change your password immediately after service completion.
                   </p>
                   <div style={{ backgroundColor: '#1a2332', padding: '1rem', borderRadius: '6px' }}>
                     <p style={{ color: '#cbd5e1', fontSize: '0.95rem', lineHeight: '1.6' }}>
-                      <strong style={{ color: '#fbbf24' }}>IMPORTANT:</strong> Don't spend over 50M GTA$ per day or your ban risk increases significantly.
+                      <strong style={{ color: '#fbbf24' }}>IMPORTANT:</strong> Follow safety guidelines provided for your specific game. Using the items/currency normally reduces ban risk.
                     </p>
                   </div>
                 </div>
@@ -358,7 +361,7 @@ export default function ProcessPage() {
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>Setup Time</td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}><strong>40 minutes - 2 hours</strong></td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}><strong>30 minutes - 2 hours</strong></td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}><strong>20 minutes - 5 hours</strong></td>
                   </tr>
                   <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>Control</td>
@@ -380,10 +383,10 @@ export default function ProcessPage() {
                     <td style={{ padding: '1rem', textAlign: 'center' }}>Instant gratification</td>
                     <td style={{ padding: '1rem', textAlign: 'center' }}>Specific goals</td>
                   </tr>
-                  <tr>
+                  <tr style={{ borderBottom: '1px solid #334155' }}>
                     <td style={{ padding: '1rem' }}>Safety</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Same ban risk (luck-based)</td>
-                    <td style={{ padding: '1rem', textAlign: 'center' }}>Same ban risk (luck-based)</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Follow game-specific guidelines</td>
+                    <td style={{ padding: '1rem', textAlign: 'center' }}>Follow game-specific guidelines</td>
                   </tr>
                 </tbody>
               </table>
@@ -406,7 +409,7 @@ export default function ProcessPage() {
               Ready to Get Started?
             </h2>
             <p style={{ color: '#cbd5e1', fontSize: '1.05rem', marginBottom: '1.5rem', lineHeight: '1.8' }}>
-              Choose modded accounts for instant progression or boosting for targeted improvements. Either way, the process is simple and safe.
+              Choose the service type that fits your needs. We support GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more. Browse our selection and start your  order.
             </p>
             <div className="process-cta-actions">
             <button
@@ -422,7 +425,7 @@ export default function ProcessPage() {
                 cursor: 'pointer',
                 marginRight: '1rem'
               }}
-              onClick={() => window.location.href = '/products'}
+              onClick={() => window.location.href = '/accounts/gta5'}
             >
               Shop Modded Accounts
             </button>
@@ -438,7 +441,7 @@ export default function ProcessPage() {
                 fontWeight: '600',
                 cursor: 'pointer'
               }}
-              onClick={() => window.location.href = '/services'}
+              onClick={() => window.location.href = '/boosting/gta5'}
             >
               Browse Boosting Services
             </button>

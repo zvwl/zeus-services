@@ -2,10 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { supabase } from '../supabaseClient'
+import { isTurnstileBypassed } from '../utils/turnstile'
 import './AuthPages.css'
 
 export default function ForgotPasswordPage() {
   const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
+  const bypassTurnstile = isTurnstileBypassed()
   const [email, setEmail] = useState('')
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
@@ -26,13 +28,13 @@ export default function ForgotPasswordPage() {
       return
     }
 
-    if (!siteKey) {
+    if (!siteKey && !bypassTurnstile) {
       setError('Captcha is unavailable. Please contact support.')
       setLoading(false)
       return
     }
 
-    if (!captchaToken) {
+    if (!captchaToken && !bypassTurnstile) {
       setError('Please complete the CAPTCHA')
       setLoading(false)
       return
@@ -41,7 +43,7 @@ export default function ForgotPasswordPage() {
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${import.meta.env.VITE_FRONTEND_URL || window.location.origin}/reset-password`,
-        captchaToken
+        captchaToken: bypassTurnstile ? undefined : captchaToken
       })
 
       setCaptchaToken(null)
@@ -90,7 +92,7 @@ export default function ForgotPasswordPage() {
 
               <div className="form-group">
                 <label>Security check</label>
-                {siteKey ? (
+                {siteKey && !bypassTurnstile ? (
                   <Turnstile
                     key={captchaKey}
                     siteKey={siteKey}
@@ -102,6 +104,8 @@ export default function ForgotPasswordPage() {
                     onError={() => setCaptchaToken(null)}
                     options={{ theme: 'dark' }}
                   />
+                ) : bypassTurnstile ? (
+                  <div className="success-message">Captcha disabled for localhost.</div>
                 ) : (
                   <div className="error-message">Captcha key missing. Please contact support.</div>
                 )}
