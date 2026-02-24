@@ -473,14 +473,6 @@
     white-space: nowrap;
   }
 
-  .admin-table th:first-child,
-  .admin-table td:first-child {
-    position: sticky;
-    left: 0;
-    background: rgba(11, 16, 32, 0.95);
-    z-index: 1;
-  }
-
   .action-buttons {
     flex-direction: column;
     gap: 0.35rem;
