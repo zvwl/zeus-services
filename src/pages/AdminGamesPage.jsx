@@ -44,6 +44,15 @@ export default function AdminGamesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
+    const action = editingGame ? 'update' : 'create'
+    const confirmMessage = editingGame 
+      ? `Are you sure you want to update "${editingGame.name}"?`
+      : `Are you sure you want to create "${formData.name}"?`
+
+    if (!confirm(confirmMessage)) {
+      return
+    }
+
     try {
       if (editingGame) {
         // Update existing game
@@ -276,7 +285,7 @@ export default function AdminGamesPage() {
                     <td>{game.name}</td>
                     <td><code>{game.slug}</code></td>
                     <td>
-                      {game.is_coming_soon ? (
+                      {game.is_active && game.is_coming_soon ? (
                         <span className="badge badge-warning">Coming Soon</span>
                       ) : game.is_active ? (
                         <span className="badge badge-success">Active</span>

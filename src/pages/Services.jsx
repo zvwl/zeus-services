@@ -111,7 +111,6 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
               <div className="skeleton-line short" />
               <div className="skeleton-line" />
               <div className="skeleton-footer">
-                <div className="skeleton-pill" />
                 <div className="skeleton-button" />
               </div>
             </div>

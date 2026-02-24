@@ -27,7 +27,6 @@ export default function ServiceCard({ service, formatPrice, eagerImage = false }
       <p className="card-description">{service.description}</p>
 
       <div className="card-footer">
-        <span className="card-price">{formatPrice ? formatPrice(service.price) : `$${service.price}`}</span>
         <button
           className="view-details-btn"
           onClick={(e) => { e.stopPropagation(); handleViewDetails(); }}

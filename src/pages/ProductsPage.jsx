@@ -156,9 +156,6 @@ export default function ProductsPage({ formatPrice }) {
                   <p className="card-description">{product.description}</p>
 
                   <div className="card-footer">
-                    <span className="card-price">
-                      {formatPrice ? formatPrice(product.price) : `£${product.price}`}
-                    </span>
                     <button 
                       className="view-details-btn"
                       onClick={(e) => { 

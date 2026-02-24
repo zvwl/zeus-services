@@ -285,52 +285,54 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                 : game?.icon_url || '/zeusservicesPackage.webp'
               
               return (
-              <div
-                key={item.id}
-                className="service-card"
-                onClick={() => handleItemClick(item)}
-              >
-                <picture>
-                  <source type="image/webp" srcSet={item.icon || itemGameIcon} />
-                  <img
-                    src={item.icon || itemGameIcon}
-                    alt={item.name}
-                    className="card-image"
-                    loading="lazy"
-                    decoding="async"
-                    onError={(e) => {
-                      if (e.target.dataset.fallbackApplied === '1') return
-                      e.target.dataset.fallbackApplied = '1'
-                      e.target.src = itemGameIcon
-                    }}
-                  />
-                </picture>
-                {item.featured && (
-                  <div className="featured-badge">Featured</div>
-                )}
-                <h3 className="service-name">{item.name}</h3>
-                <p className="service-price">{formatPrice(item.price)}</p>
-                {item.description && (
-                  <p className="service-description">{item.description}</p>
-                )}
-                {item.platforms && item.platforms.length > 0 && (
-                  <div className="service-platforms">
-                    {item.platforms.slice(0, 3).map((platform, idx) => (
-                      <span key={idx} className="platform-badge">{platform}</span>
-                    ))}
-                    {item.platforms.length > 3 && (
-                      <span className="platform-badge">+{item.platforms.length - 3}</span>
-                    )}
+                <div
+                  key={item.id}
+                  className="service-card"
+                  onClick={() => handleItemClick(item)}
+                >
+                  <picture>
+                    <source type="image/webp" srcSet={item.icon || itemGameIcon} />
+                    <img
+                      src={item.icon || itemGameIcon}
+                      alt={item.name}
+                      className="card-image"
+                      loading="lazy"
+                      decoding="async"
+                      onError={(e) => {
+                        if (e.target.dataset.fallbackApplied === '1') return
+                        e.target.dataset.fallbackApplied = '1'
+                        e.target.src = itemGameIcon
+                      }}
+                    />
+                  </picture>
+                  {item.featured && (
+                    <div className="featured-badge">Featured</div>
+                  )}
+                  <h3 className="card-title">{item.name}</h3>
+                  <p className="card-description">{item.description || ''}</p>
+                  {item.platforms && item.platforms.length > 0 && (
+                    <div className="service-platforms">
+                      {item.platforms.slice(0, 3).map((platform, idx) => (
+                        <span key={idx} className="platform-badge">{platform}</span>
+                      ))}
+                      {item.platforms.length > 3 && (
+                        <span className="platform-badge">+{item.platforms.length - 3}</span>
+                      )}
+                    </div>
+                  )}
+                  <div className="card-footer">
+                    <button
+                      className="view-details-btn"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleItemClick(item)
+                      }}
+                    >
+                      View Details
+                    </button>
                   </div>
-                )}
-                <button className="cta-button" onClick={(e) => {
-                  e.stopPropagation()
-                  handleItemClick(item)
-                }}>
-                  View Details
-                </button>
-              </div>
-            )
+                </div>
+              )
             })}
           </div>
         )}
