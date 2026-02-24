@@ -213,25 +213,6 @@
   -webkit-overflow-scrolling: touch;
 }
 
-.admin-table-container::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: 40px;
-  background: linear-gradient(to left, rgba(11, 16, 32, 0.8), transparent);
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
-
-@media (max-width: 768px) {
-  .admin-table-container::after {
-    opacity: 1;
-  }
-}
-
 .admin-table {
   width: 100%;
   border-collapse: collapse;
