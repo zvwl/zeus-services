@@ -239,7 +239,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
           )}
 
           <div className="service-detail-options">
-            {item.platforms && item.platforms.length > 0 && (
+            {item.platforms && item.platforms.length > 0 && !game.is_coming_soon && (
               <div className="option-group">
                 <label htmlFor="platform-select">Select Platform:</label>
                 <select
@@ -257,7 +257,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
               </div>
             )}
 
-            {item.versions && item.versions.length > 0 && (
+            {item.versions && item.versions.length > 0 && !game.is_coming_soon && (
               <div className="option-group">
                 <label htmlFor="version-select">Select Version:</label>
                 <select
@@ -277,7 +277,31 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
           </div>
 
           <div className="service-detail-actions">
-            {!isInCart ? (
+            {game.is_coming_soon ? (
+              <div style={{
+                padding: '1.5rem',
+                background: 'rgba(251, 191, 36, 0.1)',
+                border: '1px solid rgba(251, 191, 36, 0.3)',
+                borderRadius: '12px',
+                textAlign: 'center'
+              }}>
+                <p style={{
+                  margin: 0,
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: '#fbbf24'
+                }}>
+                  Coming Soon
+                </p>
+                <p style={{
+                  margin: '0.5rem 0 0 0',
+                  fontSize: '0.95rem',
+                  color: '#cbd5e1'
+                }}>
+                  This item is not yet available for purchase. Check back soon!
+                </p>
+              </div>
+            ) : !isInCart ? (
               <button
                 className="cta-button"
                 onClick={handleAddToCart}

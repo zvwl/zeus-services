@@ -73,11 +73,29 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
             .rpc('get_games_for_category', { category_slug_param: categorySlug })
 
           if (gamesError) throw gamesError
+          
+          // Fetch full game details including is_coming_soon status
+          const gameIds = (gamesData || []).map(g => g.game_id)
+          const { data: fullGamesData, error: fullGamesError } = await supabase
+            .from('games')
+            .select('*')
+            .in('id', gameIds)
+          
+          if (fullGamesError) throw fullGamesError
+          
+          // Create a map for easy lookup
+          const gamesMap = {}
+          fullGamesData.forEach(g => {
+            gamesMap[g.id] = g
+          })
+          
           const mappedGames = (gamesData || []).map(game => ({
             id: game.game_id,
             name: game.game_name,
             slug: game.game_slug,
-            icon_url: game.game_icon_url
+            icon_url: game.game_icon_url,
+            is_coming_soon: gamesMap[game.game_id]?.is_coming_soon || false,
+            is_active: gamesMap[game.game_id]?.is_active || false
           }))
           setGames(mappedGames)
 
@@ -284,11 +302,18 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                 ? games.find(g => g.id === item.game_id)?.icon_url || '/zeusservicesPackage.webp'
                 : game?.icon_url || '/zeusservicesPackage.webp'
               
+              // Check if item's parent game is coming soon
+              const itemGame = isAllGamesView 
+                ? games.find(g => g.id === item.game_id)
+                : game
+              const isComingSoon = itemGame?.is_coming_soon || false
+              
               return (
                 <div
                   key={item.id}
                   className="service-card"
-                  onClick={() => handleItemClick(item)}
+                  onClick={() => !isComingSoon && handleItemClick(item)}
+                  style={{ cursor: isComingSoon ? 'not-allowed' : 'pointer', opacity: isComingSoon ? 0.7 : 1 }}
                 >
                   <picture>
                     <source type="image/webp" srcSet={item.icon || itemGameIcon} />
@@ -305,8 +330,13 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                       }}
                     />
                   </picture>
-                  {item.featured && (
+                  {item.featured && !isComingSoon && (
                     <div className="featured-badge">Featured</div>
+                  )}
+                  {isComingSoon && (
+                    <div className="featured-badge" style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' }}>
+                      Coming Soon
+                    </div>
                   )}
                   <h3 className="card-title">{item.name}</h3>
                   <p className="card-description">{item.description || ''}</p>
@@ -321,15 +351,32 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                     </div>
                   )}
                   <div className="card-footer">
-                    <button
-                      className="view-details-btn"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleItemClick(item)
-                      }}
-                    >
-                      View Details
-                    </button>
+                    {isComingSoon ? (
+                      <div style={{
+                        padding: '0.85rem 1.6rem',
+                        textAlign: 'center',
+                        background: 'rgba(251, 191, 36, 0.15)',
+                        border: '1px solid rgba(251, 191, 36, 0.35)',
+                        borderRadius: '10px',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        color: '#fbbf24',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em'
+                      }}>
+                        Coming Soon
+                      </div>
+                    ) : (
+                      <button
+                        className="view-details-btn"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleItemClick(item)
+                        }}
+                      >
+                        View Details
+                      </button>
+                    )}
                   </div>
                 </div>
               )

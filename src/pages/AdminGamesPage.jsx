@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ConfirmModal from '../components/ConfirmModal'
 import '../App.css'
 import './AdminForms.css'
 
@@ -17,6 +18,12 @@ export default function AdminGamesPage() {
     is_active: true,
     is_coming_soon: false,
     display_order: 0
+  })
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: '',
+    message: '',
+    onConfirm: () => {}
   })
 
   useEffect(() => {
@@ -45,14 +52,23 @@ export default function AdminGamesPage() {
     e.preventDefault()
 
     const action = editingGame ? 'update' : 'create'
-    const confirmMessage = editingGame 
+    const title = editingGame ? 'Update Game' : 'Create Game'
+    const message = editingGame 
       ? `Are you sure you want to update "${editingGame.name}"?`
       : `Are you sure you want to create "${formData.name}"?`
 
-    if (!confirm(confirmMessage)) {
-      return
-    }
+    setConfirmConfig({
+      title,
+      message,
+      onConfirm: async () => {
+        setShowConfirm(false)
+        await performSave()
+      }
+    })
+    setShowConfirm(true)
+  }
 
+  const performSave = async () => {
     try {
       if (editingGame) {
         // Update existing game
@@ -112,10 +128,18 @@ export default function AdminGamesPage() {
   }
 
   const handleDelete = async (game) => {
-    if (!confirm(`Are you sure you want to delete ${game.name}? This will also delete all items for this game.`)) {
-      return
-    }
+    setConfirmConfig({
+      title: 'Delete Game',
+      message: `Are you sure you want to delete ${game.name}? This will also delete all items for this game.`,
+      onConfirm: async () => {
+        setShowConfirm(false)
+        await performDelete(game)
+      }
+    })
+    setShowConfirm(true)
+  }
 
+  const performDelete = async (game) => {
     try {
       const { error } = await supabase
         .from('games')
@@ -311,6 +335,16 @@ export default function AdminGamesPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setShowConfirm(false)}
+        confirmText="Confirm"
+        cancelText="Cancel"
+      />
     </section>
   )
 }
