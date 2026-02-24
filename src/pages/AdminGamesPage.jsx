@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ConfirmModal from '../components/ConfirmModal'
+import { ToastContainer } from '../components/Toast'
 import '../App.css'
 import './AdminForms.css'
 
@@ -25,6 +26,16 @@ export default function AdminGamesPage() {
     message: '',
     onConfirm: () => {}
   })
+  const [toasts, setToasts] = useState([])
+
+  const addToast = (message, type = 'info') => {
+    const id = Date.now()
+    setToasts(prev => [...prev, { id, message, type, duration: 3500 }])
+  }
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
 
   useEffect(() => {
     fetchGames()
@@ -42,7 +53,7 @@ export default function AdminGamesPage() {
       setGames(data || [])
     } catch (err) {
       console.error('Error fetching games:', err)
-      alert('Failed to fetch games')
+      addToast('Failed to fetch games', 'error')
     } finally {
       setLoading(false)
     }
@@ -87,7 +98,7 @@ export default function AdminGamesPage() {
           .eq('id', editingGame.id)
 
         if (error) throw error
-        alert('Game updated successfully')
+        addToast('Game updated successfully', 'success')
       } else {
         // Create new game
         const { error } = await supabase
@@ -103,14 +114,14 @@ export default function AdminGamesPage() {
           }])
 
         if (error) throw error
-        alert('Game created successfully')
+        addToast('Game created successfully', 'success')
       }
 
       resetForm()
       fetchGames()
     } catch (err) {
       console.error('Error saving game:', err)
-      alert(`Failed to save game: ${err.message}`)
+      addToast(`Failed to save game: ${err.message}`, 'error')
     }
   }
 
@@ -147,11 +158,11 @@ export default function AdminGamesPage() {
         .eq('id', game.id)
 
       if (error) throw error
-      alert('Game deleted successfully')
+      addToast('Game deleted successfully', 'success')
       fetchGames()
     } catch (err) {
       console.error('Error deleting game:', err)
-      alert(`Failed to delete game: ${err.message}`)
+      addToast(`Failed to delete game: ${err.message}`, 'error')
     }
   }
 
@@ -345,6 +356,8 @@ export default function AdminGamesPage() {
         confirmText="Confirm"
         cancelText="Cancel"
       />
+
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </section>
   )
 }

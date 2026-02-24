@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
+import { ToastContainer } from '../components/Toast'
 import '../App.css'
 import './AdminForms.css'
 
@@ -13,6 +14,16 @@ export default function AdminItemsPage() {
   const [editingItem, setEditingItem] = useState(null)
   const [filterGame, setFilterGame] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
+  const [toasts, setToasts] = useState([])
+  
+  const addToast = (message, type = 'info') => {
+    const id = Date.now()
+    setToasts(prev => [...prev, { id, message, type, duration: 3500 }])
+  }
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
   
   const [formData, setFormData] = useState({
     game_id: '',
@@ -68,7 +79,7 @@ export default function AdminItemsPage() {
       setItems(itemsData || [])
     } catch (err) {
       console.error('Error fetching data:', err)
-      alert('Failed to fetch data')
+      addToast('Failed to fetch data', 'error')
     } finally {
       setLoading(false)
     }
@@ -107,7 +118,7 @@ export default function AdminItemsPage() {
           .eq('id', editingItem.id)
 
         if (error) throw error
-        alert('Item updated successfully')
+        addToast('Item updated successfully', 'success')
       } else {
         // Create new item
         const { error } = await supabase
@@ -115,14 +126,14 @@ export default function AdminItemsPage() {
           .insert([itemData])
 
         if (error) throw error
-        alert('Item created successfully')
+        addToast('Item created successfully', 'success')
       }
 
       resetForm()
       fetchData()
     } catch (err) {
       console.error('Error saving item:', err)
-      alert(`Failed to save item: ${err.message}`)
+      addToast(`Failed to save item: ${err.message}`, 'error')
     }
   }
 
@@ -156,11 +167,11 @@ export default function AdminItemsPage() {
         .eq('id', item.id)
 
       if (error) throw error
-      alert('Item deleted successfully')
+      addToast('Item deleted successfully', 'success')
       fetchData()
     } catch (err) {
       console.error('Error deleting item:', err)
-      alert(`Failed to delete item: ${err.message}`)
+      addToast(`Failed to delete item: ${err.message}`, 'error')
     }
   }
 
@@ -175,7 +186,7 @@ export default function AdminItemsPage() {
       fetchData()
     } catch (err) {
       console.error('Error toggling active status:', err)
-      alert(`Failed to update status: ${err.message}`)
+      addToast(`Failed to update status: ${err.message}`, 'error')
     }
   }
 
@@ -495,6 +506,8 @@ export default function AdminItemsPage() {
           </div>
         </div>
       </div>
+
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </section>
   )
 }
