@@ -150,10 +150,39 @@
   .toast {
     min-width: 0;
     width: 100%;
-    padding: 14px 16px;
+    padding: 12px 14px;
+  }
+
+  .toast-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 12px;
   }
 
   .toast-message {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
+    line-height: 1.35;
+  }
+
+  .toast-close {
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .toast-container {
+    top: 8px;
+    right: 8px;
+    left: 8px;
+  }
+
+  .toast {
+    padding: 10px 12px;
+  }
+
+  .toast-message {
+    font-size: 0.8rem;
   }
 }

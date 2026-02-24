@@ -111,20 +111,56 @@
 }
 
 @media (max-width: 640px) {
+  .confirm-modal-overlay {
+    padding: 1rem;
+  }
+
   .confirm-modal {
-    max-width: 95%;
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .confirm-modal-header {
+    padding: 1.25rem 1.25rem 0.85rem;
   }
 
   .confirm-modal-header h2 {
-    font-size: 1.15rem;
+    font-size: 1.1rem;
+  }
+
+  .confirm-modal-body {
+    padding: 1.25rem;
   }
 
   .confirm-modal-body p {
     font-size: 0.9rem;
+    line-height: 1.5;
+  }
+
+  .confirm-modal-actions {
+    padding: 0.85rem 1.25rem 1.25rem;
+    flex-direction: column-reverse;
+    gap: 0.75rem;
   }
 
   .modal-btn {
     font-size: 0.85rem;
-    padding: 0.65rem 1.2rem;
+    padding: 0.7rem 1.2rem;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .confirm-modal-header h2 {
+    font-size: 1rem;
+  }
+
+  .confirm-modal-body p {
+    font-size: 0.85rem;
+  }
+
+  .modal-btn {
+    font-size: 0.8rem;
+    padding: 0.65rem 1rem;
   }
 }
