@@ -39,7 +39,7 @@
 
 .card-image {
   width: 100%;
-  height: clamp(160px, 18vw, 210px);
+  aspect-ratio: 5 / 3;
   object-fit: cover;
   border-radius: 12px;
   border: 1px solid rgba(251, 191, 36, 0.2);
@@ -164,7 +164,7 @@
 
 .service-card.skeleton .skeleton-image {
   width: 100%;
-  height: clamp(160px, 18vw, 210px);
+  aspect-ratio: 5 / 3;
   border-radius: 12px;
   background: rgba(148, 163, 184, 0.12);
 }
@@ -210,10 +210,6 @@
 @media (max-width: 900px) {
   .service-card {
     padding: 1.1rem;
-  }
-
-  .card-image {
-    height: clamp(150px, 20vw, 190px);
   }
 }
 

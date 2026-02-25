@@ -93,7 +93,8 @@ a,
 .secondary-button {
   border: none;
   border-radius: 999px;
-  padding: 0.85rem 1.6rem;
+  padding: 1rem 2rem;
+  font-size: 1.05rem;
   font-weight: 700;
   cursor: pointer;
 }

@@ -4,8 +4,6 @@ import './Footer.css'
 export default function Footer() {
   const handleFooterLinkClick = () => {
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-    document.documentElement.scrollTop = 0
-    document.body.scrollTop = 0
   }
 
   return (

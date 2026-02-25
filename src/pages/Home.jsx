@@ -38,21 +38,21 @@ export default function Home({ onGetStarted }) {
               <div style={{fontSize: '3rem', marginBottom: '1rem'}}>💰</div>
               <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Topups</h3>
               <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>In-game currency and credits. Get the currency you need instantly for faster gameplay and better gear.</p>
-              <a href="/topups/gta5" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#fbbf24', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Topups</a>
+              <a href="/topups" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#fbbf24', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Topups</a>
             </div>
             {/* Boosting */}
             <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
               <div style={{fontSize: '3rem', marginBottom: '1rem'}}>⚡</div>
               <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Boosting</h3>
               <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Rank progression, level boosting, and achievement grinding. Let us handle the grind while you relax.</p>
-              <a href="/boosting/gta5" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#60a5fa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Boosting</a>
+              <a href="/boosting" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#60a5fa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Boosting</a>
             </div>
             {/* Accounts */}
             <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
               <div style={{fontSize: '3rem', marginBottom: '1rem'}}>👤</div>
               <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Accounts</h3>
               <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Pre-built accounts with progression ready to play. Skip the grind and jump straight into fun.</p>
-              <a href="/accounts/gta5" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#a78bfa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Accounts</a>
+              <a href="/accounts" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#a78bfa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Accounts</a>
             </div>
           </div>
         </div>

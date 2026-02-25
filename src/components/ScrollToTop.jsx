@@ -5,6 +5,7 @@ import './ScrollToTop.css'
 export default function ScrollToTop() {
   const [isVisible, setIsVisible] = useState(false)
   const scrollContainerRef = useRef(null)
+  const hasMountedRef = useRef(false)
   const { pathname, search } = useLocation()
 
   const resolveScrollContainer = () => {
@@ -40,8 +41,12 @@ export default function ScrollToTop() {
   // Scroll to top whenever page changes
   useLayoutEffect(() => {
     scrollContainerRef.current = resolveScrollContainer()
-    forceTop('auto')
-    requestAnimationFrame(() => forceTop('auto'))
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    const behavior = (!hasMountedRef.current || prefersReducedMotion) ? 'auto' : 'smooth'
+    
+    forceTop(behavior)
+    requestAnimationFrame(() => forceTop(behavior))
+    hasMountedRef.current = true
   }, [pathname, search])
 
   useEffect(() => {
@@ -72,7 +77,7 @@ export default function ScrollToTop() {
       window.removeEventListener('scroll', updateVisibility)
       window.removeEventListener('resize', handleResize)
     }
-  }, [])
+  }, [pathname])
 
   const scrollToTop = () => {
     forceTop('smooth')
