@@ -8,12 +8,15 @@ export default function ServiceCard({ service, formatPrice, eagerImage = false }
     navigate(`/service/${service.id}`, { state: { service } })
   }
 
+  const serviceImage = service.icon || '/zeusservicesPackage.png'
+  const serviceImageWebp = service.icon?.replace(/\.(png|jpg|jpeg)$/i, '.webp') || '/zeusservicesPackage.webp'
+
   return (
     <div className="service-card" onClick={handleViewDetails}>
       <picture>
-        <source type="image/webp" srcSet="/zeusservicesPackage.webp" />
+        <source type="image/webp" srcSet={serviceImageWebp} />
         <img
-          src="/zeusservicesPackage.png"
+          src={serviceImage}
           alt={`${service.name} package`}
           className="card-image"
           width="600"
@@ -21,6 +24,11 @@ export default function ServiceCard({ service, formatPrice, eagerImage = false }
           loading={eagerImage ? "eager" : "lazy"}
           fetchpriority={eagerImage ? "high" : "auto"}
           decoding="async"
+          onError={(e) => {
+            if (e.target.dataset.fallbackApplied === '1') return
+            e.target.dataset.fallbackApplied = '1'
+            e.target.src = '/zeusservicesPackage.png'
+          }}
         />
       </picture>
       <h2 className="card-title">{service.name}</h2>

@@ -334,13 +334,39 @@ export default function AdminItemsPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="icon">Icon URL</label>
+              <label htmlFor="icon">Icon/Image URL</label>
               <input
                 type="text"
                 id="icon"
                 value={formData.icon}
                 onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                placeholder="https://example.com/image.png or /game-icons/image.webp"
               />
+              <small style={{ display: 'block', color: '#94a3b8', marginTop: '0.5rem', lineHeight: '1.5' }}>
+                Recommended: 1000×600px (5:3 aspect ratio). Upload images to <code>/public/service-images/</code> folder and use path like <code>/service-images/your-image.webp</code>
+              </small>
+              {formData.icon && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  <img
+                    src={formData.icon}
+                    alt="Preview"
+                    style={{ 
+                      maxWidth: '200px', 
+                      height: 'auto', 
+                      borderRadius: '8px', 
+                      border: '1px solid rgba(251, 191, 36, 0.2)',
+                      display: 'block'
+                    }}
+                    onError={(e) => {
+                      e.target.style.display = 'none'
+                      e.target.nextElementSibling.style.display = 'block'
+                    }}
+                  />
+                  <small style={{ display: 'none', color: '#ef4444', marginTop: '0.5rem' }}>
+                    Failed to load image preview
+                  </small>
+                </div>
+              )}
             </div>
 
             <div className="form-group">
