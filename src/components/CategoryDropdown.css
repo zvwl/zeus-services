@@ -25,7 +25,6 @@
   color: var(--gold);
   font-weight: 600;
 }
-
 .dropdown-arrow {
   font-size: 0.7em;
   transition: transform 0.2s;
