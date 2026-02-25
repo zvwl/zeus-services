@@ -35,7 +35,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
       <div className="cart-items">
         {items.map(item => (
           <div key={item.cartId} className="cart-item">
-            <div className="item-info">
+            <div className="item-header">
               <div className="item-icon">
                 {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http')) ? (
                   <img 
@@ -50,26 +50,27 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
                   <span>{item.icon || '🎮'}</span>
                 )}
               </div>
-              <div>
+              <div className="item-info">
                 <h4>{item.name}</h4>
                 <p className="platform">Platform: {item.platform}</p>
                 <p>{formatPrice ? `${formatPrice(item.price)} each` : `$${item.price} each`}</p>
               </div>
             </div>
-            <div className="item-quantity">
-              <button onClick={() => onUpdateQuantity(item.cartId, item.quantity - 1)}>−</button>
-              <span>{item.quantity}</span>
-              <button onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}>+</button>
+            <div className="item-controls">
+              <div className="item-quantity">
+                <button onClick={() => onUpdateQuantity(item.cartId, item.quantity - 1)}>−</button>
+                <span>{item.quantity}</span>
+                <button onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}>+</button>
+              </div>
+              <button
+                className="remove-btn"
+                onClick={() => onRemove(item.cartId)}
+                aria-label="Remove item"
+                title="Remove item"
+              >
+                ✕
+              </button>
             </div>
-            <div className="item-subtotal">
-              <p>{formatPrice ? formatPrice(item.price * item.quantity) : `$${item.price * item.quantity}`}</p>
-            </div>
-            <button
-              className="remove-btn"
-              onClick={() => onRemove(item.cartId)}
-            >
-              ✕
-            </button>
           </div>
         ))}
       </div>

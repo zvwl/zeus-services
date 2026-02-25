@@ -2,7 +2,7 @@
   background: var(--card-bg);
   border-top: 1px solid var(--border-color);
   padding: 3rem 2rem 2rem;
-  margin-top: 4rem;
+  margin-top: auto;
   min-height: 280px;
   contain: layout style paint;
   will-change: auto;
