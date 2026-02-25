@@ -104,6 +104,12 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   }, [user, item, game, category, gameSlug, categorySlug])
 
   const handleAddToCart = async () => {
+    // Check if out of stock
+    if (item.stock_enabled && !item.stock_unlimited && (item.stock_quantity === null || item.stock_quantity === 0)) {
+      alert('This item is out of stock')
+      return
+    }
+    
     const requiresPlatform = item?.platforms && item.platforms.length > 0
     if (requiresPlatform && !selectedPlatform) {
       alert('Please select a platform')
@@ -181,6 +187,15 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   const pageTitle = `${item.name} - ${game.name} ${category.name}`
   const pageDescription = item.description || `Get ${item.name} for ${game.name}`
 
+  // Check stock status
+  const isOutOfStock = item.stock_enabled && 
+    !item.stock_unlimited && 
+    (item.stock_quantity === null || item.stock_quantity === 0)
+  
+  const stockBadgeText = item.stock_enabled && !item.stock_unlimited && item.stock_quantity !== null
+    ? `${item.stock_quantity} in stock`
+    : null
+
   return (
     <>
       <SEO
@@ -216,7 +231,35 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
             <div className="service-detail-info">
               <p className="eyebrow">{game.name} - {category.name}</p>
               <h1 className="service-detail-title">{item.name}</h1>
-              <p className="service-detail-price">{formatPrice(item.price)}</p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                <p className="service-detail-price">{formatPrice(item.price)}</p>
+                {stockBadgeText && !isOutOfStock && (
+                  <span style={{
+                    padding: '0.4rem 0.9rem',
+                    background: 'rgba(34, 197, 94, 0.15)',
+                    color: '#22c55e',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    border: '1px solid rgba(34, 197, 94, 0.3)'
+                  }}>
+                    {stockBadgeText}
+                  </span>
+                )}
+                {isOutOfStock && (
+                  <span style={{
+                    padding: '0.4rem 0.9rem',
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    color: '#ef4444',
+                    borderRadius: '6px',
+                    fontSize: '0.85rem',
+                    fontWeight: '700',
+                    border: '1px solid rgba(239, 68, 68, 0.3)'
+                  }}>
+                    Out of Stock
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
@@ -299,6 +342,30 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
                   color: '#cbd5e1'
                 }}>
                   This item is not yet available for purchase. Check back soon!
+                </p>
+              </div>
+            ) : isOutOfStock ? (
+              <div style={{
+                padding: '1.5rem',
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '12px',
+                textAlign: 'center'
+              }}>
+                <p style={{
+                  margin: 0,
+                  fontSize: '1.1rem',
+                  fontWeight: 700,
+                  color: '#ef4444'
+                }}>
+                  Out of Stock
+                </p>
+                <p style={{
+                  margin: '0.5rem 0 0 0',
+                  fontSize: '0.95rem',
+                  color: '#cbd5e1'
+                }}>
+                  This item is currently unavailable. Check back later for restock!
                 </p>
               </div>
             ) : !isInCart ? (

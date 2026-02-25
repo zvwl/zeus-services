@@ -192,6 +192,32 @@ Deno.serve(async (req) => {
 
       console.log(`✅ Order ${newOrder.id} created and marked as paid/processing`);
 
+      // Decrease stock for purchased items
+      try {
+        console.log(`📦 Processing stock decrease for ${items.length} items in order ${newOrder.id}`);
+        for (const item of items) {
+          if (item.id && item.quantity) {
+            const { data: stockResult, error: stockError } = await supabase
+              .rpc('decrease_item_stock', {
+                item_id: item.id,
+                quantity: item.quantity
+              });
+
+            if (stockError) {
+              console.error(`❌ Failed to decrease stock for item ${item.id}:`, stockError);
+              // Continue processing other items even if one fails
+            } else if (stockResult === false) {
+              console.warn(`⚠️ Item ${item.id} stock was already 0 or stock tracking disabled`);
+            } else {
+              console.log(`✅ Stock decreased for item ${item.id} by ${item.quantity}`);
+            }
+          }
+        }
+      } catch (stockErr) {
+        console.error('❌ Stock decrease error:', stockErr);
+        // Non-fatal: order already created, continue with email/Discord
+      }
+
       // Send order confirmation email
       try {
         if (!SUPABASE_ANON_KEY) {

@@ -127,6 +127,13 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
       return
     }
 
+    // Check stock availability
+    if (isOutOfStock) {
+      setVerificationMessage('⚠️ This item is currently out of stock')
+      setTimeout(() => setVerificationMessage(''), 5000)
+      return
+    }
+
     const fullPlatform = `${platform} ${version}`
     addToCart(service, fullPlatform)
     setVerificationMessage('✓ Added to cart!')
@@ -160,6 +167,12 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
     }
     setTimeout(() => setVerificationMessage(''), 5000)
   }
+
+  // Stock status
+  const isOutOfStock = service.stock_enabled && !service.stock_unlimited && (service.stock_quantity === null || service.stock_quantity === 0)
+  const hasLimitedStock = service.stock_enabled && !service.stock_unlimited && service.stock_quantity !== null && service.stock_quantity > 0
+  const stockBadgeText = isOutOfStock ? 'Out of Stock' : hasLimitedStock ? `${service.stock_quantity} in stock` : null
+  const stockBadgeColor = isOutOfStock ? 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' : 'rgba(34, 197, 94, 0.9)'
 
   return (
     <section className="section services" id="service-detail">
@@ -328,9 +341,24 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
               border: '1px solid rgba(251, 191, 36, 0.2)',
               borderRadius: '12px'
             }}>
-              <span style={{ fontSize: '2rem', fontWeight: '700', color: '#fbbf24' }}>
-                {formatPrice(service.price)}
-              </span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <span style={{ fontSize: '2rem', fontWeight: '700', color: '#fbbf24' }}>
+                  {formatPrice(service.price)}
+                </span>
+                {stockBadgeText && (
+                  <span style={{
+                    background: stockBadgeColor,
+                    color: 'white',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '8px',
+                    fontSize: '0.85rem',
+                    fontWeight: '600',
+                    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+                  }}>
+                    {stockBadgeText}
+                  </span>
+                )}
+              </div>
               {cartItem ? (
                 <div className="quantity-controls">
                   <button className="qty-btn" onClick={handleDecrement}>−</button>
@@ -341,18 +369,33 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                 <button
                   className="add-to-cart-btn"
                   onClick={handleAddToCart}
-                  disabled={!platform || !version}
+                  disabled={!platform || !version || isOutOfStock}
                   style={{
-                    opacity: !platform || !version ? 0.5 : 1,
-                    cursor: !platform || !version ? 'not-allowed' : 'pointer'
+                    opacity: !platform || !version || isOutOfStock ? 0.5 : 1,
+                    cursor: !platform || !version || isOutOfStock ? 'not-allowed' : 'pointer'
                   }}
                 >
-                  Add to Cart
+                  {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
                 </button>
               )}
             </div>
 
-            {cartItem && (
+            {isOutOfStock && (
+              <div style={{
+                marginTop: '1rem',
+                padding: '1rem',
+                background: 'rgba(239, 68, 68, 0.15)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                borderRadius: '10px',
+                color: '#f87171',
+                textAlign: 'center'
+              }}>
+                <p style={{ margin: 0, fontWeight: '600' }}>This item is currently out of stock.</p>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.9rem', color: '#fca5a5' }}>Check back later for restock!</p>
+              </div>
+            )}
+
+            {cartItem && !isOutOfStock && (
               <div className="order-actions" style={{ marginTop: '1rem' }}>
                 <button className="primary-btn" onClick={() => navigate('/cart')}>Continue to Checkout</button>
                 <button className="secondary-btn" onClick={() => navigate('/services')}>Continue Shopping</button>

@@ -308,12 +308,21 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                 : game
               const isComingSoon = itemGame?.is_coming_soon || false
               
+              // Check stock status
+              const isOutOfStock = item.stock_enabled && 
+                !item.stock_unlimited && 
+                (item.stock_quantity === null || item.stock_quantity === 0)
+              
+              const stockBadgeText = item.stock_enabled && !item.stock_unlimited && item.stock_quantity !== null
+                ? `${item.stock_quantity} in stock`
+                : null
+              
               return (
                 <div
                   key={item.id}
                   className="service-card"
-                  onClick={() => !isComingSoon && handleItemClick(item)}
-                  style={{ cursor: isComingSoon ? 'not-allowed' : 'pointer', opacity: isComingSoon ? 0.7 : 1 }}
+                  onClick={() => !isComingSoon && !isOutOfStock && handleItemClick(item)}
+                  style={{ cursor: (isComingSoon || isOutOfStock) ? 'not-allowed' : 'pointer', opacity: (isComingSoon || isOutOfStock) ? 0.7 : 1 }}
                 >
                   <picture>
                     <source type="image/webp" srcSet={item.icon || itemGameIcon} />
@@ -330,7 +339,45 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                       }}
                     />
                   </picture>
-                  {item.featured && !isComingSoon && (
+                  
+                  {/* Stock badges */}
+                  {isOutOfStock && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '1rem',
+                      right: '1rem',
+                      background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                      color: '#fff',
+                      padding: '0.4rem 0.85rem',
+                      borderRadius: '6px',
+                      fontSize: '0.85rem',
+                      fontWeight: '700',
+                      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+                      zIndex: 2
+                    }}>
+                      Out of Stock
+                    </div>
+                  )}
+                  
+                  {stockBadgeText && !isOutOfStock && !isComingSoon && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '1rem',
+                      right: '1rem',
+                      background: 'rgba(34, 197, 94, 0.9)',
+                      color: '#fff',
+                      padding: '0.3rem 0.75rem',
+                      borderRadius: '6px',
+                      fontSize: '0.8rem',
+                      fontWeight: '600',
+                      boxShadow: '0 2px 8px rgba(34, 197, 94, 0.3)',
+                      zIndex: 2
+                    }}>
+                      {stockBadgeText}
+                    </div>
+                  )}
+                  
+                  {item.featured && !isComingSoon && !isOutOfStock && (
                     <div className="featured-badge">Featured</div>
                   )}
                   {isComingSoon && (
@@ -365,6 +412,21 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                         letterSpacing: '0.04em'
                       }}>
                         Coming Soon
+                      </div>
+                    ) : isOutOfStock ? (
+                      <div style={{
+                        padding: '0.85rem 1.6rem',
+                        textAlign: 'center',
+                        background: 'rgba(239, 68, 68, 0.15)',
+                        border: '1px solid rgba(239, 68, 68, 0.35)',
+                        borderRadius: '10px',
+                        fontWeight: 700,
+                        fontSize: '0.9rem',
+                        color: '#ef4444',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em'
+                      }}>
+                        Out of Stock
                       </div>
                     ) : (
                       <button

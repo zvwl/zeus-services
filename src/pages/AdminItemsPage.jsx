@@ -37,7 +37,10 @@ export default function AdminItemsPage() {
     versions: [],
     detailsText: '',
     active: true,
-    featured: false
+    featured: false,
+    stock_enabled: false,
+    stock_quantity: '',
+    stock_unlimited: false
   })
 
   // Platform and version options
@@ -104,7 +107,12 @@ export default function AdminItemsPage() {
           .map((detail) => detail.trim())
           .filter((detail) => detail !== ''),
         active: formData.active,
-        featured: formData.featured
+        featured: formData.featured,
+        stock_enabled: formData.stock_enabled,
+        stock_quantity: formData.stock_enabled && !formData.stock_unlimited && formData.stock_quantity !== '' 
+          ? parseInt(formData.stock_quantity) 
+          : null,
+        stock_unlimited: formData.stock_unlimited
       }
 
       if (editingItem) {
@@ -151,7 +159,10 @@ export default function AdminItemsPage() {
       versions: item.versions || [],
       detailsText: (item.details || []).join('\n'),
       active: item.active,
-      featured: item.featured || false
+      featured: item.featured || false,
+      stock_enabled: item.stock_enabled || false,
+      stock_quantity: item.stock_quantity !== null ? item.stock_quantity : '',
+      stock_unlimited: item.stock_unlimited || false
     })
   }
 
@@ -204,7 +215,10 @@ export default function AdminItemsPage() {
       versions: [],
       detailsText: '',
       active: true,
-      featured: false
+      featured: false,
+      stock_enabled: false,
+      stock_quantity: '',
+      stock_unlimited: false
     })
   }
 
@@ -432,6 +446,75 @@ export default function AdminItemsPage() {
                 />
                 Featured
               </label>
+            </div>
+
+            {/* Stock Management */}
+            <div style={{ 
+              marginTop: '2rem', 
+              padding: '1.5rem', 
+              background: 'rgba(251, 191, 36, 0.05)', 
+              border: '1px solid rgba(251, 191, 36, 0.2)',
+              borderRadius: '8px'
+            }}>
+              <h3 style={{ color: '#fbbf24', marginBottom: '1rem', fontSize: '1.1rem' }}>Stock Management</h3>
+              
+              <div className="form-group checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={formData.stock_enabled}
+                    onChange={(e) => setFormData({ 
+                      ...formData, 
+                      stock_enabled: e.target.checked,
+                      stock_quantity: e.target.checked ? formData.stock_quantity : '',
+                      stock_unlimited: e.target.checked ? formData.stock_unlimited : false
+                    })}
+                  />
+                  Enable Stock Tracking
+                </label>
+                <small style={{ display: 'block', color: '#94a3b8', marginTop: '0.25rem', marginLeft: '1.5rem' }}>
+                  Track inventory for this item
+                </small>
+              </div>
+
+              {formData.stock_enabled && (
+                <>
+                  <div className="form-group checkbox-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={formData.stock_unlimited}
+                        onChange={(e) => setFormData({ 
+                          ...formData, 
+                          stock_unlimited: e.target.checked,
+                          stock_quantity: e.target.checked ? '' : formData.stock_quantity
+                        })}
+                      />
+                      Unlimited Stock
+                    </label>
+                    <small style={{ display: 'block', color: '#94a3b8', marginTop: '0.25rem', marginLeft: '1.5rem' }}>
+                      Item never runs out (for digital services)
+                    </small>
+                  </div>
+
+                  {!formData.stock_unlimited && (
+                    <div className="form-group">
+                      <label htmlFor="stock_quantity">Stock Quantity</label>
+                      <input
+                        type="number"
+                        id="stock_quantity"
+                        value={formData.stock_quantity}
+                        onChange={(e) => setFormData({ ...formData, stock_quantity: e.target.value })}
+                        placeholder="Enter quantity (e.g., 10)"
+                        min="0"
+                      />
+                      <small style={{ display: 'block', color: '#94a3b8', marginTop: '0.5rem' }}>
+                        Current stock available for purchase. Set to 0 to mark as out of stock.
+                      </small>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="form-actions">
