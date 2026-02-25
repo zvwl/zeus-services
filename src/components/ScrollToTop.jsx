@@ -1,59 +1,76 @@
-import { useState, useEffect, useLayoutEffect } from 'react'
+import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import { useLocation } from 'react-router-dom'
 import './ScrollToTop.css'
 
 export default function ScrollToTop() {
-  const [isVisible, setIsVisible] = useState(true)
+  const [isVisible, setIsVisible] = useState(false)
+  const scrollContainerRef = useRef(null)
   const { pathname, search } = useLocation()
 
+  const resolveScrollContainer = () => {
+    const candidates = [
+      document.scrollingElement,
+      document.getElementById('root'),
+      document.querySelector('.app'),
+      document.body,
+      document.documentElement
+    ].filter(Boolean)
+
+    return candidates.find((node) => node.scrollHeight > node.clientHeight + 4) || document.scrollingElement || document.documentElement
+  }
+
   const forceTop = (behavior = 'auto') => {
-    const scrollingElement = document.scrollingElement || document.documentElement
-    window.scrollTo({ top: 0, left: 0, behavior })
-    scrollingElement.scrollTop = 0
-    document.body.scrollTop = 0
+    const container = scrollContainerRef.current || resolveScrollContainer()
+    scrollContainerRef.current = container
+
+    if (container && container.scrollTo) {
+      container.scrollTo({ top: 0, left: 0, behavior })
+    } else {
+      window.scrollTo({ top: 0, left: 0, behavior })
+    }
+
+    if (document.body) {
+      document.body.scrollTop = 0
+    }
+    if (document.documentElement) {
+      document.documentElement.scrollTop = 0
+    }
   }
 
   // Scroll to top whenever page changes
   useLayoutEffect(() => {
+    scrollContainerRef.current = resolveScrollContainer()
     forceTop('auto')
     requestAnimationFrame(() => forceTop('auto'))
   }, [pathname, search])
 
   useEffect(() => {
-    let rafId
-    let lastScrollTop = -1
-
-    const getScrollTop = () => window.pageYOffset || document.documentElement.scrollTop || document.body.scrollTop || 0
+    let activeContainer = scrollContainerRef.current || resolveScrollContainer()
+    scrollContainerRef.current = activeContainer
 
     const updateVisibility = () => {
-      const currentTop = getScrollTop()
-      const scrollingElement = document.scrollingElement || document.documentElement
-      const scrollHeight = scrollingElement?.scrollHeight || document.body.scrollHeight
-      const canScroll = scrollHeight - window.innerHeight > 80
-
-      if (currentTop !== lastScrollTop) {
-        lastScrollTop = currentTop
-        setIsVisible(canScroll && currentTop > 80)
-      }
+      const container = scrollContainerRef.current || resolveScrollContainer()
+      const scrollTop = container?.scrollTop || window.pageYOffset || 0
+      const scrollHeight = container?.scrollHeight || document.documentElement.scrollHeight
+      const clientHeight = container?.clientHeight || window.innerHeight
+      const canScroll = scrollHeight - clientHeight > 80
+      setIsVisible(canScroll && scrollTop > 80)
     }
 
-    const tick = () => {
+    const handleResize = () => {
+      scrollContainerRef.current = resolveScrollContainer()
       updateVisibility()
-      rafId = requestAnimationFrame(tick)
     }
 
     updateVisibility()
-    rafId = requestAnimationFrame(tick)
+    activeContainer?.addEventListener('scroll', updateVisibility, { passive: true })
     window.addEventListener('scroll', updateVisibility, { passive: true })
-    document.addEventListener('scroll', updateVisibility, { passive: true, capture: true })
-    window.addEventListener('resize', updateVisibility, { passive: true })
+    window.addEventListener('resize', handleResize, { passive: true })
+
     return () => {
+      activeContainer?.removeEventListener('scroll', updateVisibility)
       window.removeEventListener('scroll', updateVisibility)
-      document.removeEventListener('scroll', updateVisibility, true)
-      window.removeEventListener('resize', updateVisibility)
-      if (rafId) {
-        cancelAnimationFrame(rafId)
-      }
+      window.removeEventListener('resize', handleResize)
     }
   }, [])
 
@@ -62,17 +79,13 @@ export default function ScrollToTop() {
   }
 
   return (
-    <>
-      {isVisible && (
-        <button
-          className="scroll-to-top-btn"
-          onClick={scrollToTop}
-          title="Scroll to top"
-          aria-label="Scroll to top"
-        >
-          ↑
-        </button>
-      )}
-    </>
+    <button
+      className={`scroll-to-top-btn${isVisible ? '' : ' is-hidden'}`}
+      onClick={scrollToTop}
+      title="Scroll to top"
+      aria-label="Scroll to top"
+    >
+      ↑
+    </button>
   )
 }
