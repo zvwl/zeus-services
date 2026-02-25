@@ -58,8 +58,8 @@ export default function ScrollToTop() {
       const scrollTop = container?.scrollTop || window.pageYOffset || 0
       const scrollHeight = container?.scrollHeight || document.documentElement.scrollHeight
       const clientHeight = container?.clientHeight || window.innerHeight
-      const canScroll = scrollHeight - clientHeight > 80
-      setIsVisible(canScroll && scrollTop > 80)
+      const canScroll = scrollHeight - clientHeight > 50
+      setIsVisible(canScroll && scrollTop > 50)
     }
 
     const handleResize = () => {
