@@ -345,7 +345,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                     <div style={{
                       position: 'absolute',
                       top: '1rem',
-                      right: '1rem',
+                      left: '1rem',
                       background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
                       color: '#fff',
                       padding: '0.4rem 0.85rem',
@@ -363,7 +363,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                     <div style={{
                       position: 'absolute',
                       top: '1rem',
-                      right: '1rem',
+                      left: '1rem',
                       background: 'rgba(34, 197, 94, 0.9)',
                       color: '#fff',
                       padding: '0.3rem 0.75rem',

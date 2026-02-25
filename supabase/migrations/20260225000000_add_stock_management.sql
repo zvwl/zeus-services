@@ -18,7 +18,8 @@ CREATE INDEX IF NOT EXISTS idx_items_stock_enabled ON public.items(stock_enabled
 -- Step 4: Update items_with_details view to include stock info
 DROP VIEW IF EXISTS public.items_with_details CASCADE;
 
-CREATE OR REPLACE VIEW public.items_with_details AS
+CREATE OR REPLACE VIEW public.items_with_details
+WITH (security_invoker = true) AS
 SELECT 
   i.id,
   i.game_id,
@@ -58,6 +59,7 @@ RETURNS BOOLEAN
 LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   item_record RECORD;
@@ -89,6 +91,7 @@ CREATE OR REPLACE FUNCTION public.decrease_item_stock(item_id UUID, quantity INT
 RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = ''
 AS $$
 DECLARE
   item_record RECORD;
