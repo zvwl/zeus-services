@@ -1317,6 +1317,16 @@ a,
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
 }
 
+/* Fix dropdown option visibility */
+.option-select option,
+.platform-select option,
+.version-select option,
+select option {
+  background: #1a1f35;
+  color: #f1f5f9;
+  padding: 0.5rem;
+}
+
 .service-detail-actions {
   display: flex;
   align-items: center;
