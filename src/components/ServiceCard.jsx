@@ -9,13 +9,12 @@ export default function ServiceCard({ service, formatPrice, eagerImage = false }
   }
 
   const serviceImage = service.icon || '/zeusservicesPackage.png'
-  const serviceImageWebp = service.icon?.replace(/\.(png|jpg|jpeg)$/i, '.webp') || '/zeusservicesPackage.webp'
+  // Only try WebP conversion if the URL doesn't already have file extension
+  const shouldTryWebp = service.icon && !service.icon.endsWith('.png') && !service.icon.endsWith('.jpg') && !service.icon.endsWith('.jpeg')
+  const serviceImageWebp = shouldTryWebp ? service.icon.replace(/\.(webp)?$/i, '.webp') : null
 
   return (
-    <div className="service-card" onClick={handleViewDetails}>
-      <picture>
-        <source type="image/webp" srcSet={serviceImageWebp} />
-        <img
+    <div className="service-card" onClick={handleViewDetails}>\n      <picture>\n        {serviceImageWebp && <source type="image/webp" srcSet={serviceImageWebp} />}\n        <img
           src={serviceImage}
           alt={`${service.name} package`}
           className="card-image"
