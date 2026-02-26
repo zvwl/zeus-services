@@ -21,6 +21,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   const [addingToCart, setAddingToCart] = useState(false)
   const [isInCart, setIsInCart] = useState(false)
   const [cartQuantity, setCartQuantity] = useState(1)
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
 
   // Check if item is already in cart and update state
   useEffect(() => {
@@ -77,14 +78,14 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
         if (itemError) throw itemError
         setItem(itemData)
 
-        // Set default selections
+        // Require explicit selection when options are available
         if (itemData.platforms && itemData.platforms.length > 0) {
-          setSelectedPlatform(itemData.platforms[0])
+          setSelectedPlatform('')
         } else {
           setSelectedPlatform('Any Platform')
         }
         if (itemData.versions && itemData.versions.length > 0) {
-          setSelectedVersion(itemData.versions[0])
+          setSelectedVersion('')
         } else {
           setSelectedVersion('Standard')
         }
@@ -127,7 +128,12 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
     
     const requiresPlatform = item?.platforms && item.platforms.length > 0
     if (requiresPlatform && !selectedPlatform) {
-      alert('Please select a platform')
+      setAttemptedSubmit(true)
+      return
+    }
+    const requiresVersion = item?.versions && item.versions.length > 0
+    if (requiresVersion && !selectedVersion) {
+      setAttemptedSubmit(true)
       return
     }
 
@@ -304,12 +310,18 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
                   onChange={(e) => setSelectedPlatform(e.target.value)}
                   className="option-select"
                 >
+                  <option value="">Select a platform</option>
                   {item.platforms.map((platform) => (
                     <option key={platform} value={platform}>
                       {platform}
                     </option>
                   ))}
                 </select>
+                {attemptedSubmit && selectedPlatform === '' && (
+                  <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
+                    Please select a platform to continue.
+                  </p>
+                )}
               </div>
             )}
 
@@ -322,12 +334,18 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
                   onChange={(e) => setSelectedVersion(e.target.value)}
                   className="option-select"
                 >
+                  <option value="">Select a version</option>
                   {item.versions.map((version) => (
                     <option key={version} value={version}>
                       {version}
                     </option>
                   ))}
                 </select>
+                {attemptedSubmit && selectedVersion === '' && (
+                  <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
+                    Please select a version to continue.
+                  </p>
+                )}
               </div>
             )}
           </div>
@@ -385,7 +403,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
               <button
                 className="cta-button"
                 onClick={handleAddToCart}
-                disabled={addingToCart || (item?.platforms?.length > 0 && !selectedPlatform)}
+                disabled={addingToCart}
               >
                 {addingToCart ? 'Adding to Cart...' : 'Add to Cart'}
               </button>

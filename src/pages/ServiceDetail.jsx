@@ -13,6 +13,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   const [version, setVersion] = useState('')
   const { user, emailVerified, resendVerificationEmail } = useAuth()
   const [verificationMessage, setVerificationMessage] = useState('')
+  const [attemptedSubmit, setAttemptedSubmit] = useState(false)
 
   // Detect if we're viewing a product or service based on the URL
   const isProduct = location.pathname.startsWith('/product/')
@@ -117,7 +118,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
     console.log('handleAddToCart called - user:', user, 'platform:', platform, 'version:', version)
     
     if (!platform || !version) {
-      alert('Please select a platform and version first')
+      setAttemptedSubmit(true)
       return
     }
 
@@ -295,7 +296,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                   background: 'rgba(10, 14, 26, 0.9)',
                   color: '#f8fafc',
                   fontWeight: '600',
-                  marginBottom: '1.5rem'
+                  marginBottom: '0.75rem'
                 }}
               >
                 <option value="">Select a platform</option>
@@ -303,6 +304,11 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
+              {attemptedSubmit && !platform && (
+                <p style={{ margin: '0 0 1.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
+                  Please select a platform to continue.
+                </p>
+              )}
 
               {platform && (
                 <div style={{ marginBottom: '1.5rem' }}>
@@ -328,6 +334,11 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                       <option key={option} value={option}>{option}</option>
                     ))}
                   </select>
+                  {attemptedSubmit && !version && (
+                    <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
+                      Please select a version to continue.
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -369,10 +380,10 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                 <button
                   className="add-to-cart-btn"
                   onClick={handleAddToCart}
-                  disabled={!platform || !version || isOutOfStock}
+                  disabled={isOutOfStock}
                   style={{
-                    opacity: !platform || !version || isOutOfStock ? 0.5 : 1,
-                    cursor: !platform || !version || isOutOfStock ? 'not-allowed' : 'pointer'
+                    opacity: isOutOfStock ? 0.5 : 1,
+                    cursor: isOutOfStock ? 'not-allowed' : 'pointer'
                   }}
                 >
                   {isOutOfStock ? 'Out of Stock' : 'Add to Cart'}
