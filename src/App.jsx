@@ -82,7 +82,7 @@ function App() {
       if (storedRedirect) {
         localStorage.removeItem('oauthRedirect')
         // Validate redirect is internal path only to prevent open redirect
-        const validRedirect = storedRedirect.startsWith('/') && !storedRedirect.startsWith('//') ? storedRedirect : '/boosting/gta5'
+        const validRedirect = storedRedirect.startsWith('/') && !storedRedirect.startsWith('//') ? storedRedirect : '/boosting'
         navigate(validRedirect)
       }
     }
@@ -381,25 +381,25 @@ function App() {
           path="/"
           element={(
             <Home
-              onGetStarted={() => navigate('/boosting/gta5')}
+              onGetStarted={() => navigate('/boosting')}
             />
           )}
         />
         <Route
           path="/services"
-          element={<Navigate to="/boosting/gta5" replace />}
+          element={<Navigate to="/boosting" replace />}
         />
         <Route
           path="/service/:id"
-          element={<Navigate to="/boosting/gta5" replace />}
+          element={<Navigate to="/boosting" replace />}
         />
         <Route
           path="/product/:id"
-          element={<Navigate to="/accounts/gta5" replace />}
+          element={<Navigate to="/accounts" replace />}
         />
         <Route
           path="/products"
-          element={<Navigate to="/accounts/gta5" replace />}
+          element={<Navigate to="/accounts" replace />}
         />
         {/* New multi-game category routes - order: most specific first */}
         <Route

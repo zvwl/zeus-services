@@ -6,8 +6,8 @@ export default function ComparisonPage() {
     <>
       <SEO 
         title="Modded Account vs Boosting Service - Which Is Right For You? | zeuservices"
-        description="Compare GTA Online modded accounts and account boosting services. Learn the differences in delivery time, cost, customization, and account control."
-        keywords="modded account vs boosting, GTA account comparison, buy modded account or boost service, GTA online services"
+        description="Compare modded accounts and account boosting services across all games. Learn the differences in delivery time, cost, customization, and account control for GTA, Fortnite, Rocket League, and more."
+        keywords="modded account vs boosting, account comparison, buy modded account or boost service, gaming services comparison"
       />
       
       <section className="section">
@@ -17,7 +17,7 @@ export default function ComparisonPage() {
             Modded Accounts vs Account Boosting
           </h1>
           <p style={{ fontSize: '1.1rem', color: '#cbd5e1', marginBottom: '3rem', textAlign: 'center', lineHeight: '1.6' }}>
-            Not sure whether to buy a pre-ranked modded GTA account or use our boosting service? Compare the two options below and choose what's best for you.
+            Not sure whether to buy a pre-ranked modded account or use our boosting service? This comparison applies to GTA Online, Fortnite, Rocket League, Forza Horizon, and all games we support. Check out the differences below and choose what's best for you.
           </p>
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '3rem' }}>
@@ -30,7 +30,7 @@ export default function ComparisonPage() {
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>How It Works</h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
-                  You purchase a pre-ranked GTA Online account that's ready to play immediately. The account comes with high rank, millions in cash, all vehicles unlocked, and full progress already completed.
+                  You purchase a pre-ranked account that's ready to play immediately. The account comes with high rank/level, in-game currency, all cosmetics/vehicles unlocked, and full progress already completed - customized to your specifications.
                 </p>
               </div>
 
@@ -70,13 +70,13 @@ export default function ComparisonPage() {
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>How It Works</h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
-                  You provide your GTA Online account details. Our expert team logs in and manually progresses your account to your exact specifications (rank, money, vehicles, etc.). You keep your original account and character.
+                  You provide your account details for your game. Our expert team logs in and manually progresses your account to your exact specifications (rank, currency, cosmetics, vehicles, achievements, etc.). You keep your original account and character.
                 </p>
               </div>
 
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>Delivery Time</h3>
-                <p style={{ color: '#60a5fa', fontWeight: '600' }}>2-7 days (depending on service)</p>
+                <p style={{ color: '#60a5fa', fontWeight: '600' }}>20 minutes to a few hours (depending on game and items)</p>
               </div>
 
               <div style={{ marginBottom: '2rem' }}>
@@ -94,7 +94,7 @@ export default function ComparisonPage() {
               <div>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>Cons</h3>
                 <ul style={{ color: '#cbd5e1', lineHeight: '2', marginLeft: '1.5rem' }}>
-                  <li>❌ Takes 2-7 days to complete</li>
+                  <li>❌ Takes 20 minutes to a few hours to complete</li>
                   <li>❌ Requires account access</li>
                   <li>❌ Longer wait time</li>
                 </ul>
@@ -114,7 +114,7 @@ export default function ComparisonPage() {
               </thead>
               <tbody>
                 {[
-                  { feature: 'Delivery Speed', modded: 'Instant (1-2 hrs)', boosting: '2-7 days' },
+                  { feature: 'Delivery Speed', modded: 'Instant (1-2 hrs)', boosting: '20 mins - few hours' },
                   { feature: 'Customization', modded: 'Limited', boosting: 'Full customization' },
                   { feature: 'Keep Original Account', modded: 'No', boosting: 'Yes' },
                   { feature: 'Account Access', modded: 'New account', boosting: 'Your account' },

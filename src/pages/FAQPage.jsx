@@ -8,83 +8,79 @@ export default function FAQPage() {
 
   const faqs = [
     {
-      question: "Is GTA Online account boosting safe?",
-      answer: "Our services come with ban risk - this is always a possibility and it's luck-based. We have 9+ years of experience minimizing detection risk, but Rockstar enforcement is unpredictable. We're honest about these risks upfront. All boosting is done through your Discord contact, and you maintain full account access throughout the process."
+      question: "Is account boosting safe?",
+      answer: "Our services minimize detection risks through 9+ years of experience with each game's security systems. However, game bans are always a possibility - enforcement is unpredictable. We're honest about these risks upfront. All boosting is done securely through Discord, and you maintain full account access throughout the process. We stand behind our work with strong account guarantees."
     },
     {
       question: "What is the difference between boosting and modded accounts?",
-      answer: "Boosting is where we log into your existing GTA Online account and progress it manually (ranking up, unlocking vehicles, earning money). Modded accounts are pre-ranked accounts we deliver to you ready to play. Boosting takes 2-7 days depending on service, while modded accounts are instant delivery. Choose boosting if you want to keep your original account, or choose a modded account for instant high-rank access."
+      answer: "Boosting: We log into your existing account and progress it manually (ranking up, unlocking items, farming currency). Takes 20 minutes to a few hours depending on game and items purchased. Modded Accounts: Pre-built accounts delivered ready to play with progression already complete. Instant delivery. Choose boosting to keep your original account, or choose a modded account for instant high-level access."
     },
     {
-      question: "How fast is GTA Online account boosting?",
-      answer: "Our rank boosting service typically takes 2-7 days depending on target rank and current level. Money farming can be done in 24-48 hours. Vehicle unlocks are usually completed within 24 hours. Account progression speed depends on the complexity of your request. Contact us for an exact timeline for your specific boosting needs."
+      question: "How fast are your services?",
+      answer: "Delivery times vary by game and service: Account boosting typically takes 20 minutes to a few hours depending on game and items. Modded accounts are delivered within 1-2 hours. Topups and currency services are delivered within 20 minutes to a few hours depending on game. Custom requests depend on complexity. Contact us for exact timeline for your specific game and service."
     },
     {
-      question: "What platforms do you support?",
-      answer: "We support PC only: Steam, Epic Games, Xbox App (Microsoft Store), and Rockstar Social Club. We do not support console versions (PlayStation or Xbox consoles). All modded accounts and boosting services are for PC platforms only."
+      question: "What platforms and games do you support?",
+      answer: "We support multiple games across PC and other platforms: GTA 5 (Steam, Epic, Xbox App, Rockstar), Fortnite, Rocket League, Forza Horizon 6, and more. Each game has different platform options. Check our catalog to see which platforms we support for your specific game. Contact us if you need a game not listed."
     },
     {
-      question: "Will I get banned for buying a modded GTA account?",
-      answer: "Our modded accounts are safe and designed to minimize ban risk. Each account is tested and verified before delivery. However, we recommend following Rockstar's terms of service to maintain account safety. Never use cheats or mods on your account after purchase. Your account safety is our priority, and we stand behind all our accounts."
+      question: "Will I get banned for using your services?",
+      answer: "Our services are designed to minimize detection risk through safe, manual methods developed over 9+ years. Each modded account is tested and verified before delivery. However, game security systems are unpredictable. We recommend following each game's terms of service to maintain account safety. We stand behind all accounts with strong ban protection guarantees."
     },
     {
-      question: "How do I receive my boosted account or modded account?",
-      answer: "After you purchase, we'll contact you through Discord (our preferred method). We'll provide account login details, walk you through the setup process, and answer any questions. For boosting services, you'll provide your account details securely, and we'll update you on progress daily via Discord. All communication is private and secure."
+      question: "How do I receive my account or service?",
+      answer: "After purchase, we'll contact you via Discord (our preferred method for instant communication). For modded accounts, we provide login credentials ONCE - we cannot retrieve them later, so save them immediately and change the email/password right away. For boosting services, you provide account access securely, we update you on progress via Discord. All communication is private and secure. We respond within hours maximum."
     },
     {
       question: "What payment methods do you accept?",
-      answer: "We accept all major credit and debit cards through Stripe Checkout (Visa, Mastercard, American Express). Payment is secure and encrypted. We do not accept cryptocurrency or alternative payment methods. All transactions are processed securely and your payment information is never stored on our servers."
+      answer: "We accept all major credit and debit cards through Stripe Checkout (Visa, Mastercard, American Express). Payment is secure, encrypted, and PCI-compliant. We do not accept cryptocurrency or alternative payment methods. Your payment information is never stored on our servers."
     },
     {
-      question: "Can I get a refund if I'm not satisfied?",
-      answer: "Yes, we offer a satisfaction guarantee. If you're unhappy with your modded account or boosting service, contact us within 7 days for a full refund. We stand behind the quality of our accounts and services. See our Refund Policy page for complete details."
+      question: "Can I get a refund?",
+      answer: "No refunds are issued once a service or account has been made and sent to you. All sales are final. However, if something goes wrong with the service (like an account ban due to our methods), we'll redo the order for free. Refunds are not available, only redos of the service. Check our Refund Policy page for complete details."
     },
     {
-      question: "What platforms do your modded accounts support?",
-      answer: "Our GTA Online modded accounts are available for Steam, Epic Games, Xbox App (Microsoft Store), and Rockstar Launcher. All accounts are exclusive to your PC and cannot be transferred to other platforms. We ensure compatibility with the latest GTA Online updates."
+      question: "How is account security handled?",
+      answer: "Security is our priority. For boosting: You maintain full account access and control throughout. For modded accounts: You receive the login details once - we CANNOT retrieve them after sending. You MUST change the email and password immediately upon receiving the account. We do not keep copies of credentials. Enable 2FA immediately. No accounts are shared or reused."
     },
     {
-      question: "How do you ensure my account stays secure?",
-      answer: "We take security seriously. All boosting is done directly through your Discord, you control the account the entire time. For modded accounts, we reset the password and email immediately after delivery so only you have access. We recommend enabling 2FA on your Rockstar account for extra security. No accounts are shared or reused ever."
+      question: "Do you offer custom services?",
+      answer: "Absolutely! Our listed packages are base offerings. Need something specific? We create custom boosting plans, selective progression unlocks, or targeted farming. Contact us on Discord with your exact requirements and we'll provide a custom quote tailored to your needs."
     },
     {
-      question: "Do you offer custom boosting services?",
-      answer: "Yes! Our boosting packages are base offerings. Contact us for custom GTA Online progression services. Want specific rank, money amount, vehicles, or properties? We can create a custom boosting plan for you. Message us on Discord to discuss your exact requirements and pricing."
+      question: "How long have you been in business?",
+      answer: "zeuservices has been providing gaming account services for 9+ years. We started with GTA on PS3 and Xbox 360 and have adapted through every game update, security patch, and enforcement wave. Our experience means proven safe methods, fast delivery, and reliability you can count on."
     },
     {
-      question: "How many years have you been doing this?",
-      answer: "zeuservices has been providing GTA Online account services for 9+ years. We've been supporting GTA since the PS3 and Xbox 360 days and have adapted through every update, patch, and ban wave. Our experience means safer methods, faster delivery, and fewer mistakes compared to newer services."
+      question: "What happens if my account has issues after delivery?",
+      answer: "If your account is banned within 30 days due to our service (not from other cheating/hacking), we'll redo the order for free. For boosting services, if our method is detected and causes issues, we'll redo the boosting. Note: No refunds are issued - we provide redos/replacements only. See our Refund Policy for complete details."
     },
     {
-      question: "What happens if my boosted account gets banned?",
-      answer: "While extremely rare with our methods, we offer account safety guarantees. If your account is banned within 30 days of service completion due to our boosting (and not due to other cheating/hacking), contact us immediately. See our Terms & Conditions for the full account protection policy."
-    },
-    {
-      question: "Can you unlock specific vehicles or properties?",
-      answer: "Yes, absolutely. Our vehicle unlock and property services allow you to request specific vehicles or properties. You can specify which vehicles you want unlocked (sports cars, military vehicles, planes, etc.) and which properties you want owned. Contact us with your specific requests and we'll provide a custom quote."
+      question: "Can I customize what I order?",
+      answer: "Yes! Want specific items unlocked, custom ranking levels, targeted weapons, or selective progression? We can customize almost any service. Contact us on Discord with details about what you need, and we'll provide a custom quote. Customization costs vary based on game and complexity."
     },
     {
       question: "How do I contact support?",
-      answer: "The best way to contact us is via our Discord server for instant responses. You can also email us at support@zeuservices.com. For account boosting customers, you'll have direct Discord chat with the operator handling your account. We respond within a few hours maximum."
+      answer: "Best way: Join our Discord server for instant responses and direct chat with our team. We respond within a few hours maximum. For account orders, you get a personal Discord contact who updates you throughout the process. Email support is also available at support@zeuservices.com."
     }
   ]
 
   return (
     <>
       <SEO 
-        title="FAQ - GTA Online Account Boosting & Modded Accounts | zeuservices"
-        description="Frequently asked questions about GTA Online account boosting, modded accounts, delivery time, safety, platforms, and more. Get answers from our 9+ year experts."
-        keywords="GTA boosting FAQ, modded accounts questions, GTA Online services questions, account safety, boost service help"
+        title="FAQ - Gaming Services, Boosting & Modded Accounts | zeuservices"
+        description="Frequently asked questions about account boosting, modded accounts, topups, delivery times, safety, platforms, and more. Get answers from our 9+ year experts covering all games."
+        keywords="gaming FAQ, boosting services questions, modded accounts questions, account safety, service help, gaming services"
       />
       
       <section className="section">
         <Breadcrumb customItems={[{ label: 'Home', path: '/' }, { label: 'FAQ', path: '/faq' }]} />
         <div style={{ maxWidth: '900px', margin: '0 auto', padding: '3rem 2rem' }}>
           <h1 style={{ fontSize: '2.5rem', marginBottom: '0.5rem', color: '#f1f5f9' }}>
-            Common Questions About GTA Boosting & Modded Accounts
+            Frequently Asked Questions
           </h1>
           <p style={{ fontSize: '1.1rem', color: '#cbd5e1', marginBottom: '3rem', lineHeight: '1.6' }}>
-            Have questions about our GTA Online account boosting services, modded accounts, how boosting works, or account safety? Find answers to the most common questions below. If you don't find your answer, reach out to us on Discord.
+            Have questions about our account boosting services, modded accounts, topups, how services work, or account safety? Find answers to common questions below. If you don't find your answer, reach out to us on Discord.
           </p>
 
           <div className="faq-list">
