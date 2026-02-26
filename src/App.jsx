@@ -42,6 +42,8 @@ const AdminReviewsPage = lazy(() => import('./pages/AdminReviewsPage'))
 const SafetyPage = lazy(() => import('./pages/SafetyPage'))
 const TrustPage = lazy(() => import('./pages/TrustPage'))
 const ProcessPage = lazy(() => import('./pages/ProcessPage'))
+const FAQPage = lazy(() => import('./pages/FAQPage'))
+const ComparisonPage = lazy(() => import('./pages/ComparisonPage'))
 
 function App() {
   // Load cart from localStorage on mount
@@ -562,6 +564,14 @@ function App() {
         <Route
           path="/process"
           element={<ProcessPage />}
+        />
+        <Route
+          path="/faq"
+          element={<FAQPage />}
+        />
+        <Route
+          path="/comparison"
+          element={<ComparisonPage />}
         />
       </Routes>
       </Suspense>
