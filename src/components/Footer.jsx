@@ -51,7 +51,7 @@ export default function Footer() {
           <div className="footer-links">
             <Link to="/trust" onClick={handleFooterLinkClick}>Why Trust Us</Link>
             <a
-              href="https://discord.gg/KTmYbqxBBU"
+              href="http://discord.gg/zeusservices"
               target="_blank"
               rel="noreferrer"
               className="discord-link"

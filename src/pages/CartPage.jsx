@@ -385,7 +385,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
                 <span>You must join our Discord server and create a support ticket to proceed with your order. Our team will contact you there to complete delivery.</span>
               </div>
               <a
-                href="https://discord.gg/KTmYbqxBBU"
+                href="http://discord.gg/zeusservices"
                 className="discord-btn"
                 target="_blank"
                 rel="noreferrer"

@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
     <div style="background: #f1f5f9; border-left: 4px solid #667eea; padding: 16px; border-radius: 6px; margin: 24px 0;">
       <p style="font-size: 14px; color: #334155; margin: 0 0 12px;"><strong>Need help or have questions?</strong></p>
       <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Join our Discord community for instant support and updates:</p>
-      <a href="https://discord.gg/KTmYbqxBBU" style="display: inline-block; background-color: #5865F2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Join Discord Server</a>
+      <a href="http://discord.gg/zeusservices" style="display: inline-block; background-color: #5865F2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Join Discord Server</a>
     </div>
 
     <div style="text-align: center; padding-top: 18px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #999;">

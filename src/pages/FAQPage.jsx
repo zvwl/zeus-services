@@ -123,7 +123,7 @@ export default function FAQPage() {
                 fontWeight: '600',
                 cursor: 'pointer'
               }}
-               onClick={() => window.open('https://discord.gg/KTmYbqxBBU', '_blank')}
+              onClick={() => window.open('http://discord.gg/zeusservices', '_blank')}
             >
               Join Discord Support
             </button>
