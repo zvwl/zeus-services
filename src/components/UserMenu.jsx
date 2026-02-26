@@ -226,6 +226,27 @@ export default function UserMenu({ isOpen, onClose }) {
           <div className="menu-section">
             <div className="menu-section-title">Information</div>
             <button
+              className={`menu-item ${isActive('/faq') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/faq')}
+            >
+              <span className="menu-icon">❓</span>
+              <span className="menu-label">FAQ</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/process') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/process')}
+            >
+              <span className="menu-icon">📍</span>
+              <span className="menu-label">How It Works</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/comparison') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/comparison')}
+            >
+              <span className="menu-icon">⚖️</span>
+              <span className="menu-label">Modded vs Boosting</span>
+            </button>
+            <button
               className={`menu-item ${isActive('/safety') ? 'active' : ''}`}
               onClick={() => handleNavigation('/safety')}
             >
@@ -238,13 +259,6 @@ export default function UserMenu({ isOpen, onClose }) {
             >
               <span className="menu-icon">✓</span>
               <span className="menu-label">Why Trust Us</span>
-            </button>
-            <button
-              className={`menu-item ${isActive('/process') ? 'active' : ''}`}
-              onClick={() => handleNavigation('/process')}
-            >
-              <span className="menu-icon">📍</span>
-              <span className="menu-label">How It Works</span>
             </button>
           </div>
 
@@ -339,7 +353,7 @@ export default function UserMenu({ isOpen, onClose }) {
 
         <div className="user-menu-footer">
           <a
-            href="http://discord.gg/zeusservices"
+            href="https://discord.gg/KTmYbqxBBU"
             className="menu-item discord-item"
             target="_blank"
             rel="noreferrer"

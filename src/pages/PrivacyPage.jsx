@@ -83,7 +83,7 @@ export default function PrivacyPage() {
             </p>
             <ul>
               <li><strong>Email:</strong> support@kiroozmare.resend.app</li>
-              <li><strong>Discord:</strong> <a href="https://discord.gg/zeusservices" target="_blank" rel="noopener noreferrer">https://discord.gg/zeusservices</a></li>
+              <li><strong>Discord:</strong> <a href="https://discord.gg/KTmYbqxBBU" target="_blank" rel="noopener noreferrer">https://discord.gg/KTmYbqxBBU</a></li>
               <li><strong>Website:</strong> www.zeuservices.com</li>
             </ul>
             <p>

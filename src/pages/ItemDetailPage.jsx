@@ -8,7 +8,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 
-export default function ItemDetailPage({ formatPrice, addToCart, platformOptions }) {
+export default function ItemDetailPage({ formatPrice, addToCart, platformOptions, cartItems = [], updateQuantity, removeFromCart }) {
   const { categorySlug, gameSlug, itemSlug } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
@@ -21,6 +21,21 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   const [addingToCart, setAddingToCart] = useState(false)
   const [isInCart, setIsInCart] = useState(false)
   const [cartQuantity, setCartQuantity] = useState(1)
+
+  // Check if item is already in cart and update state
+  useEffect(() => {
+    if (item && selectedPlatform && cartItems) {
+      const cartId = `${item.id}-${selectedPlatform}`
+      const existingItem = cartItems.find(cartItem => cartItem.cartId === cartId)
+      if (existingItem) {
+        setIsInCart(true)
+        setCartQuantity(existingItem.quantity)
+      } else {
+        setIsInCart(false)
+        setCartQuantity(1)
+      }
+    }
+  }, [item, selectedPlatform, cartItems])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -129,10 +144,8 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
         category_name: category.name
       }
       
-      // Add to cart once
+      // Add to cart
       addToCart(cartItem, selectedPlatform)
-      setIsInCart(true)
-      setCartQuantity(1)
     } catch (err) {
       console.error('Error adding to cart:', err)
       alert('Failed to add item to cart')
@@ -142,8 +155,9 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   }
 
   const handleQuantityChange = (newQuantity) => {
-    if (newQuantity >= 1 && newQuantity <= 100) {
-      setCartQuantity(newQuantity)
+    if (newQuantity >= 1 && newQuantity <= 100 && isInCart && updateQuantity) {
+      const cartId = `${item.id}-${selectedPlatform}`
+      updateQuantity(cartId, newQuantity)
     }
   }
 
@@ -158,16 +172,15 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
       category_name: category.name
     }
     addToCart(cartItem, selectedPlatform)
-    setCartQuantity(cartQuantity + 1)
   }
 
   const handleRemoveOne = () => {
-    if (cartQuantity > 1) {
-      setCartQuantity(cartQuantity - 1)
-    } else {
-      // If quantity reaches 0, remove from cart
-      setIsInCart(false)
-      setCartQuantity(1)
+    if (isInCart && cartQuantity > 1 && updateQuantity) {
+      const cartId = `${item.id}-${selectedPlatform}`
+      updateQuantity(cartId, cartQuantity - 1)
+    } else if (isInCart && cartQuantity === 1 && removeFromCart) {
+      const cartId = `${item.id}-${selectedPlatform}`
+      removeFromCart(cartId)
     }
   }
 

@@ -11,6 +11,7 @@ import ProtectedAdminRoute from './components/ProtectedAdminRoute'
 import CookieBanner from './components/CookieBanner'
 import StatusBanner from './components/StatusBanner'
 import LoadingSpinner from './components/LoadingSpinner'
+import { ToastContainer } from './components/Toast'
 import Home from './pages/Home'
 const CategoryPage = lazy(() => import('./pages/CategoryPage'))
 const ItemDetailPage = lazy(() => import('./pages/ItemDetailPage'))
@@ -61,6 +62,7 @@ function App() {
   const [userCountry, setUserCountry] = useState(null)
   const [orderNote, setOrderNote] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('stripe')
+  const [toasts, setToasts] = useState([])
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -182,6 +184,15 @@ function App() {
     'Rockstar Launcher'
   ]
 
+  const addToast = (message, type = 'info') => {
+    const id = Date.now()
+    setToasts(prev => [...prev, { id, message, type, duration: 3500 }])
+  }
+
+  const removeToast = (id) => {
+    setToasts(prev => prev.filter(toast => toast.id !== id))
+  }
+
   const addToCart = (service, platform) => {
     const cartId = `${service.id}-${platform}`
     const existingItem = cartItems.find(item => item.cartId === cartId)
@@ -191,13 +202,19 @@ function App() {
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ))
+      addToast(`🛒 Updated ${service.name} quantity in cart`, 'success')
     } else {
       setCartItems([...cartItems, { ...service, cartId, platform, quantity: 1 }])
+      addToast(`🛒 Added ${service.name} to cart`, 'success')
     }
   }
 
   const removeFromCart = (cartId) => {
+    const removedItem = cartItems.find(item => item.cartId === cartId)
     setCartItems(cartItems.filter(item => item.cartId !== cartId))
+    if (removedItem) {
+      addToast(`🗑️ Removed ${removedItem.name} from cart`, 'info')
+    }
   }
 
   const updateQuantity = (cartId, quantity) => {
@@ -392,6 +409,9 @@ function App() {
               formatPrice={formatPrice}
               addToCart={addToCart}
               platformOptions={platformOptions}
+              cartItems={cartItems}
+              updateQuantity={updateQuantity}
+              removeFromCart={removeFromCart}
             />
           )}
         />
@@ -578,6 +598,7 @@ function App() {
       <CookieBanner />
       <Footer />
       <ScrollToTop />
+      <ToastContainer toasts={toasts} removeToast={removeToast} />
     </div>
   )
 }

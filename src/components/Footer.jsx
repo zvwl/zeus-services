@@ -10,11 +10,30 @@ export default function Footer() {
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-section">
-          <h3>Boosting</h3>
+          <h3>Services</h3>
           <div className="footer-links">
-            <Link to="/boosting/gta5" onClick={handleFooterLinkClick}>Browse Boosting</Link>
+            <Link to="/topups" onClick={handleFooterLinkClick}>Topups</Link>
+            <Link to="/boosting" onClick={handleFooterLinkClick}>Boosting</Link>
+            <Link to="/accounts" onClick={handleFooterLinkClick}>Accounts</Link>
+          </div>
+        </div>
+
+        <div className="footer-section">
+          <h3>Account</h3>
+          <div className="footer-links">
             <Link to="/cart" onClick={handleFooterLinkClick}>Your Cart</Link>
             <Link to="/orders" onClick={handleFooterLinkClick}>Your Orders</Link>
+            <Link to="/reviews" onClick={handleFooterLinkClick}>Reviews</Link>
+          </div>
+        </div>
+
+        <div className="footer-section">
+          <h3>Resources</h3>
+          <div className="footer-links">
+            <Link to="/faq" onClick={handleFooterLinkClick}>FAQ</Link>
+            <Link to="/process" onClick={handleFooterLinkClick}>How It Works</Link>
+            <Link to="/comparison" onClick={handleFooterLinkClick}>Modded vs Boosting</Link>
+            <Link to="/safety" onClick={handleFooterLinkClick}>Safety & Security</Link>
           </div>
         </div>
 
@@ -28,19 +47,11 @@ export default function Footer() {
         </div>
 
         <div className="footer-section">
-          <h3>Information</h3>
+          <h3>Company</h3>
           <div className="footer-links">
-            <Link to="/safety" onClick={handleFooterLinkClick}>Safety & Security</Link>
             <Link to="/trust" onClick={handleFooterLinkClick}>Why Trust Us</Link>
-            <Link to="/process" onClick={handleFooterLinkClick}>How It Works</Link>
-          </div>
-        </div>
-
-        <div className="footer-section">
-          <h3>Support</h3>
-          <div className="footer-links">
             <a
-              href="http://discord.gg/zeusservices"
+              href="https://discord.gg/KTmYbqxBBU"
               target="_blank"
               rel="noreferrer"
               className="discord-link"
