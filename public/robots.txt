@@ -10,16 +10,22 @@ Disallow: /settings/
 Disallow: /orders/
 Disallow: /checkout/
 
-# Allow all other pages including auth pages
-# (They have good SEO and Google already discovered them)
+# Allow all public pages including auth pages
+# (They are discoverable and have good SEO value)
 Allow: /services
 Allow: /products
 Allow: /reviews
+Allow: /safety
+Allow: /trust
+Allow: /process
+Allow: /faq
+Allow: /comparison
 Allow: /terms
 Allow: /privacy
 Allow: /refund
 Allow: /login
 Allow: /signup
 
-# Sitemap location
+# Sitemap location - helps Google discover all pages
 Sitemap: https://zeuservices.com/sitemap.xml
+Sitemap: https://zeuservices.com/robots.txt

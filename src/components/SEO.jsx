@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 /**
  * SEO Component - Updates page title and meta tags dynamically based on route
+ * Includes JSON-LD structured data for search engines
  * Usage: Add <SEO /> component to each page with appropriate props
  */
 export default function SEO({ 
@@ -10,7 +11,8 @@ export default function SEO({
   description = "GTA Online Account Services. Play Smarter, Not Harder. GTA Online account boosting and progression made simple.",
   keywords = "GTA 5 services, GTA Online, modded accounts, rank boost, gaming services, account boosting",
   image = "https://zeuservices.com/zeus-logo-main.webp",
-  type = "website"
+  type = "website",
+  structuredData = null
 }) {
   const location = useLocation();
   const url = `https://zeuservices.com${location.pathname}`;
@@ -60,9 +62,79 @@ export default function SEO({
       canonicalLink.setAttribute('href', url);
       document.head.appendChild(canonicalLink);
     }
-  }, [title, description, keywords, image, url, type]);
+
+    // Add JSON-LD structured data if provided
+    if (structuredData) {
+      let scriptTag = document.querySelector('script[type="application/ld+json"][data-seo-script="true"]');
+      if (scriptTag) {
+        scriptTag.textContent = JSON.stringify(structuredData);
+      } else {
+        scriptTag = document.createElement('script');
+        scriptTag.type = 'application/ld+json';
+        scriptTag.setAttribute('data-seo-script', 'true');
+        scriptTag.textContent = JSON.stringify(structuredData);
+        document.head.appendChild(scriptTag);
+      }
+    }
+  }, [title, description, keywords, image, url, type, structuredData]);
 
   return null;
+}
+
+/**
+ * Helper function to create Product JSON-LD schema
+ */
+export function createProductSchema(product) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": product.name,
+    "description": product.description,
+    "image": product.image || "https://zeuservices.com/zeus-logo-main.webp",
+    "url": `https://zeuservices.com/boosting/gta5/${product.slug || product.id}`,
+    "offers": {
+      "@type": "Offer",
+      "priceCurrency": "GBP",
+      "price": product.price || "0",
+      "availability": product.inStock !== false ? "InStock" : "OutOfStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "zeuservices"
+      }
+    },
+    "aggregateRating": product.rating ? {
+      "@type": "AggregateRating",
+      "ratingValue": product.rating,
+      "reviewCount": product.reviewCount || "100",
+      "bestRating": "5",
+      "worstRating": "1"
+    } : undefined
+  };
+}
+
+/**
+ * Helper function to create Service JSON-LD schema
+ */
+export function createServiceSchema(service) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Service",
+    "name": service.name,
+    "description": service.description,
+    "image": service.image || "https://zeuservices.com/zeus-logo-main.webp",
+    "url": `https://zeuservices.com/services/${service.slug || service.id}`,
+    "provider": {
+      "@type": "Organization",
+      "name": "zeuservices",
+      "url": "https://zeuservices.com",
+      "logo": "https://zeuservices.com/zeus-logo-main.webp",
+      "sameAs": [
+        "http://discord.gg/zeusservices"
+      ]
+    },
+    "areaServed": "Worldwide",
+    "availableLanguage": "en"
+  };
 }
 
 /**

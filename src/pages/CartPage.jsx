@@ -35,16 +35,9 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   // UNLESS we have a valid session_id (proves payment succeeded)
   useEffect(() => {
     if (success === 'true') {
-      console.log('✅ Success page check:', { hasUser: !!user, email: user?.email, hasSessionId: !!sessionId, authLoading })
-      
       // Only redirect if we're truly logged out AND have no session ID
       if (!authLoading && !user && !sessionId) {
-        console.log('⚠️ No user and no session ID, redirecting home')
         navigate('/')
-      } else if (!authLoading && user) {
-        console.log('✅ User is logged in:', user.email)
-      } else if (authLoading) {
-        console.log('⏳ Still waiting for auth to load...')
       }
     }
   }, [user, authLoading, success, sessionId, navigate])
@@ -58,12 +51,10 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       // Fetch the order by session ID (with retry logic for webhook delay)
       // Order will be created by Stripe webhook and indexed in database
       if (sessionId) {
-        console.log('💳 Payment success! Fetching order:', sessionId)
         fetchOrderBySessionId(sessionId)
         
         // Set a hard timeout of 60 seconds - stop retrying after that
         hardTimeoutRef.current = setTimeout(() => {
-          console.log('⏱️ Hard timeout reached, stopping order fetch')
           setLoadingOrder(false)
           if (!orderDetailsRef.current) {
             setFetchError('Order is taking longer than expected. Please go to "Your Orders" to see your payment status.')
@@ -77,7 +68,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
           }
         }
       } else {
-        console.log('💳 Payment success, fetching most recent order')
         fetchMostRecentOrder()
       }
     }
@@ -116,8 +106,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       // Try to get session, but don't block if it's not available
       // The edge function uses SERVICE_ROLE so it doesn't need auth
       // No authentication required - webhook verified the payment
-      console.log('Fetching order by session ID:', checkoutSessionId)
-      
       let accessToken = null
       try {
         const { data: { session } } = await Promise.race([
@@ -125,9 +113,8 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
           new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
         ])
         accessToken = session?.access_token
-        if (accessToken) console.log('Using access token for request')
       } catch (err) {
-        console.log('No user session available (expected after Stripe redirect), continuing without auth')
+        // No user session available, continue without auth
       }
 
       // Fetch order directly by checkout session ID using edge function
@@ -144,7 +131,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       } catch (fetchErr) {
         console.error('Network error fetching order:', fetchErr)
         if (retryCount < MAX_RETRIES) {
-          console.log(`Network error, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
           setTimeout(() => {
             fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
           }, RETRY_DELAY)
@@ -169,7 +155,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         const errorMsg = body?.error || `Server error (${res.status})`
         console.error('Order fetch error:', errorMsg)
         if (retryCount < MAX_RETRIES) {
-          console.log(`Error fetching order, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
           setTimeout(() => {
             fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
           }, RETRY_DELAY)
@@ -183,18 +168,16 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       const order = body.order
 
       if (order) {
-        console.log('✅ Order found:', order.id)
         setOrderDetails(order)
         setFetchError(null)
         setLoadingOrder(false)
       } else if (retryCount < MAX_RETRIES) {
         // Order not found yet, webhook might still be processing
-        console.log(`Order not found, retrying... (${retryCount + 1}/${MAX_RETRIES})`)
         setTimeout(() => {
           fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
         }, RETRY_DELAY)
       } else {
-        console.error('Max retries reached - order still not created. Webhook may have failed.')
+        console.error('Max retries reached - order not found')
         
         // Fallback: if no user and no order found, show confirmation message using lastPaymentAttempt
         if (!userSession) {
@@ -202,7 +185,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
             const lastPayment = localStorage.getItem('lastPaymentAttempt')
             if (lastPayment) {
               const paymentData = JSON.parse(lastPayment)
-              console.log('✅ Using cached payment data for confirmation:', paymentData)
               // Create a minimal order object from payment data
               const fallbackOrder = {
                 id: 'pending-' + checkoutSessionId.substring(0, 8),
@@ -220,7 +202,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
               return
             }
           } catch (fallbackErr) {
-            console.warn('Could not use fallback payment data:', fallbackErr)
+            console.error('Fallback payment data error:', fallbackErr)
           }
         }
         

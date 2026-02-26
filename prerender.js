@@ -7,16 +7,32 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
 const routes = [
+  // Home and main pages
   '/',
   '/services',
   '/products',
   '/reviews',
+  
+  // Information pages (Google loves these for SEO)
   '/safety',
   '/trust',
   '/process',
+  '/faq',
+  '/comparison',
+  
+  // Legal pages
   '/terms',
   '/privacy',
-  '/refund'
+  '/refund',
+  
+  // Category pages for better indexing and sitemap coverage
+  '/boosting/gta5',
+  '/topups/moneydrop',
+  '/accounts/verification',
+  
+  // Auth pages (for breadcrumb and structure)
+  '/login',
+  '/signup'
 ]
 
 const prerenderer = new Prerenderer({
