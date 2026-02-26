@@ -27,7 +27,7 @@ const routes = [
   
   // Category pages for better indexing and sitemap coverage
   '/boosting/gta5',
-  '/topups/moneydrop',
+  '/topups/gta5',
   '/accounts/verification',
   
   // Auth pages (for breadcrumb and structure)

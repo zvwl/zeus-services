@@ -26,7 +26,7 @@ After: 18 routes
 - ✅ `/faq` - FAQ page (great for search traffic)
 - ✅ `/comparison` - Service comparison (high conversion)
 - ✅ `/boosting/gta5` - Category pages (important for rankings)
-- ✅ `/topups/moneydrop` - Game pages
+- ✅ `/topups/gta5` - Topup game pages
 - ✅ `/accounts/verification` - Account pages
 - ✅ `/login`, `/signup` - Auth pages
 
