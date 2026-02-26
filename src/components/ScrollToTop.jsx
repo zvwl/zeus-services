@@ -9,6 +9,12 @@ export default function ScrollToTop() {
   const { pathname, search } = useLocation()
 
   const resolveScrollContainer = () => {
+    // For iOS Safari, always use window/document scroll
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream
+    if (isIOS) {
+      return document.documentElement
+    }
+    
     const candidates = [
       document.scrollingElement,
       document.getElementById('root'),
@@ -52,14 +58,22 @@ export default function ScrollToTop() {
   useEffect(() => {
     let activeContainer = scrollContainerRef.current || resolveScrollContainer()
     scrollContainerRef.current = activeContainer
+    let ticking = false
 
     const updateVisibility = () => {
-      const container = scrollContainerRef.current || resolveScrollContainer()
-      const scrollTop = container?.scrollTop || window.pageYOffset || 0
-      const scrollHeight = container?.scrollHeight || document.documentElement.scrollHeight
-      const clientHeight = container?.clientHeight || window.innerHeight
-      const canScroll = scrollHeight - clientHeight > 50
-      setIsVisible(canScroll && scrollTop > 50)
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const container = scrollContainerRef.current || resolveScrollContainer()
+          // Use multiple methods to get scroll position for iOS compatibility
+          const scrollTop = window.pageYOffset || window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || container?.scrollTop || 0
+          const scrollHeight = document.documentElement.scrollHeight || container?.scrollHeight || 0
+          const clientHeight = window.innerHeight || document.documentElement.clientHeight || container?.clientHeight || 0
+          const canScroll = scrollHeight - clientHeight > 50
+          setIsVisible(canScroll && scrollTop > 50)
+          ticking = false
+        })
+        ticking = true
+      }
     }
 
     const handleResize = () => {
@@ -67,15 +81,24 @@ export default function ScrollToTop() {
       updateVisibility()
     }
 
+    // Initial visibility check
     updateVisibility()
+    
+    // Add multiple event listeners for better iOS compatibility
     activeContainer?.addEventListener('scroll', updateVisibility, { passive: true })
     window.addEventListener('scroll', updateVisibility, { passive: true })
     window.addEventListener('resize', handleResize, { passive: true })
+    // Add touchmove for iOS momentum scrolling
+    window.addEventListener('touchmove', updateVisibility, { passive: true })
+    // Add touchend for when momentum scrolling stops
+    window.addEventListener('touchend', updateVisibility, { passive: true })
 
     return () => {
       activeContainer?.removeEventListener('scroll', updateVisibility)
       window.removeEventListener('scroll', updateVisibility)
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('touchmove', updateVisibility)
+      window.removeEventListener('touchend', updateVisibility)
     }
   }, [pathname])
 
