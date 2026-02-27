@@ -27,6 +27,8 @@ html {
   -webkit-overflow-scrolling: touch;
   /* Better viewport handling on iOS */
   height: 100%;
+  /* Ensure fixed elements render properly on iOS */
+  -webkit-transform: translateZ(0);
 }
 
 html, body, #root {

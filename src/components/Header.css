@@ -16,6 +16,12 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
+  /* iOS Safari specific fixes */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  width: 100%;
 }
 
 .header-content {
@@ -273,6 +279,17 @@
 
   .header {
     padding: 0.7rem 0.8rem;
+    /* Force header visibility on iOS */
+    position: fixed !important;
+    top: 0 !important;
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    /* Remove backdrop-filter on mobile - known iOS Safari rendering bug */
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    /* Increase background opacity for readability without blur */
+    background: rgba(30, 64, 175, 0.98) !important;
   }
 
   .logo-icon {
