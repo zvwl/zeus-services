@@ -26,8 +26,8 @@
 /* Hide header on mobile by translating it up */
 @media (max-width: 480px) {
   .header-hidden {
-    transform: translateY(-100%) translateZ(0);
-    -webkit-transform: translateY(-100%) translateZ(0);
+    transform: translateY(calc(-100% - env(safe-area-inset-top, 0px))) translateZ(0);
+    -webkit-transform: translateY(calc(-100% - env(safe-area-inset-top, 0px))) translateZ(0);
   }
 }
 
@@ -286,8 +286,8 @@
 
   .header {
     padding: 0.7rem 0.8rem;
-    /* Keep header at top: 0, use padding instead */
-    padding-top: max(0.7rem, env(safe-area-inset-top, 0.7rem));
+    /* Position below iOS notch/status bar */
+    top: env(safe-area-inset-top, 0);
   }
 
   .logo-icon {

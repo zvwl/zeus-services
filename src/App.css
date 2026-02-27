@@ -45,6 +45,13 @@ body {
   min-height: -webkit-fill-available;
 }
 
+/* Mobile body padding needs to account for iOS safe-area */
+@media (max-width: 480px) {
+  body {
+    padding-top: calc(78px + env(safe-area-inset-top, 0px));
+  }
+}
+
 button,
 a,
 [role="button"] {

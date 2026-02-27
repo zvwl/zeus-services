@@ -16,7 +16,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
   const [headerVisible, setHeaderVisible] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
+  const lastScrollYRef = useRef(0)
   const menuIconRef = useRef(null)
   const cartIconRef = useRef(null)
 
@@ -69,61 +69,56 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   useEffect(() => {
     let ticking = false
     const isMobile = () => window.innerWidth <= 480
+    const getScrollY = () => Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0)
+
+    const applyVisibility = (currentScrollY) => {
+      // Desktop always shows header
+      if (!isMobile()) {
+        setHeaderVisible(true)
+        lastScrollYRef.current = currentScrollY
+        return
+      }
+
+      // Always show header when at the very top
+      if (currentScrollY <= 5) {
+        setHeaderVisible(true)
+        lastScrollYRef.current = currentScrollY
+        return
+      }
+
+      const lastScrollY = lastScrollYRef.current
+      const scrollDelta = currentScrollY - lastScrollY
+
+      if (scrollDelta < -2) {
+        setHeaderVisible(true)
+      } else if (scrollDelta > 2 && currentScrollY > 80) {
+        setHeaderVisible(false)
+      }
+
+      lastScrollYRef.current = currentScrollY
+    }
 
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const currentScrollY = window.pageYOffset || window.scrollY
-
-          // Desktop always shows header
-          if (!isMobile()) {
-            setHeaderVisible(true)
-            ticking = false
-            return
-          }
-
-          // CRITICAL: Always show header when at the very top
-          if (currentScrollY <= 5) {
-            setHeaderVisible(true)
-            setLastScrollY(currentScrollY)
-            ticking = false
-            return
-          }
-
-          // Show header if scrolling up
-          if (currentScrollY < lastScrollY) {
-            setHeaderVisible(true)
-          } 
-          // Hide header if scrolling down (but not when already at top)
-          else if (currentScrollY > lastScrollY && currentScrollY > 80) {
-            setHeaderVisible(false)
-          }
-
-          setLastScrollY(currentScrollY)
+          applyVisibility(getScrollY())
           ticking = false
         })
         ticking = true
       }
     }
 
-    // Initial check on mount
-    const initialCheck = () => {
-      const currentScrollY = window.pageYOffset || window.scrollY
-      if (!isMobile() || currentScrollY <= 5) {
-        setHeaderVisible(true)
-      }
-      setLastScrollY(currentScrollY)
-    }
+    const initialCheck = () => applyVisibility(getScrollY())
 
     initialCheck()
     window.addEventListener('scroll', handleScroll, { passive: true })
     window.addEventListener('resize', initialCheck, { passive: true })
-    
+
     return () => {
       window.removeEventListener('scroll', handleScroll)
       window.removeEventListener('resize', initialCheck)
     }
-  }, [lastScrollY])
+  }, [])
 
 
   return (
