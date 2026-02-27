@@ -43,8 +43,6 @@ body {
   padding-top: var(--header-height, 102px);
   min-height: 100vh;
   min-height: -webkit-fill-available;
-  overflow-y: scroll;
-  -webkit-overflow-scrolling: touch;
 }
 
 button,
@@ -769,10 +767,6 @@ a,
 }
 
 @media (max-width: 480px) {
-  body {
-    padding-top: calc(78px + env(safe-area-inset-top));
-  }
-
   .services-grid {
     padding: 1.5rem 0.75rem;
     gap: 1rem;
