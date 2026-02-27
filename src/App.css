@@ -27,8 +27,6 @@ html {
   -webkit-overflow-scrolling: touch;
   /* Better viewport handling on iOS */
   height: 100%;
-  /* Ensure fixed elements render properly on iOS */
-  -webkit-transform: translateZ(0);
 }
 
 html, body, #root {
@@ -50,7 +48,7 @@ body {
 /* Mobile body padding */
 @media (max-width: 480px) {
   body {
-    padding-top: 78px;
+    padding-top: calc(78px + env(safe-area-inset-top));
   }
 }
 
