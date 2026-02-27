@@ -14,8 +14,11 @@
   font-size: 0.95rem;
   letter-spacing: 0.01em;
   text-align: center;
-  position: relative;
-  z-index: 1;
+  position: fixed;
+  top: var(--header-height, 102px);
+  left: 0;
+  right: 0;
+  z-index: 9998;
 }
 
 .status-banner__content {
@@ -101,6 +104,14 @@
 @media (max-width: 768px) {
   .status-banner__content {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .status-banner {
+    top: calc(78px + env(safe-area-inset-top));
+    font-size: 0.875rem;
+    padding: 0.6rem 1rem;
   }
 }
 

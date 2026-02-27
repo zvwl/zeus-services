@@ -110,6 +110,16 @@ export default function StatusBanner() {
 
   const announcement = announcements[activeIndex]
 
+  // Add/remove body class to account for banner height
+  useEffect(() => {
+    if (announcement?.message) {
+      document.body.classList.add('has-status-banner')
+    } else {
+      document.body.classList.remove('has-status-banner')
+    }
+    return () => document.body.classList.remove('has-status-banner')
+  }, [announcement])
+
   if (!announcement?.message) return null
 
   const status = announcement.status || 'info'
