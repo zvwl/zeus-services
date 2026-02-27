@@ -15,8 +15,6 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
-  const [headerVisible, setHeaderVisible] = useState(true)
-  const lastScrollYRef = useRef(0)
   const menuIconRef = useRef(null)
   const cartIconRef = useRef(null)
 
@@ -65,69 +63,27 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
     }
   }, [isMenuOpen])
 
-  // Mobile header scroll behavior - hide on scroll down, show on scroll up or at top
+  // Simple scroll tracking - just for at-top class, no hiding
   useEffect(() => {
-    let ticking = false
-    const isMobile = () => window.innerWidth <= 480
-    const getScrollY = () => Math.max(0, window.pageYOffset || document.documentElement.scrollTop || 0)
-
-    const applyVisibility = (currentScrollY) => {
-      // Desktop always shows header
-      if (!isMobile()) {
-        setHeaderVisible(true)
-        lastScrollYRef.current = currentScrollY
-        document.body.classList.remove('at-top')
-        return
-      }
-
-      // Always show header when at the very top
-      if (currentScrollY <= 5) {
-        setHeaderVisible(true)
-        lastScrollYRef.current = currentScrollY
-        document.body.classList.add('at-top')
-        return
-      }
-
-      document.body.classList.remove('at-top')
-
-      const lastScrollY = lastScrollYRef.current
-      const scrollDelta = currentScrollY - lastScrollY
-
-      if (scrollDelta < -2) {
-        setHeaderVisible(true)
-      } else if (scrollDelta > 2 && currentScrollY > 80) {
-        setHeaderVisible(false)
-      }
-
-      lastScrollYRef.current = currentScrollY
-    }
-
     const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          applyVisibility(getScrollY())
-          ticking = false
-        })
-        ticking = true
+      const currentScrollY = window.pageYOffset || document.documentElement.scrollTop || 0
+      if (currentScrollY <= 5) {
+        document.body.classList.add('at-top')
+      } else {
+        document.body.classList.remove('at-top')
       }
     }
 
-    const initialCheck = () => applyVisibility(getScrollY())
-
-    initialCheck()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    window.addEventListener('resize', initialCheck, { passive: true })
+    handleScroll()
 
-    return () => {
-      window.removeEventListener('scroll', handleScroll)
-      window.removeEventListener('resize', initialCheck)
-    }
+    return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
 
   return (
     <>
-      <header className={`header ${!headerVisible ? 'header-hidden' : ''}`}>
+      <header className="header">
         <div className="header-content">
           {/* Left: Logo */}
           <button className="brand" onClick={() => navigate('/')}>
