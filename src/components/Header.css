@@ -5,6 +5,9 @@
 .header {
   background: linear-gradient(90deg, #1e40af 0%, #0c2461 100%);
   padding: 0.95rem 1.5rem;
+  padding-top: max(0.95rem, env(safe-area-inset-top));
+  padding-left: max(1.5rem, env(safe-area-inset-left));
+  padding-right: max(1.5rem, env(safe-area-inset-right));
   box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
   position: fixed;
   top: 0;
@@ -12,7 +15,8 @@
   right: 0;
   z-index: 2000;
   backdrop-filter: blur(6px);
-  height: var(--header-height);
+  height: auto;
+  min-height: var(--header-height);
   display: flex;
   align-items: center;
 }
@@ -272,6 +276,9 @@
 
   .header {
     padding: 0.7rem 0.8rem;
+    padding-top: max(0.7rem, env(safe-area-inset-top));
+    padding-left: max(0.8rem, env(safe-area-inset-left));
+    padding-right: max(0.8rem, env(safe-area-inset-right));
   }
 
   .logo-icon {

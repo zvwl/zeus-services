@@ -38,7 +38,7 @@ body {
   background: linear-gradient(135deg, var(--bg) 0%, #0f1729 100%);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  padding-top: var(--header-height, 102px);
+  padding-top: calc(var(--header-height, 102px) + max(0px, env(safe-area-inset-top)));
   min-height: 100vh;
   min-height: -webkit-fill-available;
 }
