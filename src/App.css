@@ -45,7 +45,7 @@ body {
   min-height: -webkit-fill-available;
 }
 
-/* Mobile body padding needs to account for iOS safe-area */
+/* Mobile body padding */
 @media (max-width: 480px) {
   body {
     padding-top: 78px;

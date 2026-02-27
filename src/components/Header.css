@@ -18,7 +18,14 @@
   box-sizing: border-box;
 }
 
-/* Hide header on mobile by translating it up */
+.header-content {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-content: space-between;
+}
+
 @media (max-width: 480px) {
   :root {
     --header-height: 78px;
@@ -26,18 +33,11 @@
 
   .header {
     padding: 0.7rem 0.8rem;
-    /* Position below iOS notch/status bar */
-    top: env(safe-area-inset-top, 0);
   }
 
   .logo-icon {
     padding: 0.35rem;
   }
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  justify-content: space-between;
 }
 
 .brand {
