@@ -274,12 +274,14 @@
 
 @media (max-width: 480px) {
   :root {
-    --header-height: 78px;
+    --header-height: calc(78px + env(safe-area-inset-top, 0px));
   }
 
   .header {
     /* Add safe-area-inset for iPhone notch/address bar */
     padding: calc(env(safe-area-inset-top) + 0.7rem) 0.8rem 0.7rem 0.8rem;
+    /* Increase height to accommodate safe area padding */
+    height: calc(78px + env(safe-area-inset-top, 0px));
     /* Force header visibility on iOS */
     position: fixed !important;
     top: 0 !important;
