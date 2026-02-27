@@ -25,6 +25,8 @@ html {
   overflow-x: hidden;
   /* iOS Safari scroll fix */
   -webkit-overflow-scrolling: touch;
+  /* Better viewport handling on iOS */
+  height: 100%;
 }
 
 html, body, #root {
@@ -765,6 +767,10 @@ a,
 }
 
 @media (max-width: 480px) {
+  body {
+    padding-top: calc(78px + env(safe-area-inset-top));
+  }
+
   .services-grid {
     padding: 1.5rem 0.75rem;
     gap: 1rem;

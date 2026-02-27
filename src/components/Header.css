@@ -16,6 +16,17 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
+  /* iOS Safari fixes */
+  -webkit-position: fixed;
+  -webkit-appearance: none;
+  -webkit-transform: translateZ(0);
+  -webkit-font-smoothing: antialiased;
+  will-change: transform;
+  /* Prevent viewport height issues on mobile */
+  max-height: 100dvh;
+  /* Keep header visible when iOS address bar shows/hides */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .header-content {
@@ -273,6 +284,10 @@
 
   .header {
     padding: 0.7rem 0.8rem;
+    /* iOS Safari notch/dynamic island support */
+    padding-top: max(0.7rem, env(safe-area-inset-top));
+    /* Ensure header stays visible on iOS when address bar shows */
+    min-height: calc(78px + env(safe-area-inset-top));
   }
 
   .logo-icon {

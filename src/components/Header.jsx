@@ -63,6 +63,28 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
     }
   }, [isMenuOpen])
 
+  // iOS Safari viewport fix - keep header visible when address bar shows/hides
+  useEffect(() => {
+    const handleViewportChange = () => {
+      // Force viewport recalculation
+      const vh = window.innerHeight
+      document.documentElement.style.setProperty('--viewport-height', `${vh}px`)
+    }
+
+    // Listen for scroll events which trigger address bar show/hide
+    window.addEventListener('scroll', handleViewportChange)
+    window.addEventListener('resize', handleViewportChange)
+
+    // Initial set
+    handleViewportChange()
+
+    return () => {
+      window.removeEventListener('scroll', handleViewportChange)
+      window.removeEventListener('resize', handleViewportChange)
+    }
+  }, [])
+
+
   return (
     <>
       <header className="header">
