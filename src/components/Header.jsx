@@ -76,6 +76,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
       if (!isMobile()) {
         setHeaderVisible(true)
         lastScrollYRef.current = currentScrollY
+        document.body.classList.remove('at-top')
         return
       }
 
@@ -83,8 +84,11 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
       if (currentScrollY <= 5) {
         setHeaderVisible(true)
         lastScrollYRef.current = currentScrollY
+        document.body.classList.add('at-top')
         return
       }
+
+      document.body.classList.remove('at-top')
 
       const lastScrollY = lastScrollYRef.current
       const scrollDelta = currentScrollY - lastScrollY

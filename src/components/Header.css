@@ -290,6 +290,11 @@
     top: env(safe-area-inset-top, 0);
   }
 
+  body.at-top .header {
+    transform: translateY(0) translateZ(0) !important;
+    -webkit-transform: translateY(0) translateZ(0) !important;
+  }
+
   .logo-icon {
     padding: 0.35rem;
   }
