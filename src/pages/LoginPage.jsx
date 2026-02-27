@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext'
 import googleLogo from '../assets/google-logo.svg'
 import discordLogo from '../assets/discord-logo.svg'
 import { isTurnstileBypassed } from '../utils/turnstile'
+import { EyeIcon, EyeOffIcon } from '../components/AnimatedEyeIcons'
 import './AuthPages.css'
 
 export default function LoginPage() {
@@ -259,7 +260,7 @@ export default function LoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
-                  {showPassword ? '🙈' : '👁️'}
+                  {showPassword ? <EyeOffIcon size={20} /> : <EyeIcon size={20} />}
                 </button>
               </div>
               <div className="password-footer">

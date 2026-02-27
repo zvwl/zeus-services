@@ -1,11 +1,15 @@
 import './Cart.css'
 import { useAuth } from '../contexts/AuthContext'
+import { XIcon } from './XIcon'
+import { useRef } from 'react'
 
 export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
   const { emailVerified } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const isLoading = checkoutStatus?.state === 'loading'
   const hasMessage = checkoutStatus?.message
+  const removeButtonRefs = useRef({})
+
   const buttonLabel = (() => {
     if (paymentMethod === 'dev_skip') return isLoading ? 'Placing order...' : 'Buy now (dev skip payment)'
     return isLoading ? 'Redirecting to Stripe...' : 'Pay with Stripe'
@@ -76,10 +80,12 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
               <button
                 className="remove-btn"
                 onClick={() => onRemove(item.cartId)}
+                onMouseEnter={() => removeButtonRefs.current[item.cartId]?.startAnimation()}
+                onMouseLeave={() => removeButtonRefs.current[item.cartId]?.stopAnimation()}
                 aria-label="Remove item"
                 title="Remove item"
               >
-                ✕
+                <XIcon ref={el => removeButtonRefs.current[item.cartId] = el} size={20} />
               </button>
             </div>
           </div>

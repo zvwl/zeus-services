@@ -12,10 +12,12 @@
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^0.6.1",
+    "@radix-ui/react-dialog": "^1.1.15",
     "@supabase/supabase-js": "^2.90.1",
     "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.3.1",
     "dompurify": "^3.3.1",
+    "motion": "^12.34.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-router-dom": "^7.12.0",
@@ -23,9 +25,9 @@
     "tsparticles-slim": "^2.12.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.1",
     "@prerenderer/prerenderer": "^1.2.5",
     "@prerenderer/renderer-jsdom": "^1.1.9",
-    "@eslint/js": "^9.39.1",
     "@types/react": "^19.2.5",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.1",

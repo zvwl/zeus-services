@@ -1,16 +1,31 @@
+/* Visually hidden but accessible to screen readers */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
 .user-menu-backdrop {
   position: fixed;
-  top: 0;
+  top: var(--header-height, 102px);
   left: 0;
   right: 0;
   bottom: 0;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.5);
   z-index: 1000;
-  opacity: 0;
-  animation: fadeIn 0.2s ease-out forwards;
+  animation: fadeIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
   to {
     opacity: 1;
   }
@@ -18,28 +33,29 @@
 
 .user-menu {
   position: fixed;
-  top: 80px;
-  right: 20px;
-  width: calc(100vw - 40px);
-  max-width: 340px;
-  max-height: calc(100vh - 100px);
+  top: var(--header-height, 102px);
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  max-width: 420px;
   background: linear-gradient(135deg, rgba(26, 31, 53, 0.98), rgba(15, 23, 42, 0.98));
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(251, 191, 36, 0.2);
-  border-radius: 16px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(251, 191, 36, 0.1);
+  border-left: 1px solid rgba(251, 191, 36, 0.2);
+  box-shadow: -10px 0 30px rgba(0, 0, 0, 0.3);
   z-index: 1001;
   display: flex;
   flex-direction: column;
-  opacity: 0;
-  transform: translateY(-20px) scale(0.95);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   overflow: hidden;
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.user-menu.open {
-  opacity: 1;
-  transform: translateY(0) scale(1);
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
 }
 
 .user-menu-header {
@@ -47,38 +63,25 @@
   border-bottom: 1px solid rgba(251, 191, 36, 0.15);
   position: relative;
   background: rgba(10, 14, 26, 0.5);
-}
-
-.close-btn {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  background: rgba(251, 191, 36, 0.1);
-  border: none;
-  font-size: 1.5rem;
-  color: #fbbf24;
-  cursor: pointer;
-  width: 32px;
-  height: 32px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  border-radius: 8px;
-  transition: all 0.2s;
-  line-height: 1;
+  gap: 1rem;
 }
 
-.close-btn:hover {
-  background: rgba(251, 191, 36, 0.2);
-  color: #f59e0b;
-  transform: scale(1.1);
+.user-menu-header .animated-menu-button {
+  flex-shrink: 0;
+  background: transparent;
+  border: none;
+  padding: 0.5rem;
+  min-width: auto;
+  height: auto;
 }
 
 .user-info {
   display: flex;
   align-items: center;
   gap: 0.875rem;
-  padding-right: 2.5rem;
+  flex: 1;
 }
 
 .user-avatar {
@@ -129,7 +132,6 @@
   flex: 1;
   padding: 0.5rem 0;
   overflow-y: auto;
-  max-height: calc(100vh - 280px);
 }
 
 .user-menu-content::-webkit-scrollbar {
@@ -160,7 +162,7 @@
 }
 
 .menu-section-title {
-  font-size: 0.7rem;
+  font-size: 0.82rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.8px;
@@ -181,8 +183,8 @@
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 1rem;
+  font-weight: 600;
 }
 
 .menu-item:hover {
@@ -259,7 +261,7 @@
   text-decoration: none;
   cursor: pointer;
   transition: all 0.2s;
-  font-size: 0.85rem;
+  font-size: 0.94rem;
   font-weight: 400;
   text-align: left;
 }
@@ -292,10 +294,18 @@
 }
 
 .menu-icon {
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
   width: 24px;
+  height: 24px;
   text-align: center;
+}
+
+.menu-icon svg {
+  width: 20px;
+  height: 20px;
 }
 
 .menu-label {
@@ -342,34 +352,12 @@
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .user-menu {
-    top: 70px;
-    right: 10px;
-    left: 10px;
-    width: auto;
-    max-width: none;
+    max-width: 90vw;
   }
 }
 
 @media (max-width: 480px) {
   .user-menu {
-    top: 60px;
-    right: 10px;
-    left: 10px;
-    width: auto;
-    max-width: none;
-  }
-  
-  .user-avatar {
-    width: 40px;
-    height: 40px;
-    font-size: 1rem;
-  }
-  
-  .user-name {
-    font-size: 0.9rem;
-  }
-  
-  .user-email {
-    font-size: 0.75rem;
+    max-width: 100%;
   }
 }
