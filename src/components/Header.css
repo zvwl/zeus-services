@@ -10,7 +10,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 2000;
+  z-index: 9999;
   backdrop-filter: blur(6px);
   height: var(--header-height);
   display: flex;
@@ -18,12 +18,16 @@
   box-sizing: border-box;
   /* Smooth transition for mobile hide/show */
   transition: transform 0.3s ease-out;
+  /* Force GPU acceleration and rendering priority */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
 }
 
 /* Hide header on mobile by translating it up */
 @media (max-width: 480px) {
   .header-hidden {
-    transform: translateY(-100%);
+    transform: translateY(-100%) translateZ(0);
+    -webkit-transform: translateY(-100%) translateZ(0);
   }
 }
 

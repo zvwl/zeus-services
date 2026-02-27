@@ -14,6 +14,8 @@
   font-size: 0.95rem;
   letter-spacing: 0.01em;
   text-align: center;
+  position: relative;
+  z-index: 1;
 }
 
 .status-banner__content {

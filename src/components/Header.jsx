@@ -68,27 +68,34 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   // Mobile header scroll behavior - hide on scroll down, show on scroll up or at top
   useEffect(() => {
     let ticking = false
+    const isMobile = () => window.innerWidth <= 480
 
     const handleScroll = () => {
       if (!ticking) {
         window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-          const isMobile = window.innerWidth <= 480
+          const currentScrollY = window.pageYOffset || window.scrollY
 
-          if (!isMobile) {
+          // Desktop always shows header
+          if (!isMobile()) {
             setHeaderVisible(true)
             ticking = false
             return
           }
 
-          // Show header if at top of page
-          if (currentScrollY < 10) {
+          // CRITICAL: Always show header when at the very top
+          if (currentScrollY <= 5) {
             setHeaderVisible(true)
-          } else if (currentScrollY < lastScrollY) {
-            // Scrolling up - show header
+            setLastScrollY(currentScrollY)
+            ticking = false
+            return
+          }
+
+          // Show header if scrolling up
+          if (currentScrollY < lastScrollY) {
             setHeaderVisible(true)
-          } else if (currentScrollY > lastScrollY) {
-            // Scrolling down - hide header
+          } 
+          // Hide header if scrolling down (but not when already at top)
+          else if (currentScrollY > lastScrollY && currentScrollY > 80) {
             setHeaderVisible(false)
           }
 
@@ -99,8 +106,23 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
       }
     }
 
+    // Initial check on mount
+    const initialCheck = () => {
+      const currentScrollY = window.pageYOffset || window.scrollY
+      if (!isMobile() || currentScrollY <= 5) {
+        setHeaderVisible(true)
+      }
+      setLastScrollY(currentScrollY)
+    }
+
+    initialCheck()
     window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('resize', initialCheck, { passive: true })
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+      window.removeEventListener('resize', initialCheck)
+    }
   }, [lastScrollY])
 
 
