@@ -43,6 +43,8 @@ body {
   padding-top: var(--header-height, 102px);
   min-height: 100vh;
   min-height: -webkit-fill-available;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
 button,
