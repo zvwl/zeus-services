@@ -16,6 +16,15 @@
   display: flex;
   align-items: center;
   box-sizing: border-box;
+  /* Smooth transition for mobile hide/show */
+  transition: transform 0.3s ease-out;
+}
+
+/* Hide header on mobile by translating it up */
+@media (max-width: 480px) {
+  .header-hidden {
+    transform: translateY(-100%);
+  }
 }
 
 .header-content {

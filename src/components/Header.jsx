@@ -15,6 +15,8 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
+  const [headerVisible, setHeaderVisible] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
   const menuIconRef = useRef(null)
   const cartIconRef = useRef(null)
 
@@ -63,10 +65,48 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
     }
   }, [isMenuOpen])
 
+  // Mobile header scroll behavior - hide on scroll down, show on scroll up or at top
+  useEffect(() => {
+    let ticking = false
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+          const isMobile = window.innerWidth <= 480
+
+          if (!isMobile) {
+            setHeaderVisible(true)
+            ticking = false
+            return
+          }
+
+          // Show header if at top of page
+          if (currentScrollY < 10) {
+            setHeaderVisible(true)
+          } else if (currentScrollY < lastScrollY) {
+            // Scrolling up - show header
+            setHeaderVisible(true)
+          } else if (currentScrollY > lastScrollY) {
+            // Scrolling down - hide header
+            setHeaderVisible(false)
+          }
+
+          setLastScrollY(currentScrollY)
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener('scroll', handleScroll, { passive: true })
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [lastScrollY])
+
 
   return (
     <>
-      <header className="header">
+      <header className={`header ${!headerVisible ? 'header-hidden' : ''}`}>
         <div className="header-content">
           {/* Left: Logo */}
           <button className="brand" onClick={() => navigate('/')}>
