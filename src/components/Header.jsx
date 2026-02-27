@@ -63,18 +63,22 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
     }
   }, [isMenuOpen])
 
-  // iOS Safari fix - prevent header from being hidden by address bar
+  // iOS Safari fix - prevent address bar from covering header by using sticky positioning
   useEffect(() => {
-    const handleScroll = () => {
+    // With sticky positioning, the header naturally respects iOS address bar
+    // This is just a safety check that the header stays visible
+    const checkHeaderVisibility = () => {
       const header = document.querySelector('.header')
-      if (header) {
-        // Force header to repaint when scrolling
-        header.style.transform = `translate3d(0, 0, 0)`
+      if (header && window.scrollY === 0) {
+        // Ensure header is properly rendered at top
+        header.style.visibility = 'visible'
       }
     }
 
-    window.addEventListener('scroll', handleScroll, { passive: true })
-    return () => window.removeEventListener('scroll', handleScroll)
+    window.addEventListener('scroll', checkHeaderVisibility, { passive: true })
+    checkHeaderVisibility()
+    
+    return () => window.removeEventListener('scroll', checkHeaderVisibility)
   }, [])
 
 

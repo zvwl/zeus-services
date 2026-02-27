@@ -6,19 +6,19 @@
   background: linear-gradient(90deg, #1e40af 0%, #0c2461 100%);
   padding: 0.95rem 1.5rem;
   box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
-  position: fixed;
+  position: sticky;
   top: 0;
-  left: 0;
-  right: 0;
   z-index: 2000;
   backdrop-filter: blur(6px);
   height: var(--header-height);
   display: flex;
   align-items: center;
   box-sizing: border-box;
+  /* Width for sticky positioning */
+  width: 100%;
+  left: 0;
+  right: 0;
   /* GPU acceleration for iOS */
-  transform: translate3d(0, 0, 0);
-  -webkit-transform: translate3d(0, 0, 0);
   -webkit-font-smoothing: antialiased;
   -webkit-backface-visibility: hidden;
 }
