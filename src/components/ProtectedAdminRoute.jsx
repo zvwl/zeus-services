@@ -29,7 +29,9 @@ export default function ProtectedAdminRoute({ children }) {
     }
     
     if (!isAdmin) {
-      console.warn(`Unauthorized access attempt by user ${user.id} (${user.email}) to admin route`)
+      if (import.meta.env.DEV) {
+        console.warn(`Unauthorized access attempt by user ${user.id} (${user.email}) to admin route`)
+      }
       navigate('/')
       return
     }

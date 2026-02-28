@@ -6,37 +6,16 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
 export default function AdminDashboard() {
-  const { user, isAdmin, loading: authLoading } = useAuth()
-  const navigate = useNavigate()
+  const { user } = useAuth()
   const [adminLogs, setAdminLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [dateRange, setDateRange] = useState('all') // 'all', '7days', '30days', '90days'
 
-  // FIRST: Check if user is authenticated and is admin
+  // Fetch dashboard data on mount (auth handled by ProtectedAdminRoute wrapper)
   useEffect(() => {
-    if (authLoading) return // Still checking auth status
-    
-    // Not authenticated
-    if (!user) {
-      setError('Please log in to access this page')
-      navigate('/login')
-      return
-    }
-    
-    // Not admin
-    if (!isAdmin) {
-      setError('Admin access required - this incident will be logged')
-      console.warn(`Non-admin user ${user.id} (${user.email}) attempted to access admin dashboard`)
-      setLoading(false)
-      // Redirect after a short delay
-      setTimeout(() => navigate('/'), 2000)
-      return
-    }
-    
-    // User is authenticated and is admin - fetch data
     fetchDashboardData()
-  }, [isAdmin, authLoading, user, navigate])
+  }, [dateRange])
 
   const getDayOffset = () => {
     switch(dateRange) {

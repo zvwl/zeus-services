@@ -334,10 +334,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
               <p>{fetchError}</p>
               <p>Your payment was successful. The order may take a moment to appear.</p>
               <button 
-                onClick={() => {
-                  console.log('Navigating to /orders...')
-                  navigate('/orders')
-                }} 
+                onClick={() => navigate('/orders')} 
                 className="view-orders-btn"
               >
                 View All Orders

@@ -67,11 +67,9 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   useEffect(() => {
     if (user && service) {
       const pendingItem = localStorage.getItem('pendingCartItem')
-      console.log('Checking for pending item:', pendingItem, 'service id:', service.id)
       if (pendingItem) {
         try {
           const { serviceId, platform: savedPlatform } = JSON.parse(pendingItem)
-          console.log('Parsed pending - serviceId:', serviceId, 'savedPlatform:', savedPlatform, 'match:', serviceId === service.id)
           if (serviceId === service.id) {
             localStorage.removeItem('pendingCartItem')
             // Set platform and version so they're visible when added
@@ -79,7 +77,6 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
             const lastSpaceIndex = savedPlatform.lastIndexOf(' ')
             const plat = savedPlatform.substring(0, lastSpaceIndex)
             const vers = savedPlatform.substring(lastSpaceIndex + 1)
-            console.log('Auto-adding to cart - platform:', plat, 'version:', vers)
             setPlatform(plat)
             setVersion(vers)
             // Auto-add to cart
@@ -88,7 +85,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
             setTimeout(() => setVerificationMessage(''), 3000)
           }
         } catch (err) {
-          console.error('Error processing pending cart item:', err)
+          if (import.meta.env.DEV) console.error('Error processing pending cart item:', err)
           localStorage.removeItem('pendingCartItem')
         }
       }
@@ -115,8 +112,6 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
   }
 
   const handleAddToCart = () => {
-    console.log('handleAddToCart called - user:', user, 'platform:', platform, 'version:', version)
-    
     if (!platform || !version) {
       setAttemptedSubmit(true)
       return

@@ -47,7 +47,7 @@ export default function AdminOrdersPage() {
       // Get the current session access token
       const session = await supabase.auth.getSession();
       const accessToken = session?.data?.session?.access_token;
-      const response = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/refund-order', {
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/refund-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -73,7 +73,7 @@ export default function AdminOrdersPage() {
 
       // Send refund email to customer
       try {
-        const emailResponse = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/send-order-refunded', {
+        const emailResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-refunded`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -124,7 +124,7 @@ export default function AdminOrdersPage() {
     try {
       const session = await supabase.auth.getSession();
       const accessToken = session?.data?.session?.access_token;
-      const emailResponse = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/send-order-cancelled', {
+      const emailResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/send-order-cancelled`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

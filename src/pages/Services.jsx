@@ -22,7 +22,7 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
     updateItemsPerPage()
     window.addEventListener('resize', updateItemsPerPage)
     return () => window.removeEventListener('resize', updateItemsPerPage)
-  }, []}
+  }, [])
 
   const filteredServices = useMemo(() => {
     let filtered = services

@@ -67,17 +67,6 @@ export default function VerifyEmailPage() {
         const token = queryParams.get('token') || hashParams.get('token')
         const tokenHash = queryParams.get('token_hash') || hashParams.get('token_hash')
         const type = queryParams.get('type') || hashType
-        
-        console.log('Verification params:', {
-          hashAccessToken,
-          hashRefreshToken,
-          hashType,
-          token,
-          tokenHash,
-          type,
-          fullHash: window.location.hash,
-          fullSearch: window.location.search
-        })
 
         // Handle token_hash format (email confirmation)
         if (tokenHash && type) {

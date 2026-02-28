@@ -67,6 +67,15 @@ function App() {
   const navigate = useNavigate()
   const location = useLocation()
 
+  // Sanitize order note input (remove HTML tags, limit length)
+  const handleOrderNoteChange = (value) => {
+    // Remove HTML tags
+    const sanitized = value.replace(/<[^>]*>/g, '')
+    // Limit to 1000 characters
+    const trimmed = sanitized.slice(0, 1000)
+    setOrderNote(trimmed)
+  }
+
 
   const isDevUser = user?.email === 'daniel.holecek20@gmail.com'
 
@@ -96,7 +105,7 @@ function App() {
     const detectLocation = async () => {
       if (isPrerender()) return
       try {
-        const response = await fetch('https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/detect-location')
+        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/detect-location`)
         const data = await response.json()
         setUserCountry(data.country_code)
         setCurrency(data.currency)
@@ -464,7 +473,7 @@ function App() {
               onPaymentMethodChange={setPaymentMethod}
               isDevUser={isDevUser}
               orderNote={orderNote}
-              onOrderNoteChange={setOrderNote}
+              onOrderNoteChange={handleOrderNoteChange}
             />
           )}
         />
