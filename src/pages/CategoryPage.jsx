@@ -5,6 +5,8 @@ import { useAuth } from '../contexts/AuthContext'
 import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ServiceCard from '../components/ServiceCard'
+import Pagination from '../components/Pagination'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 import '../components/ServiceCard.css'
@@ -22,6 +24,18 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   const [selectedPlatform, setSelectedPlatform] = useState('all')
   const [selectedGameId, setSelectedGameId] = useState('all') // Game ID for filtering
   const [sortBy, setSortBy] = useState('none')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(12)
+
+  // Responsive items per page
+  useEffect(() => {
+    const updateItemsPerPage = () => {
+      setItemsPerPage(window.innerWidth < 768 ? 6 : 12)
+    }
+    updateItemsPerPage()
+    window.addEventListener('resize', updateItemsPerPage)
+    return () => window.removeEventListener('resize', updateItemsPerPage)
+  }, [])
 
   // Fetch game, category, and items
   useEffect(() => {
@@ -122,6 +136,11 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
     fetchData()
   }, [categorySlug, gameSlug])
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedPlatform, sortBy, selectedGameId])
+
   const filteredItems = useMemo(() => {
     let filtered = items
 
@@ -155,6 +174,20 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
 
     return filtered
   }, [items, searchQuery, selectedPlatform, sortBy, selectedGameId, gameSlug])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
+  const paginatedItems = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredItems.slice(startIndex, endIndex)
+  }, [filteredItems, currentPage, itemsPerPage])
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    // Scroll to top of page
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const handleItemClick = (item) => {
     // Navigate to item detail page
@@ -296,154 +329,37 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
             )}
           </div>
         ) : (
-          <div className="services-grid">
-            {filteredItems.map((item) => {
-              const itemGameIcon = isAllGamesView 
-                ? games.find(g => g.id === item.game_id)?.icon_url || '/zeusservicesPackage.webp'
-                : game?.icon_url || '/zeusservicesPackage.webp'
-              
-              // Check if item's parent game is coming soon
-              const itemGame = isAllGamesView 
-                ? games.find(g => g.id === item.game_id)
-                : game
-              const isComingSoon = itemGame?.is_coming_soon || false
-              
-              // Check stock status
-              const isOutOfStock = item.stock_enabled && 
-                !item.stock_unlimited && 
-                (item.stock_quantity === null || item.stock_quantity === 0)
-              
-              const stockBadgeText = item.stock_enabled && !item.stock_unlimited && item.stock_quantity !== null
-                ? `${item.stock_quantity} in stock`
-                : null
-              
-              return (
-                <div
-                  key={item.id}
-                  className="service-card"
-                  onClick={() => !isComingSoon && !isOutOfStock && handleItemClick(item)}
-                  style={{ cursor: (isComingSoon || isOutOfStock) ? 'not-allowed' : 'pointer', opacity: (isComingSoon || isOutOfStock) ? 0.7 : 1 }}
-                >
-                  <picture>
-                    <source type="image/webp" srcSet={item.icon || itemGameIcon} />
-                    <img
-                      src={item.icon || itemGameIcon}
-                      alt={item.name}
-                      className="card-image"
-                      loading="lazy"
-                      decoding="async"
-                      onError={(e) => {
-                        if (e.target.dataset.fallbackApplied === '1') return
-                        e.target.dataset.fallbackApplied = '1'
-                        e.target.src = itemGameIcon
-                      }}
-                    />
-                  </picture>
-                  
-                  {/* Stock badges */}
-                  {isOutOfStock && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '1rem',
-                      left: '1rem',
-                      background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
-                      color: '#fff',
-                      padding: '0.4rem 0.85rem',
-                      borderRadius: '6px',
-                      fontSize: '0.85rem',
-                      fontWeight: '700',
-                      boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
-                      zIndex: 2
-                    }}>
-                      Out of Stock
-                    </div>
-                  )}
-                  
-                  {stockBadgeText && !isOutOfStock && !isComingSoon && (
-                    <div style={{
-                      position: 'absolute',
-                      top: '1rem',
-                      left: '1rem',
-                      background: 'rgba(34, 197, 94, 0.9)',
-                      color: '#fff',
-                      padding: '0.3rem 0.75rem',
-                      borderRadius: '6px',
-                      fontSize: '0.8rem',
-                      fontWeight: '600',
-                      boxShadow: '0 2px 8px rgba(34, 197, 94, 0.3)',
-                      zIndex: 2
-                    }}>
-                      {stockBadgeText}
-                    </div>
-                  )}
-                  
-                  {item.featured && !isComingSoon && !isOutOfStock && (
-                    <div className="featured-badge">Featured</div>
-                  )}
-                  {isComingSoon && (
-                    <div className="featured-badge" style={{ background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)' }}>
-                      Coming Soon
-                    </div>
-                  )}
-                  <h3 className="card-title">{item.name}</h3>
-                  <p className="card-description">{item.description || ''}</p>
-                  {item.platforms && item.platforms.length > 0 && (
-                    <div className="service-platforms">
-                      {item.platforms.slice(0, 3).map((platform, idx) => (
-                        <span key={idx} className="platform-badge">{platform}</span>
-                      ))}
-                      {item.platforms.length > 3 && (
-                        <span className="platform-badge">+{item.platforms.length - 3}</span>
-                      )}
-                    </div>
-                  )}
-                  <div className="card-footer">
-                    {isComingSoon ? (
-                      <div style={{
-                        padding: '0.85rem 1.6rem',
-                        textAlign: 'center',
-                        background: 'rgba(251, 191, 36, 0.15)',
-                        border: '1px solid rgba(251, 191, 36, 0.35)',
-                        borderRadius: '10px',
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                        color: '#fbbf24',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em'
-                      }}>
-                        Coming Soon
-                      </div>
-                    ) : isOutOfStock ? (
-                      <div style={{
-                        padding: '0.85rem 1.6rem',
-                        textAlign: 'center',
-                        background: 'rgba(239, 68, 68, 0.15)',
-                        border: '1px solid rgba(239, 68, 68, 0.35)',
-                        borderRadius: '10px',
-                        fontWeight: 700,
-                        fontSize: '0.9rem',
-                        color: '#ef4444',
-                        textTransform: 'uppercase',
-                        letterSpacing: '0.04em'
-                      }}>
-                        Out of Stock
-                      </div>
-                    ) : (
-                      <button
-                        className="view-details-btn"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          handleItemClick(item)
-                        }}
-                      >
-                        View Details
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          <>
+            <div className="services-grid">
+              {paginatedItems.map((item) => {
+                const itemGameIcon = isAllGamesView 
+                  ? games.find(g => g.id === item.game_id)?.icon_url || '/zeusservicesPackage.webp'
+                  : game?.icon_url || '/zeusservicesPackage.webp'
+                
+                // Check if item's parent game is coming soon
+                const itemGame = isAllGamesView 
+                  ? games.find(g => g.id === item.game_id)
+                  : game
+                const isComingSoon = itemGame?.is_coming_soon || false
+                
+                return (
+                  <ServiceCard
+                    key={item.id}
+                    item={item}
+                    gameIcon={itemGameIcon}
+                    isComingSoon={isComingSoon}
+                    onClick={handleItemClick}
+                  />
+                )
+              })}
+            </div>
+            
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </>
         )}
       </section>
     </>

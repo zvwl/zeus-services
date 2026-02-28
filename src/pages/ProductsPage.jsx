@@ -4,6 +4,8 @@ import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ServiceCard from '../components/ServiceCard'
+import Pagination from '../components/Pagination'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 import '../components/ServiceCard.css'
@@ -15,6 +17,18 @@ export default function ProductsPage({ formatPrice }) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedPlatform, setSelectedPlatform] = useState('all')
   const [sortBy, setSortBy] = useState('none')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(12)
+
+  // Responsive items per page
+  useEffect(() => {
+    const updateItemsPerPage = () => {
+      setItemsPerPage(window.innerWidth < 768 ? 6 : 12)
+    }
+    updateItemsPerPage()
+    window.addEventListener('resize', updateItemsPerPage)
+    return () => window.removeEventListener('resize', updateItemsPerPage)
+  }, [])
   const platformOptions = ['Steam', 'Epic Games', 'Xbox App', 'Rockstar Launcher']
 
   // Fetch products from database
@@ -46,6 +60,11 @@ export default function ProductsPage({ formatPrice }) {
     fetchProducts()
   }, [])
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, selectedPlatform, sortBy])
+
   const filteredProducts = useMemo(() => {
     let filtered = products
 
@@ -74,6 +93,19 @@ export default function ProductsPage({ formatPrice }) {
 
     return filtered
   }, [products, searchQuery, selectedPlatform, sortBy])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage)
+  const paginatedProducts = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredProducts.slice(startIndex, endIndex)
+  }, [filteredProducts, currentPage, itemsPerPage])
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   return (
     <>
@@ -135,40 +167,23 @@ export default function ProductsPage({ formatPrice }) {
               <p>No products match your filters. Try adjusting your search.</p>
             </div>
           ) : (
-            <main className="services-grid">
-              {filteredProducts.map(product => (
-                <div 
-                  key={product.id} 
-                  className="service-card"
-                  onClick={() => navigate(`/product/${product.id}`, { state: { product } })}
-                >
-                  <img 
-                    src={product.icon || '/zeusservicesPackage.png'} 
-                    alt={product.name} 
-                    className="card-image" 
-                    width="600"
-                    height="300"
-                    onError={(e) => {
-                      e.target.src = '/zeusservicesPackage.png'
-                    }}
+            <>
+              <main className="services-grid">
+                {paginatedProducts.map(product => (
+                  <ServiceCard
+                    key={product.id}
+                    item={product}
+                    onClick={() => navigate(`/product/${product.id}`, { state: { product } })}
                   />
-                  <h3 className="card-title">{product.name}</h3>
-                  <p className="card-description">{product.description}</p>
-
-                  <div className="card-footer">
-                    <button 
-                      className="view-details-btn"
-                      onClick={(e) => { 
-                        e.stopPropagation()
-                        navigate(`/product/${product.id}`, { state: { product } })
-                      }}
-                    >
-                      View Details
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </main>
+                ))}
+              </main>
+              
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </>
           )}
         </>
       )}

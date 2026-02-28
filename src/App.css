@@ -768,11 +768,10 @@ a,
 .services-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  align-items: start;
+  align-items: stretch;
   gap: 2rem;
   padding: 3rem 2rem;
   width: 100%;
-  min-height: 70vh;
 }
 
 .services-grid--loading {

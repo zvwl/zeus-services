@@ -1,6 +1,7 @@
-﻿import { useState, useMemo } from 'react'
+﻿import { useState, useMemo, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ServiceCard from '../components/ServiceCard'
+import Pagination from '../components/Pagination'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import '../App.css'
@@ -10,6 +11,18 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
   const [filterPrice, setFilterPrice] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
   const [sortBy, setSortBy] = useState('none')
+  const [currentPage, setCurrentPage] = useState(1)
+  const [itemsPerPage, setItemsPerPage] = useState(12)
+
+  // Responsive items per page
+  useEffect(() => {
+    const updateItemsPerPage = () => {
+      setItemsPerPage(window.innerWidth < 768 ? 6 : 12)
+    }
+    updateItemsPerPage()
+    window.addEventListener('resize', updateItemsPerPage)
+    return () => window.removeEventListener('resize', updateItemsPerPage)
+  }, []}
 
   const filteredServices = useMemo(() => {
     let filtered = services
@@ -45,6 +58,24 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
 
     return filtered
   }, [services, filterPrice, searchQuery, sortBy])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchQuery, filterPrice, sortBy])
+
+  // Pagination
+  const totalPages = Math.ceil(filteredServices.length / itemsPerPage)
+  const paginatedServices = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage
+    const endIndex = startIndex + itemsPerPage
+    return filteredServices.slice(startIndex, endIndex)
+  }, [filteredServices, currentPage, itemsPerPage])
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
 
   const showSkeletons = servicesLoading && (!services || services.length === 0)
   const skeletonCount = 9
@@ -121,16 +152,24 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
           <p>No services match your filters. Try adjusting your search.</p>
         </div>
       ) : (
-        <main className="services-grid">
-          {filteredServices.map((service, index) => (
-            <ServiceCard
-              key={service.id}
-              service={service}
-              formatPrice={formatPrice}
-              eagerImage={index === 0}
-            />
-          ))}
-        </main>
+        <>
+          <main className="services-grid">
+            {paginatedServices.map((service, index) => (
+              <ServiceCard
+                key={service.id}
+                item={service}
+                onClick={(s) => navigate(`/service/${s.id}`, { state: { service: s } })}
+                eagerImage={index === 0}
+              />
+            ))}
+          </main>
+          
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        </>
       )}
     </section>
     </>
