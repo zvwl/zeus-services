@@ -259,7 +259,7 @@ export default function ReviewsPage() {
 
         {filteredReviews.length === 0 && !error && (
           <div className="empty-state">
-            <span className="empty-icon"><AnimatedLucideIcon icon={Star} size={28} /></span>
+            <span className="empty-icon"><AnimatedLucideIcon icon={Star} size={28} animation="pulse" animateOnHover={false} /></span>
             <h2>No reviews yet</h2>
             <p>Be the first to share your experience!</p>
           </div>

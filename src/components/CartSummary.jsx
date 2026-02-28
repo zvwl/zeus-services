@@ -22,7 +22,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
       <div className="cart-container">
         <div className="empty-cart">
           <p>Your cart is empty</p>
-          <span className="empty-icon"><AnimatedLucideIcon icon={ShoppingCart} size={80} /></span>
+          <span className="empty-icon"><AnimatedLucideIcon icon={ShoppingCart} size={80} animation="swing" animateOnHover={false} /></span>
           <button onClick={() => navigate('/boosting/gta5')} className="primary-btn">
             Start Shopping
           </button>
@@ -49,7 +49,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
                     }}
                   />
                 ) : (
-                  <span><AnimatedLucideIcon icon={Gamepad2} size={20} /></span>
+                  <span><AnimatedLucideIcon icon={Gamepad2} size={20} animation="bounce" animateOnHover={false} /></span>
                 )}
               </div>
               <div className="item-info">

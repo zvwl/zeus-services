@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { DollarSign, Euro, PoundSterling, ShoppingCart, Menu, X } from 'lucide-react'
+import { DollarSign, Euro, PoundSterling, ShoppingCart } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import UserMenu from './UserMenu'
 import CategoryDropdown from './CategoryDropdown'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
+import AnimatedBurgerIcon from './AnimatedBurgerIcon'
 import './Header.css'
 import './AnimatedMenuIcon.css'
 
@@ -16,7 +17,6 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
   const cartIconRef = useRef(null)
-  const menuIconRef = useRef(null)
   const currencyIconRefs = useRef({})
 
   const currencies = ['GBP', 'USD', 'EUR']
@@ -126,6 +126,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
                           }}
                           icon={IconComponent}
                           size={18}
+                          animation="spin"
                           animateOnHover={false}
                         />
                         <span>{curr}</span>
@@ -149,6 +150,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
                 icon={ShoppingCart}
                 className="cart-icon"
                 size={24}
+                animation="bounce"
                 animateOnHover={false}
               />
               <span className="cart-text">Cart</span>
@@ -159,20 +161,10 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
               type="button"
               className="animated-menu-button menu-button-mobile"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              onMouseEnter={() => menuIconRef.current?.startAnimation?.()}
-              onMouseLeave={() => menuIconRef.current?.stopAnimation?.()}
-              onFocus={() => menuIconRef.current?.startAnimation?.()}
-              onBlur={() => menuIconRef.current?.stopAnimation?.()}
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               title={isMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              <AnimatedLucideIcon
-                ref={menuIconRef}
-                icon={isMenuOpen ? X : Menu}
-                className="animated-menu-icon"
-                size={28}
-                animateOnHover={false}
-              />
+              <AnimatedBurgerIcon isOpen={isMenuOpen} size={28} />
             </button>
           </div>
         </div>
