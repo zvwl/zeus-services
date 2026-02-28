@@ -13,7 +13,7 @@
 
 .user-menu-backdrop {
   position: fixed;
-  top: var(--header-height, 102px);
+  top: calc(var(--header-height, 102px) + env(safe-area-inset-top, 0px));
   left: 0;
   right: 0;
   bottom: 0;
@@ -33,7 +33,7 @@
 
 .user-menu {
   position: fixed;
-  top: var(--header-height, 102px);
+  top: calc(var(--header-height, 102px) + env(safe-area-inset-top, 0px));
   right: 0;
   bottom: 0;
   width: 100%;
@@ -357,12 +357,7 @@
 }
 
 @media (max-width: 480px) {
-  .user-menu-backdrop {
-    top: 78px;
-  }
-  
   .user-menu {
     max-width: 100%;
-    top: 78px;
   }
 }
