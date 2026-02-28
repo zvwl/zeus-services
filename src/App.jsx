@@ -274,10 +274,11 @@ function App() {
             Authorization: `Bearer ${accessToken}`
           },
           body: JSON.stringify({
-            items: cartItems.map(({ id, name, platform, quantity, price }) => ({
+            items: cartItems.map(({ id, name, platform, version, quantity, price }) => ({
               id,
               name,
               platform,
+              version,
               quantity,
               price_usd: price,
               price_converted: convertAmount(price),
@@ -315,10 +316,11 @@ function App() {
             Authorization: `Bearer ${accessToken}`
           },
           body: JSON.stringify({
-            items: cartItems.map(({ id, name, platform, quantity, price }) => ({
+            items: cartItems.map(({ id, name, platform, version, quantity, price }) => ({
               id,
               name,
               platform,
+              version,
               quantity,
               price_usd: price,
               price_converted: convertAmount(price),

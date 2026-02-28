@@ -567,7 +567,13 @@ export default function AdminOrdersPage() {
                           <div className="item-meta">{item.quantity} x {formatCurrency(getItemUnitPrice(item, orderCurrency), orderCurrency)}</div>
                           <div className="item-total">{formatCurrency((item.quantity || 1) * getItemUnitPrice(item, orderCurrency), orderCurrency)}</div>
                         </div>
-                        {item.platform && <div className="item-platform">Platform: {item.platform}</div>}
+                        {(item.platform || item.version) && (
+                          <div className="item-platform">
+                            {item.platform ? `Platform: ${item.platform}` : 'Platform: N/A'}
+                            {' • '}
+                            {item.version ? `Version: ${item.version}` : 'Version: N/A'}
+                          </div>
+                        )}
                       </li>
                     ))}
                   </ul>
