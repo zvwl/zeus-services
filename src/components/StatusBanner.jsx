@@ -103,24 +103,61 @@ export default function StatusBanner() {
 
     const intervalId = setInterval(() => {
       setActiveIndex((index) => (index + 1) % announcements.length)
-    }, 6000)
+    }, 8000)
 
     return () => clearInterval(intervalId)
   }, [announcements.length])
 
   const announcement = announcements[activeIndex]
+  const [shouldScroll, setShouldScroll] = useState(false)
 
-  // Add/remove body class to account for banner height
+  // Check if text overflows and needs scrolling
   useEffect(() => {
-    if (announcement?.message) {
-      document.body.classList.add('has-status-banner')
-    } else {
-      document.body.classList.remove('has-status-banner')
+    if (!announcement?.message) {
+      setShouldScroll(false)
+      return
     }
-    return () => document.body.classList.remove('has-status-banner')
-  }, [announcement])
 
-  if (!announcement?.message) return null
+    // Reset animation state immediately when message changes
+    setShouldScroll(false)
+
+    const checkOverflow = () => {
+      // Create temporary element to measure text width
+      const temp = document.createElement('span')
+      temp.style.cssText = `
+        position: absolute;
+        visibility: hidden;
+        white-space: nowrap;
+        font-size: 0.75rem;
+        font-weight: 400;
+      `
+      temp.textContent = announcement.message
+      document.body.appendChild(temp)
+      
+      const textWidth = temp.offsetWidth
+      const containerWidth = window.innerWidth - 200 // Account for pill and padding
+      
+      document.body.removeChild(temp)
+      
+      setShouldScroll(textWidth > containerWidth)
+    }
+
+    // Check after a short delay to ensure rendering is complete
+    const timeoutId = setTimeout(checkOverflow, 100)
+    
+    // Recheck on window resize
+    window.addEventListener('resize', checkOverflow)
+
+    return () => {
+      clearTimeout(timeoutId)
+      window.removeEventListener('resize', checkOverflow)
+    }
+  }, [announcement?.message, announcement?.id])
+
+  // Always render the banner to maintain spacing
+  if (!announcement?.message) {
+    return <div className="status-banner status-banner--empty" />
+  }
 
   const status = announcement.status || 'info'
   const label = STATUS_LABELS[status] || STATUS_LABELS.info
@@ -129,7 +166,15 @@ export default function StatusBanner() {
     <div className={`status-banner status-banner--${status}`} role="status" aria-live="polite">
       <div className="status-banner__content" key={announcement.id}>
         <span className="status-pill">{label}</span>
-        <span className="status-message">{announcement.message}</span>
+        <span className="status-message">
+          {shouldScroll ? (
+            <span className="status-message-text" key={`scroll-${announcement.id}`}>
+              {announcement.message} • {announcement.message} • {announcement.message}
+            </span>
+          ) : (
+            announcement.message
+          )}
+        </span>
       </div>
     </div>
   )

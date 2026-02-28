@@ -367,13 +367,16 @@ function App() {
 
   return (
     <div className="app">
-      <StatusBanner />
-      <Header
-        cartCount={cartItems.length}
-        user={user}
-        currency={currency}
-        onCurrencyChange={setCurrency}
-      />
+      <div className="top-stack">
+        <Header
+          cartCount={cartItems.length}
+          user={user}
+          currency={currency}
+          onCurrencyChange={setCurrency}
+        />
+        <StatusBanner />
+      </div>
+      <div className="top-stack-spacer" />
 
       <Suspense fallback={<LoadingSpinner message="Loading page..." />}>
         <Routes>

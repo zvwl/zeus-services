@@ -2,7 +2,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.5rem 1.5rem;
   margin: 0;
   width: 100%;
   border-radius: 0;
@@ -14,20 +14,10 @@
   font-size: 0.95rem;
   letter-spacing: 0.01em;
   text-align: center;
-  position: fixed;
-  top: calc(var(--header-height, 102px) + env(safe-area-inset-top, 0px));
-  left: 0;
-  right: 0;
-  z-index: 9998;
-  /* Prevent covering header */
+  position: relative;
   pointer-events: auto;
-}
-
-/* Mobile-specific positioning */
-@media (max-width: 480px) {
-  .status-banner {
-    top: 78px;
-  }
+  height: var(--banner-height);
+  min-height: var(--banner-height);
 }
 
 .status-banner__content {
@@ -35,6 +25,7 @@
   align-items: center;
   gap: 0.75rem;
   animation: statusFade 0.45s ease;
+  flex-wrap: nowrap;
 }
 
 .status-pill {
@@ -53,6 +44,42 @@
 .status-message {
   color: #e2e8f0;
   line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  max-width: 100%;
+  text-align: left;
+  display: flex;
+  align-items: center;
+}
+
+.status-message-text {
+  display: inline-block;
+  animation: scrollText 20s linear infinite;
+  white-space: nowrap;
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-33.33%);
+  }
+}
+
+/* Pause animation on hover/touch */
+.status-banner:hover .status-message-text,
+.status-banner:active .status-message-text {
+  animation-play-state: paused;
+}
+
+@media (max-width: 480px) {
+  .status-message-text {
+    animation-duration: 15s;
+  }
 }
 
 @keyframes statusFade {
@@ -112,20 +139,49 @@
 
 @media (max-width: 768px) {
   .status-banner__content {
-    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .status-banner {
+    padding: 0.45rem 0.75rem;
   }
 }
 
 @media (max-width: 480px) {
   .status-banner {
-    top: calc(var(--header-height, 78px) + env(safe-area-inset-top, 0px));
-    font-size: 0.875rem;
-    padding: 0.6rem 1rem;
+    font-size: 0.75rem;
+    padding: 0.35rem 0.6rem;
+  }
+
+  .status-pill {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.65rem;
+  }
+  
+  .status-banner__content {
+    gap: 0.35rem;
+  }
+  
+  .status-pill {
+    padding: 0.12rem 0.45rem;
+    font-size: 0.65rem;
+  }
+  
+  .status-message {
+    font-size: 0.75rem;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .status-banner__content {
     animation: none;
+  }
+  
+  .status-message-text {
+    animation: none !important;
+  }
+  
+  .status-message {
+    text-overflow: ellipsis;
   }
 }
