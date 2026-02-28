@@ -19,6 +19,15 @@
   left: 0;
   right: 0;
   z-index: 9998;
+  /* Prevent covering header */
+  pointer-events: auto;
+}
+
+/* Mobile-specific positioning */
+@media (max-width: 480px) {
+  .status-banner {
+    top: 78px;
+  }
 }
 
 .status-banner__content {

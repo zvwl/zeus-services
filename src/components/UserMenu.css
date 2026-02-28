@@ -357,7 +357,12 @@
 }
 
 @media (max-width: 480px) {
+  .user-menu-backdrop {
+    top: 78px;
+  }
+  
   .user-menu {
     max-width: 100%;
+    top: 78px;
   }
 }

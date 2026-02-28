@@ -14,7 +14,7 @@
   bottom: 0;
   background: rgba(10, 14, 26, 0.95);
   backdrop-filter: blur(8px);
-  z-index: 9999;
+  z-index: 99998;
   min-height: 100vh;
 }
 

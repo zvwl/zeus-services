@@ -43,6 +43,9 @@ body {
   padding-top: var(--header-height, 102px);
   min-height: 100vh;
   min-height: -webkit-fill-available;
+  /* Ensure content doesn't overlap header */
+  position: relative;
+  z-index: 1;
 }
 
 /* Add extra padding when StatusBanner is visible */
@@ -53,11 +56,15 @@ body.has-status-banner {
 /* Mobile body padding */
 @media (max-width: 480px) {
   body {
-    padding-top: var(--header-height);
+    /* Fixed padding to match header height */
+    padding-top: 78px;
+    /* Add safe area at top for iOS notch */
+    padding-top: max(78px, calc(78px + env(safe-area-inset-top, 0px)));
   }
   
   body.has-status-banner {
-    padding-top: calc(var(--header-height) + 42px);
+    padding-top: calc(78px + 42px);
+    padding-top: max(calc(78px + 42px), calc(78px + 42px + env(safe-area-inset-top, 0px)));
   }
 }
 

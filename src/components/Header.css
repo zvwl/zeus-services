@@ -10,7 +10,7 @@
   top: 0;
   left: 0;
   right: 0;
-  z-index: 9999;
+  z-index: 99999;
   backdrop-filter: blur(6px);
   height: var(--header-height);
   display: flex;
@@ -22,6 +22,8 @@
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
   width: 100%;
+  /* Ensure header stays on top */
+  will-change: transform;
 }
 
 .header-content {
@@ -274,25 +276,34 @@
 
 @media (max-width: 480px) {
   :root {
-    --header-height: calc(78px + env(safe-area-inset-top, 0px));
+    --header-height: 78px;
   }
 
   .header {
-    /* Add safe-area-inset for iPhone notch/address bar */
-    padding: calc(env(safe-area-inset-top) + 0.7rem) 0.8rem 0.7rem 0.8rem;
-    /* Increase height to accommodate safe area padding */
-    height: calc(78px + env(safe-area-inset-top, 0px));
+    /* Simplified padding for mobile */
+    padding: 0.7rem 0.8rem;
+    padding-top: max(0.7rem, env(safe-area-inset-top, 0px));
+    /* Fixed height for consistent layout */
+    height: 78px;
+    min-height: 78px;
     /* Force header visibility on iOS */
     position: fixed !important;
     top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
     display: flex !important;
     visibility: visible !important;
     opacity: 1 !important;
+    z-index: 99999 !important;
     /* Remove backdrop-filter on mobile - known iOS Safari rendering bug */
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    /* Increase background opacity for readability without blur */
-    background: rgba(30, 64, 175, 0.98) !important;
+    /* Solid background for better visibility */
+    background: linear-gradient(90deg, #1e40af 0%, #0c2461 100%) !important;
+    /* Prevent iOS Safari glitches */
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    will-change: auto;
   }
 
   .logo-icon {
