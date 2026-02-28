@@ -118,7 +118,7 @@
 
 @media (max-width: 480px) {
   .status-banner {
-    top: var(--header-height);
+    top: 78px;
     font-size: 0.875rem;
     padding: 0.6rem 1rem;
   }
