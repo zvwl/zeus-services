@@ -26,6 +26,17 @@
   will-change: transform;
 }
 
+/* iOS Safari: prevent fixed header compositing glitches */
+@supports (-webkit-touch-callout: none) {
+  .header {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    transform: none !important;
+    -webkit-transform: none !important;
+    will-change: auto !important;
+  }
+}
+
 .header-content {
   width: 100%;
   display: flex;

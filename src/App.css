@@ -23,8 +23,6 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
-  /* iOS Safari scroll fix */
-  -webkit-overflow-scrolling: touch;
   /* Better viewport handling on iOS */
   height: 100%;
 }
