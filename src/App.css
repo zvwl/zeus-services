@@ -51,11 +51,11 @@ body.has-status-banner {
 /* Mobile body padding */
 @media (max-width: 480px) {
   body {
-    padding-top: 78px;
+    padding-top: calc(78px + env(safe-area-inset-top, 0px));
   }
   
   body.has-status-banner {
-    padding-top: calc(78px + 42px);
+    padding-top: calc(78px + 42px + env(safe-area-inset-top, 0px));
   }
 }
 
