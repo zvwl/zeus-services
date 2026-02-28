@@ -1,5 +1,7 @@
 import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
+import { Gamepad2, Zap, CircleCheck, CircleX } from 'lucide-react'
+import AnimatedLucideIcon from '../components/AnimatedLucideIcon'
 
 export default function ComparisonPage() {
   return (
@@ -24,7 +26,10 @@ export default function ComparisonPage() {
             {/* Modded Accounts Card */}
             <div style={{ backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', borderLeft: '4px solid #fbbf24' }}>
               <h2 style={{ fontSize: '2rem', color: '#fbbf24', marginBottom: '1.5rem' }}>
-                🎮 Modded Accounts
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <AnimatedLucideIcon icon={Gamepad2} size={28} />
+                  <span>Modded Accounts</span>
+                </span>
               </h2>
               
               <div style={{ marginBottom: '2rem' }}>
@@ -42,21 +47,21 @@ export default function ComparisonPage() {
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>Pros</h3>
                 <ul style={{ color: '#cbd5e1', lineHeight: '2', marginLeft: '1.5rem' }}>
-                  <li>✅ Play immediately after delivery</li>
-                  <li>✅ No account sharing required</li>
-                  <li>✅ Completely fresh, unprotected account</li>
-                  <li>✅ No waiting time</li>
-                  <li>✅ You own the account from day one</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> Play immediately after delivery</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> No account sharing required</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> Completely fresh, unprotected account</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> No waiting time</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> You own the account from day one</li>
                 </ul>
               </div>
 
               <div>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>Cons</h3>
                 <ul style={{ color: '#cbd5e1', lineHeight: '2', marginLeft: '1.5rem' }}>
-                  <li>❌ Can't customize existing account</li>
-                  <li>❌ Have to abandon your current account</li>
-                  <li>❌ Price varies per account</li>
-                  <li>❌ Limited customization options</li>
+                  <li><AnimatedLucideIcon icon={CircleX} size={16} /> Can't customize existing account</li>
+                  <li><AnimatedLucideIcon icon={CircleX} size={16} /> Have to abandon your current account</li>
+                  <li><AnimatedLucideIcon icon={CircleX} size={16} /> Price varies per account</li>
+                  <li><AnimatedLucideIcon icon={CircleX} size={16} /> Limited customization options</li>
                 </ul>
               </div>
             </div>
@@ -64,7 +69,10 @@ export default function ComparisonPage() {
             {/* Boosting Service Card */}
             <div style={{ backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', borderLeft: '4px solid #60a5fa' }}>
               <h2 style={{ fontSize: '2rem', color: '#60a5fa', marginBottom: '1.5rem' }}>
-                ⚡ Account Boosting Service
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <AnimatedLucideIcon icon={Zap} size={28} />
+                  <span>Account Boosting Service</span>
+                </span>
               </h2>
               
               <div style={{ marginBottom: '2rem' }}>
@@ -82,21 +90,21 @@ export default function ComparisonPage() {
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>Pros</h3>
                 <ul style={{ color: '#cbd5e1', lineHeight: '2', marginLeft: '1.5rem' }}>
-                  <li>✅ Keep your original account</li>
-                  <li>✅ Fully customizable to your needs</li>
-                  <li>✅ Works on any existing account</li>
-                  <li>✅ Fixed pricing</li>
-                  <li>✅ Specific rank/money/vehicles</li>
-                  <li>✅ You always control your account</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> Keep your original account</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> Fully customizable to your needs</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> Works on any existing account</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> Fixed pricing</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> Specific rank/money/vehicles</li>
+                  <li><AnimatedLucideIcon icon={CircleCheck} size={16} /> You always control your account</li>
                 </ul>
               </div>
 
               <div>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>Cons</h3>
                 <ul style={{ color: '#cbd5e1', lineHeight: '2', marginLeft: '1.5rem' }}>
-                  <li>❌ Takes 20 minutes to a few hours to complete</li>
-                  <li>❌ Requires account access</li>
-                  <li>❌ Longer wait time</li>
+                  <li><AnimatedLucideIcon icon={CircleX} size={16} /> Takes 20 minutes to a few hours to complete</li>
+                  <li><AnimatedLucideIcon icon={CircleX} size={16} /> Requires account access</li>
+                  <li><AnimatedLucideIcon icon={CircleX} size={16} /> Longer wait time</li>
                 </ul>
               </div>
             </div>

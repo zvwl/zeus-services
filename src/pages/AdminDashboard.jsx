@@ -126,7 +126,7 @@ export default function AdminDashboard() {
   if (!isAdmin) {
     return (
       <div className="admin-orders-container">
-        <div className="error-message">❌ Admin access required - this incident has been logged</div>
+        <div className="error-message">Admin access required - this incident has been logged</div>
       </div>
     )
   }
@@ -145,22 +145,22 @@ export default function AdminDashboard() {
 
       <div className="admin-nav-cards">
         <button className="admin-nav-card" onClick={() => navigate('/admin/orders')}>
-          <div className="nav-card-icon">📦</div>
+          <div className="nav-card-icon">Orders</div>
           <div className="nav-card-title">Orders</div>
           <div className="nav-card-desc">Manage customer orders</div>
         </button>
         <button className="admin-nav-card" onClick={() => navigate('/admin/items')}>
-          <div className="nav-card-icon">🎮</div>
+          <div className="nav-card-icon">Items</div>
           <div className="nav-card-title">Items</div>
           <div className="nav-card-desc">Manage all items</div>
         </button>
         <button className="admin-nav-card" onClick={() => navigate('/admin/games')}>
-          <div className="nav-card-icon">🎯</div>
+          <div className="nav-card-icon">Games</div>
           <div className="nav-card-title">Games</div>
           <div className="nav-card-desc">Manage games</div>
         </button>
         <button className="admin-nav-card" onClick={() => navigate('/admin/reviews')}>
-          <div className="nav-card-icon">⭐</div>
+          <div className="nav-card-icon">Reviews</div>
           <div className="nav-card-title">Reviews</div>
           <div className="nav-card-desc">Moderate reviews</div>
         </button>

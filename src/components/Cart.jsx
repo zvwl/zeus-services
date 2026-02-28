@@ -1,5 +1,7 @@
 import './Cart.css'
+import { ShoppingCart, Gamepad2 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import AnimatedLucideIcon from './AnimatedLucideIcon'
 import { XIcon } from './XIcon'
 import { useRef } from 'react'
 
@@ -35,7 +37,7 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
         )}
         <div className="empty-cart">
           <p>Your cart is empty</p>
-          <span className="empty-icon">🛒</span>
+          <span className="empty-icon"><AnimatedLucideIcon icon={ShoppingCart} size={28} /></span>
         </div>
       </div>
     )
@@ -55,11 +57,11 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
                     alt={item.name}
                     onError={(e) => {
                       e.target.style.display = 'none'
-                      e.target.parentElement.textContent = '🎮'
+                      e.target.parentElement.textContent = ' '
                     }}
                   />
                 ) : (
-                  <span>{item.icon || '🎮'}</span>
+                  <span><AnimatedLucideIcon icon={Gamepad2} size={20} /></span>
                 )}
               </div>
               <div className="item-info">
@@ -155,7 +157,7 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
           disabled={!items.length || isLoading || !emailVerified}
           title={!emailVerified ? 'Please verify your email to checkout' : ''}
         >
-          {!emailVerified ? '✉️ Verify email to checkout' : buttonLabel}
+          {!emailVerified ? 'Verify email to checkout' : buttonLabel}
         </button>
       </div>
     </div>

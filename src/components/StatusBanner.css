@@ -18,6 +18,7 @@
   pointer-events: auto;
   height: var(--banner-height);
   min-height: var(--banner-height);
+  z-index: 1;
 }
 
 .status-banner__content {

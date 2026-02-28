@@ -155,9 +155,9 @@ export default function VerifyEmailPage() {
         <div className="auth-card">
           <div className="auth-header">
             <h2>
-              {status === 'verifying' && '⏳ Verifying Email'}
-              {status === 'success' && '✅ Email Verified'}
-              {status === 'error' && '❌ Verification Failed'}
+              {status === 'verifying' && 'Verifying Email'}
+              {status === 'success' && 'Email Verified'}
+              {status === 'error' && 'Verification Failed'}
             </h2>
             <p>{message}</p>
           </div>

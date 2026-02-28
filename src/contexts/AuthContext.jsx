@@ -154,7 +154,7 @@ export const AuthProvider = ({ children }) => {
         
 
         if (error) {
-          console.error('❌ Session error:', error)
+          console.error('Session error:', error)
           setUser(null)
           setEmailVerified(false)
           setLoading(false)
@@ -216,7 +216,7 @@ export const AuthProvider = ({ children }) => {
           setLoading(false)
         }
       } catch (err) {
-        console.error('❌ Session check error:', err)
+        console.error('Session check error:', err)
         // If session check fails, clear everything
         setUser(null)
         setEmailVerified(false)
@@ -287,7 +287,7 @@ export const AuthProvider = ({ children }) => {
             })
           }
         } catch (err) {
-          console.error('❌ Error processing auth session:', err)
+          console.error('Error processing auth session:', err)
           // Don't clear user on error - keep them logged in with minimal data
           const fallbackUser = {
             id: session.user.id,

@@ -26,7 +26,7 @@ export default function ProcessPage() {
           {/* CRITICAL REQUIREMENTS */}
           <div style={{ marginBottom: '4rem', backgroundColor: '#991b1b', padding: '2rem', borderRadius: '8px' }}>
             <h2 style={{ fontSize: '1.5rem', color: '#fff', marginBottom: '1.5rem' }}>
-              ⚠️ MANDATORY Requirements Before You Order
+              MANDATORY Requirements Before You Order
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', color: '#f9fafb' }}>
               <div>
@@ -36,25 +36,25 @@ export default function ProcessPage() {
                 </p>
               </div>
               <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🕐 Service Hours: 6 PM - 1 AM UK Time</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>Service Hours: 6 PM - 1 AM UK Time</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   We operate ONLY during these hours. Boosting/account delivery happens within this window. Orders placed outside these hours start processing when service resumes.
                 </p>
               </div>
               <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>⏰ 24-Hour Unresponsive Rule</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>24-Hour Unresponsive Rule</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   If you don't respond to Discord messages for 24+ hours, your order is CANCELLED. No refund. You must stay responsive during service.
                 </p>
               </div>
               <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🔐 2FA Codes Required</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>2FA Codes Required</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   For boosting, you must provide 2FA codes when requested. You'll need to be available to verify logins. This is for YOUR account security.
                 </p>
               </div>
               <div style={{ gridColumn: '1 / -1' }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>💰 ALL SALES FINAL - NO REFUNDS</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>ALL SALES FINAL - NO REFUNDS</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   Once purchase is made, there are NO refunds for ANY reason. This includes account bans, service delays, cancellations (due to unresponsiveness), or change of mind. YOU ACCEPT THIS RISK.
                 </p>
@@ -65,7 +65,7 @@ export default function ProcessPage() {
           {/* Modded Accounts Process */}
           <div style={{ marginBottom: '4rem' }}>
             <h2 style={{ fontSize: '2rem', color: '#fbbf24', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '2px solid #334155' }}>
-              🎮 Modded Accounts - 4 Easy Steps
+              Modded Accounts - 4 Easy Steps
             </h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '2rem' }}>
@@ -202,7 +202,7 @@ export default function ProcessPage() {
           {/* Boosting Process */}
           <div style={{ marginBottom: '4rem' }}>
             <h2 style={{ fontSize: '2rem', color: '#fbbf24', marginBottom: '2rem', paddingBottom: '1rem', borderBottom: '2px solid #334155' }}>
-              ⚡ Account Boosting - 4 Easy Steps
+              Account Boosting - 4 Easy Steps
             </h2>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem', marginBottom: '2rem' }}>

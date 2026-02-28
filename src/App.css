@@ -23,6 +23,7 @@
 html {
   scroll-behavior: smooth;
   overflow-x: hidden;
+  scrollbar-gutter: stable;
   /* Better viewport handling on iOS */
   height: 100%;
 }

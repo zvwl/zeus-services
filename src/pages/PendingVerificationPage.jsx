@@ -50,7 +50,7 @@ export default function PendingVerificationPage() {
       <div className="auth-container">
         <div className="auth-card">
           <div className="auth-header">
-            <h2>📧 Check Your Email</h2>
+            <h2>Check Your Email</h2>
             <p>Almost there! We've sent a confirmation link to:</p>
             <p className="pending-email">{email}</p>
           </div>

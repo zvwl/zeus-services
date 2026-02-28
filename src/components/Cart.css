@@ -448,7 +448,7 @@
 }
 
 .success-banner .checkout-message::before {
-  content: '✅';
+  content: '✔';
   font-size: 1.3rem;
 }
 

@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react'
+import { Star } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import { supabase } from '../supabaseClient'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
+import AnimatedLucideIcon from '../components/AnimatedLucideIcon'
 import { isPrerender } from '../utils/isPrerender'
 import './ReviewsPage.css'
 
@@ -257,7 +259,7 @@ export default function ReviewsPage() {
 
         {filteredReviews.length === 0 && !error && (
           <div className="empty-state">
-            <span className="empty-icon">⭐</span>
+            <span className="empty-icon"><AnimatedLucideIcon icon={Star} size={28} /></span>
             <h2>No reviews yet</h2>
             <p>Be the first to share your experience!</p>
           </div>

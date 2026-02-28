@@ -12,6 +12,7 @@
   align-items: center;
   box-sizing: border-box;
   width: 100%;
+  z-index: 100;
   /* CSS transitions */
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
@@ -148,7 +149,7 @@
   border: 2px solid #fbbf24;
   border-radius: 12px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
-  z-index: 1004;
+  z-index: 100001;
   min-width: 120px;
   overflow: hidden;
 }

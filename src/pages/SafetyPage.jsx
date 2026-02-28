@@ -114,7 +114,7 @@ export default function SafetyPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
               <div>
                 <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  ❌ No Ban Guarantee
+                  No Ban Guarantee
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   Despite our best efforts, bans can happen. We cannot prevent them or guarantee your account won't be banned.
@@ -123,7 +123,7 @@ export default function SafetyPage() {
 
               <div>
                 <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  ❌ No Account Recovery Warranty
+                  No Account Recovery Warranty
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   If banned, we may help, but there's no guarantee your account can be recovered or that Rockstar will lift the ban.
@@ -132,7 +132,7 @@ export default function SafetyPage() {
 
               <div>
                 <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  ❌ No Refunds for Any Reason
+                  No Refunds for Any Reason
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   All sales are final. Bans, disappointment, change of mind - no refunds. This is in our T&Cs.
@@ -141,7 +141,7 @@ export default function SafetyPage() {
 
               <div>
                 <h3 style={{ color: '#ef4444', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  ❌ No Control Over Publishers
+                  No Control Over Publishers
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.6', fontSize: '0.95rem' }}>
                   We have zero influence on any game publisher's enforcement decisions. Their actions are outside our control completely.

@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { DollarSign, Euro, PoundSterling, ShoppingCart, Menu, X } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import UserMenu from './UserMenu'
 import CategoryDropdown from './CategoryDropdown'
-import { AnimatedMenuIcon } from './AnimatedMenuIcon'
-import { AnimatedCartIcon } from './AnimatedCartIcon'
-import { DollarSignIcon, EuroIcon, PoundSterlingIcon } from './CurrencyIcons'
+import AnimatedLucideIcon from './AnimatedLucideIcon'
 import './Header.css'
+import './AnimatedMenuIcon.css'
 
 export default function Header({ cartCount, currency, onCurrencyChange }) {
   const navigate = useNavigate()
@@ -15,19 +15,15 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
-  const menuIconRef = useRef(null)
   const cartIconRef = useRef(null)
+  const menuIconRef = useRef(null)
+  const currencyIconRefs = useRef({})
 
   const currencies = ['GBP', 'USD', 'EUR']
   const currencyIcons = {
-    GBP: PoundSterlingIcon,
-    USD: DollarSignIcon,
-    EUR: EuroIcon,
-  }
-  const currencyRefs = {
-    GBP: useRef(null),
-    USD: useRef(null),
-    EUR: useRef(null),
+    GBP: PoundSterling,
+    USD: DollarSign,
+    EUR: Euro,
   }
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`
 
@@ -52,16 +48,6 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
     }
     fetchCategories()
   }, [])
-
-  useEffect(() => {
-    const icon = menuIconRef.current
-    if (!icon) return
-    if (isMenuOpen) {
-      icon.startAnimation()
-    } else {
-      icon.stopAnimation()
-    }
-  }, [isMenuOpen])
 
   // Simple scroll tracking - just for at-top class, no hiding
   useEffect(() => {
@@ -129,10 +115,19 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
                           onCurrencyChange?.(curr)
                           setIsCurrencyOpen(false)
                         }}
-                        onMouseEnter={() => currencyRefs[curr].current?.startAnimation()}
-                        onMouseLeave={() => currencyRefs[curr].current?.stopAnimation()}
+                        onMouseEnter={() => currencyIconRefs.current[curr]?.startAnimation?.()}
+                        onMouseLeave={() => currencyIconRefs.current[curr]?.stopAnimation?.()}
+                        onFocus={() => currencyIconRefs.current[curr]?.startAnimation?.()}
+                        onBlur={() => currencyIconRefs.current[curr]?.stopAnimation?.()}
                       >
-                        <IconComponent ref={currencyRefs[curr]} size={18} />
+                        <AnimatedLucideIcon
+                          ref={(el) => {
+                            currencyIconRefs.current[curr] = el
+                          }}
+                          icon={IconComponent}
+                          size={18}
+                          animateOnHover={false}
+                        />
                         <span>{curr}</span>
                       </button>
                     )
@@ -149,16 +144,36 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
               onFocus={() => cartIconRef.current?.startAnimation?.()}
               onBlur={() => cartIconRef.current?.stopAnimation?.()}
             >
-              <AnimatedCartIcon ref={cartIconRef} className="cart-icon" size={28} />
+              <AnimatedLucideIcon
+                ref={cartIconRef}
+                icon={ShoppingCart}
+                className="cart-icon"
+                size={24}
+                animateOnHover={false}
+              />
               <span className="cart-text">Cart</span>
               <span className="cart-count">({cartCount})</span>
             </button>
 
-            <AnimatedMenuIcon 
-              ref={menuIconRef}
+            <button
+              type="button"
+              className="animated-menu-button menu-button-mobile"
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="menu-button-mobile"
-            />
+              onMouseEnter={() => menuIconRef.current?.startAnimation?.()}
+              onMouseLeave={() => menuIconRef.current?.stopAnimation?.()}
+              onFocus={() => menuIconRef.current?.startAnimation?.()}
+              onBlur={() => menuIconRef.current?.stopAnimation?.()}
+              aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
+              title={isMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              <AnimatedLucideIcon
+                ref={menuIconRef}
+                icon={isMenuOpen ? X : Menu}
+                className="animated-menu-icon"
+                size={28}
+                animateOnHover={false}
+              />
+            </button>
           </div>
         </div>
       </header>

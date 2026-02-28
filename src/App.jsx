@@ -202,10 +202,10 @@ function App() {
           ? { ...item, quantity: item.quantity + 1 }
           : item
       ))
-      addToast(`🛒 Updated ${service.name} quantity in cart`, 'success')
+      addToast(`Updated ${service.name} quantity in cart`, 'success')
     } else {
       setCartItems([...cartItems, { ...service, cartId, platform, quantity: 1 }])
-      addToast(`🛒 Added ${service.name} to cart`, 'success')
+      addToast(`Added ${service.name} to cart`, 'success')
     }
   }
 
@@ -213,7 +213,7 @@ function App() {
     const removedItem = cartItems.find(item => item.cartId === cartId)
     setCartItems(cartItems.filter(item => item.cartId !== cartId))
     if (removedItem) {
-      addToast(`🗑️ Removed ${removedItem.name} from cart`, 'info')
+      addToast(`Removed ${removedItem.name} from cart`, 'info')
     }
   }
 

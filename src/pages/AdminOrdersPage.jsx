@@ -624,10 +624,10 @@ export default function AdminOrdersPage() {
                 <p><strong>Total Amount:</strong> {formatCurrency(confirmDialog.orderInfo?.total_amount, confirmDialog.orderInfo?.currency)}</p>
               </div>
               {confirmDialog.action === 'refund' && (
-                <p className="refund-warning">⚠️ This will issue a refund to the customer's original payment method.</p>
+                <p className="refund-warning">This will issue a refund to the customer's original payment method.</p>
               )}
               {confirmDialog.action === 'cancel' && (
-                <p className="cancel-warning">⚠️ This will cancel the order WITHOUT refunding the customer.</p>
+                <p className="cancel-warning">This will cancel the order WITHOUT refunding the customer.</p>
               )}
             </div>
             <div className="modal-actions">

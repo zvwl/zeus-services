@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { Gamepad2 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import AnimatedLucideIcon from '../components/AnimatedLucideIcon'
 import LoadingSpinner from '../components/LoadingSpinner'
 import './CartPage.css'
 
@@ -86,11 +88,11 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
                         alt={item.name}
                         onError={(e) => {
                           e.target.style.display = 'none'
-                          e.target.parentElement.textContent = '🎮'
+                          e.target.parentElement.textContent = ' '
                         }}
                       />
                     ) : (
-                      <span>{item.icon || '🎮'}</span>
+                      <span><AnimatedLucideIcon icon={Gamepad2} size={20} /></span>
                     )}
                   </div>
                   <div>
@@ -183,7 +185,7 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
             disabled={isLoading || !emailVerified}
             title={!emailVerified ? 'Please verify your email to checkout' : ''}
           >
-            {!emailVerified ? '✉️ Verify email to checkout' : buttonLabel}
+            {!emailVerified ? 'Verify email to checkout' : buttonLabel}
           </button>
 
           {!emailVerified && (

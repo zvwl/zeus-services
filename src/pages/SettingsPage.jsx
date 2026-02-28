@@ -237,13 +237,13 @@ export default function SettingsPage() {
 
       setQrCode(data.totp.qr_code)
       setFactorId(data.id)
-      setTwoFactorMessage('📱 Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.)')
+      setTwoFactorMessage('Scan the QR code with your authenticator app (Google Authenticator, Authy, etc.)')
     } catch (error) {
       const errorMessage = error.message || 'Failed to enable 2FA'
       if (errorMessage.includes('JWT') || errorMessage.includes('does not exist')) {
-        setTwoFactorMessage('❌ Your session is invalid. Please log out and log back in.')
+        setTwoFactorMessage('Your session is invalid. Please log out and log back in.')
       } else {
-        setTwoFactorMessage('❌ ' + errorMessage)
+        setTwoFactorMessage(errorMessage)
       }
     } finally {
       setTwoFactorLoading(false)
@@ -252,7 +252,7 @@ export default function SettingsPage() {
 
   const handleVerifyMFA = async () => {
     if (!verifyCode || verifyCode.length !== 6) {
-      setTwoFactorMessage('❌ Please enter a valid 6-digit code')
+      setTwoFactorMessage('Please enter a valid 6-digit code')
       return
     }
 
@@ -272,9 +272,9 @@ export default function SettingsPage() {
       setTwoFactorEnabled(true)
       setQrCode(null)
       setVerifyCode('')
-      setTwoFactorMessage('✅ Two-factor authentication enabled successfully!')
+      setTwoFactorMessage('Two-factor authentication enabled successfully!')
     } catch (error) {
-      setTwoFactorMessage('❌ Invalid code: ' + error.message)
+      setTwoFactorMessage('Invalid code: ' + error.message)
     } finally {
       setTwoFactorLoading(false)
     }
@@ -282,7 +282,7 @@ export default function SettingsPage() {
 
   const handleDisableMFA = async () => {
     if (!disableCode || disableCode.length !== 6) {
-      setTwoFactorMessage('❌ Please enter your 6-digit authenticator code to disable 2FA')
+      setTwoFactorMessage('Please enter your 6-digit authenticator code to disable 2FA')
       return
     }
 
@@ -309,9 +309,9 @@ export default function SettingsPage() {
       setQrCode(null)
       setDisableCode('')
       setShowDisablePrompt(false)
-      setTwoFactorMessage('✅ Two-factor authentication disabled')
+      setTwoFactorMessage('Two-factor authentication disabled')
     } catch (error) {
-      setTwoFactorMessage('❌ ' + error.message)
+      setTwoFactorMessage(error.message)
     } finally {
       setTwoFactorLoading(false)
     }
@@ -323,7 +323,7 @@ export default function SettingsPage() {
     setProfileMessage('')
 
     if (!name.trim()) {
-      setProfileMessage('❌ Name cannot be empty')
+      setProfileMessage('Name cannot be empty')
       setProfileLoading(false)
       return
     }
@@ -344,20 +344,20 @@ export default function SettingsPage() {
         const nextChangeDate = lastNameChangeDate 
           ? new Date(lastNameChangeDate.getTime() + 60 * 24 * 60 * 60 * 1000).toLocaleDateString()
           : ''
-        setProfileMessage(`❌ You can only change your display name once every 60 days. Next change available on ${nextChangeDate}`)
+        setProfileMessage(`You can only change your display name once every 60 days. Next change available on ${nextChangeDate}`)
         setProfileLoading(false)
         return
       }
 
       // Validate display name availability
       if (nameAvailable === false || nameError) {
-        setProfileMessage(`❌ ${nameError || 'Please choose an available display name'}`)
+        setProfileMessage(nameError || 'Please choose an available display name')
         setProfileLoading(false)
         return
       }
 
       if (nameAvailable === null || isCheckingName) {
-        setProfileMessage('❌ Please wait while we verify your display name')
+        setProfileMessage('Please wait while we verify your display name')
         setProfileLoading(false)
         return
       }
@@ -387,13 +387,13 @@ export default function SettingsPage() {
           console.error('Error updating display name change timestamp:', err)
         }
       }
-      setProfileMessage('✅ Profile updated successfully!')
+      setProfileMessage('Profile updated successfully!')
     } else {
       // Check if error is due to duplicate name
       if (result.error?.includes('duplicate') || result.error?.includes('unique') || result.error?.includes('customers_name_key')) {
-        setProfileMessage('❌ This display name is already taken. Please choose a different name.')
+        setProfileMessage('This display name is already taken. Please choose a different name.')
       } else {
-        setProfileMessage('❌ ' + result.error)
+        setProfileMessage(result.error)
       }
     }
     
@@ -411,7 +411,7 @@ export default function SettingsPage() {
       })
       
       if (error) {
-        setDiscordMessage(`❌ ${error.message}`)
+        setDiscordMessage(error.message)
         setDiscordLoading(false)
         return
       }
@@ -419,7 +419,7 @@ export default function SettingsPage() {
       // Supabase will redirect to Discord OAuth, then back
       // The page will reload and Discord will be connected
     } catch (err) {
-      setDiscordMessage('❌ Failed to connect Discord')
+      setDiscordMessage('Failed to connect Discord')
       setDiscordLoading(false)
     }
   }
@@ -438,7 +438,7 @@ export default function SettingsPage() {
       const discordIdentity = identities?.identities?.find(i => i.provider === 'discord')
       
       if (!discordIdentity) {
-        setDiscordMessage('❌ Discord account not found')
+        setDiscordMessage('Discord account not found')
         setDiscordLoading(false)
         return
       }
@@ -446,18 +446,18 @@ export default function SettingsPage() {
       const { error } = await supabase.auth.unlinkIdentity(discordIdentity)
       
       if (error) {
-        setDiscordMessage(`❌ ${error.message}`)
+        setDiscordMessage(error.message)
         setDiscordLoading(false)
         return
       }
       
       setDiscordConnected(false)
       setDiscordUsername('')
-      setDiscordMessage('✅ Discord disconnected successfully')
+      setDiscordMessage('Discord disconnected successfully')
       setTimeout(() => setDiscordMessage(''), 5000)
     } catch (err) {
       console.error('Discord disconnect error:', err)
-      setDiscordMessage('❌ Failed to disconnect Discord')
+      setDiscordMessage('Failed to disconnect Discord')
     }
     
     setDiscordLoading(false)
@@ -469,19 +469,19 @@ export default function SettingsPage() {
     setPasswordMessage('')
 
     if (!newPassword || !confirmPassword) {
-      setPasswordMessage('❌ Please fill in all password fields')
+      setPasswordMessage('Please fill in all password fields')
       setPasswordLoading(false)
       return
     }
 
     if (newPassword.length < 6) {
-      setPasswordMessage('❌ Password must be at least 6 characters')
+      setPasswordMessage('Password must be at least 6 characters')
       setPasswordLoading(false)
       return
     }
 
     if (newPassword !== confirmPassword) {
-      setPasswordMessage('❌ Passwords do not match')
+      setPasswordMessage('Passwords do not match')
       setPasswordLoading(false)
       return
     }
@@ -489,7 +489,7 @@ export default function SettingsPage() {
     // If MFA is enabled, require TOTP code to elevate session to AAL2
     if (twoFactorEnabled) {
       if (!mfaCode || mfaCode.length !== 6) {
-        setPasswordMessage('❌ Enter the 6-digit code from your authenticator app')
+        setPasswordMessage('Enter the 6-digit code from your authenticator app')
         setPasswordLoading(false)
         return
       }
@@ -497,21 +497,21 @@ export default function SettingsPage() {
       // Challenge + verify to elevate session
       const { data: factors, error: factorError } = await supabase.auth.mfa.listFactors()
       if (factorError) {
-        setPasswordMessage('❌ Unable to check MFA factors: ' + factorError.message)
+        setPasswordMessage('Unable to check MFA factors: ' + factorError.message)
         setPasswordLoading(false)
         return
       }
 
       const verifiedTotp = factors?.totp?.find(f => f.status === 'verified')
       if (!verifiedTotp) {
-        setPasswordMessage('❌ No verified authenticator found. Please re-enroll 2FA.')
+        setPasswordMessage('No verified authenticator found. Please re-enroll 2FA.')
         setPasswordLoading(false)
         return
       }
 
       const { data: challenge, error: challengeError } = await supabase.auth.mfa.challenge({ factorId: verifiedTotp.id })
       if (challengeError) {
-        setPasswordMessage('❌ MFA challenge failed: ' + challengeError.message)
+        setPasswordMessage('MFA challenge failed: ' + challengeError.message)
         setPasswordLoading(false)
         return
       }
@@ -523,7 +523,7 @@ export default function SettingsPage() {
       })
 
       if (verifyError) {
-        setPasswordMessage('❌ Invalid code: ' + verifyError.message)
+        setPasswordMessage('Invalid code: ' + verifyError.message)
         setPasswordLoading(false)
         return
       }
@@ -532,7 +532,7 @@ export default function SettingsPage() {
     const result = await changePassword(newPassword)
     
     if (result.success) {
-      setPasswordMessage('✅ Password changed! Refreshing your session...')
+      setPasswordMessage('Password changed! Refreshing your session...')
       setNewPassword('')
       setConfirmPassword('')
       setCurrentPassword('')
@@ -544,7 +544,7 @@ export default function SettingsPage() {
         window.location.reload()
       }, 2000)
     } else {
-      setPasswordMessage('❌ ' + result.error)
+      setPasswordMessage(result.error)
       setPasswordLoading(false)
     }
   }
@@ -552,9 +552,9 @@ export default function SettingsPage() {
   const handleResendVerification = async () => {
     const result = await resendVerificationEmail()
     if (result.success) {
-      setVerificationMessage('✅ Verification email sent! Check your inbox.')
+      setVerificationMessage('Verification email sent! Check your inbox.')
     } else {
-      setVerificationMessage('❌ ' + result.error)
+      setVerificationMessage(result.error)
     }
     setTimeout(() => setVerificationMessage(''), 5000)
   }
@@ -579,7 +579,7 @@ export default function SettingsPage() {
         {!emailVerified && (
           <div className="verification-banner">
             <div className="verification-content">
-              <span className="verification-icon">📧</span>
+              <span className="verification-icon">Email</span>
               <div className="verification-text">
                 <strong>Email not verified</strong>
                 <p>Please verify your email to access all features. Check your inbox for the verification link.</p>
@@ -666,7 +666,7 @@ export default function SettingsPage() {
                           transform: 'translateY(-50%)',
                           fontSize: '0.9rem'
                         }}>
-                          ⏳
+                          ...
                         </span>
                       )}
                       {!isCheckingName && nameAvailable === true && (
@@ -704,7 +704,7 @@ export default function SettingsPage() {
                 )}
                 {!canChangeName && (
                   <small className="cooldown-message">
-                    ⏱️ You can change your display name again in {daysUntilCanChange} day{daysUntilCanChange !== 1 ? 's' : ''}
+                    You can change your display name again in {daysUntilCanChange} day{daysUntilCanChange !== 1 ? 's' : ''}
                   </small>
                 )}
               </div>
@@ -979,7 +979,7 @@ export default function SettingsPage() {
 
               {twoFactorEnabled && (
                 <div className="twofa-enabled">
-                  <p className="success-info">✅ Two-factor authentication is enabled on your account.</p>
+                  <p className="success-info">Two-factor authentication is enabled on your account.</p>
                   
                   {!showDisablePrompt ? (
                     <button 
@@ -992,7 +992,7 @@ export default function SettingsPage() {
                   ) : (
                     <div style={{ marginTop: '1rem', padding: '1rem', backgroundColor: 'rgba(239, 68, 68, 0.1)', borderRadius: '8px' }}>
                       <p style={{ color: '#fca5a5', marginBottom: '1rem' }}>
-                        <strong>⚠️ Enter your 6-digit authenticator code to confirm disabling 2FA:</strong>
+                        <strong>Enter your 6-digit authenticator code to confirm disabling 2FA:</strong>
                       </p>
                       <div className="form-group">
                         <input
@@ -1075,7 +1075,7 @@ export default function SettingsPage() {
 
             {emailVerified && (
               <p className="success-info">
-                ✅ Your email is verified! You have full access to all features.
+                Your email is verified! You have full access to all features.
               </p>
             )}
           </div>

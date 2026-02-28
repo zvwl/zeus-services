@@ -123,14 +123,14 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
     }
 
     if (!emailVerified && user) {
-      setVerificationMessage('⚠️ Please verify your email before adding items to cart')
+      setVerificationMessage('Please verify your email before adding items to cart')
       setTimeout(() => setVerificationMessage(''), 5000)
       return
     }
 
     // Check stock availability
     if (isOutOfStock) {
-      setVerificationMessage('⚠️ This item is currently out of stock')
+      setVerificationMessage('This item is currently out of stock')
       setTimeout(() => setVerificationMessage(''), 5000)
       return
     }

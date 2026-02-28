@@ -363,7 +363,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
 
             <div className="discord-cta">
               <div className="discord-cta-text">
-                <strong>⚠️ Action Required: Join Discord to Continue Your Order</strong>
+                <strong>Action Required: Join Discord to Continue Your Order</strong>
                 <span>You must join our Discord server and create a support ticket to proceed with your order. Our team will contact you there to complete delivery.</span>
               </div>
               <a
@@ -451,7 +451,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
 
               {orderDetails.customer_email && (
                 <div className="order-confirmation-note">
-                  <p>📧 A confirmation email has been sent to <strong>{orderDetails.customer_email}</strong></p>
+                  <p>A confirmation email has been sent to <strong>{orderDetails.customer_email}</strong></p>
                 </div>
               )}
 
@@ -476,7 +476,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       
       {canceled === 'true' && (
         <div className="payment-cancelled-banner">
-          <p>⚠️ Payment was cancelled. Your items are still in your cart.</p>
+          <p>Payment was cancelled. Your items are still in your cart.</p>
         </div>
       )}
       

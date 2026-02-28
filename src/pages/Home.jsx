@@ -1,5 +1,19 @@
 import { useRef } from 'react'
+import {
+  Wallet,
+  Zap,
+  UserRound,
+  ShoppingBag,
+  Monitor,
+  CreditCard,
+  ClipboardList,
+  Lock,
+  Gem,
+  Wrench,
+  MessageCircle,
+} from 'lucide-react'
 import Banner from '../components/Banner'
+import AnimatedLucideIcon from '../components/AnimatedLucideIcon'
 import SEO, { SEO_CONFIGS } from '../components/SEO'
 import '../App.css'
 
@@ -35,21 +49,21 @@ export default function Home({ onGetStarted }) {
           <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem'}}>
             {/* Topups */}
             <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>💰</div>
+              <div style={{fontSize: '3rem', marginBottom: '1rem'}}><AnimatedLucideIcon icon={Wallet} size={42} /></div>
               <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Topups</h3>
               <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>In-game currency and credits. Get the currency you need instantly for faster gameplay and better gear.</p>
               <a href="/topups" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#fbbf24', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Topups</a>
             </div>
             {/* Boosting */}
             <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>⚡</div>
+              <div style={{fontSize: '3rem', marginBottom: '1rem'}}><AnimatedLucideIcon icon={Zap} size={42} /></div>
               <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Boosting</h3>
               <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Rank progression, level boosting, and achievement grinding. Let us handle the grind while you relax.</p>
               <a href="/boosting" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#60a5fa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Boosting</a>
             </div>
             {/* Accounts */}
             <div style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}>
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}>👤</div>
+              <div style={{fontSize: '3rem', marginBottom: '1rem'}}><AnimatedLucideIcon icon={UserRound} size={42} /></div>
               <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Accounts</h3>
               <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Pre-built accounts with progression ready to play. Skip the grind and jump straight into fun.</p>
               <a href="/accounts" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#a78bfa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Accounts</a>
@@ -66,28 +80,28 @@ export default function Home({ onGetStarted }) {
           <div className="safe-easy-grid">
             <div className="safe-easy-card">
               <div className="safe-easy-number">1</div>
-              <div className="safe-easy-icon">🛍️</div>
+              <div className="safe-easy-icon"><AnimatedLucideIcon icon={ShoppingBag} size={28} /></div>
               <h3>Pick your product/service</h3>
               <p>Browse and select from our catalog of accounts and services across all supported games.</p>
             </div>
 
             <div className="safe-easy-card">
               <div className="safe-easy-number">2</div>
-              <div className="safe-easy-icon">💻</div>
+              <div className="safe-easy-icon"><AnimatedLucideIcon icon={Monitor} size={28} /></div>
               <h3>Select Your Game & Version</h3>
               <p>Choose your game, version, and platform, then add to cart. We support multiple launchers and editions.</p>
             </div>
 
             <div className="safe-easy-card">
               <div className="safe-easy-number">3</div>
-              <div className="safe-easy-icon">💳</div>
+              <div className="safe-easy-icon"><AnimatedLucideIcon icon={CreditCard} size={28} /></div>
               <h3>Secure payment</h3>
               <p>Complete your purchase through the checkout – payments can be verified via Stripe.</p>
             </div>
 
             <div className="safe-easy-card">
               <div className="safe-easy-number">4</div>
-              <div className="safe-easy-icon">⚡</div>
+              <div className="safe-easy-icon"><AnimatedLucideIcon icon={Zap} size={28} /></div>
               <h3>Quick Delivery</h3>
               <p>Accounts and services are delivered manually via Discord. Timelines vary from 20 minutes to 5 hours depending on the game and service type. Full updates provided.</p>
             </div>
@@ -102,37 +116,37 @@ export default function Home({ onGetStarted }) {
           
           <div className="why-zeus-grid">
             <div className="why-zeus-card">
-              <div className="why-zeus-icon">📋</div>
+              <div className="why-zeus-icon"><AnimatedLucideIcon icon={ClipboardList} size={28} /></div>
               <h3>Manual, not messy</h3>
               <p>Orders are handled manually through Discord so nothing is rushed or botched. Something changes, you've got full chat history to fall back on.</p>
             </div>
 
             <div className="why-zeus-card">
-              <div className="why-zeus-icon">🔒</div>
+              <div className="why-zeus-icon"><AnimatedLucideIcon icon={Lock} size={28} /></div>
               <h3>Maximum Security</h3>
               <p>Measures are taken to ensure account security and reliability. We craft each order carefully and handle all accounts with care to prevent unwanted issues down the line.</p>
             </div>
 
             <div className="why-zeus-card">
-              <div className="why-zeus-icon">⚡</div>
+              <div className="why-zeus-icon"><AnimatedLucideIcon icon={Zap} size={28} /></div>
               <h3>Reliable Delivery</h3>
               <p>Orders are handled personally with attention to detail. Timelines vary by game and service - from 20 minutes to 5 hours. You'll get updates throughout the process.</p>
             </div>
 
             <div className="why-zeus-card">
-              <div className="why-zeus-icon">💎</div>
+              <div className="why-zeus-icon"><AnimatedLucideIcon icon={Gem} size={28} /></div>
               <h3>Transparent & Reliable</h3>
               <p>Clear prices, clear items and direct Discord support. You always know what you're buying, how it works, and exactly what to expect.</p>
             </div>
 
             <div className="why-zeus-card">
-              <div className="why-zeus-icon">🛠️</div>
+              <div className="why-zeus-icon"><AnimatedLucideIcon icon={Wrench} size={28} /></div>
               <h3>Experience That Actually Matters</h3>
               <p>Not new sellers chasing quick cash. Years of experience adapting to game updates, patches, and safety practices across multiple platforms. That experience means smarter methods, safer execution, and fewer mistakes.</p>
             </div>
 
             <div className="why-zeus-card">
-              <div className="why-zeus-icon">💬</div>
+              <div className="why-zeus-icon"><AnimatedLucideIcon icon={MessageCircle} size={28} /></div>
               <h3>Real Human Support</h3>
               <p>No bots, no ticket black holes. You speak directly with real people who actually do the service. Need changes, updates, or advice? You're always one Discord message away.</p>
             </div>

@@ -277,7 +277,7 @@ export default function OrdersPage() {
                         className="btn-review"
                         onClick={() => navigate(`/review?order=${order.id}`)}
                       >
-                        ⭐ Write a Review
+                        Write a Review
                       </button>
                     </div>
                   )}

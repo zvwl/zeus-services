@@ -77,21 +77,14 @@ export default function UserMenu({ isOpen, onClose, categories = [], user: propU
   useEffect(() => {
     if (!isOpen) return
 
-    const scrollY = window.scrollY
-    document.body.style.position = 'fixed'
-    document.body.style.top = `-${scrollY}px`
-    document.body.style.left = '0'
-    document.body.style.right = '0'
-    document.body.style.width = '100%'
+    // Simply prevent scrolling by disabling overflow
+    const htmlElement = document.documentElement
+    const originalOverflow = htmlElement.style.overflow
+    htmlElement.style.overflow = 'hidden'
 
     return () => {
-      const y = Math.abs(parseInt(document.body.style.top || '0', 10)) || 0
-      document.body.style.position = ''
-      document.body.style.top = ''
-      document.body.style.left = ''
-      document.body.style.right = ''
-      document.body.style.width = ''
-      window.scrollTo(0, y)
+      // Restore original overflow
+      htmlElement.style.overflow = originalOverflow
     }
   }, [isOpen])
 

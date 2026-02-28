@@ -219,7 +219,7 @@ export default function TrustPage() {
 
               <div className="trust-card" style={{ borderLeft: '3px solid #a78bfa', paddingLeft: '1rem' }}>
                 <h3 style={{ color: '#a78bfa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  💬 Real Professional Support
+                  Real Professional Support
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   Responsive Discord support from real people. Not bots. Not automated responses. You get actual help from staff who care about your experience.
@@ -228,7 +228,7 @@ export default function TrustPage() {
 
               <div className="trust-card" style={{ borderLeft: '3px solid #34d399', paddingLeft: '1rem' }}>
                 <h3 style={{ color: '#34d399', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  🔒 Account Security First
+                  Account Security First
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   We prioritize your security over everything. Immediate password reset, no retained access, encrypted communications. Your account is always yours.
@@ -237,7 +237,7 @@ export default function TrustPage() {
 
               <div className="trust-card" style={{ borderLeft: '3px solid #f97316', paddingLeft: '1rem' }}>
                 <h3 style={{ color: '#f97316', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  🎯 No Hidden Fees
+                  No Hidden Fees
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   Price upfront, no surprises. What you see is what you pay. No extra charges at delivery, no "expedite fees." Full transparency always.
@@ -246,7 +246,7 @@ export default function TrustPage() {
 
               <div className="trust-card" style={{ borderLeft: '3px solid #06b6d4', paddingLeft: '1rem' }}>
                 <h4 style={{ color: '#06b6d4', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  ⚡ Fast Reliable Delivery
+                  Fast Reliable Delivery
                 </h4>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   Services typically deliver on schedule. Modded accounts often faster than expected. Boosting follows the timeline you agree to. Reliability every time.

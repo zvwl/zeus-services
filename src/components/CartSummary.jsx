@@ -1,5 +1,7 @@
 import { useNavigate } from 'react-router-dom'
+import { ShoppingCart, Gamepad2 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
+import AnimatedLucideIcon from './AnimatedLucideIcon'
 import './Cart.css'
 
 export default function CartSummary({ items, onRemove, onUpdateQuantity, currency, formatPrice }) {
@@ -20,7 +22,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
       <div className="cart-container">
         <div className="empty-cart">
           <p>Your cart is empty</p>
-          <span className="empty-icon">🛒</span>
+          <span className="empty-icon"><AnimatedLucideIcon icon={ShoppingCart} size={80} /></span>
           <button onClick={() => navigate('/boosting/gta5')} className="primary-btn">
             Start Shopping
           </button>
@@ -43,11 +45,11 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
                     alt={item.name}
                     onError={(e) => {
                       e.target.style.display = 'none'
-                      e.target.parentElement.textContent = '🎮'
+                      e.target.parentElement.textContent = ' '
                     }}
                   />
                 ) : (
-                  <span>{item.icon || '🎮'}</span>
+                  <span><AnimatedLucideIcon icon={Gamepad2} size={20} /></span>
                 )}
               </div>
               <div className="item-info">
