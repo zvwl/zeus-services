@@ -236,6 +236,27 @@
   }
 }
 
+@media (max-width: 1280px) {
+  .nav-desktop {
+    gap: 0.45rem;
+  }
+
+  .nav-link {
+    padding: 0.8rem 1rem;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 1250px) {
+  .nav-link[href="/"] {
+    display: none;
+  }
+
+  .nav-desktop {
+    gap: 0.5rem;
+  }
+}
+
 @media (max-width: 1200px) {
   .nav-desktop {
     gap: 0.5rem;
