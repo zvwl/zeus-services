@@ -51,9 +51,13 @@ Deno.serve(async (req) => {
     }
 
     // Format items for email
-    const itemsList = (items || []).map((item: any) => 
-      `${item.name} (${item.platform || 'N/A'}) - ${item.quantity}x ${formatCurrency(item.price_converted || item.price_usd, currency)}`
-    ).join('\n');
+    const itemsList = (items || []).map((item: any) => {
+      const platform = item?.platform || 'No platform';
+      const version = item?.version || 'No version';
+      const quantity = Number(item?.quantity || 1);
+      const itemPrice = item?.price_converted || item?.price_usd || 0;
+      return `${item?.name || 'Item'} (Platform: ${platform}, Version: ${version}) - ${quantity}x ${formatCurrency(itemPrice, currency)}`;
+    }).join('\n');
 
     const orderDate = new Date(created_at).toLocaleDateString('en-GB', {
       year: 'numeric',
