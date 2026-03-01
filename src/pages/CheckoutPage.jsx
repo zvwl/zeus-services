@@ -98,6 +98,7 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
                   <div>
                     <h4>{item.name}</h4>
                     <p className="platform">Platform: {item.platform}</p>
+                    <p className="version">Version: {item.version ? item.version : 'No version'}</p>
                   </div>
                 </div>
                 <div className="checkout-item-details">
