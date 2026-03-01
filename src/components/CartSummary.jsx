@@ -9,6 +9,31 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
   const { user } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
+  const toSlug = (value) => {
+    if (!value) return ''
+    return String(value)
+      .toLowerCase()
+      .trim()
+      .replace(/["']/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
+  const getItemPath = (item) => {
+    const categorySlug = item.category_slug || item.categorySlug || toSlug(item.category_name)
+    const gameSlug = item.game_slug || item.gameSlug || toSlug(item.game_name)
+    const itemSlug = item.item_slug || item.itemSlug || item.slug
+
+    if (!categorySlug || !gameSlug || !itemSlug) return null
+    return `/${categorySlug}/${gameSlug}/${itemSlug}`
+  }
+
+  const handleItemClick = (item) => {
+    const itemPath = getItemPath(item)
+    if (!itemPath) return
+    navigate(itemPath)
+  }
+
   const handleCheckout = () => {
     if (!user) {
       navigate('/login?redirect=/checkout')
@@ -36,7 +61,21 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
       <h2 className="cart-title">Shopping Cart</h2>
       <div className="cart-items">
         {items.map(item => (
-          <div key={item.cartId} className="cart-item">
+          <div
+            key={item.cartId}
+            className={`cart-item${getItemPath(item) ? ' clickable' : ''}`}
+            onClick={() => handleItemClick(item)}
+            role={getItemPath(item) ? 'button' : undefined}
+            tabIndex={getItemPath(item) ? 0 : undefined}
+            onKeyDown={(event) => {
+              if (!getItemPath(item)) return
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                handleItemClick(item)
+              }
+            }}
+            title={getItemPath(item) ? 'View item details' : undefined}
+          >
             <div className="item-header">
               <div className="item-icon">
                 {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http')) ? (
@@ -55,18 +94,28 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
               <div className="item-info">
                 <h4>{item.name}</h4>
                 <p className="platform">Platform: {item.platform}</p>
+                {item.version && <p className="item-version">Version: {item.version}</p>}
                 <p>{formatPrice ? `${formatPrice(item.price)} each` : `$${item.price} each`}</p>
               </div>
             </div>
             <div className="item-controls">
               <div className="item-quantity">
-                <button onClick={() => onUpdateQuantity(item.cartId, item.quantity - 1)}>−</button>
+                <button onClick={(event) => {
+                  event.stopPropagation()
+                  onUpdateQuantity(item.cartId, item.quantity - 1)
+                }}>−</button>
                 <span>{item.quantity}</span>
-                <button onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}>+</button>
+                <button onClick={(event) => {
+                  event.stopPropagation()
+                  onUpdateQuantity(item.cartId, item.quantity + 1)
+                }}>+</button>
               </div>
               <button
                 className="remove-btn"
-                onClick={() => onRemove(item.cartId)}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onRemove(item.cartId)
+                }}
                 aria-label="Remove item"
                 title="Remove item"
               >

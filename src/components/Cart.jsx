@@ -1,11 +1,13 @@
 import './Cart.css'
-import { ShoppingCart, Gamepad2 } from 'lucide-react'
+import { ShoppingCart, Gamepad2, Sparkles } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
 import { XIcon } from './XIcon'
 import { useRef } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
+  const navigate = useNavigate()
   const { emailVerified } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const isLoading = checkoutStatus?.state === 'loading'
@@ -16,6 +18,31 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
     if (paymentMethod === 'dev_skip') return isLoading ? 'Placing order...' : 'Buy now (dev skip payment)'
     return isLoading ? 'Redirecting to Stripe...' : 'Pay with Stripe'
   })()
+
+  const toSlug = (value) => {
+    if (!value) return ''
+    return String(value)
+      .toLowerCase()
+      .trim()
+      .replace(/["']/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
+  const getItemPath = (item) => {
+    const categorySlug = item.category_slug || item.categorySlug || toSlug(item.category_name)
+    const gameSlug = item.game_slug || item.gameSlug || toSlug(item.game_name)
+    const itemSlug = item.item_slug || item.itemSlug || item.slug
+
+    if (!categorySlug || !gameSlug || !itemSlug) return null
+    return `/${categorySlug}/${gameSlug}/${itemSlug}`
+  }
+
+  const handleItemClick = (item) => {
+    const itemPath = getItemPath(item)
+    if (!itemPath) return
+    navigate(itemPath)
+  }
 
   const handleCheckout = () => {
     if (!emailVerified) {
@@ -48,7 +75,21 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
       <h2 className="cart-title">Shopping Cart</h2>
       <div className="cart-items">
         {items.map(item => (
-          <div key={item.cartId} className="cart-item">
+          <div
+            key={item.cartId}
+            className={`cart-item${getItemPath(item) ? ' clickable' : ''}`}
+            onClick={() => handleItemClick(item)}
+            role={getItemPath(item) ? 'button' : undefined}
+            tabIndex={getItemPath(item) ? 0 : undefined}
+            onKeyDown={(event) => {
+              if (!getItemPath(item)) return
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                handleItemClick(item)
+              }
+            }}
+            title={getItemPath(item) ? 'View item details' : undefined}
+          >
             <div className="item-header">
               <div className="item-icon">
                 {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http')) ? (
@@ -67,6 +108,7 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
               <div className="item-info">
                 <h4>{item.name}</h4>
                 <p className="platform">Platform: {item.platform}</p>
+                {item.version && <p className="item-version">Version: {item.version}</p>}
               </div>
             </div>
             <div className="item-price">
@@ -75,13 +117,22 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
             </div>
             <div className="item-controls">
               <div className="item-quantity">
-                <button onClick={() => onUpdateQuantity(item.cartId, item.quantity - 1)}>−</button>
+                <button onClick={(event) => {
+                  event.stopPropagation()
+                  onUpdateQuantity(item.cartId, item.quantity - 1)
+                }}>−</button>
                 <span>{item.quantity}</span>
-                <button onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}>+</button>
+                <button onClick={(event) => {
+                  event.stopPropagation()
+                  onUpdateQuantity(item.cartId, item.quantity + 1)
+                }}>+</button>
               </div>
               <button
                 className="remove-btn"
-                onClick={() => onRemove(item.cartId)}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  onRemove(item.cartId)
+                }}
                 onMouseEnter={() => removeButtonRefs.current[item.cartId]?.startAnimation()}
                 onMouseLeave={() => removeButtonRefs.current[item.cartId]?.stopAnimation()}
                 aria-label="Remove item"
@@ -152,12 +203,17 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
           )}
         </div>
         <button
-          className="checkout-btn"
+          className={`checkout-btn${paymentMethod === 'stripe' ? ' stripe-checkout-btn' : ''}`}
           onClick={handleCheckout}
           disabled={!items.length || isLoading || !emailVerified}
           title={!emailVerified ? 'Please verify your email to checkout' : ''}
         >
-          {!emailVerified ? 'Verify email to checkout' : buttonLabel}
+          {!emailVerified ? 'Verify email to checkout' : paymentMethod === 'stripe' ? (
+            <span className="stripe-btn-content">
+              <Sparkles size={18} className="stripe-btn-icon" aria-hidden="true" />
+              <span>{buttonLabel}</span>
+            </span>
+          ) : buttonLabel}
         </button>
       </div>
     </div>

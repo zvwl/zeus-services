@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Gamepad2 } from 'lucide-react'
+import { Gamepad2, Sparkles } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import AnimatedLucideIcon from '../components/AnimatedLucideIcon'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -180,12 +180,17 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
           )}
 
           <button
-            className="checkout-btn"
+            className={`checkout-btn${paymentMethod === 'stripe' ? ' stripe-checkout-btn' : ''}`}
             onClick={handleCheckout}
             disabled={isLoading || !emailVerified}
             title={!emailVerified ? 'Please verify your email to checkout' : ''}
           >
-            {!emailVerified ? 'Verify email to checkout' : buttonLabel}
+            {!emailVerified ? 'Verify email to checkout' : paymentMethod === 'stripe' ? (
+              <span className="stripe-btn-content">
+                <Sparkles size={18} className="stripe-btn-icon" aria-hidden="true" />
+                <span>{buttonLabel}</span>
+              </span>
+            ) : buttonLabel}
           </button>
 
           {!emailVerified && (
