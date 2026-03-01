@@ -49,7 +49,7 @@ export default function ComparisonPage() {
 
               <div style={{ marginBottom: '2rem' }}>
                 <h3 style={{ color: '#f1f5f9', marginBottom: '1rem', fontSize: '1.2rem' }}>Delivery Time</h3>
-                <p style={{ color: '#fbbf24', fontWeight: '600' }}>Instant (within 1-2 hours)</p>
+                <p style={{ color: '#fbbf24', fontWeight: '600' }}>Instant or within 20 minutes to 3 hours</p>
               </div>
 
               <div style={{ marginBottom: '2rem' }}>
@@ -134,7 +134,7 @@ export default function ComparisonPage() {
               </thead>
               <tbody>
                 {[
-                  { feature: 'Delivery Speed', modded: 'Instant (1-2 hrs)', boosting: '20 mins - few hours' },
+                  { feature: 'Delivery Speed', modded: 'Instant or 20 mins - 3 hours', boosting: '20 mins - few hours' },
                   { feature: 'Customization', modded: 'Limited', boosting: 'Full customization' },
                   { feature: 'Keep Original Account', modded: 'No', boosting: 'Yes' },
                   { feature: 'Account Access', modded: 'New account', boosting: 'Your account' },
