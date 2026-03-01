@@ -593,12 +593,10 @@ export default function AdminOrdersPage() {
                   )}
                 </div>
 
-                {(order.note_plaintext || order.notes) && (
-                  <div className="order-notes">
-                    <strong>Notes:</strong>
-                    <p>{order.note_plaintext || order.notes}</p>
-                  </div>
-                )}
+                <div className="order-notes">
+                  <strong>Customer Notes:</strong>
+                  <p>{order.note_plaintext || order.notes || <em style={{ color: '#64748b' }}>No notes provided</em>}</p>
+                </div>
                 </div>
               )
             })}

@@ -51,21 +51,31 @@ async function sendAdminEmail(adminEmail: string, orderDetails: any) {
               </div>
 
               <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
-                <p style="margin: 0 0 10px; font-size: 14px;"><strong>Items Ordered</strong></p>
-                <ul style="margin: 0; padding-left: 18px; font-size: 14px; color: #555;">
-                  ${orderDetails.items.map((item: any) => `
-                    <li style="margin: 8px 0;">
-                      ${item.icon || '📦'} <strong>${item.name}</strong> (${item.platform})
-                      <br/><span style="color: #666; font-size: 13px;">Qty: ${item.quantity} | Price: ${(() => {
-                        const rawPrice = item?.price_converted ?? item?.price ?? item?.price_usd ?? item?.unit_price ?? null;
-                        const numeric = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
-                        if (!Number.isFinite(numeric)) return "N/A";
-                        const currency = item?.currency || orderDetails.currency || "GBP";
-                        return `${currency}${numeric.toFixed(2)}`;
-                      })()}</span>
-                    </li>
-                  `).join('')}
-                </ul>
+                <p style="margin: 0 0 12px; font-size: 16px; font-weight: 700; color: #1e293b;">Items Ordered</p>
+                <div style="margin: 0;">
+                  ${orderDetails.items.map((item: any) => {
+                    const platform = item?.platform || 'No platform';
+                    const version = item?.version || 'No version';
+                    const rawPrice = item?.price_converted ?? item?.price ?? item?.price_usd ?? item?.unit_price ?? null;
+                    const numeric = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
+                    const priceStr = Number.isFinite(numeric) ? `${item?.currency || orderDetails.currency || "GBP"}${numeric.toFixed(2)}` : "N/A";
+                    const quantity = item.quantity || 1;
+                    const itemTotal = Number.isFinite(numeric) ? `${item?.currency || orderDetails.currency || "GBP"}${(numeric * quantity).toFixed(2)}` : "N/A";
+                    return `
+                    <div style="background: #fafafa; border-left: 3px solid #fbbf24; padding: 12px 14px; margin: 8px 0; border-radius: 6px;">
+                      <div style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
+                        ${item.icon || '📦'} ${item.name}
+                      </div>
+                      <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
+                        <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; margin-right: 6px; font-weight: 600;">Platform: ${platform}</span>
+                        <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Version: ${version}</span>
+                      </div>
+                      <div style="font-size: 14px; color: #475569; margin-top: 8px;">
+                        <span style="font-weight: 600;">Quantity:</span> ${quantity}x ${priceStr} = <span style="color: #059669; font-weight: 700;">${itemTotal}</span>
+                      </div>
+                    </div>
+                  `}).join('')}
+                </div>
               </div>
 
               <div style="text-align: center; margin: 28px 0;">

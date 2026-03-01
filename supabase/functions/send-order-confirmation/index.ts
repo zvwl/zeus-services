@@ -56,8 +56,20 @@ Deno.serve(async (req) => {
       const version = item?.version || 'No version';
       const quantity = Number(item?.quantity || 1);
       const itemPrice = item?.price_converted || item?.price_usd || 0;
-      return `${item?.name || 'Item'} (Platform: ${platform}, Version: ${version}) - ${quantity}x ${formatCurrency(itemPrice, currency)}`;
-    }).join('\n');
+      const itemTotal = quantity * itemPrice;
+      return `
+        <div style="background: #fafafa; border-left: 3px solid #667eea; padding: 12px 16px; margin: 8px 0; border-radius: 6px;">
+          <div style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">${item?.name || 'Item'}</div>
+          <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
+            <span style="display: inline-block; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; margin-right: 6px; font-weight: 600;">Platform: ${platform}</span>
+            <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Version: ${version}</span>
+          </div>
+          <div style="font-size: 14px; color: #475569; margin-top: 8px;">
+            <span style="font-weight: 600;">Quantity:</span> ${quantity}x ${formatCurrency(itemPrice, currency)} = <span style="color: #059669; font-weight: 700;">${formatCurrency(itemTotal, currency)}</span>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     const orderDate = new Date(created_at).toLocaleDateString('en-GB', {
       year: 'numeric',
@@ -106,8 +118,12 @@ Deno.serve(async (req) => {
       <p style="margin: 4px 0; font-size: 14px;"><strong>Total:</strong> ${formatCurrency(total_amount, currency)}</p>
     </div>
 
-    <h3 style="margin: 16px 0 10px; font-size: 15px; color: #111;">Items Ordered</h3>
-    <pre style="white-space: pre-wrap; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 14px 12px; font-size: 14px; color: #374151; margin: 0 0 20px;">${itemsList}</pre>
+    <div style="margin: 20px 0;">
+      <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #1e293b; font-weight: 700;">Items Ordered</h3>
+      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;">
+        ${itemsList}
+      </div>
+    </div>
 
     <div style="text-align: center; margin: 28px 0;">
       <a href="https://zeuservices.com/orders" style="display: inline-block; background-color: #FFD700; color: #000; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">View Your Order</a>
