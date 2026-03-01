@@ -235,15 +235,16 @@ export default function OrdersPage() {
                   <div className="order-items">
                     {items.map((item, idx) => (
                       <div key={idx} className="order-item">
-                        <div className="item-info">
-                          <span className="item-name">{item.name}</span>
-                          {item.platform && (
-                            <span className="item-platform">• {item.platform}</span>
-                          )}
+                        <div className="order-item-info">
+                          <span className="order-item-name">{item.name}</span>
+                          <div className="order-item-meta">
+                            <span className="order-item-platform">Platform: {item.platform || 'No platform'}</span>
+                            <span className="order-item-version">Version: {item.version || 'No version'}</span>
+                          </div>
                         </div>
-                        <div className="item-details">
-                          <span className="item-quantity">x{item.quantity}</span>
-                          <span className="item-price">
+                        <div className="order-item-details">
+                          <span className="order-item-quantity">x{item.quantity}</span>
+                          <span className="order-item-price">
                             {formatCurrency(item.price_converted || item.price_usd, order.currency)}
                           </span>
                         </div>

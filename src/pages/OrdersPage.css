@@ -242,7 +242,7 @@
 .order-item {
   display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
   padding: 1rem 1.25rem;
   background: rgba(15, 23, 41, 0.5);
   border: 1px solid rgba(148, 163, 184, 0.08);
@@ -256,34 +256,48 @@
   transform: translateX(4px);
 }
 
-.item-info {
+.order-item-info {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.45rem;
   flex: 1;
+  min-width: 0;
 }
 
-.item-name {
+.order-item-name {
   font-weight: 600;
   color: #f8fafc;
   font-size: 1rem;
+  line-height: 1.35;
 }
 
-.item-platform {
-  color: #94a3b8;
-  font-size: 0.875rem;
-  padding: 0.25rem 0.75rem;
+.order-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.order-item-platform,
+.order-item-version {
+  color: #cbd5e1;
+  font-size: 0.82rem;
+  padding: 0.24rem 0.68rem;
   background: rgba(148, 163, 184, 0.1);
   border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
 }
 
-.item-details {
+.order-item-details {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
+  flex-direction: column;
   gap: 1.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
 }
 
-.item-quantity {
+.order-item-quantity {
   color: #cbd5e1;
   font-size: 0.9rem;
   font-weight: 600;
@@ -292,7 +306,7 @@
   border-radius: 8px;
 }
 
-.item-price {
+.order-item-price {
   font-weight: 700;
   color: #fbbf24;
   font-size: 1.1rem;
@@ -478,13 +492,8 @@
     justify-content: center;
   }
 
-  .item-info {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
-  }
-
-  .item-platform {
+  .order-item-platform,
+  .order-item-version {
     font-size: 0.8rem;
   }
 
@@ -494,9 +503,13 @@
     gap: 0.75rem;
   }
 
-  .item-details {
+  .order-item-details {
     width: 100%;
     justify-content: space-between;
+    align-items: center;
+    flex-direction: row;
+    margin-left: 0;
+    gap: 0.75rem;
   }
 
   .btn-review {
@@ -531,11 +544,11 @@
     font-size: 0.8rem;
   }
 
-  .item-name {
+  .order-item-name {
     font-size: 0.9rem;
   }
 
-  .item-price {
+  .order-item-price {
     font-size: 1rem;
   }
 }
