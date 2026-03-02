@@ -13,8 +13,12 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/generate-sitemap"
+    },
     { 
-      "source": "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js)).*)", 
+      "source": "/((?!api|_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js)).*)", 
       "destination": "/" 
     }
   ],

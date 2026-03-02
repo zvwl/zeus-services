@@ -1,100 +1,176 @@
-// Deno Edge Function to generate dynamic sitemap
-// Deploy this and use it as your sitemap source
-
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-Deno.serve(async (req) => {
+type UrlEntry = {
+  loc: string
+  lastmod: string
+  changefreq: 'daily' | 'weekly' | 'monthly'
+  priority: string
+}
+
+type DbId = string | number
+
+type CategoryRow = {
+  id: DbId
+  slug: string
+  updated_at: string | null
+}
+
+type GameRow = {
+  id: DbId
+  slug: string
+  updated_at: string | null
+  is_active: boolean | null
+}
+
+type ItemRow = {
+  slug: string
+  updated_at: string | null
+  game_id: DbId
+  category_id: DbId
+  active: boolean
+}
+
+const BASE_URL = 'https://zeuservices.com'
+
+const toDate = (value: string | null | undefined, fallback: string) => {
+  if (!value || typeof value !== 'string') return fallback
+  return value.includes('T') ? value.split('T')[0] : value
+}
+
+const escapeXml = (value: string) =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+
+const normalizePath = (path: string) => (path.startsWith('/') ? path : `/${path}`)
+
+Deno.serve(async () => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
-    const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? Deno.env.get('SUPABASE_ANON_KEY') ?? ''
+
+    if (!supabaseUrl || !supabaseKey) {
+      return new Response('Missing Supabase env configuration', { status: 500 })
+    }
+
     const supabase = createClient(supabaseUrl, supabaseKey)
+    const today = new Date().toISOString().split('T')[0]
 
-    const baseUrl = 'https://zeuservices.com'
-    const now = new Date().toISOString().split('T')[0]
-
-    // Static pages
-    const staticPages = [
-      { url: '/', priority: '1.0', changefreq: 'daily', lastmod: now },
-      { url: '/services', priority: '0.95', changefreq: 'daily', lastmod: now },
-      { url: '/products', priority: '0.95', changefreq: 'daily', lastmod: now },
-      { url: '/reviews', priority: '0.85', changefreq: 'weekly', lastmod: now },
-      { url: '/cart', priority: '0.7', changefreq: 'monthly', lastmod: now },
-      { url: '/orders', priority: '0.6', changefreq: 'monthly', lastmod: now },
-      { url: '/terms', priority: '0.4', changefreq: 'monthly', lastmod: now },
-      { url: '/privacy', priority: '0.4', changefreq: 'monthly', lastmod: now },
-      { url: '/refund', priority: '0.4', changefreq: 'monthly', lastmod: now },
-      { url: '/login', priority: '0.3', changefreq: 'yearly', lastmod: now },
-      { url: '/signup', priority: '0.3', changefreq: 'yearly', lastmod: now },
+    const staticEntries: UrlEntry[] = [
+      { loc: `${BASE_URL}/`, lastmod: today, changefreq: 'daily', priority: '1.0' },
+      { loc: `${BASE_URL}/reviews`, lastmod: today, changefreq: 'weekly', priority: '0.85' },
+      { loc: `${BASE_URL}/safety`, lastmod: today, changefreq: 'monthly', priority: '0.8' },
+      { loc: `${BASE_URL}/trust`, lastmod: today, changefreq: 'monthly', priority: '0.8' },
+      { loc: `${BASE_URL}/process`, lastmod: today, changefreq: 'monthly', priority: '0.8' },
+      { loc: `${BASE_URL}/faq`, lastmod: today, changefreq: 'monthly', priority: '0.8' },
+      { loc: `${BASE_URL}/comparison`, lastmod: today, changefreq: 'monthly', priority: '0.8' },
+      { loc: `${BASE_URL}/terms`, lastmod: today, changefreq: 'monthly', priority: '0.5' },
+      { loc: `${BASE_URL}/privacy`, lastmod: today, changefreq: 'monthly', priority: '0.5' },
+      { loc: `${BASE_URL}/refund`, lastmod: today, changefreq: 'monthly', priority: '0.5' }
     ]
 
-    // Fetch active products
-    const { data: products } = await supabase
-      .from('products')
-      .select('id, name, updated_at')
-      .eq('active', true)
+    const [categoriesResult, gamesResult, itemsResult] = await Promise.all([
+      supabase.from('categories').select('id, slug, updated_at'),
+      supabase.from('games').select('id, slug, updated_at, is_active'),
+      supabase.from('items').select('slug, updated_at, game_id, category_id, active').eq('active', true)
+    ])
 
-    // Fetch active services
-    const { data: services } = await supabase
-      .from('services')
-      .select('id, name, updated_at')
-      .eq('active', true)
+    if (categoriesResult.error) throw categoriesResult.error
+    if (gamesResult.error) throw gamesResult.error
+    if (itemsResult.error) throw itemsResult.error
 
-    // Build XML
-    let xml = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml"
-        xmlns:mobile="http://www.google.com/schemas/sitemap-mobile/1.0"
-        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
-        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">\n`
+    const categories = ((categoriesResult.data ?? []) as CategoryRow[]).filter((category) => Boolean(category.slug))
+    const games = ((gamesResult.data ?? []) as GameRow[])
+      .filter((game) => Boolean(game.slug))
+      .filter((game) => game.is_active !== false)
+    const items = ((itemsResult.data ?? []) as ItemRow[]).filter((item) => Boolean(item.slug))
 
-    // Add static pages
-    for (const page of staticPages) {
-      xml += `  
-  <url>
-    <loc>${baseUrl}${page.url}</loc>
-    <lastmod>${page.lastmod}</lastmod>
-    <changefreq>${page.changefreq}</changefreq>
-    <priority>${page.priority}</priority>
-  </url>\n`
+    const categoryById = new Map(categories.map((category) => [category.id, category]))
+    const gameById = new Map(games.map((game) => [game.id, game]))
+
+    const dynamicEntries: UrlEntry[] = []
+
+    for (const category of categories) {
+      dynamicEntries.push({
+        loc: `${BASE_URL}${normalizePath(category.slug)}`,
+        lastmod: toDate(category.updated_at, today),
+        changefreq: 'daily',
+        priority: '0.95'
+      })
     }
 
-    // Add dynamic product pages (if you have individual product pages)
-    if (products) {
-      for (const product of products) {
-        const lastmod = product.updated_at?.split('T')[0] || now
-        xml += `  
-  <url>
-    <loc>${baseUrl}/product/${product.id}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>\n`
+    const categoryGameSeen = new Set<string>()
+
+    for (const item of items) {
+      const category = categoryById.get(item.category_id)
+      const game = gameById.get(item.game_id)
+      if (!category || !game) continue
+
+      const categoryPath = normalizePath(category.slug)
+      const categoryGamePath = `${categoryPath}/${game.slug}`
+      const itemPath = `${categoryGamePath}/${item.slug}`
+
+      const comboKey = `${category.id}:${game.id}`
+      if (!categoryGameSeen.has(comboKey)) {
+        categoryGameSeen.add(comboKey)
+        dynamicEntries.push({
+          loc: `${BASE_URL}${categoryGamePath}`,
+          lastmod: toDate(game.updated_at, today),
+          changefreq: 'daily',
+          priority: '0.9'
+        })
       }
+
+      dynamicEntries.push({
+        loc: `${BASE_URL}${itemPath}`,
+        lastmod: toDate(item.updated_at, today),
+        changefreq: 'weekly',
+        priority: '0.85'
+      })
     }
 
-    // Add dynamic service pages (if you have individual service pages)
-    if (services) {
-      for (const service of services) {
-        const lastmod = service.updated_at?.split('T')[0] || now
-        xml += `  
-  <url>
-    <loc>${baseUrl}/service/${service.id}</loc>
-    <lastmod>${lastmod}</lastmod>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>\n`
-      }
-    }
+    const allEntries = [...staticEntries, ...dynamicEntries]
 
-    xml += `
+    const deduped = Array.from(
+      allEntries.reduce((map, entry) => {
+        if (!map.has(entry.loc)) {
+          map.set(entry.loc, entry)
+          return map
+        }
+
+        const existing = map.get(entry.loc) as UrlEntry
+        if (entry.lastmod > existing.lastmod) {
+          map.set(entry.loc, entry)
+        }
+
+        return map
+      }, new Map<string, UrlEntry>()).values()
+    )
+
+    deduped.sort((a, b) => a.loc.localeCompare(b.loc))
+
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${deduped
+  .map(
+    (entry) => `  <url>
+    <loc>${escapeXml(entry.loc)}</loc>
+    <lastmod>${entry.lastmod}</lastmod>
+    <changefreq>${entry.changefreq}</changefreq>
+    <priority>${entry.priority}</priority>
+  </url>`
+  )
+  .join('\n')}
 </urlset>`
 
     return new Response(xml, {
       headers: {
-        'Content-Type': 'application/xml',
-        'Cache-Control': 'public, max-age=3600, must-revalidate',
-      },
+        'Content-Type': 'application/xml; charset=utf-8',
+        'Cache-Control': 'public, max-age=600, must-revalidate'
+      }
     })
   } catch (error) {
     console.error('Error generating sitemap:', error)

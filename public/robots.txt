@@ -28,4 +28,3 @@ Allow: /signup
 
 # Sitemap location - helps Google discover all pages
 Sitemap: https://zeuservices.com/sitemap.xml
-Sitemap: https://zeuservices.com/robots.txt

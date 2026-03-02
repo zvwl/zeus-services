@@ -21,6 +21,25 @@ function CookieBanner() {
     } catch {
       // ignore storage errors
     }
+
+    const analyticsStorage = value === 'accepted' ? 'granted' : 'denied'
+    if (typeof window !== 'undefined') {
+      window.dataLayer = window.dataLayer || []
+      window.dataLayer.push({
+        event: 'cookie_consent_update',
+        analytics_storage: analyticsStorage
+      })
+
+      if (typeof window.gtag === 'function') {
+        window.gtag('consent', 'update', {
+          analytics_storage: analyticsStorage,
+          ad_storage: 'denied',
+          ad_user_data: 'denied',
+          ad_personalization: 'denied'
+        })
+      }
+    }
+
     setVisible(false)
   }
 

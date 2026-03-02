@@ -9,8 +9,9 @@ const __dirname = path.dirname(__filename)
 const routes = [
   // Home and main pages
   '/',
-  '/services',
-  '/products',
+  '/topups',
+  '/boosting',
+  '/accounts',
   '/reviews',
   
   // Information pages (Google loves these for SEO)
@@ -27,8 +28,17 @@ const routes = [
   
   // Category pages for better indexing and sitemap coverage
   '/boosting/gta5',
+  '/boosting/fortnite',
+  '/boosting/rocket-league',
+  '/boosting/forza-horizon-6',
   '/topups/gta5',
-  '/accounts/verification',
+  '/topups/fortnite',
+  '/topups/rocket-league',
+  '/topups/forza-horizon-6',
+  '/accounts/gta5',
+  '/accounts/fortnite',
+  '/accounts/rocket-league',
+  '/accounts/forza-horizon-6',
   
   // Auth pages (for breadcrumb and structure)
   '/login',

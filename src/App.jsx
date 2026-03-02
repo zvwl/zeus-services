@@ -186,6 +186,20 @@ function App() {
     }
   }, [location])
 
+  // Track SPA route changes for GTM/GA4
+  useEffect(() => {
+    if (isPrerender()) return
+
+    const pagePath = `${location.pathname}${location.search || ''}`
+    window.dataLayer = window.dataLayer || []
+    window.dataLayer.push({
+      event: 'page_view',
+      page_path: pagePath,
+      page_location: window.location.href,
+      page_title: document.title
+    })
+  }, [location.pathname, location.search])
+
   const platformOptions = [
     'Steam',
     'Epic Games',
