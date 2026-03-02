@@ -7,7 +7,7 @@ import { supabase } from '../supabaseClient'
 
 export async function pingSitemap() {
   try {
-    const functionNames = ['ping-sitemap', 'deploy-ping-sitemap']
+    const functionNames = ['deploy-ping-sitemap', 'ping-sitemap']
 
     for (const functionName of functionNames) {
       const { data, error } = await supabase.functions.invoke(functionName)

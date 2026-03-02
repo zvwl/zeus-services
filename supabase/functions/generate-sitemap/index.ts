@@ -47,6 +47,12 @@ const escapeXml = (value: string) =>
 
 const normalizePath = (path: string) => (path.startsWith('/') ? path : `/${path}`)
 
+const encodePath = (path: string) =>
+  normalizePath(path)
+    .split('/')
+    .map((segment) => encodeURIComponent(segment))
+    .join('/')
+
 Deno.serve(async () => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
@@ -94,8 +100,9 @@ Deno.serve(async () => {
     const dynamicEntries: UrlEntry[] = []
 
     for (const category of categories) {
+      const categoryPath = encodePath(category.slug)
       dynamicEntries.push({
-        loc: `${BASE_URL}${normalizePath(category.slug)}`,
+        loc: `${BASE_URL}${categoryPath}`,
         lastmod: toDate(category.updated_at, today),
         changefreq: 'daily',
         priority: '0.95'
@@ -109,9 +116,9 @@ Deno.serve(async () => {
       const game = gameById.get(item.game_id)
       if (!category || !game) continue
 
-      const categoryPath = normalizePath(category.slug)
-      const categoryGamePath = `${categoryPath}/${game.slug}`
-      const itemPath = `${categoryGamePath}/${item.slug}`
+      const categoryPath = encodePath(category.slug)
+      const categoryGamePath = `${categoryPath}/${encodeURIComponent(game.slug)}`
+      const itemPath = `${categoryGamePath}/${encodeURIComponent(item.slug)}`
 
       const comboKey = `${category.id}:${game.id}`
       if (!categoryGameSeen.has(comboKey)) {
