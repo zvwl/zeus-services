@@ -26,6 +26,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
     EUR: Euro,
   }
   const navLinkClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`
+  const fixedNavLinkClass = ({ isActive }) => `nav-link nav-link-fixed${isActive ? ' active' : ''}`
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -94,8 +95,8 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
             {categories.map(category => (
               <CategoryDropdown key={category.id} category={category} />
             ))}
-            <NavLink to="/reviews" className={navLinkClass}>Reviews</NavLink>
-            {user && <NavLink to="/settings" className={navLinkClass}>Settings</NavLink>}
+            <NavLink to="/reviews" className={fixedNavLinkClass}>Reviews</NavLink>
+            {user && <NavLink to="/settings" className={fixedNavLinkClass}>Settings</NavLink>}
           </nav>
 
           {/* Right: Actions */}

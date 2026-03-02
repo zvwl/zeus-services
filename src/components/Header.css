@@ -89,6 +89,11 @@
   line-height: 1;
 }
 
+.nav-desktop .nav-link.nav-link-fixed {
+  font-size: 1.18rem;
+  padding: 0.9rem 1.2rem;
+}
+
 .nav-link:hover {
   background: rgba(255, 255, 255, 0.14);
   color: #fff;
