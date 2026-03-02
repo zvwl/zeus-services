@@ -146,14 +146,15 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
               onFocus={() => cartIconRef.current?.startAnimation?.()}
               onBlur={() => cartIconRef.current?.stopAnimation?.()}
             >
-              <AnimatedLucideIcon
-                ref={cartIconRef}
-                icon={ShoppingCart}
-                className="cart-icon"
-                size={24}
-                animation="bounce"
-                animateOnHover={false}
-              />
+              <div className="cart-icon">
+                <AnimatedLucideIcon
+                  ref={cartIconRef}
+                  icon={ShoppingCart}
+                  size={24}
+                  animation="bounce"
+                  animateOnHover={false}
+                />
+              </div>
               <span className="cart-text">Cart</span>
               <span className="cart-count">({cartCount})</span>
             </button>

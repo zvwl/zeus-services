@@ -1,10 +1,12 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
 import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
+import FlyingCartAnimation from '../components/FlyingCartAnimation'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 
@@ -22,6 +24,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   const [isInCart, setIsInCart] = useState(false)
   const [cartQuantity, setCartQuantity] = useState(1)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+  const [showFlyingAnimation, setShowFlyingAnimation] = useState(false)
 
   // Check if item is already in cart and update state
   useEffect(() => {
@@ -137,6 +140,12 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
       return
     }
 
+    // Start the flying animation
+    setShowFlyingAnimation(true)
+  }
+
+  const handleAnimationComplete = async () => {
+    setShowFlyingAnimation(false)
     setAddingToCart(true)
     try {
       // Create cart item object compatible with existing cart system
@@ -223,6 +232,11 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
 
   return (
     <>
+      <FlyingCartAnimation 
+        isActive={showFlyingAnimation}
+        itemIcon={item?.icon || game?.icon_url}
+        onComplete={handleAnimationComplete}
+      />
       <SEO
         title={pageTitle}
         description={pageDescription}
@@ -406,16 +420,28 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
                 </p>
               </div>
             ) : !isInCart ? (
-              <button
-                className="cta-button"
-                onClick={handleAddToCart}
-                disabled={addingToCart}
+              <motion.div
+                initial={{ opacity: 1, scale: 1, y: 0 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
               >
-                {addingToCart ? 'Adding to Cart...' : 'Add to Cart'}
-              </button>
+                <button
+                  className="cta-button"
+                  onClick={handleAddToCart}
+                  disabled={addingToCart || showFlyingAnimation}
+                >
+                  {addingToCart ? 'Adding to Cart...' : 'Add to Cart'}
+                </button>
+              </motion.div>
             ) : (
-              <>
-                <div className="quantity-inline-controls">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+              >
+                <div className="quantity-inline-controls button-style">
                   <button
                     className="quantity-button"
                     onClick={handleRemoveOne}
@@ -437,13 +463,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
                     +
                   </button>
                 </div>
-                <button
-                  className="cta-button"
-                  onClick={() => navigate('/cart')}
-                >
-                  Go to Checkout
-                </button>
-              </>
+              </motion.div>
             )}
             <button
               className="secondary-button"

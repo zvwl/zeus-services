@@ -1403,6 +1403,68 @@ select option {
   box-sizing: border-box;
 }
 
+.quantity-inline-controls.button-style {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border: none;
+  padding: 0.55rem 1.5rem;
+  box-shadow: 0 10px 30px rgba(251, 191, 36, 0.35);
+  height: 48px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  transition: all 0.2s ease;
+}
+
+.quantity-inline-controls.button-style:hover {
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+}
+
+.quantity-inline-controls.button-style .quantity-button {
+  background: rgba(10, 14, 26, 0.25);
+  border: 1.5px solid rgba(10, 14, 26, 0.4);
+  border-radius: 6px;
+  color: #0a0e1a;
+  font-weight: 700;
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.quantity-inline-controls.button-style .quantity-button:hover:not(:disabled) {
+  background: rgba(10, 14, 26, 0.35);
+  border-color: rgba(10, 14, 26, 0.6);
+  color: #0a0e1a;
+}
+
+.quantity-inline-controls.button-style .quantity-button:active {
+  background: rgba(10, 14, 26, 0.45);
+  transform: scale(0.95);
+}
+
+.quantity-inline-controls.button-style .quantity-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.quantity-inline-controls.button-style .quantity-input {
+  color: #0a0e1a;
+  background: rgba(10, 14, 26, 0.1);
+  border: 1.5px solid rgba(10, 14, 26, 0.3);
+  border-radius: 6px;
+  font-weight: 700;
+  height: 36px;
+  width: 48px;
+  font-size: 1rem;
+  padding: 0;
+  text-align: center;
+  transition: all 0.15s ease;
+}
+
 .quantity-button {
   width: 32px;
   height: 32px;
@@ -1586,6 +1648,38 @@ select option {
     border: 1.5px solid rgba(251, 191, 36, 0.5);
   }
 
+  /* Keep button-style large */
+  .quantity-inline-controls.button-style {
+    width: 100%;
+    padding: 0.55rem 1.5rem;
+    height: 48px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quantity-inline-controls.button-style .quantity-button {
+    width: 36px;
+    height: 36px;
+    background: rgba(10, 14, 26, 0.25);
+    border: 1.5px solid rgba(10, 14, 26, 0.4);
+    color: #0a0e1a;
+    font-size: 1rem;
+  }
+
+  .quantity-inline-controls.button-style .quantity-input {
+    height: 36px;
+    width: 48px;
+    font-size: 1rem;
+    color: #0a0e1a;
+    background: rgba(10, 14, 26, 0.1);
+    border: 1.5px solid rgba(10, 14, 26, 0.3);
+    border-radius: 6px;
+    text-align: center;
+  }
+
   .quantity-button {
     width: 32px;
     height: 32px;
@@ -1654,6 +1748,40 @@ select option {
     gap: 0.3rem;
     background: rgba(251, 191, 36, 0.05);
     border: 2px solid rgba(251, 191, 36, 0.25);
+  }
+
+  /* Keep button-style large on mobile */
+  .quantity-inline-controls.button-style {
+    width: 100%;
+    padding: 0.55rem 1.5rem;
+    height: 48px;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .quantity-inline-controls.button-style .quantity-button {
+    width: 36px;
+    height: 36px;
+    font-size: 1rem;
+    background: rgba(10, 14, 26, 0.25);
+    border: 1.5px solid rgba(10, 14, 26, 0.4);
+    color: #0a0e1a;
+    border-radius: 6px;
+  }
+
+  .quantity-inline-controls.button-style .quantity-input {
+    height: 36px;
+    width: 48px;
+    font-size: 1rem;
+    color: #0a0e1a;
+    background: rgba(10, 14, 26, 0.1);
+    border: 1.5px solid rgba(10, 14, 26, 0.3);
+    border-radius: 6px;
+    text-align: center;
   }
 
   .quantity-button {
