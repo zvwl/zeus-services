@@ -16,8 +16,11 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
+  const [isCartCountAnimating, setIsCartCountAnimating] = useState(false)
   const cartIconRef = useRef(null)
   const currencyIconRefs = useRef({})
+  const prevCartCountRef = useRef(cartCount)
+  const cartCountAnimTimeoutRef = useRef(null)
 
   const currencies = ['GBP', 'USD', 'EUR']
   const currencyIcons = {
@@ -66,6 +69,29 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
 
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
+
+  useEffect(() => {
+    const prevCount = prevCartCountRef.current
+    if (cartCount > prevCount) {
+      setIsCartCountAnimating(false)
+      requestAnimationFrame(() => setIsCartCountAnimating(true))
+
+      if (cartCountAnimTimeoutRef.current) {
+        clearTimeout(cartCountAnimTimeoutRef.current)
+      }
+      cartCountAnimTimeoutRef.current = setTimeout(() => {
+        setIsCartCountAnimating(false)
+      }, 520)
+    }
+
+    prevCartCountRef.current = cartCount
+
+    return () => {
+      if (cartCountAnimTimeoutRef.current) {
+        clearTimeout(cartCountAnimTimeoutRef.current)
+      }
+    }
+  }, [cartCount])
 
 
   return (
@@ -156,7 +182,7 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
                 />
               </div>
               <span className="cart-text">Cart</span>
-              <span className="cart-count">({cartCount})</span>
+              <span className={`cart-count ${isCartCountAnimating ? 'is-animating' : ''}`}>{cartCount}</span>
             </button>
 
             <button

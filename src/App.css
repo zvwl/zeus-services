@@ -1608,6 +1608,32 @@ select option {
     padding: 0.25rem 0.55rem;
   }
 
+
+@media (max-width: 1199px) {
+  .service-detail-actions {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .service-detail-actions .cta-button,
+  .service-detail-actions .secondary-button,
+  .service-detail-actions .quantity-inline-controls,
+  .service-detail-actions .quantity-inline-controls.button-style {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    align-self: stretch;
+  }
+}
+
+@media (max-width: 768px) {
+  .service-detail-actions .quantity-inline-controls,
+  .service-detail-actions .quantity-inline-controls.button-style {
+    width: 100%;
+    margin: 0;
+    align-self: stretch;
+  }
+}
   .service-detail-actions {
     flex-direction: column;
     width: 100%;

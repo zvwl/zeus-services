@@ -217,6 +217,41 @@
   line-height: 1;
 }
 
+.cart-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.85rem;
+  height: 1.85rem;
+  padding: 0 0.35rem;
+  border-radius: 999px;
+  background: #0a0e1a;
+  color: #f8fafc;
+  font-size: 0.82rem;
+  font-weight: 800;
+  box-shadow: 0 2px 8px rgba(10, 14, 26, 0.35);
+  transform-origin: center;
+}
+
+.cart-count.is-animating {
+  animation: cartCountPop 0.52s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+@keyframes cartCountPop {
+  0% {
+    transform: scale(0.65);
+    box-shadow: 0 0 0 rgba(10, 14, 26, 0);
+  }
+  45% {
+    transform: scale(1.24);
+    box-shadow: 0 0 0.9rem rgba(251, 191, 36, 0.58);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 2px 8px rgba(10, 14, 26, 0.35);
+  }
+}
+
 @media (min-width: 1600px) {
   .brand-name {
     display: inline;

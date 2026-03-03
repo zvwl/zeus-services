@@ -28,8 +28,8 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
 
   // Check if item is already in cart and update state
   useEffect(() => {
-    if (item && selectedPlatform && cartItems) {
-      const cartId = `${item.id}-${selectedPlatform}`
+    if (item && selectedPlatform && selectedVersion && cartItems) {
+      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
       const existingItem = cartItems.find(cartItem => cartItem.cartId === cartId)
       if (existingItem) {
         setIsInCart(true)
@@ -39,7 +39,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
         setCartQuantity(1)
       }
     }
-  }, [item, selectedPlatform, cartItems])
+  }, [item, selectedPlatform, selectedVersion, cartItems])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -174,7 +174,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
 
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity >= 1 && newQuantity <= 100 && isInCart && updateQuantity) {
-      const cartId = `${item.id}-${selectedPlatform}`
+      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
       updateQuantity(cartId, newQuantity)
     }
   }
@@ -197,10 +197,10 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
 
   const handleRemoveOne = () => {
     if (isInCart && cartQuantity > 1 && updateQuantity) {
-      const cartId = `${item.id}-${selectedPlatform}`
+      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
       updateQuantity(cartId, cartQuantity - 1)
     } else if (isInCart && cartQuantity === 1 && removeFromCart) {
-      const cartId = `${item.id}-${selectedPlatform}`
+      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
       removeFromCart(cartId)
     }
   }
