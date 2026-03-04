@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import tiktokLogo from '../assets/tiktok-logo.svg'
 import './Footer.css'
 
 export default function Footer() {
@@ -73,6 +74,23 @@ export default function Footer() {
                 />
               </picture>
               Join our Discord
+            </a>
+            <a
+              href="https://www.tiktok.com/@zxzeusxzz"
+              target="_blank"
+              rel="noreferrer"
+              className="tiktok-link"
+            >
+              <img
+                src={tiktokLogo}
+                alt="TikTok"
+                className="tiktok-icon"
+                width="20"
+                height="20"
+                loading="lazy"
+                decoding="async"
+              />
+              Follow on TikTok
             </a>
           </div>
         </div>

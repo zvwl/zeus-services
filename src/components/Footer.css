@@ -76,6 +76,29 @@
   height: 20px;
 }
 
+.tiktok-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #000000;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+
+.tiktok-link:hover {
+  background: #1a1a1a;
+  color: white;
+}
+
+.tiktok-icon {
+  width: 20px;
+  height: 20px;
+}
+
 @media (max-width: 768px) {
   .footer {
     padding: 2rem 1rem 1.5rem;

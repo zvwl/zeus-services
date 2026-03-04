@@ -26,6 +26,7 @@ import {
   SignupIcon,
   AnimatedLogoutIcon,
 } from './SidebarIcons'
+import tiktokLogo from '../assets/tiktok-logo.svg'
 import './UserMenu.css'
 
 export default function UserMenu({ isOpen, onClose, categories = [], user: propUser = null }) {
@@ -486,6 +487,23 @@ export default function UserMenu({ isOpen, onClose, categories = [], user: propU
               />
             </picture>
             <span className="menu-label">Join our Discord</span>
+          </a>
+          <a
+            href="https://www.tiktok.com/@zxzeusxzz"
+            className="menu-item tiktok-item"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src={tiktokLogo}
+              alt="TikTok"
+              className="tiktok-icon-small"
+              width="20"
+              height="20"
+              loading="lazy"
+              decoding="async"
+            />
+            <span className="menu-label">Follow on TikTok</span>
           </a>
         </div>
         </Dialog.Content>
