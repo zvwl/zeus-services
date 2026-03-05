@@ -91,79 +91,83 @@ export default function CartDrawer({
               <p>Add items to get started</p>
             </div>
           ) : (
-            cartItems.map((item) => (
-              <div key={item.cartId} className="cart-drawer-item">
-                <div className="cart-drawer-item-image">
-                  <img 
-                    src={item.icon || '/zeusservicesPackage.webp'} 
-                    alt={item.name}
-                    onError={(e) => {
-                      e.target.src = '/zeusservicesPackage.webp'
-                    }}
-                  />
-                </div>
-                
-                <div className="cart-drawer-item-details">
-                  <h4>{item.name}</h4>
-                  <p className="cart-drawer-item-platform">
-                    {item.platform}
-                  </p>
+            <>
+              {cartItems.map((item) => (
+                <div key={item.cartId} className="cart-drawer-item">
+                  <div className="cart-drawer-item-image">
+                    <img 
+                      src={item.icon || '/zeusservicesPackage.webp'} 
+                      alt={item.name}
+                      onError={(e) => {
+                        e.target.src = '/zeusservicesPackage.webp'
+                      }}
+                    />
+                  </div>
                   
-                  <div className="cart-drawer-item-footer">
-                    <div className="cart-drawer-item-quantity">
-                      <button
-                        onClick={() => onUpdateQuantity(item.cartId, Math.max(1, item.quantity - 1))}
-                        className="quantity-btn"
-                        aria-label="Decrease quantity"
-                      >
-                        <Minus size={14} />
-                      </button>
-                      <span>{item.quantity}</span>
-                      <button
-                        onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}
-                        className="quantity-btn"
-                        aria-label="Increase quantity"
-                      >
-                        <Plus size={14} />
-                      </button>
-                    </div>
+                  <div className="cart-drawer-item-details">
+                    <h4>{item.name}</h4>
+                    <p className="cart-drawer-item-platform">
+                      {item.platform}
+                    </p>
                     
-                    <div className="cart-drawer-item-price">
-                      {formatPrice ? formatPrice(item.price) : `£${item.price}`}
+                    <div className="cart-drawer-item-footer">
+                      <div className="cart-drawer-item-quantity">
+                        <button
+                          onClick={() => onUpdateQuantity(item.cartId, Math.max(1, item.quantity - 1))}
+                          className="quantity-btn"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus size={14} />
+                        </button>
+                        <span>{item.quantity}</span>
+                        <button
+                          onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}
+                          className="quantity-btn"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus size={14} />
+                        </button>
+                      </div>
+                      
+                      <div className="cart-drawer-item-price">
+                        {formatPrice ? formatPrice(item.price) : `£${item.price}`}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                <button
-                  onClick={() => onRemove(item.cartId)}
-                  className="cart-drawer-item-remove"
-                  aria-label="Remove item"
-                >
-                  <Trash2 size={18} />
-                </button>
+                  <button
+                    onClick={() => onRemove(item.cartId)}
+                    className="cart-drawer-item-remove"
+                    aria-label="Remove item"
+                  >
+                    <Trash2 size={18} />
+                  </button>
+                </div>
+              ))}
+
+              <div className="cart-drawer-summary">
+                <div className="cart-drawer-total">
+                  <div className="cart-drawer-total-row">
+                    <span className="cart-drawer-total-label">Subtotal</span>
+                    <span className="cart-drawer-total-value">
+                      {formatPrice ? formatPrice(totalUsd) : `£${totalUsd.toFixed(2)}`}
+                    </span>
+                  </div>
+                  <div className="cart-drawer-total-row cart-drawer-total-final">
+                    <span className="cart-drawer-total-label">Total</span>
+                    <span className="cart-drawer-total-value">
+                      {formatPrice ? formatPrice(totalUsd) : `£${totalUsd.toFixed(2)}`}
+                    </span>
+                  </div>
+                </div>
               </div>
-            ))
+            </>
           )}
         </div>
 
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="cart-drawer-footer">
-            <div className="cart-drawer-total">
-              <div className="cart-drawer-total-row">
-                <span className="cart-drawer-total-label">Subtotal</span>
-                <span className="cart-drawer-total-value">
-                  {formatPrice ? formatPrice(totalUsd) : `£${totalUsd.toFixed(2)}`}
-                </span>
-              </div>
-              <div className="cart-drawer-total-row cart-drawer-total-final">
-                <span className="cart-drawer-total-label">Total</span>
-                <span className="cart-drawer-total-value">
-                  {formatPrice ? formatPrice(totalUsd) : `£${totalUsd.toFixed(2)}`}
-                </span>
-              </div>
-            </div>
-
             <div className="cart-drawer-actions">
               <button className="cart-drawer-btn cart-drawer-btn-primary" onClick={handleCheckout}>
                 Proceed to Checkout

@@ -281,6 +281,12 @@
   transform: scale(1.1);
 }
 
+.cart-drawer-summary {
+  margin-top: 0.75rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(251, 191, 36, 0.2);
+}
+
 /* Footer */
 .cart-drawer-footer {
   padding: 1.5rem;
@@ -289,7 +295,7 @@
 }
 
 .cart-drawer-total {
-  margin-bottom: 1.25rem;
+  margin-bottom: 0;
 }
 
 .cart-drawer-total-row {
