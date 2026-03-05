@@ -696,7 +696,11 @@ function App() {
       <CookieBanner />
       <Footer />
       <ScrollToTop />
-      <ToastContainer toasts={toasts} removeToast={removeToast} />
+      <ToastContainer
+        toasts={toasts}
+        removeToast={removeToast}
+        isCartDrawerOpen={isCartDrawerOpen}
+      />
       <CartDrawer
         isOpen={isCartDrawerOpen}
         onClose={() => setIsCartDrawerOpen(false)}

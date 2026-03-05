@@ -11,6 +11,10 @@
   bottom: auto !important;
 }
 
+.toast-container.toast-container-cart-open {
+  right: 470px;
+}
+
 .toast {
   display: flex;
   align-items: center;
@@ -148,6 +152,10 @@
     max-width: none;
   }
 
+  .toast-container.toast-container-cart-open {
+    right: 10px;
+  }
+
   .toast {
     min-width: 0;
     width: 100%;
@@ -177,6 +185,10 @@
     top: 142px;
     right: 8px;
     left: 8px;
+  }
+
+  .toast-container.toast-container-cart-open {
+    right: 8px;
   }
 
   .toast {
