@@ -10,10 +10,17 @@ import AnimatedBurgerIcon from './AnimatedBurgerIcon'
 import './Header.css'
 import './AnimatedMenuIcon.css'
 
-export default function Header({ cartCount, currency, onCurrencyChange }) {
+export default function Header({ cartCount, currency, onCurrencyChange, onCartClick, isCartDrawerOpen, onCloseCart }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+
+  // Close menu when cart drawer opens
+  useEffect(() => {
+    if (isCartDrawerOpen) {
+      setIsMenuOpen(false)
+    }
+  }, [isCartDrawerOpen])
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
   const [isCartCountAnimating, setIsCartCountAnimating] = useState(false)
@@ -166,7 +173,10 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
 
             <button
               className="cart-button"
-              onClick={() => navigate('/cart')}
+              onClick={() => {
+                setIsMenuOpen(false)
+                onCartClick?.()
+              }}
               onMouseEnter={() => cartIconRef.current?.startAnimation?.()}
               onMouseLeave={() => cartIconRef.current?.stopAnimation?.()}
               onFocus={() => cartIconRef.current?.startAnimation?.()}
@@ -188,7 +198,10 @@ export default function Header({ cartCount, currency, onCurrencyChange }) {
             <button
               type="button"
               className="animated-menu-button menu-button-mobile"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              onClick={() => {
+                onCloseCart?.()
+                setIsMenuOpen(!isMenuOpen)
+              }}
               aria-label={isMenuOpen ? 'Close menu' : 'Open menu'}
               title={isMenuOpen ? 'Close menu' : 'Open menu'}
             >

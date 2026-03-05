@@ -12,6 +12,7 @@ import CookieBanner from './components/CookieBanner'
 import StatusBanner from './components/StatusBanner'
 import LoadingSpinner from './components/LoadingSpinner'
 import { ToastContainer } from './components/Toast'
+import CartDrawer from './components/CartDrawer'
 import Home from './pages/Home'
 const CategoryPage = lazy(() => import('./pages/CategoryPage'))
 const ItemDetailPage = lazy(() => import('./pages/ItemDetailPage'))
@@ -56,6 +57,7 @@ function App() {
       return []
     }
   })
+  const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false)
   const [servicesLoading, setServicesLoading] = useState(false)
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
@@ -399,6 +401,9 @@ function App() {
           user={user}
           currency={currency}
           onCurrencyChange={setCurrency}
+          onCartClick={() => setIsCartDrawerOpen(!isCartDrawerOpen)}
+          onCloseCart={() => setIsCartDrawerOpen(false)}
+          isCartDrawerOpen={isCartDrawerOpen}
         />
         <StatusBanner />
       </div>
@@ -628,6 +633,15 @@ function App() {
       <Footer />
       <ScrollToTop />
       <ToastContainer toasts={toasts} removeToast={removeToast} />
+      <CartDrawer
+        isOpen={isCartDrawerOpen}
+        onClose={() => setIsCartDrawerOpen(false)}
+        cartItems={cartItems}
+        onRemove={removeFromCart}
+        onUpdateQuantity={updateQuantity}
+        formatPrice={formatPrice}
+        currency={currency}
+      />
     </div>
   )
 }
