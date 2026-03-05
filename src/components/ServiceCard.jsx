@@ -1,8 +1,10 @@
 import './ServiceCard.css'
+import { ShoppingCart } from 'lucide-react'
 
 export default function ServiceCard({ 
   item,
   onClick,
+  onQuickAdd,
   gameIcon,
   isComingSoon = false,
   eagerImage = false
@@ -146,15 +148,29 @@ export default function ServiceCard({
             Out of Stock
           </div>
         ) : (
-          <button
-            className="view-details-btn"
-            onClick={(e) => { 
-              e.stopPropagation()
-              onClick?.(data)
-            }}
-          >
-            View Details
-          </button>
+          <>
+            {onQuickAdd && (
+              <button
+                className="quick-add-btn"
+                onClick={(e) => { 
+                  e.stopPropagation()
+                  onQuickAdd(data)
+                }}
+              >
+                <ShoppingCart size={18} />
+                Add to Cart
+              </button>
+            )}
+            <button
+              className="view-details-btn"
+              onClick={(e) => { 
+                e.stopPropagation()
+                onClick?.(data)
+              }}
+            >
+              View Details
+            </button>
+          </>
         )}
       </div>
     </div>

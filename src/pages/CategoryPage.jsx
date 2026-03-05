@@ -6,6 +6,7 @@ import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ServiceCard from '../components/ServiceCard'
+import QuickAddModal from '../components/QuickAddModal'
 import Pagination from '../components/Pagination'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
@@ -26,6 +27,8 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   const [sortBy, setSortBy] = useState('none')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(12)
+  const [showQuickAddModal, setShowQuickAddModal] = useState(false)
+  const [selectedItem, setSelectedItem] = useState(null)
 
   // Responsive items per page
   useEffect(() => {
@@ -196,6 +199,24 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
     navigate(`/${categorySlug}/${itemGameSlug}/${item.slug}`)
   }
 
+  const handleQuickAdd = (item) => {
+    // Check if item needs platform/version selection
+    const needsOptions = (item.platforms && item.platforms.length > 0) || (item.versions && item.versions.length > 0)
+    
+    if (needsOptions) {
+      // Show modal for options selection
+      setSelectedItem(item)
+      setShowQuickAddModal(true)
+    } else {
+      // Add directly to cart without options
+      addToCart(item, '')
+    }
+  }
+
+  const handleModalAddToCart = (item, platform) => {
+    addToCart(item, platform)
+  }
+
   if (loading) {
     return <LoadingSpinner message="Loading items..." />
   }
@@ -349,6 +370,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                     gameIcon={itemGameIcon}
                     isComingSoon={isComingSoon}
                     onClick={handleItemClick}
+                    onQuickAdd={handleQuickAdd}
                   />
                 )
               })}
@@ -361,6 +383,19 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
             />
           </>
         )}
+
+      {/* Quick Add Modal */}
+      {showQuickAddModal && selectedItem && (
+        <QuickAddModal
+          item={selectedItem}
+          onClose={() => {
+            setShowQuickAddModal(false)
+            setSelectedItem(null)
+          }}
+          onAddToCart={handleModalAddToCart}
+          formatPrice={formatPrice}
+        />
+      )}
       </section>
     </>
   )

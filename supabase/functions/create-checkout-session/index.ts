@@ -58,17 +58,67 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Generate a unique session ID for storing cart data
+    // Use timestamp + random string to ensure uniqueness
+    const sessionId = `cs_${Date.now()}_${crypto.randomUUID().substring(0, 8)}`;
+
+    // Store cart items in database to avoid Stripe's 500-char metadata limit
+    if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+      try {
+        const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+          global: { headers: authHeader ? { Authorization: authHeader } : {} },
+          auth: { autoRefreshToken: false, persistSession: false },
+        });
+
+        const { error: insertError } = await supabaseClient
+          .from("checkout_sessions")
+          .insert({
+            id: sessionId,
+            user_id: userId,
+            items: items,
+            total_amount: total_amount,
+            currency: String(currency),
+            customer_email: customer_email || null,
+            customer_name: customer_name || null,
+            notes: notes || null,
+          });
+
+        if (insertError) {
+          console.error("Failed to store checkout session:", insertError);
+          return new Response(JSON.stringify({ error: "Failed to prepare checkout" }), {
+            status: 500,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+
+        console.log(`✅ Stored checkout session ${sessionId} with ${items.length} items`);
+      } catch (err) {
+        console.error("Error storing checkout session:", err);
+        return new Response(JSON.stringify({ error: "Failed to prepare checkout" }), {
+          status: 500,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const finalCurrency = String(currency || "USD").toLowerCase();
 
     const lineItems = items.map((item: any) => {
       const unit = typeof item.price_converted === "number" ? item.price_converted : Number(item.price_converted ?? 0);
       const amount = Math.max(0, Math.round(unit * 100));
+      
+      // Build description with platform and version
+      let description = item.platform || "";
+      if (item.version) {
+        description = description ? `${description} - ${item.version}` : item.version;
+      }
+      
       return {
         price_data: {
           currency: finalCurrency,
           product_data: {
             name: item.name ?? "Item",
-            description: item.platform ?? undefined,
+            description: description || undefined,
           },
           unit_amount: amount,
         },
@@ -83,13 +133,10 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Store only session ID in metadata - cart items already stored in database
+    // This completely avoids Stripe's 500-character limit regardless of cart size
     const metadata: any = {
-      items: JSON.stringify(items),
-      total_amount: total_amount.toString(),
-      currency: String(currency),
-      customer_email: customer_email || "",
-      customer_name: customer_name || "",
-      notes: notes || "",
+      session_id: sessionId,
       ...(userId ? { user_id: userId } : {}),
     };
 

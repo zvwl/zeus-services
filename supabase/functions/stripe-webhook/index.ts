@@ -115,29 +115,39 @@ Deno.serve(async (req) => {
       console.log(`📦 Metadata:`, JSON.stringify(session.metadata));
       
       const userId = session.metadata?.user_id;
-      const itemsJson = session.metadata?.items;
-      const totalAmount = session.metadata?.total_amount;
-      const currency = session.metadata?.currency;
-      const customerEmail = session.metadata?.customer_email || session.customer_email;
-      const customerName = session.metadata?.customer_name;
-      const notes = session.metadata?.notes;
+      const sessionId = session.metadata?.session_id;
 
-      console.log(`📦 Parsed - userId: ${userId}, totalAmount: ${totalAmount}, currency: ${currency}, email: ${customerEmail}`);
+      console.log(`📦 Parsed - userId: ${userId}, sessionId: ${sessionId}`);
 
-      if (!itemsJson || !totalAmount || !currency) {
-        console.error("❌ Missing required metadata in checkout session");
-        console.error(`❌ itemsJson exists: ${!!itemsJson}, totalAmount exists: ${!!totalAmount}, currency exists: ${!!currency}`);
-        return new Response("Missing metadata", { status: 400 });
+      if (!sessionId) {
+        console.error("❌ Missing session_id in checkout session metadata");
+        return new Response("Missing session_id", { status: 400 });
       }
 
-      // Parse items
-      let items;
-      try {
-        items = JSON.parse(itemsJson);
-        console.log(`📦 Parsed ${items.length} items`);
-      } catch (parseErr) {
-        console.error("❌ Failed to parse items JSON:", parseErr);
-        return new Response("Invalid items metadata", { status: 400 });
+      // Fetch cart items from checkout_sessions table
+      const { data: checkoutData, error: fetchError } = await supabase
+        .from("checkout_sessions")
+        .select("*")
+        .eq("id", sessionId)
+        .single();
+
+      if (fetchError || !checkoutData) {
+        console.error("❌ Failed to fetch checkout session:", fetchError);
+        return new Response("Checkout session not found", { status: 404 });
+      }
+
+      console.log(`✅ Retrieved checkout session with ${checkoutData.items?.length || 0} items`);
+
+      const items = checkoutData.items;
+      const totalAmount = checkoutData.total_amount;
+      const currency = checkoutData.currency;
+      const customerEmail = checkoutData.customer_email || session.customer_email;
+      const customerName = checkoutData.customer_name;
+      const notes = checkoutData.notes;
+
+      if (!items || !totalAmount || !currency) {
+        console.error("❌ Missing required data in checkout session");
+        return new Response("Invalid checkout session data", { status: 400 });
       }
 
       // Encrypt notes if provided
@@ -154,7 +164,7 @@ Deno.serve(async (req) => {
           const data = encoder.encode(fullNote);
           const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, data);
           notesCiphertext = toBase64(encrypted);
-          notesIv = toBase64(iv);
+          notesIv = toBase64(iv.buffer);
         } catch (encErr) {
           console.error("❌ Note encryption error:", encErr);
         }
@@ -273,6 +283,22 @@ Deno.serve(async (req) => {
         }
       } else {
         console.log(`ℹ️ No userId provided - skipping Discord role assignment`);
+      }
+
+      // Clean up checkout session after successful order creation
+      try {
+        const { error: deleteError } = await supabase
+          .from("checkout_sessions")
+          .delete()
+          .eq("id", sessionId);
+
+        if (deleteError) {
+          console.error(`❌ Failed to delete checkout session ${sessionId}:`, deleteError);
+        } else {
+          console.log(`✅ Cleaned up checkout session ${sessionId}`);
+        }
+      } catch (cleanupErr) {
+        console.error("❌ Checkout session cleanup error:", cleanupErr);
       }
     } else if (event.type === "payment_intent.payment_failed") {
       // Payment failed - nothing to do since order was never created
