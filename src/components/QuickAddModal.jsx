@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react'
 import './QuickAddModal.css'
 import { X, ShoppingCart } from 'lucide-react'
+import FlyingCartAnimation from './FlyingCartAnimation'
 
 export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice }) {
   const [selectedPlatform, setSelectedPlatform] = useState('')
   const [selectedVersion, setSelectedVersion] = useState('')
   const [error, setError] = useState('')
+  const [showFlyingAnimation, setShowFlyingAnimation] = useState(false)
+  const [isAddingToCart, setIsAddingToCart] = useState(false)
 
   // Auto-select if only one option
   useEffect(() => {
@@ -28,9 +31,23 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
       return
     }
 
-    const fullPlatform = `${selectedPlatform} ${selectedVersion}`.trim()
-    onAddToCart(item, fullPlatform)
-    onClose()
+    // Start flying animation
+    setShowFlyingAnimation(true)
+  }
+
+  const handleAnimationComplete = async () => {
+    setShowFlyingAnimation(false)
+    setIsAddingToCart(true)
+    try {
+      const fullPlatform = `${selectedPlatform} ${selectedVersion}`.trim()
+      onAddToCart(item, fullPlatform)
+      onClose()
+    } catch (err) {
+      console.error('Error adding to cart:', err)
+      setError('Failed to add item to cart')
+    } finally {
+      setIsAddingToCart(false)
+    }
   }
 
   const handleClose = (e) => {
@@ -119,14 +136,21 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
         </div>
 
         <div className="modal-actions">
-          <button className="modal-btn modal-btn-secondary" onClick={onClose}>
+          <button className="modal-btn modal-btn-secondary" onClick={onClose} disabled={showFlyingAnimation || isAddingToCart}>
             Cancel
           </button>
-          <button className="modal-btn modal-btn-primary" onClick={handleAddToCart}>
+          <button className="modal-btn modal-btn-primary cta-button" onClick={handleAddToCart} disabled={showFlyingAnimation || isAddingToCart}>
             <ShoppingCart size={18} />
             Add to Cart
           </button>
         </div>
+
+        {/* Flying Cart Animation */}
+        <FlyingCartAnimation
+          isActive={showFlyingAnimation}
+          itemIcon={item.icon || '/zeusservicesPackage.webp'}
+          onComplete={handleAnimationComplete}
+        />
       </div>
     </div>
   )

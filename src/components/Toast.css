@@ -1,13 +1,14 @@
 .toast-container {
-  position: fixed;
-  top: calc(var(--top-stack-height) + 10px);
+  position: fixed !important;
+  top: 146px !important;
   right: 20px;
   z-index: 110000;
   display: flex;
-  flex-direction: column;
+  flex-direction: column-reverse;
   gap: 12px;
   max-width: 420px;
   pointer-events: none;
+  bottom: auto !important;
 }
 
 .toast {
@@ -45,11 +46,11 @@
 
 @keyframes slideOut {
   from {
-    transform: translateX(0) scale(1);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
   to {
-    transform: translateX(400px) scale(0.9);
+    transform: translateY(-100px) scale(0.9);
     opacity: 0;
   }
 }
@@ -141,7 +142,7 @@
 
 @media (max-width: 640px) {
   .toast-container {
-    top: calc(var(--top-stack-height) + 8px);
+    top: 144px;
     right: 10px;
     left: 10px;
     max-width: none;
@@ -173,7 +174,7 @@
 
 @media (max-width: 480px) {
   .toast-container {
-    top: calc(var(--top-stack-height) + 6px);
+    top: 142px;
     right: 8px;
     left: 8px;
   }

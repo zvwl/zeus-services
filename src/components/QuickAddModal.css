@@ -9,7 +9,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 10000;
   padding: 1rem;
   animation: modalFadeIn 0.2s ease;
 }
@@ -209,6 +209,21 @@
 
 .modal-btn-primary:active {
   transform: translateY(0);
+}
+
+.modal-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.modal-btn-secondary:disabled:hover {
+  background: rgba(148, 163, 184, 0.15);
+  color: #cbd5e1;
+}
+
+.modal-btn-primary:disabled:hover {
+  transform: translateY(0);
+  box-shadow: 0 4px 12px rgba(251, 191, 36, 0.3);
 }
 
 @media (max-width: 640px) {

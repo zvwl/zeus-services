@@ -7,7 +7,8 @@ export default function ServiceCard({
   onQuickAdd,
   gameIcon,
   isComingSoon = false,
-  eagerImage = false
+  eagerImage = false,
+  formatPrice
 }) {
   // Support legacy 'service' prop name
   const data = item
@@ -113,6 +114,13 @@ export default function ServiceCard({
           {data.platforms.length > 3 && (
             <span className="platform-badge">+{data.platforms.length - 3}</span>
           )}
+        </div>
+      )}
+
+      {/* Price */}
+      {data.price && (
+        <div className="card-price">
+          {formatPrice ? formatPrice(data.price) : `£${data.price}`}
         </div>
       )}
 

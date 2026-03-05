@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from 'react'
+import { useEffect, useState, lazy, Suspense, useReducer } from 'react'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import './App.css'
@@ -64,10 +64,71 @@ function App() {
   const [userCountry, setUserCountry] = useState(null)
   const [orderNote, setOrderNote] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('stripe')
-  const [toasts, setToasts] = useState([])
+  const [maxVisibleToasts, setMaxVisibleToasts] = useState(
+    typeof window !== 'undefined' && window.innerWidth <= 640 ? 2 : 4
+  )
+  
+  const toastReducer = (state, action) => {
+    const maxVisible = action.maxVisible ?? 4
+
+    switch (action.type) {
+      case 'ADD':
+        if (state.visible.length < maxVisible) {
+          return { ...state, visible: [...state.visible, action.toast] }
+        } else {
+          return { ...state, queue: [...state.queue, action.toast] }
+        }
+      case 'REMOVE':
+        const newVisible = state.visible.filter(t => t.id !== action.id)
+        if (newVisible.length < maxVisible && state.queue.length > 0) {
+          return { visible: [state.queue[0], ...newVisible], queue: state.queue.slice(1) }
+        }
+        return { ...state, visible: newVisible }
+      case 'REBALANCE': {
+        // If max is reduced (desktop -> mobile), move overflow into queue.
+        if (state.visible.length > maxVisible) {
+          const overflowCount = state.visible.length - maxVisible
+          const overflow = state.visible.slice(0, overflowCount)
+          const kept = state.visible.slice(overflowCount)
+          return { visible: kept, queue: [...overflow, ...state.queue] }
+        }
+
+        // If max is increased and queue has items, fill up visible slots.
+        if (state.visible.length < maxVisible && state.queue.length > 0) {
+          const slots = maxVisible - state.visible.length
+          const toPromote = state.queue.slice(0, slots)
+          const remainingQueue = state.queue.slice(slots)
+          return { visible: [...toPromote, ...state.visible], queue: remainingQueue }
+        }
+
+        return state
+      }
+      default:
+        return state
+    }
+  }
+
+  const [toastState, dispatchToast] = useReducer(toastReducer, { visible: [], queue: [] })
+  const toasts = toastState.visible
+  const toastQueue = toastState.queue
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
+
+  useEffect(() => {
+    const handleResize = () => {
+      setMaxVisibleToasts(window.innerWidth <= 640 ? 2 : 4)
+    }
+
+    handleResize()
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
+
+  useEffect(() => {
+    dispatchToast({ type: 'REBALANCE', maxVisible: maxVisibleToasts })
+  }, [maxVisibleToasts])
+
 
   // Sanitize order note input (remove HTML tags, limit length)
   const handleOrderNoteChange = (value) => {
@@ -210,12 +271,15 @@ function App() {
   ]
 
   const addToast = (message, type = 'info') => {
-    const id = Date.now()
-    setToasts(prev => [...prev, { id, message, type, duration: 3500 }])
+    dispatchToast({
+      type: 'ADD',
+      maxVisible: maxVisibleToasts,
+      toast: { id: Date.now(), message, type, duration: 3500 }
+    })
   }
 
   const removeToast = (id) => {
-    setToasts(prev => prev.filter(toast => toast.id !== id))
+    dispatchToast({ type: 'REMOVE', id, maxVisible: maxVisibleToasts })
   }
 
   const addToCart = (service, platform) => {

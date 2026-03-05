@@ -371,6 +371,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
                     isComingSoon={isComingSoon}
                     onClick={handleItemClick}
                     onQuickAdd={handleQuickAdd}
+                    formatPrice={formatPrice}
                   />
                 )
               })}

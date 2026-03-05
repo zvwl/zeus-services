@@ -174,6 +174,7 @@ export default function ProductsPage({ formatPrice }) {
                     key={product.id}
                     item={product}
                     onClick={() => navigate(`/product/${product.id}`, { state: { product } })}
+                    formatPrice={formatPrice}
                   />
                 ))}
               </main>

@@ -54,7 +54,7 @@ export default function FlyingCartAnimation({ isActive, itemIcon, onComplete }) 
   
   // Calculate animation duration based on distance (but keep it reasonable)
   const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
-  const duration = Math.max(0.8, Math.min(1.2, distance / 500))
+  const duration = Math.max(0.4, Math.min(0.7, distance / 800))
   
   // Adjust scale based on viewport size
   const viewportWidth = typeof window !== 'undefined' ? window.innerWidth : 1920

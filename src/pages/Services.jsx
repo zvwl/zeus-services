@@ -160,6 +160,7 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
                 item={service}
                 onClick={(s) => navigate(`/service/${s.id}`, { state: { service: s } })}
                 eagerImage={index === 0}
+                formatPrice={formatPrice}
               />
             ))}
           </main>
