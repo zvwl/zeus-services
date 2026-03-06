@@ -41,7 +41,7 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
   const handleItemClick = (item) => {
     const itemPath = getItemPath(item)
     if (!itemPath) return
-    navigate(itemPath)
+    navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
   }
 
   const handleCheckout = () => {

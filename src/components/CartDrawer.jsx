@@ -17,6 +17,32 @@ export default function CartDrawer({
 
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
+  const toSlug = (value) => {
+    if (!value) return ''
+    return String(value)
+      .toLowerCase()
+      .trim()
+      .replace(/["']/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+  }
+
+  const getItemPath = (item) => {
+    const categorySlug = item.category_slug || item.categorySlug || toSlug(item.category_name)
+    const gameSlug = item.game_slug || item.gameSlug || toSlug(item.game_name)
+    const itemSlug = item.item_slug || item.itemSlug || item.slug
+
+    if (!categorySlug || !gameSlug || !itemSlug) return null
+    return `/${categorySlug}/${gameSlug}/${itemSlug}`
+  }
+
+  const handleItemClick = (item) => {
+    const itemPath = getItemPath(item)
+    if (!itemPath) return
+    onClose()
+    navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
+  }
+
   // Close on Escape key
   useEffect(() => {
     const handleEscape = (e) => {
@@ -93,7 +119,21 @@ export default function CartDrawer({
           ) : (
             <>
               {cartItems.map((item) => (
-                <div key={item.cartId} className="cart-drawer-item">
+                <div
+                  key={item.cartId}
+                  className={`cart-drawer-item${getItemPath(item) ? ' clickable' : ''}`}
+                  onClick={() => handleItemClick(item)}
+                  role={getItemPath(item) ? 'button' : undefined}
+                  tabIndex={getItemPath(item) ? 0 : undefined}
+                  onKeyDown={(event) => {
+                    if (!getItemPath(item)) return
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      handleItemClick(item)
+                    }
+                  }}
+                  title={getItemPath(item) ? 'View item details' : undefined}
+                >
                   <div className="cart-drawer-item-image">
                     <img 
                       src={item.icon || '/zeusservicesPackage.webp'} 
@@ -113,7 +153,10 @@ export default function CartDrawer({
                     <div className="cart-drawer-item-footer">
                       <div className="cart-drawer-item-quantity">
                         <button
-                          onClick={() => onUpdateQuantity(item.cartId, Math.max(1, item.quantity - 1), false)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            onUpdateQuantity(item.cartId, Math.max(1, item.quantity - 1), false)
+                          }}
                           className="quantity-btn"
                           aria-label="Decrease quantity"
                         >
@@ -121,7 +164,10 @@ export default function CartDrawer({
                         </button>
                         <span>{item.quantity}</span>
                         <button
-                          onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1, false)}
+                          onClick={(event) => {
+                            event.stopPropagation()
+                            onUpdateQuantity(item.cartId, item.quantity + 1, false)
+                          }}
                           className="quantity-btn"
                           aria-label="Increase quantity"
                         >
@@ -136,7 +182,10 @@ export default function CartDrawer({
                   </div>
 
                   <button
-                    onClick={() => onRemove(item.cartId, false)}
+                    onClick={(event) => {
+                      event.stopPropagation()
+                      onRemove(item.cartId, false)
+                    }}
                     className="cart-drawer-item-remove"
                     aria-label="Remove item"
                   >

@@ -166,6 +166,15 @@
   transform: translateX(-2px);
 }
 
+.cart-drawer-item.clickable {
+  cursor: pointer;
+}
+
+.cart-drawer-item.clickable:focus-visible {
+  outline: 2px solid rgba(251, 191, 36, 0.8);
+  outline-offset: 2px;
+}
+
 .cart-drawer-item-image {
   width: 70px;
   height: 70px;

@@ -200,7 +200,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   }
 
   const handleQuickAdd = (item) => {
-    // Check if item needs option selection (custom fields or legacy platform/version)
+    // Check if item needs option selection via custom fields
     const hasCustomFieldOptions = Array.isArray(item.custom_fields)
       && item.custom_fields.some((field) => {
         const options = Array.isArray(field?.availableOptions) && field.availableOptions.length > 0
@@ -209,8 +209,6 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
         return options.length > 0
       })
     const needsOptions = hasCustomFieldOptions
-      || (item.platforms && item.platforms.length > 0)
-      || (item.versions && item.versions.length > 0)
     
     if (needsOptions) {
       // Show modal for options selection

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
@@ -13,6 +13,7 @@ import '../App.css'
 export default function ItemDetailPage({ formatPrice, addToCart, platformOptions, cartItems = [], updateQuantity, removeFromCart }) {
   const { categorySlug, gameSlug, itemSlug } = useParams()
   const navigate = useNavigate()
+  const location = useLocation()
   const { user } = useAuth()
   const [item, setItem] = useState(null)
   const [game, setGame] = useState(null)
@@ -43,20 +44,60 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
           .filter(field => field.options.length > 0)
       : []
 
-    if (customFields.length > 0) return customFields
+    return customFields
+  }
 
-    // Fallback for older rows if needed
-    const fallback = []
-    if (Array.isArray(itemData.platforms) && itemData.platforms.length > 0) {
-      fallback.push({ fieldName: 'Platform', options: itemData.platforms })
+  const parseSelectionsFromCartItem = (cartItem, fields) => {
+    const parsed = {}
+    if (!cartItem || !Array.isArray(fields) || fields.length === 0) return parsed
+
+    // 1) Trust explicit custom selections first
+    if (cartItem.customSelections && typeof cartItem.customSelections === 'object') {
+      fields.forEach((field) => {
+        const candidate = cartItem.customSelections[field.fieldName]
+        if (candidate && field.options.includes(candidate)) {
+          parsed[field.fieldName] = candidate
+        }
+      })
     }
-    if (Array.isArray(itemData.versions) && itemData.versions.length > 0) {
-      fallback.push({ fieldName: 'Version', options: itemData.versions })
+
+    const platformRaw = String(cartItem.platform || '').trim()
+    const versionRaw = String(cartItem.version || '').trim()
+
+    // 2) Parse labeled summary format: "Platform: X | Region: Y"
+    if (platformRaw.includes(':')) {
+      platformRaw.split('|').forEach((segment) => {
+        const [rawField, ...rawValueParts] = segment.split(':')
+        if (!rawField || rawValueParts.length === 0) return
+        const fieldName = rawField.trim().toLowerCase()
+        const value = rawValueParts.join(':').trim()
+        const field = fields.find(f => f.fieldName.toLowerCase() === fieldName)
+        if (field && value && field.options.includes(value)) {
+          parsed[field.fieldName] = value
+        }
+      })
     }
-    return fallback
+
+    // 3) Handle plain platform only
+    const platformField = fields.find(f => f.fieldName.toLowerCase() === 'platform')
+    const versionField = fields.find(f => f.fieldName.toLowerCase() === 'version')
+
+    if (platformField && !parsed[platformField.fieldName] && platformRaw && !platformRaw.includes(':')) {
+      if (platformField.options.includes(platformRaw)) {
+        parsed[platformField.fieldName] = platformRaw
+      }
+    }
+
+    // 4) Version fallback from explicit cart version field
+    if (versionField && !parsed[versionField.fieldName] && versionRaw && versionField.options.includes(versionRaw)) {
+      parsed[versionField.fieldName] = versionRaw
+    }
+
+    return parsed
   }
 
   const selectableFields = getSelectableFields(item)
+  const selectedCartId = new URLSearchParams(location.search).get('cartId')
 
   const selectedEntries = selectableFields
     .filter(field => selectedOptions[field.fieldName])
@@ -101,6 +142,46 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
       setCartQuantity(1)
     }
   }, [item, cartItems, cartId, selectableFields, selectedOptions])
+
+  // If arriving from cart, auto-select the variant so quantity controls match existing cart item.
+  useEffect(() => {
+    if (!item || !cartItems || selectableFields.length === 0) return
+
+    const hasMissingSelections = selectableFields.some(field => !selectedOptions[field.fieldName])
+    if (!hasMissingSelections) return
+
+    let sourceCartItem = null
+
+    if (selectedCartId) {
+      sourceCartItem = cartItems.find(ci => ci.cartId === selectedCartId) || null
+    }
+
+    if (!sourceCartItem) {
+      const sameItemEntries = cartItems.filter(ci => ci.id === item.id)
+      if (sameItemEntries.length === 1) {
+        sourceCartItem = sameItemEntries[0]
+      }
+    }
+
+    if (!sourceCartItem) return
+
+    const inferred = parseSelectionsFromCartItem(sourceCartItem, selectableFields)
+    if (Object.keys(inferred).length === 0) return
+
+    setSelectedOptions((prev) => {
+      const next = { ...prev }
+      let changed = false
+
+      selectableFields.forEach((field) => {
+        if (!next[field.fieldName] && inferred[field.fieldName]) {
+          next[field.fieldName] = inferred[field.fieldName]
+          changed = true
+        }
+      })
+
+      return changed ? next : prev
+    })
+  }, [item, cartItems, selectableFields, selectedOptions, selectedCartId])
 
   useEffect(() => {
     const fetchData = async () => {

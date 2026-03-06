@@ -24,16 +24,7 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
           .filter(field => field.options.length > 0)
       : []
 
-    if (customFields.length > 0) return customFields
-
-    const fallback = []
-    if (Array.isArray(itemData.platforms) && itemData.platforms.length > 0) {
-      fallback.push({ fieldName: 'Platform', options: itemData.platforms })
-    }
-    if (Array.isArray(itemData.versions) && itemData.versions.length > 0) {
-      fallback.push({ fieldName: 'Version', options: itemData.versions })
-    }
-    return fallback
+    return customFields
   }
 
   const selectableFields = getSelectableFields(item)
