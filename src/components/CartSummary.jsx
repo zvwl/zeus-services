@@ -93,8 +93,26 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
               </div>
               <div className="item-info">
                 <h4>{item.name}</h4>
-                <p className="platform">Platform: {item.platform}</p>
-                {item.version && <p className="item-version">Version: {item.version}</p>}
+                {item.customSelections && Object.keys(item.customSelections).length > 0 ? (
+                  Object.entries(item.customSelections)
+                    .filter(([, value]) => Boolean(value))
+                    .map(([field, value]) => (
+                      <p key={`${item.cartId}-${field}`} className={field.toLowerCase() === 'version' ? 'item-version' : 'platform'}>
+                        {field}: {value}
+                      </p>
+                    ))
+                ) : (
+                  <>
+                    {item.platform && (
+                      <p className="platform">
+                        {item.platform.includes(':') ? item.platform : `Platform: ${item.platform}`}
+                      </p>
+                    )}
+                    {item.version && item.version !== 'Standard' && (
+                      <p className="item-version">Version: {item.version}</p>
+                    )}
+                  </>
+                )}
                 <p>{formatPrice ? `${formatPrice(item.price)} each` : `$${item.price} each`}</p>
               </div>
             </div>
