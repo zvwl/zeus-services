@@ -97,7 +97,24 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   }
 
   const selectableFields = getSelectableFields(item)
-  const selectedCartId = new URLSearchParams(location.search).get('cartId')
+  const [selectedCartId] = useState(() => new URLSearchParams(location.search).get('cartId') || '')
+
+  // cartId is only a local variant hint; strip it from the URL to avoid sharing it.
+  useEffect(() => {
+    if (!location.search.includes('cartId=')) return
+
+    const nextParams = new URLSearchParams(location.search)
+    nextParams.delete('cartId')
+
+    const nextSearch = nextParams.toString()
+    navigate(
+      {
+        pathname: location.pathname,
+        search: nextSearch ? `?${nextSearch}` : ''
+      },
+      { replace: true }
+    )
+  }, [location.pathname, location.search, navigate])
 
   const selectedEntries = selectableFields
     .filter(field => selectedOptions[field.fieldName])
