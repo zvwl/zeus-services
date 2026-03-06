@@ -64,10 +64,16 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
     setIsAddingToCart(true)
     try {
       const versionValue = selectedOptions.Version || 'Standard'
-      const fullPlatform = selectableFields
+      const selectedEntries = selectableFields
         .filter(field => selectedOptions[field.fieldName])
-        .map(field => `${field.fieldName}: ${selectedOptions[field.fieldName]}`)
-        .join(' | ') || 'Standard'
+        .map(field => [field.fieldName, selectedOptions[field.fieldName]])
+
+      const singlePlatformSelection = selectedEntries.length === 1
+        && String(selectedEntries[0][0]).toLowerCase() === 'platform'
+
+      const fullPlatform = singlePlatformSelection
+        ? String(selectedEntries[0][1])
+        : (selectedEntries.map(([fieldName, value]) => `${fieldName}: ${value}`).join(' | ') || 'Standard')
 
       onAddToCart({
         ...item,

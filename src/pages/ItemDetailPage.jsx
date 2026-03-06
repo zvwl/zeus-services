@@ -58,13 +58,23 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
 
   const selectableFields = getSelectableFields(item)
 
-  const selectionSummary = selectableFields
+  const selectedEntries = selectableFields
     .filter(field => selectedOptions[field.fieldName])
-    .map(field => `${field.fieldName}: ${selectedOptions[field.fieldName]}`)
+    .map(field => [field.fieldName, selectedOptions[field.fieldName]])
+
+  const selectionSummary = selectedEntries
+    .map(([fieldName, value]) => `${fieldName}: ${value}`)
     .join(' | ')
 
+  const singlePlatformSelection = selectedEntries.length === 1
+    && String(selectedEntries[0][0]).toLowerCase() === 'platform'
+
+  const normalizedPlatform = singlePlatformSelection
+    ? String(selectedEntries[0][1])
+    : selectionSummary
+
   const versionValue = selectedOptions.Version || 'Standard'
-  const platformDisplay = selectionSummary || 'Standard'
+  const platformDisplay = normalizedPlatform || 'Standard'
   const cartId = item ? `${item.id}-${platformDisplay}-${versionValue}` : ''
 
   // Check if item is already in cart and update state
