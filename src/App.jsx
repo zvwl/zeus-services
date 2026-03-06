@@ -283,8 +283,8 @@ function App() {
   }
 
   const addToCart = (service, platform) => {
-    const versionKey = service?.version || 'Standard'
-    const cartId = `${service.id}-${platform}-${versionKey}`
+    const versionKey = service?.version || ''
+    const cartId = `${service.id}-${platform || ''}-${versionKey || ''}`
     const existingItem = cartItems.find(item => item.cartId === cartId)
     if (existingItem) {
       setCartItems(cartItems.map(item =>
@@ -294,7 +294,7 @@ function App() {
       ))
       addToast(`Updated ${service.name} quantity in cart`, 'success')
     } else {
-      setCartItems([...cartItems, { ...service, cartId, platform, version: service?.version || 'Standard', quantity: 1 }])
+      setCartItems([...cartItems, { ...service, cartId, platform, version: service?.version || '', quantity: 1 }])
       addToast(`Added ${service.name} to cart`, 'success')
     }
   }

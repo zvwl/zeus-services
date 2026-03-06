@@ -107,10 +107,19 @@ Deno.serve(async (req) => {
       const unit = typeof item.price_converted === "number" ? item.price_converted : Number(item.price_converted ?? 0);
       const amount = Math.max(0, Math.round(unit * 100));
       
-      // Build description with platform and version
-      let description = item.platform || "";
-      if (item.version) {
-        description = description ? `${description} - ${item.version}` : item.version;
+      // Build description with platform and version without duplicate labels/values
+      let description = String(item.platform || "").trim();
+      const version = String(item.version || "").trim();
+      const loweredDescription = description.toLowerCase();
+      const loweredVersion = version.toLowerCase();
+      const hasVersionAlready = Boolean(version) && (
+        loweredDescription.includes(`version: ${loweredVersion}`)
+        || loweredDescription.endsWith(`- ${loweredVersion}`)
+        || loweredDescription === loweredVersion
+      );
+
+      if (version && version.toLowerCase() !== "standard" && !hasVersionAlready) {
+        description = description ? `${description} - ${version}` : version;
       }
       
       return {

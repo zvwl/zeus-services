@@ -63,7 +63,7 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
     setShowFlyingAnimation(false)
     setIsAddingToCart(true)
     try {
-      const versionValue = selectedOptions.Version || 'Standard'
+      const versionValue = selectedOptions.Version || ''
       const selectedEntries = selectableFields
         .filter(field => selectedOptions[field.fieldName])
         .map(field => [field.fieldName, selectedOptions[field.fieldName]])
@@ -73,7 +73,7 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
 
       const fullPlatform = singlePlatformSelection
         ? String(selectedEntries[0][1])
-        : (selectedEntries.map(([fieldName, value]) => `${fieldName}: ${value}`).join(' | ') || 'Standard')
+        : selectedEntries.map(([fieldName, value]) => `${fieldName}: ${value}`).join(' | ')
 
       onAddToCart({
         ...item,

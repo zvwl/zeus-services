@@ -73,8 +73,8 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
     ? String(selectedEntries[0][1])
     : selectionSummary
 
-  const versionValue = selectedOptions.Version || 'Standard'
-  const platformDisplay = normalizedPlatform || 'Standard'
+  const versionValue = selectedOptions.Version || ''
+  const platformDisplay = normalizedPlatform || ''
   const cartId = item ? `${item.id}-${platformDisplay}-${versionValue}` : ''
 
   // Check if item is already in cart and update state
