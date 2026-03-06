@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
+import ConfirmModal from '../components/ConfirmModal'
 import { ToastContainer } from '../components/Toast'
 import '../App.css'
 import './AdminForms.css'
@@ -14,6 +15,12 @@ export default function AdminItemsPage() {
   const [editingItem, setEditingItem] = useState(null)
   const [filterGame, setFilterGame] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [confirmConfig, setConfirmConfig] = useState({
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  })
   const [toasts, setToasts] = useState([])
   
   const addToast = (message, type = 'info') => {
@@ -174,10 +181,18 @@ export default function AdminItemsPage() {
   }
 
   const handleDelete = async (item) => {
-    if (!confirm(`Are you sure you want to delete "${item.name}"?`)) {
-      return
-    }
+    setConfirmConfig({
+      title: 'Delete Item',
+      message: `Are you sure you want to delete "${item.name}"?`,
+      onConfirm: async () => {
+        setShowConfirm(false)
+        await performDelete(item)
+      }
+    })
+    setShowConfirm(true)
+  }
 
+  const performDelete = async (item) => {
     try {
       const { error } = await supabase
         .from('items')
@@ -812,6 +827,16 @@ export default function AdminItemsPage() {
           </div>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={showConfirm}
+        title={confirmConfig.title}
+        message={confirmConfig.message}
+        onConfirm={confirmConfig.onConfirm}
+        onCancel={() => setShowConfirm(false)}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
 
       <ToastContainer toasts={toasts} removeToast={removeToast} />
     </section>
