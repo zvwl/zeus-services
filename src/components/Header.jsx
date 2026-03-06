@@ -10,7 +10,7 @@ import AnimatedBurgerIcon from './AnimatedBurgerIcon'
 import './Header.css'
 import './AnimatedMenuIcon.css'
 
-export default function Header({ cartCount, currency, onCurrencyChange, onCartClick, isCartDrawerOpen, onCloseCart }) {
+export default function Header({ cartCount, currency, onCurrencyChange, onCartClick, isCartDrawerOpen, onCloseCart, onUserMenuToggle }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -21,6 +21,10 @@ export default function Header({ cartCount, currency, onCurrencyChange, onCartCl
       setIsMenuOpen(false)
     }
   }, [isCartDrawerOpen])
+
+  useEffect(() => {
+    onUserMenuToggle?.(isMenuOpen)
+  }, [isMenuOpen, onUserMenuToggle])
   const [isCurrencyOpen, setIsCurrencyOpen] = useState(false)
   const [categories, setCategories] = useState([])
   const [isCartCountAnimating, setIsCartCountAnimating] = useState(false)

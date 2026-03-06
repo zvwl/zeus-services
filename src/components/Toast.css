@@ -15,6 +15,10 @@
   right: 470px;
 }
 
+.toast-container.toast-container-menu-open {
+  right: 440px;
+}
+
 .toast {
   display: flex;
   align-items: center;
@@ -155,6 +159,10 @@
     right: 10px;
   }
 
+  .toast-container.toast-container-menu-open {
+    right: 10px;
+  }
+
   .toast {
     min-width: 0;
     width: 100%;
@@ -186,6 +194,10 @@
   }
 
   .toast-container.toast-container-cart-open {
+    right: 8px;
+  }
+
+  .toast-container.toast-container-menu-open {
     right: 8px;
   }
 

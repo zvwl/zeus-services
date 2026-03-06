@@ -48,9 +48,12 @@ export default function Toast({ message, type = 'info', duration = 3500, onClose
 }
 
 // Toast Container Component
-export function ToastContainer({ toasts, removeToast, isCartDrawerOpen = false }) {
+export function ToastContainer({ toasts, removeToast, isCartDrawerOpen = false, isUserMenuOpen = false }) {
+  const cartClass = isCartDrawerOpen ? 'toast-container-cart-open' : ''
+  const menuClass = isUserMenuOpen ? 'toast-container-menu-open' : ''
+
   return (
-    <div className={`toast-container ${isCartDrawerOpen ? 'toast-container-cart-open' : ''}`}>
+    <div className={`toast-container ${cartClass} ${menuClass}`.trim()}>
       {toasts.map((toast) => (
         <Toast
           key={toast.id}

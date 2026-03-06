@@ -58,6 +58,7 @@ function App() {
     }
   })
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false)
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [servicesLoading, setServicesLoading] = useState(false)
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
@@ -468,6 +469,7 @@ function App() {
           onCartClick={() => setIsCartDrawerOpen(!isCartDrawerOpen)}
           onCloseCart={() => setIsCartDrawerOpen(false)}
           isCartDrawerOpen={isCartDrawerOpen}
+          onUserMenuToggle={setIsUserMenuOpen}
         />
         <StatusBanner />
       </div>
@@ -700,6 +702,7 @@ function App() {
         toasts={toasts}
         removeToast={removeToast}
         isCartDrawerOpen={isCartDrawerOpen}
+        isUserMenuOpen={isUserMenuOpen}
       />
       <CartDrawer
         isOpen={isCartDrawerOpen}
