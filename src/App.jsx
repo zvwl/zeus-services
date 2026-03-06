@@ -104,6 +104,8 @@ function App() {
 
         return state
       }
+      case 'CLEAR_ALL':
+        return { visible: [], queue: [] }
       default:
         return state
     }
@@ -112,6 +114,7 @@ function App() {
   const [toastState, dispatchToast] = useReducer(toastReducer, { visible: [], queue: [] })
   const toasts = toastState.visible
   const toastQueue = toastState.queue
+  const isMobileViewport = maxVisibleToasts === 2
   const { user, isAdmin } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
@@ -129,6 +132,14 @@ function App() {
   useEffect(() => {
     dispatchToast({ type: 'REBALANCE', maxVisible: maxVisibleToasts })
   }, [maxVisibleToasts])
+
+  // On mobile, hide any active/queued toasts when overlays open to avoid blocking UI.
+  useEffect(() => {
+    const isOverlayOpen = isCartDrawerOpen || isUserMenuOpen
+    if (!isMobileViewport || !isOverlayOpen) return
+    if (toastState.visible.length === 0 && toastState.queue.length === 0) return
+    dispatchToast({ type: 'CLEAR_ALL' })
+  }, [isMobileViewport, isCartDrawerOpen, isUserMenuOpen, toastState.visible.length, toastState.queue.length])
 
 
   // Sanitize order note input (remove HTML tags, limit length)
