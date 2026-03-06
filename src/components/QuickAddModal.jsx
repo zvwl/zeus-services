@@ -4,30 +4,54 @@ import { X, ShoppingCart } from 'lucide-react'
 import FlyingCartAnimation from './FlyingCartAnimation'
 
 export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice }) {
-  const [selectedPlatform, setSelectedPlatform] = useState('')
-  const [selectedVersion, setSelectedVersion] = useState('')
+  const [selectedOptions, setSelectedOptions] = useState({})
   const [error, setError] = useState('')
   const [showFlyingAnimation, setShowFlyingAnimation] = useState(false)
   const [isAddingToCart, setIsAddingToCart] = useState(false)
 
+  const getSelectableFields = (itemData) => {
+    if (!itemData) return []
+
+    const customFields = Array.isArray(itemData.custom_fields)
+      ? itemData.custom_fields
+          .filter(field => field && field.fieldName)
+          .map(field => ({
+            fieldName: field.fieldName,
+            options: Array.isArray(field.availableOptions) && field.availableOptions.length > 0
+              ? field.availableOptions
+              : (Array.isArray(field.selectedOptions) ? field.selectedOptions : [])
+          }))
+          .filter(field => field.options.length > 0)
+      : []
+
+    if (customFields.length > 0) return customFields
+
+    const fallback = []
+    if (Array.isArray(itemData.platforms) && itemData.platforms.length > 0) {
+      fallback.push({ fieldName: 'Platform', options: itemData.platforms })
+    }
+    if (Array.isArray(itemData.versions) && itemData.versions.length > 0) {
+      fallback.push({ fieldName: 'Version', options: itemData.versions })
+    }
+    return fallback
+  }
+
+  const selectableFields = getSelectableFields(item)
+
   // Auto-select if only one option
   useEffect(() => {
-    if (item.platforms?.length === 1) {
-      setSelectedPlatform(item.platforms[0])
-    }
-    if (item.versions?.length === 1) {
-      setSelectedVersion(item.versions[0])
-    }
+    const nextSelections = {}
+    selectableFields.forEach((field) => {
+      nextSelections[field.fieldName] = field.options.length === 1 ? field.options[0] : ''
+    })
+    setSelectedOptions(nextSelections)
   }, [item])
 
   const handleAddToCart = () => {
     // Validate selections
-    if (item.platforms?.length > 0 && !selectedPlatform) {
-      setError('Please select a platform')
-      return
-    }
-    if (item.versions?.length > 0 && !selectedVersion) {
-      setError('Please select a version')
+    const missingField = selectableFields.find(field => !selectedOptions[field.fieldName])
+    if (missingField) {
+      setError(`Please select ${missingField.fieldName.toLowerCase()}`)
       return
     }
 
@@ -39,8 +63,17 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
     setShowFlyingAnimation(false)
     setIsAddingToCart(true)
     try {
-      const fullPlatform = `${selectedPlatform} ${selectedVersion}`.trim()
-      onAddToCart(item, fullPlatform)
+      const versionValue = selectedOptions.Version || 'Standard'
+      const fullPlatform = selectableFields
+        .filter(field => selectedOptions[field.fieldName])
+        .map(field => `${field.fieldName}: ${selectedOptions[field.fieldName]}`)
+        .join(' | ') || 'Standard'
+
+      onAddToCart({
+        ...item,
+        version: versionValue,
+        customSelections: selectedOptions,
+      }, fullPlatform)
       onClose()
     } catch (err) {
       console.error('Error adding to cart:', err)
@@ -84,51 +117,30 @@ export default function QuickAddModal({ item, onClose, onAddToCart, formatPrice 
         )}
 
         <div className="modal-options">
-          {/* Platform Selection */}
-          {item.platforms?.length > 0 && (
-            <div className="modal-option-group">
-              <label htmlFor="modal-platform">Select Platform *</label>
-              <select
-                id="modal-platform"
-                value={selectedPlatform}
-                onChange={(e) => {
-                  setSelectedPlatform(e.target.value)
-                  setError('')
-                }}
-                className="modal-select"
-              >
-                <option value="">Choose a platform</option>
-                {item.platforms.map((platform) => (
-                  <option key={platform} value={platform}>
-                    {platform}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
-
-          {/* Version Selection */}
-          {item.versions?.length > 0 && (
-            <div className="modal-option-group">
-              <label htmlFor="modal-version">Select Version *</label>
-              <select
-                id="modal-version"
-                value={selectedVersion}
-                onChange={(e) => {
-                  setSelectedVersion(e.target.value)
-                  setError('')
-                }}
-                className="modal-select"
-              >
-                <option value="">Choose a version</option>
-                {item.versions.map((version) => (
-                  <option key={version} value={version}>
-                    {version}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )}
+          {selectableFields.map((field) => {
+            const fieldId = `modal-${field.fieldName.toLowerCase().replace(/\s+/g, '-')}`
+            return (
+              <div className="modal-option-group" key={field.fieldName}>
+                <label htmlFor={fieldId}>Select {field.fieldName} *</label>
+                <select
+                  id={fieldId}
+                  value={selectedOptions[field.fieldName] || ''}
+                  onChange={(e) => {
+                    setSelectedOptions(prev => ({ ...prev, [field.fieldName]: e.target.value }))
+                    setError('')
+                  }}
+                  className="modal-select"
+                >
+                  <option value="">Choose {field.fieldName.toLowerCase()}</option>
+                  {field.options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )
+          })}
 
           {error && (
             <p className="modal-error">{error}</p>

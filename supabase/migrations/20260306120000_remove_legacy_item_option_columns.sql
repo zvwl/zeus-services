@@ -53,13 +53,15 @@ WHERE i.id = src.id
     OR jsonb_array_length(i.custom_fields) = 0
   );
 
--- 3) Drop old option columns
+-- 3) Drop dependent view before dropping columns
+DROP VIEW IF EXISTS public.items_with_details CASCADE;
+
+-- 4) Drop old option columns
 ALTER TABLE public.items
 DROP COLUMN IF EXISTS platforms,
 DROP COLUMN IF EXISTS versions;
 
--- 4) Recreate view with custom_fields and derived compatibility columns
-DROP VIEW IF EXISTS public.items_with_details CASCADE;
+-- 5) Recreate view with custom_fields and derived compatibility columns
 
 CREATE OR REPLACE VIEW public.items_with_details
 WITH (security_invoker = true) AS

@@ -18,28 +18,79 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   const [game, setGame] = useState(null)
   const [category, setCategory] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [selectedPlatform, setSelectedPlatform] = useState('')
-  const [selectedVersion, setSelectedVersion] = useState('')
+  const [selectedOptions, setSelectedOptions] = useState({})
   const [addingToCart, setAddingToCart] = useState(false)
   const [isInCart, setIsInCart] = useState(false)
   const [cartQuantity, setCartQuantity] = useState(1)
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
   const [showFlyingAnimation, setShowFlyingAnimation] = useState(false)
 
+  const getSelectableFields = (itemData) => {
+    if (!itemData) return []
+
+    const customFields = Array.isArray(itemData.custom_fields)
+      ? itemData.custom_fields
+          .filter(field => field && field.fieldName)
+          .map(field => {
+            const availableOptions = Array.isArray(field.availableOptions) && field.availableOptions.length > 0
+              ? field.availableOptions
+              : (Array.isArray(field.selectedOptions) ? field.selectedOptions : [])
+            return {
+              fieldName: field.fieldName,
+              options: availableOptions
+            }
+          })
+          .filter(field => field.options.length > 0)
+      : []
+
+    if (customFields.length > 0) return customFields
+
+    // Fallback for older rows if needed
+    const fallback = []
+    if (Array.isArray(itemData.platforms) && itemData.platforms.length > 0) {
+      fallback.push({ fieldName: 'Platform', options: itemData.platforms })
+    }
+    if (Array.isArray(itemData.versions) && itemData.versions.length > 0) {
+      fallback.push({ fieldName: 'Version', options: itemData.versions })
+    }
+    return fallback
+  }
+
+  const selectableFields = getSelectableFields(item)
+
+  const selectionSummary = selectableFields
+    .filter(field => selectedOptions[field.fieldName])
+    .map(field => `${field.fieldName}: ${selectedOptions[field.fieldName]}`)
+    .join(' | ')
+
+  const versionValue = selectedOptions.Version || 'Standard'
+  const platformDisplay = selectionSummary || 'Standard'
+  const cartId = item ? `${item.id}-${platformDisplay}-${versionValue}` : ''
+
   // Check if item is already in cart and update state
   useEffect(() => {
-    if (item && selectedPlatform && selectedVersion && cartItems) {
-      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
-      const existingItem = cartItems.find(cartItem => cartItem.cartId === cartId)
-      if (existingItem) {
-        setIsInCart(true)
-        setCartQuantity(existingItem.quantity)
-      } else {
-        setIsInCart(false)
-        setCartQuantity(1)
-      }
+    if (!item || !cartItems || !cartId) {
+      setIsInCart(false)
+      setCartQuantity(1)
+      return
     }
-  }, [item, selectedPlatform, selectedVersion, cartItems])
+
+    const hasMissingSelections = selectableFields.some(field => !selectedOptions[field.fieldName])
+    if (hasMissingSelections) {
+      setIsInCart(false)
+      setCartQuantity(1)
+      return
+    }
+
+    const existingItem = cartItems.find(cartItem => cartItem.cartId === cartId)
+    if (existingItem) {
+      setIsInCart(true)
+      setCartQuantity(existingItem.quantity)
+    } else {
+      setIsInCart(false)
+      setCartQuantity(1)
+    }
+  }, [item, cartItems, cartId, selectableFields, selectedOptions])
 
   useEffect(() => {
     const fetchData = async () => {
@@ -81,17 +132,13 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
         if (itemError) throw itemError
         setItem(itemData)
 
-        // Require explicit selection when options are available
-        if (itemData.platforms && itemData.platforms.length > 0) {
-          setSelectedPlatform('')
-        } else {
-          setSelectedPlatform('Any Platform')
-        }
-        if (itemData.versions && itemData.versions.length > 0) {
-          setSelectedVersion('')
-        } else {
-          setSelectedVersion('Standard')
-        }
+        // Require explicit selection when a field has multiple options
+        const fields = getSelectableFields(itemData)
+        const nextSelections = {}
+        fields.forEach((field) => {
+          nextSelections[field.fieldName] = field.options.length === 1 ? field.options[0] : ''
+        })
+        setSelectedOptions(nextSelections)
       } catch (err) {
         console.error('Error fetching item:', err)
       } finally {
@@ -129,13 +176,8 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
       return
     }
     
-    const requiresPlatform = item?.platforms && item.platforms.length > 0
-    if (requiresPlatform && !selectedPlatform) {
-      setAttemptedSubmit(true)
-      return
-    }
-    const requiresVersion = item?.versions && item.versions.length > 0
-    if (requiresVersion && !selectedVersion) {
+    const missingSelection = selectableFields.some(field => !selectedOptions[field.fieldName])
+    if (missingSelection) {
       setAttemptedSubmit(true)
       return
     }
@@ -151,8 +193,9 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
       // Create cart item object compatible with existing cart system
       const cartItem = {
         ...item,
-        platform: selectedPlatform,
-        version: selectedVersion,
+        platform: platformDisplay,
+        version: versionValue,
+        customSelections: selectedOptions,
         category_slug: categorySlug,
         game_slug: gameSlug,
         item_slug: itemSlug,
@@ -163,7 +206,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
       }
       
       // Add to cart
-      addToCart(cartItem, selectedPlatform)
+      addToCart(cartItem, platformDisplay)
     } catch (err) {
       console.error('Error adding to cart:', err)
       alert('Failed to add item to cart')
@@ -174,7 +217,6 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
 
   const handleQuantityChange = (newQuantity) => {
     if (newQuantity >= 1 && newQuantity <= 100 && isInCart && updateQuantity) {
-      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
       updateQuantity(cartId, newQuantity)
     }
   }
@@ -182,8 +224,9 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   const handleAddMore = () => {
     const cartItem = {
       ...item,
-      platform: selectedPlatform,
-      version: selectedVersion,
+      platform: platformDisplay,
+      version: versionValue,
+      customSelections: selectedOptions,
       category_slug: categorySlug,
       game_slug: gameSlug,
       item_slug: itemSlug,
@@ -192,15 +235,13 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
       category_id: category.id,
       category_name: category.name
     }
-    addToCart(cartItem, selectedPlatform)
+    addToCart(cartItem, platformDisplay)
   }
 
   const handleRemoveOne = () => {
     if (isInCart && cartQuantity > 1 && updateQuantity) {
-      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
       updateQuantity(cartId, cartQuantity - 1)
     } else if (isInCart && cartQuantity === 1 && removeFromCart) {
-      const cartId = `${item.id}-${selectedPlatform}-${selectedVersion}`
       removeFromCart(cartId)
     }
   }
@@ -321,53 +362,36 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
           )}
 
           <div className="service-detail-options">
-            {item.platforms && item.platforms.length > 0 && !game.is_coming_soon && (
-              <div className="option-group">
-                <label htmlFor="platform-select">Select Platform:</label>
-                <select
-                  id="platform-select"
-                  value={selectedPlatform}
-                  onChange={(e) => setSelectedPlatform(e.target.value)}
-                  className="option-select"
-                >
-                  <option value="">Select a platform</option>
-                  {item.platforms.map((platform) => (
-                    <option key={platform} value={platform}>
-                      {platform}
-                    </option>
-                  ))}
-                </select>
-                {attemptedSubmit && selectedPlatform === '' && (
-                  <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
-                    Please select a platform to continue.
-                  </p>
-                )}
-              </div>
-            )}
-
-            {item.versions && item.versions.length > 0 && !game.is_coming_soon && (
-              <div className="option-group">
-                <label htmlFor="version-select">Select Version:</label>
-                <select
-                  id="version-select"
-                  value={selectedVersion}
-                  onChange={(e) => setSelectedVersion(e.target.value)}
-                  className="option-select"
-                >
-                  <option value="">Select a version</option>
-                  {item.versions.map((version) => (
-                    <option key={version} value={version}>
-                      {version}
-                    </option>
-                  ))}
-                </select>
-                {attemptedSubmit && selectedVersion === '' && (
-                  <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
-                    Please select a version to continue.
-                  </p>
-                )}
-              </div>
-            )}
+            {!game.is_coming_soon && selectableFields.map((field) => {
+              const fieldKey = `field-${field.fieldName.toLowerCase().replace(/\s+/g, '-')}`
+              const currentValue = selectedOptions[field.fieldName] || ''
+              return (
+                <div className="option-group" key={field.fieldName}>
+                  <label htmlFor={fieldKey}>Select {field.fieldName}:</label>
+                  <select
+                    id={fieldKey}
+                    value={currentValue}
+                    onChange={(e) => {
+                      const nextValue = e.target.value
+                      setSelectedOptions(prev => ({ ...prev, [field.fieldName]: nextValue }))
+                    }}
+                    className="option-select"
+                  >
+                    <option value="">Select {field.fieldName.toLowerCase()}</option>
+                    {field.options.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  {attemptedSubmit && currentValue === '' && (
+                    <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
+                      Please select {field.fieldName.toLowerCase()} to continue.
+                    </p>
+                  )}
+                </div>
+              )
+            })}
           </div>
 
           <div className="service-detail-actions">

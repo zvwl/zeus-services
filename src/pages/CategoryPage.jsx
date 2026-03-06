@@ -200,8 +200,17 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   }
 
   const handleQuickAdd = (item) => {
-    // Check if item needs platform/version selection
-    const needsOptions = (item.platforms && item.platforms.length > 0) || (item.versions && item.versions.length > 0)
+    // Check if item needs option selection (custom fields or legacy platform/version)
+    const hasCustomFieldOptions = Array.isArray(item.custom_fields)
+      && item.custom_fields.some((field) => {
+        const options = Array.isArray(field?.availableOptions) && field.availableOptions.length > 0
+          ? field.availableOptions
+          : (Array.isArray(field?.selectedOptions) ? field.selectedOptions : [])
+        return options.length > 0
+      })
+    const needsOptions = hasCustomFieldOptions
+      || (item.platforms && item.platforms.length > 0)
+      || (item.versions && item.versions.length > 0)
     
     if (needsOptions) {
       // Show modal for options selection
