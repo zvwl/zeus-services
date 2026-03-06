@@ -97,8 +97,26 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
                   </div>
                   <div>
                     <h4>{item.name}</h4>
-                    <p className="platform">Platform: {item.platform}</p>
-                    <p className="version">Version: {item.version ? item.version : 'No version'}</p>
+                    {item.customSelections && Object.keys(item.customSelections).length > 0 ? (
+                      Object.entries(item.customSelections)
+                        .filter(([, value]) => Boolean(value))
+                        .map(([field, value]) => (
+                          <p key={`${item.cartId}-${field}`} className={field.toLowerCase() === 'version' ? 'version' : 'platform'}>
+                            {field}: {value}
+                          </p>
+                        ))
+                    ) : (
+                      <>
+                        {item.platform && (
+                          <p className="platform">
+                            {item.platform.includes(':') ? item.platform : `Platform: ${item.platform}`}
+                          </p>
+                        )}
+                        {item.version && item.version !== 'Standard' && (
+                          <p className="version">Version: {item.version}</p>
+                        )}
+                      </>
+                    )}
                   </div>
                 </div>
                 <div className="checkout-item-details">

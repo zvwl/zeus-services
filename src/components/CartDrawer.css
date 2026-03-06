@@ -6,7 +6,7 @@
   bottom: 0;
   background: transparent;
   z-index: 9998;
-  display: none;
+  display: block;
 }
 
 .cart-drawer {
