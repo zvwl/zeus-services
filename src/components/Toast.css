@@ -1,6 +1,6 @@
 .toast-container {
   position: fixed !important;
-  top: 146px !important;
+  top: calc(var(--top-stack-height, 136px) + 10px) !important;
   right: 20px;
   z-index: 110000;
   display: flex;
@@ -146,7 +146,6 @@
 
 @media (max-width: 640px) {
   .toast-container {
-    top: 144px;
     right: 10px;
     left: 10px;
     max-width: none;
@@ -182,7 +181,6 @@
 
 @media (max-width: 480px) {
   .toast-container {
-    top: 142px;
     right: 8px;
     left: 8px;
   }

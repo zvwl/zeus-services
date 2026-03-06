@@ -113,7 +113,7 @@ export default function CartDrawer({
                     <div className="cart-drawer-item-footer">
                       <div className="cart-drawer-item-quantity">
                         <button
-                          onClick={() => onUpdateQuantity(item.cartId, Math.max(1, item.quantity - 1))}
+                          onClick={() => onUpdateQuantity(item.cartId, Math.max(1, item.quantity - 1), false)}
                           className="quantity-btn"
                           aria-label="Decrease quantity"
                         >
@@ -121,7 +121,7 @@ export default function CartDrawer({
                         </button>
                         <span>{item.quantity}</span>
                         <button
-                          onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1)}
+                          onClick={() => onUpdateQuantity(item.cartId, item.quantity + 1, false)}
                           className="quantity-btn"
                           aria-label="Increase quantity"
                         >
@@ -136,7 +136,7 @@ export default function CartDrawer({
                   </div>
 
                   <button
-                    onClick={() => onRemove(item.cartId)}
+                    onClick={() => onRemove(item.cartId, false)}
                     className="cart-drawer-item-remove"
                     aria-label="Remove item"
                   >

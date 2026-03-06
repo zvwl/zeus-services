@@ -299,17 +299,17 @@ function App() {
     }
   }
 
-  const removeFromCart = (cartId) => {
+  const removeFromCart = (cartId, showNotification = true) => {
     const removedItem = cartItems.find(item => item.cartId === cartId)
     setCartItems(cartItems.filter(item => item.cartId !== cartId))
-    if (removedItem) {
+    if (removedItem && showNotification) {
       addToast(`Removed ${removedItem.name} from cart`, 'info')
     }
   }
 
-  const updateQuantity = (cartId, quantity) => {
+  const updateQuantity = (cartId, quantity, showNotification = true) => {
     if (quantity <= 0) {
-      removeFromCart(cartId)
+      removeFromCart(cartId, showNotification)
     } else {
       setCartItems(cartItems.map(item =>
         item.cartId === cartId ? { ...item, quantity } : item

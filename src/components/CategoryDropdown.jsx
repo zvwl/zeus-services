@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import './CategoryDropdown.css'
 
-export default function CategoryDropdown({ category }) {
+export default function CategoryDropdown({ category, onCloseCart }) {
   const navigate = useNavigate()
   const location = useLocation()
   const fallbackIcon = '/game-icons/default.svg'
@@ -41,6 +41,7 @@ export default function CategoryDropdown({ category }) {
 
   const handleGameClick = (game) => {
     if (game.is_coming_soon) return
+    onCloseCart?.()
     navigate(`/${category.slug}/${game.game_slug}`)
     setMobileOpen(false)
   }
@@ -48,6 +49,7 @@ export default function CategoryDropdown({ category }) {
   const handleTriggerClick = (e) => {
     e.preventDefault()
     // Click category name = show ALL items from all games in this category
+    onCloseCart?.()
     navigate(`/${category.slug}`)
     setMobileOpen(false)
   }

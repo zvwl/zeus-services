@@ -29,7 +29,7 @@ import {
 import tiktokLogo from '../assets/tiktok-logo.svg'
 import './UserMenu.css'
 
-export default function UserMenu({ isOpen, onClose, categories = [], user: propUser = null }) {
+export default function UserMenu({ isOpen, onClose, onCloseCart, categories = [], user: propUser = null }) {
   const navigate = useNavigate()
   const location = useLocation()
   const { user: contextUser, isAdmin, logout } = useAuth()
@@ -62,11 +62,13 @@ export default function UserMenu({ isOpen, onClose, categories = [], user: propU
   const logoutIconRef = useRef(null)
 
   const handleNavigation = (path) => {
+    onCloseCart?.()
     navigate(path)
     onClose()
   }
 
   const handleLogout = async () => {
+    onCloseCart?.()
     onClose()
     await logout()
     navigate('/')

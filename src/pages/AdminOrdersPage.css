@@ -132,6 +132,11 @@
   cursor: pointer;
 }
 
+.filter-select option {
+  background: #1a1f35;
+  color: #f1f5f9;
+}
+
 .filter-select:focus {
   outline: none;
   border-color: rgba(251, 191, 36, 0.7);
@@ -559,6 +564,11 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+}
+
+.status-select option {
+  background: #1a1f35;
+  color: #f1f5f9;
 }
 
 .status-select:focus {
@@ -1006,6 +1016,11 @@
   border-radius: 6px;
   cursor: pointer;
   font-size: 0.95rem;
+}
+
+.date-filter select option {
+  background: #1a1f35;
+  color: #f1f5f9;
 }
 
 .date-filter select:hover {

@@ -106,7 +106,10 @@ export default function Header({ cartCount, currency, onCurrencyChange, onCartCl
       <header className="header">
         <div className="header-content">
           {/* Left: Logo */}
-          <button className="brand" onClick={() => navigate('/')}>
+          <button className="brand" onClick={() => {
+            onCloseCart?.()
+            navigate('/')
+          }}>
             <span className="logo-icon">
               <img
                 src="/zeus-logo-main-96.webp"
@@ -124,17 +127,20 @@ export default function Header({ cartCount, currency, onCurrencyChange, onCartCl
 
           {/* Center: Desktop Navigation */}
           <nav className="nav-desktop">
-            <NavLink to="/" className={navLinkClass}>Home</NavLink>
+            <NavLink to="/" className={navLinkClass} onClick={() => onCloseCart?.()}>Home</NavLink>
             {categories.map(category => (
-              <CategoryDropdown key={category.id} category={category} />
+              <CategoryDropdown key={category.id} category={category} onCloseCart={onCloseCart} />
             ))}
-            <NavLink to="/reviews" className={fixedNavLinkClass}>Reviews</NavLink>
-            {user && <NavLink to="/settings" className={fixedNavLinkClass}>Settings</NavLink>}
+            <NavLink to="/reviews" className={fixedNavLinkClass} onClick={() => onCloseCart?.()}>Reviews</NavLink>
+            {user && <NavLink to="/settings" className={fixedNavLinkClass} onClick={() => onCloseCart?.()}>Settings</NavLink>}
           </nav>
 
           {/* Right: Actions */}
           <div className="nav-actions">
-            <div className="currency-badge" onClick={() => setIsCurrencyOpen(!isCurrencyOpen)}>
+            <div className="currency-badge" onClick={() => {
+              onCloseCart?.()
+              setIsCurrencyOpen(!isCurrencyOpen)
+            }}>
               {currency}
               {isCurrencyOpen && (
                 <div className="currency-dropdown">
@@ -148,6 +154,7 @@ export default function Header({ cartCount, currency, onCurrencyChange, onCartCl
                           e.stopPropagation()
                           onCurrencyChange?.(curr)
                           setIsCurrencyOpen(false)
+                          onCloseCart?.()
                         }}
                         onMouseEnter={() => currencyIconRefs.current[curr]?.startAnimation?.()}
                         onMouseLeave={() => currencyIconRefs.current[curr]?.stopAnimation?.()}
@@ -212,7 +219,7 @@ export default function Header({ cartCount, currency, onCurrencyChange, onCartCl
       </header>
 
       {/* Mobile Sidebar Menu */}
-      <UserMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} categories={categories} user={user} />
+      <UserMenu isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} onCloseCart={onCloseCart} categories={categories} user={user} />
     </>
   )
 }
