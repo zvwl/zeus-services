@@ -434,6 +434,7 @@ export default function AdminOrdersPage() {
           </select>
           <input
             type="text"
+            name="orders_search"
             className="search-input"
             placeholder="Search by email, user ID, or order ID"
             value={searchQuery}

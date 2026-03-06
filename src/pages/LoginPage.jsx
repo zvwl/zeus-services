@@ -299,6 +299,7 @@ export default function LoginPage() {
                 <label>Two-Factor Code</label>
                 <input
                   type="text"
+                  name="mfa_code"
                   value={mfaCode}
                   onChange={(e) => setMfaCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                   placeholder="123456"

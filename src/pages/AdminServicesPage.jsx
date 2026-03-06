@@ -272,6 +272,7 @@ export default function AdminServicesPage() {
               <label>Service Name *</label>
               <input
                 type="text"
+                name="service_name"
                 value={formData.name}
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g., 50 Modded Cars"
@@ -292,6 +293,7 @@ export default function AdminServicesPage() {
               <input
                 type="number"
                 step="0.01"
+                name="service_price"
                 value={formData.price}
                 onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))}
                 placeholder="3.00"
@@ -310,6 +312,7 @@ export default function AdminServicesPage() {
             <div>
               <label>Description</label>
               <textarea
+                name="service_description"
                 value={formData.description}
                 onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Service description"
@@ -331,6 +334,7 @@ export default function AdminServicesPage() {
               <label>Icon (emoji)</label>
               <input
                 type="text"
+                name="service_icon"
                 value={formData.icon}
                 onChange={e => setFormData(prev => ({ ...prev, icon: e.target.value }))}
                 placeholder="🚗"
@@ -351,6 +355,7 @@ export default function AdminServicesPage() {
               <label>Platforms</label>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <select
+                  name="selected_platform"
                   value={selectedPlatform}
                   onChange={e => setSelectedPlatform(e.target.value)}
                   style={{
@@ -414,6 +419,7 @@ export default function AdminServicesPage() {
               <label>Versions</label>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <select
+                  name="selected_version"
                   value={selectedVersion}
                   onChange={e => setSelectedVersion(e.target.value)}
                   style={{
@@ -476,6 +482,7 @@ export default function AdminServicesPage() {
             <div>
               <label>Details (multiline)</label>
               <textarea
+                name="service_details"
                 value={detailText}
                 onChange={e => setDetailText(e.target.value)}
                 placeholder="Enter details. Use new lines if you want bullet-style lines."
@@ -500,6 +507,7 @@ export default function AdminServicesPage() {
               <label>
                 <input
                   type="checkbox"
+                  name="service_active"
                   checked={formData.active}
                   onChange={e => setFormData(prev => ({ ...prev, active: e.target.checked }))}
                 />

@@ -499,6 +499,7 @@ export default function AdminItemsPage() {
                           </label>
                           <input
                             type="text"
+                            name={`custom-field-name-${field.id}`}
                             value={field.fieldName}
                             onChange={(e) => updateFieldName(field.id, e.target.value)}
                             placeholder="Enter field name..."
@@ -530,6 +531,7 @@ export default function AdminItemsPage() {
                         <div style={{ display: 'flex', gap: '0.5rem' }}>
                           <input
                             type="text"
+                            name={`custom-field-option-input-${field.id}`}
                             placeholder="Enter option name..."
                             onKeyPress={(e) => {
                               if (e.key === 'Enter') {
@@ -592,6 +594,7 @@ export default function AdminItemsPage() {
                               >
                                 <input
                                   type="checkbox"
+                                  name={`custom-field-option-${field.id}-${option}`}
                                   checked={field.selectedOptions.includes(option)}
                                   onChange={() => toggleFieldOption(field.id, option)}
                                   style={{ cursor: 'pointer' }}
@@ -642,6 +645,7 @@ export default function AdminItemsPage() {
               <label>
                 <input
                   type="checkbox"
+                  name="item_active"
                   checked={formData.active}
                   onChange={(e) => setFormData({ ...formData, active: e.target.checked })}
                 />
@@ -653,6 +657,7 @@ export default function AdminItemsPage() {
               <label>
                 <input
                   type="checkbox"
+                  name="item_featured"
                   checked={formData.featured}
                   onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
                 />
@@ -674,6 +679,7 @@ export default function AdminItemsPage() {
                 <label>
                   <input
                     type="checkbox"
+                    name="item_stock_enabled"
                     checked={formData.stock_enabled}
                     onChange={(e) => setFormData({ 
                       ...formData, 
@@ -695,6 +701,7 @@ export default function AdminItemsPage() {
                     <label>
                       <input
                         type="checkbox"
+                        name="item_stock_unlimited"
                         checked={formData.stock_unlimited}
                         onChange={(e) => setFormData({ 
                           ...formData, 
@@ -746,13 +753,13 @@ export default function AdminItemsPage() {
           <div className="list-header">
             <h2>Existing Items ({filteredItems.length})</h2>
             <div className="filter-controls">
-              <select value={filterGame} onChange={(e) => setFilterGame(e.target.value)}>
+              <select name="filter_game" value={filterGame} onChange={(e) => setFilterGame(e.target.value)}>
                 <option value="all">All Games</option>
                 {games.map(game => (
                   <option key={game.id} value={game.id}>{game.name}</option>
                 ))}
               </select>
-              <select value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
+              <select name="filter_category" value={filterCategory} onChange={(e) => setFilterCategory(e.target.value)}>
                 <option value="all">All Categories</option>
                 {categories.map(cat => (
                   <option key={cat.id} value={cat.id}>{cat.name}</option>

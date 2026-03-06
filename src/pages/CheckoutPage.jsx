@@ -184,6 +184,7 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
               <p>Share account email, login details, or specific instructions for this order. Login details are encrypted and handled securely.</p>
             </div>
             <textarea
+              name="order_note"
               value={orderNote}
               onChange={(e) => onOrderNoteChange?.(e.target.value)}
               placeholder="Example: Account email is user@example.com, password is ********, please add cars to Slot 1 and keep outfits #3 and #4."

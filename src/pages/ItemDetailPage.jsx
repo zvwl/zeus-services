@@ -565,6 +565,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
                   </button>
                   <input
                     type="number"
+                    name="item_quantity"
                     min="1"
                     max="100"
                     value={cartQuantity}

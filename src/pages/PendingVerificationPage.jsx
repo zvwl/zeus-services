@@ -85,6 +85,7 @@ export default function PendingVerificationPage() {
               <div className="resend-field">
                 <input
                   type="email"
+                  name="resend_email"
                   value={resendEmail}
                   onChange={(e) => setResendEmail(e.target.value)}
                   placeholder="you@example.com"

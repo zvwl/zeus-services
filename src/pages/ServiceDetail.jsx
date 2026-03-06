@@ -278,6 +278,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
               </label>
               <select
                 className="platform-select"
+                name="service_platform"
                 value={platform}
                 onChange={(e) => {
                   setPlatform(e.target.value)
@@ -312,6 +313,7 @@ export default function ServiceDetail({ services, cartItems, addToCart, removeFr
                   </label>
                   <select
                     className="version-select"
+                    name="service_version"
                     value={version}
                     onChange={(e) => setVersion(e.target.value)}
                     style={{

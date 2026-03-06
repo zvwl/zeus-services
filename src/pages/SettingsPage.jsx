@@ -829,6 +829,7 @@ export default function SettingsPage() {
               {/* Hidden username field for password managers */}
               <input 
                 type="email" 
+                name="username"
                 autoComplete="username" 
                 value={user?.email || ''} 
                 readOnly 
@@ -997,6 +998,7 @@ export default function SettingsPage() {
                       <div className="form-group">
                         <input
                           type="text"
+                          name="disable_2fa_code"
                           value={disableCode}
                           onChange={(e) => setDisableCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
                           placeholder="123456"

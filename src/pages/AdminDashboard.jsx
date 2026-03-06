@@ -150,7 +150,7 @@ export default function AdminDashboard() {
       <div className="dashboard-controls">
         <div className="date-filter">
           <label>Date Range:</label>
-          <select value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
+          <select name="date_range" value={dateRange} onChange={(e) => setDateRange(e.target.value)}>
             <option value="all">All Time</option>
             <option value="7days">Last 7 Days</option>
             <option value="30days">Last 30 Days</option>

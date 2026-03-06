@@ -266,6 +266,7 @@ export default function AdminProductsPage() {
               <label>Product Name *</label>
               <input
                 type="text"
+                name="product_name"
                 value={formData.name}
                 onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                 placeholder="e.g., GTA Bundle Pack"
@@ -286,6 +287,7 @@ export default function AdminProductsPage() {
               <input
                 type="number"
                 step="0.01"
+                name="product_price"
                 value={formData.price}
                 onChange={e => setFormData(prev => ({ ...prev, price: e.target.value }))}
                 placeholder="9.99"
@@ -304,6 +306,7 @@ export default function AdminProductsPage() {
             <div>
               <label>Description</label>
               <textarea
+                name="product_description"
                 value={formData.description}
                 onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Product description"
@@ -325,6 +328,7 @@ export default function AdminProductsPage() {
               <label>Icon (emoji)</label>
               <input
                 type="text"
+                name="product_icon"
                 value={formData.icon}
                 onChange={e => setFormData(prev => ({ ...prev, icon: e.target.value }))}
                 placeholder="📦"
@@ -345,6 +349,7 @@ export default function AdminProductsPage() {
               <label>Platforms</label>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <select
+                  name="selected_platform"
                   value={selectedPlatform}
                   onChange={e => setSelectedPlatform(e.target.value)}
                   style={{
@@ -408,6 +413,7 @@ export default function AdminProductsPage() {
               <label>Versions</label>
               <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
                 <select
+                  name="selected_version"
                   value={selectedVersion}
                   onChange={e => setSelectedVersion(e.target.value)}
                   style={{
@@ -470,6 +476,7 @@ export default function AdminProductsPage() {
             <div>
               <label>Details (multiline)</label>
               <textarea
+                name="product_details"
                 value={detailText}
                 onChange={e => setDetailText(e.target.value)}
                 placeholder="Enter details. Use new lines if you want bullet-style lines."
@@ -494,6 +501,7 @@ export default function AdminProductsPage() {
               <label>
                 <input
                   type="checkbox"
+                  name="product_active"
                   checked={formData.active}
                   onChange={e => setFormData(prev => ({ ...prev, active: e.target.checked }))}
                 />

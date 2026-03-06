@@ -257,6 +257,7 @@ export default function AdminGamesPage() {
               <label>
                 <input
                   type="checkbox"
+                  name="is_active"
                   checked={formData.is_active}
                   onChange={(e) => setFormData({ ...formData, is_active: e.target.checked })}
                 />
@@ -268,6 +269,7 @@ export default function AdminGamesPage() {
               <label>
                 <input
                   type="checkbox"
+                  name="is_coming_soon"
                   checked={formData.is_coming_soon}
                   onChange={(e) => setFormData({ ...formData, is_coming_soon: e.target.checked })}
                 />

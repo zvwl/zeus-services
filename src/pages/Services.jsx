@@ -95,6 +95,7 @@ export default function ServicesPage({ services, formatPrice, servicesLoading })
         <div className="search-box">
           <input
             type="text"
+            name="services_search"
             placeholder="Search services..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

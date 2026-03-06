@@ -125,6 +125,7 @@ export default function ProductsPage({ formatPrice }) {
             <div className="search-box">
               <input
                 type="text"
+                name="products_search"
                 placeholder="Search products..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}

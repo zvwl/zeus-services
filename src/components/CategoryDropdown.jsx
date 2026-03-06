@@ -72,6 +72,8 @@ export default function CategoryDropdown({ category, onCloseCart }) {
         <div className="dropdown-search">
           <input
             type="text"
+            id={`category-search-${category.slug}`}
+            name={`category-search-${category.slug}`}
             placeholder="Search games..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

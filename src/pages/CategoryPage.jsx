@@ -295,6 +295,7 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
           <div className="search-box">
             <input
               type="text"
+              name="category_search"
               placeholder={`Search ${category.name.toLowerCase()}...`}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
