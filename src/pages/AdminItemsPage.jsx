@@ -33,8 +33,7 @@ export default function AdminItemsPage() {
     price: '',
     description: '',
     icon: '',
-    platforms: [],
-    versions: [],
+    customFields: [], // Array of { id, fieldName, availableOptions: [], selectedOptions: [] }
     detailsText: '',
     active: true,
     featured: false,
@@ -42,10 +41,6 @@ export default function AdminItemsPage() {
     stock_quantity: '',
     stock_unlimited: false
   })
-
-  // Platform and version options
-  const platformOptions = ['Steam', 'Epic Games', 'Xbox App', 'Rockstar Launcher']
-  const versionOptions = ['Legacy', 'Enhanced']
 
   useEffect(() => {
     fetchData()
@@ -100,8 +95,11 @@ export default function AdminItemsPage() {
         price: parseFloat(formData.price),
         description: formData.description,
         icon: formData.icon,
-        platforms: formData.platforms,
-        versions: formData.versions,
+        custom_fields: formData.customFields.map(field => ({
+          fieldName: field.fieldName,
+          selectedOptions: field.selectedOptions,
+          availableOptions: field.availableOptions
+        })),
         details: formData.detailsText
           .split('\n')
           .map((detail) => detail.trim())
@@ -146,6 +144,16 @@ export default function AdminItemsPage() {
   }
 
   const handleEdit = (item) => {
+      // Load custom fields from database only (legacy columns removed)
+      const customFieldsData = Array.isArray(item.custom_fields)
+        ? item.custom_fields.map((field, index) => ({
+            id: `field-${Date.now()}-${index}`,
+            fieldName: field.fieldName || '',
+            availableOptions: field.availableOptions || [],
+            selectedOptions: field.selectedOptions || []
+          }))
+        : []
+    
     setEditingItem(item)
     setFormData({
       game_id: item.game_id,
@@ -155,8 +163,7 @@ export default function AdminItemsPage() {
       price: item.price,
       description: item.description || '',
       icon: item.icon || '',
-      platforms: item.platforms || [],
-      versions: item.versions || [],
+        customFields: customFieldsData,
       detailsText: (item.details || []).join('\n'),
       active: item.active,
       featured: item.featured || false,
@@ -211,8 +218,7 @@ export default function AdminItemsPage() {
       price: '',
       description: '',
       icon: '',
-      platforms: [],
-      versions: [],
+      customFields: [],
       detailsText: '',
       active: true,
       featured: false,
@@ -222,21 +228,76 @@ export default function AdminItemsPage() {
     })
   }
 
-  const handlePlatformToggle = (platform) => {
+  // Custom Fields Management
+  const addCustomField = () => {
+    const newField = {
+      id: `field-${Date.now()}`,
+      fieldName: '',
+      availableOptions: [],
+      selectedOptions: []
+    }
     setFormData(prev => ({
       ...prev,
-      platforms: prev.platforms.includes(platform)
-        ? prev.platforms.filter(p => p !== platform)
-        : [...prev.platforms, platform]
+      customFields: [...prev.customFields, newField]
     }))
   }
 
-  const handleVersionToggle = (version) => {
+  const removeCustomField = (fieldId) => {
     setFormData(prev => ({
       ...prev,
-      versions: prev.versions.includes(version)
-        ? prev.versions.filter(v => v !== version)
-        : [...prev.versions, version]
+      customFields: prev.customFields.filter(f => f.id !== fieldId)
+    }))
+  }
+
+  const  updateFieldName = (fieldId, newName) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(f =>
+        f.id === fieldId ? { ...f, fieldName: newName } : f
+      )
+    }))
+  }
+
+  const addFieldOption = (fieldId, option) => {
+    if (!option.trim()) return
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(f =>
+        f.id === fieldId && !f.availableOptions.includes(option)
+          ? { ...f, availableOptions: [...f.availableOptions, option] }
+          : f
+      )
+    }))
+  }
+
+  const removeFieldOption = (fieldId, option) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(f =>
+        f.id === fieldId
+          ? {
+              ...f,
+              availableOptions: f.availableOptions.filter(o => o !== option),
+              selectedOptions: f.selectedOptions.filter(o => o !== option)
+            }
+          : f
+      )
+    }))
+  }
+
+  const toggleFieldOption = (fieldId, option) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(f =>
+        f.id === fieldId
+          ? {
+              ...f,
+              selectedOptions: f.selectedOptions.includes(option)
+                ? f.selectedOptions.filter(o => o !== option)
+                : [...f.selectedOptions, option]
+            }
+          : f
+      )
     }))
   }
 
@@ -383,36 +444,172 @@ export default function AdminItemsPage() {
               )}
             </div>
 
-            <div className="form-group">
-              <label>Platforms</label>
-              <div className="checkbox-group-horizontal">
-                {platformOptions.map(platform => (
-                  <label key={platform}>
-                    <input
-                      type="checkbox"
-                      checked={formData.platforms.includes(platform)}
-                      onChange={() => handlePlatformToggle(platform)}
-                    />
-                    {platform}
-                  </label>
-                ))}
+            {/* Custom Fields Section */}
+            <div className="form-group" style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <label style={{ margin: 0, color: '#3b82f6', fontWeight: 600 }}>Custom Dropdown Fields</label>
+                <button
+                  type="button"
+                  className="btn-add"
+                  onClick={addCustomField}
+                  style={{ fontSize: '0.9rem' }}
+                >
+                  + Add Field Group
+                </button>
               </div>
-            </div>
+              <small style={{ display: 'block', color: '#94a3b8', marginBottom: '1rem', lineHeight: '1.5' }}>
+                Create custom dropdown fields like Platform, Version, Region, Language, etc. Each field can have multiple checkbox options.
+              </small>
 
-            <div className="form-group">
-              <label>Versions</label>
-              <div className="checkbox-group-horizontal">
-                {versionOptions.map(version => (
-                  <label key={version}>
-                    <input
-                      type="checkbox"
-                      checked={formData.versions.includes(version)}
-                      onChange={() => handleVersionToggle(version)}
-                    />
-                    {version}
-                  </label>
-                ))}
-              </div>
+              {formData.customFields.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontStyle: 'italic' }}>
+                  No custom fields yet. Click "Add Field Group" to create your first dropdown field.
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {formData.customFields.map((field, fieldIndex) => (
+                    <div
+                      key={field.id}
+                      style={{
+                        padding: '1.25rem',
+                        background: 'rgba(255, 255, 255, 0.02)',
+                        border: '1px solid rgba(251, 191, 36, 0.25)',
+                        borderRadius: '8px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'flex-start' }}>
+                        <div style={{ flex: 1 }}>
+                          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
+                            Field Name (e.g., Platform, Version, Region)
+                          </label>
+                          <input
+                            type="text"
+                            value={field.fieldName}
+                            onChange={(e) => updateFieldName(field.id, e.target.value)}
+                            placeholder="Enter field name..."
+                            style={{
+                              width: '100%',
+                              padding: '0.6rem',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(212, 175, 55, 0.3)',
+                              borderRadius: '6px',
+                              color: '#f1f5f9'
+                            }}
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          className="btn-remove"
+                          onClick={() => removeCustomField(field.id)}
+                          title="Remove this field group"
+                          style={{ marginTop: '1.7rem' }}
+                        >
+                          ✕
+                        </button>
+                      </div>
+
+                      <div style={{ marginBottom: '1rem' }}>
+                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
+                          Add Options for this field
+                        </label>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <input
+                            type="text"
+                            placeholder="Enter option name..."
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                addFieldOption(field.id, e.target.value)
+                                e.target.value = ''
+                              }
+                            }}
+                            style={{
+                              flex: 1,
+                              padding: '0.6rem',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              border: '1px solid rgba(212, 175, 55, 0.3)',
+                              borderRadius: '6px',
+                              color: '#f1f5f9'
+                            }}
+                          />
+                          <button
+                            type="button"
+                            className="btn-add"
+                            onClick={(e) => {
+                              const input = e.target.previousElementSibling
+                              addFieldOption(field.id, input.value)
+                              input.value = ''
+                            }}
+                            style={{ whiteSpace: 'nowrap' }}
+                          >
+                            + Add
+                          </button>
+                        </div>
+                      </div>
+
+                      {field.availableOptions.length > 0 && (
+                        <div>
+                          <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#fbbf24' }}>
+                            Select options to include:
+                          </label>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                            {field.availableOptions.map((option) => (
+                              <div
+                                key={option}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.5rem',
+                                  padding: '0.5rem 0.75rem',
+                                  background: field.selectedOptions.includes(option)
+                                    ? 'rgba(251, 191, 36, 0.15)'
+                                    : 'rgba(255, 255, 255, 0.05)',
+                                  border: `1px solid ${
+                                    field.selectedOptions.includes(option)
+                                      ? 'rgba(251, 191, 36, 0.5)'
+                                      : 'rgba(148, 163, 184, 0.3)'
+                                  }`,
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s'
+                                }}
+                                onClick={() => toggleFieldOption(field.id, option)}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={field.selectedOptions.includes(option)}
+                                  onChange={() => toggleFieldOption(field.id, option)}
+                                  style={{ cursor: 'pointer' }}
+                                />
+                                <span style={{ color: '#f1f5f9', fontSize: '0.9rem' }}>{option}</span>
+                                <button
+                                  type="button"
+                                  onClick={(e) => {
+                                    e.stopPropagation()
+                                    removeFieldOption(field.id, option)
+                                  }}
+                                  style={{
+                                    background: 'none',
+                                    border: 'none',
+                                    color: '#ef4444',
+                                    cursor: 'pointer',
+                                    padding: '0 0.25rem',
+                                    fontSize: '1.1rem',
+                                    lineHeight: 1
+                                  }}
+                                  title="Remove this option"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             <div className="form-group">
