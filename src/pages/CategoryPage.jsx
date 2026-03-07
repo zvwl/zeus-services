@@ -352,40 +352,10 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
 
         {filteredItems.length === 0 ? (
           <div className="no-items-message">
-            {!isAllGamesView && game?.is_coming_soon ? (
-              <div className="coming-soon-content">
-                <h2>🎮 {gameName} {category.name} - Coming Soon!</h2>
-                <p>
-                  We're actively preparing our premium {category.name.toLowerCase()} services for {gameName}. 
-                  Our team is working hard to bring you the same high-quality, safe, and reliable services 
-                  that our customers trust across all supported games.
-                </p>
-                <h3>What to Expect</h3>
-                <p>
-                  When {gameName} {category.name.toLowerCase()} services launch, you'll get:
-                </p>
-                <ul style={{ textAlign: 'left', maxWidth: '600px', margin: '1rem auto' }}>
-                  <li>100% manual service by experienced players</li>
-                  <li>Safe and secure - we never use bots</li>
-                  <li>Fast delivery with 24/7 customer support</li>
-                  <li>Competitive pricing and guaranteed satisfaction</li>
-                </ul>
-                <h3>Get Notified</h3>
-                <p>
-                  Want to be the first to know when {gameName} services launch? 
-                  Join our community or check back soon for updates!
-                </p>
-                <div style={{ marginTop: '2rem' }}>
-                  <a href="/" className="cta-button">Explore Available Services</a>
-                </div>
-              </div>
-            ) : (
-              <>
-                <p>No items found{searchQuery ? ' matching your search' : ''}.</p>
-                {searchQuery && (
-                  <p>Try adjusting your search terms or filters.</p>
-                )}
-              </>
+            <h2>Not Found</h2>
+            <p>No items available{!isAllGamesView && gameName ? ` for ${gameName} ${category.name.toLowerCase()}` : ''}.</p>
+            {searchQuery && (
+              <p>Try adjusting your search.</p>
             )}
           </div>
         ) : (

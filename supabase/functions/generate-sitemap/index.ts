@@ -109,22 +109,10 @@ Deno.serve(async () => {
       })
     }
 
-    // Add all category+game combinations (even if they have no items yet)
-    // This ensures Google can discover and index all valid pages
-    for (const category of categories) {
-      const categoryPath = encodePath(category.slug)
-      for (const game of games) {
-        const categoryGamePath = `${categoryPath}/${encodeURIComponent(game.slug)}`
-        dynamicEntries.push({
-          loc: `${BASE_URL}${categoryGamePath}`,
-          lastmod: toDate(game.updated_at, today),
-          changefreq: 'daily',
-          priority: '0.9'
-        })
-      }
-    }
+    // Track which category+game combinations have items
+    const categoryGameSeen = new Set<string>()
 
-    // Add individual item pages
+    // Add only category+game pages that have items, plus individual item pages
     for (const item of items) {
       const category = categoryById.get(item.category_id)
       const game = gameById.get(item.game_id)
@@ -134,6 +122,19 @@ Deno.serve(async () => {
       const categoryGamePath = `${categoryPath}/${encodeURIComponent(game.slug)}`
       const itemPath = `${categoryGamePath}/${encodeURIComponent(item.slug)}`
 
+      // Add category+game page once per combination
+      const comboKey = `${category.id}:${game.id}`
+      if (!categoryGameSeen.has(comboKey)) {
+        categoryGameSeen.add(comboKey)
+        dynamicEntries.push({
+          loc: `${BASE_URL}${categoryGamePath}`,
+          lastmod: toDate(game.updated_at, today),
+          changefreq: 'daily',
+          priority: '0.9'
+        })
+      }
+
+      // Add individual item page
       dynamicEntries.push({
         loc: `${BASE_URL}${itemPath}`,
         lastmod: toDate(item.updated_at, today),
