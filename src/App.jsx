@@ -46,6 +46,7 @@ const TrustPage = lazy(() => import('./pages/TrustPage'))
 const ProcessPage = lazy(() => import('./pages/ProcessPage'))
 const FAQPage = lazy(() => import('./pages/FAQPage'))
 const ComparisonPage = lazy(() => import('./pages/ComparisonPage'))
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'))
 
 function App() {
   // Load cart from localStorage on mount
@@ -703,6 +704,10 @@ function App() {
         <Route
           path="/comparison"
           element={<ComparisonPage />}
+        />
+        <Route
+          path="*"
+          element={<NotFoundPage />}
         />
       </Routes>
       </Suspense>

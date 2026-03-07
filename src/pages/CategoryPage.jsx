@@ -8,6 +8,7 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import ServiceCard from '../components/ServiceCard'
 import QuickAddModal from '../components/QuickAddModal'
 import Pagination from '../components/Pagination'
+import NotFoundPage from './NotFoundPage'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 import '../components/ServiceCard.css'
@@ -229,21 +230,15 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   }
 
   if (!category) {
-    return (
-      <div className="section">
-        <h1>Not Found</h1>
-        <p>The requested category could not be found.</p>
-      </div>
-    )
+    return <NotFoundPage message="The requested category could not be found." />
   }
 
   if (gameSlug && !game) {
-    return (
-      <div className="section">
-        <h1>Not Found</h1>
-        <p>The requested game could not be found.</p>
-      </div>
-    )
+    return <NotFoundPage message="The requested game could not be found." />
+  }
+
+  if (gameSlug && items.length === 0) {
+    return <NotFoundPage message="This page does not exist." />
   }
 
   const isAllGamesView = !gameSlug
