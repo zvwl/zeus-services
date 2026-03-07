@@ -7,6 +7,7 @@ import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
 import FlyingCartAnimation from '../components/FlyingCartAnimation'
+import NotFoundPage from './NotFoundPage'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 
@@ -359,12 +360,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, platformOptions
   }
 
   if (!item || !game || !category) {
-    return (
-      <div className="section">
-        <h1>Not Found</h1>
-        <p>The requested item could not be found.</p>
-      </div>
-    )
+    return <NotFoundPage />
   }
 
   const pageTitle = `${item.name} - ${game.name} ${category.name}`

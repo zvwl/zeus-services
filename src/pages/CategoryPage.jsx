@@ -230,15 +230,15 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   }
 
   if (!category) {
-    return <NotFoundPage message="The requested category could not be found." />
+    return <NotFoundPage />
   }
 
   if (gameSlug && !game) {
-    return <NotFoundPage message="The requested game could not be found." />
+    return <NotFoundPage />
   }
 
   if (gameSlug && items.length === 0) {
-    return <NotFoundPage message="This page does not exist." />
+    return <NotFoundPage />
   }
 
   const isAllGamesView = !gameSlug
