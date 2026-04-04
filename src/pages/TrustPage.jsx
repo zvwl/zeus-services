@@ -303,7 +303,7 @@ export default function TrustPage() {
                 marginRight: '1rem',
                 marginBottom: '0.5rem'
               }}
-              onClick={() => window.location.href = '/accounts/gta5'}
+              onClick={() => window.location.href = '/accounts'}
             >
               Get Modded Accounts
             </button>
@@ -319,7 +319,7 @@ export default function TrustPage() {
                 fontWeight: '600',
                 cursor: 'pointer'
               }}
-              onClick={() => window.location.href = '/boosting/gta5'}
+              onClick={() => window.location.href = '/boosting'}
             >
               Boost Your Account
             </button>

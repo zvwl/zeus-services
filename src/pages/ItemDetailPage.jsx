@@ -11,7 +11,7 @@ import NotFoundPage from './NotFoundPage'
 import { isPrerender } from '../utils/isPrerender'
 import '../App.css'
 
-export default function ItemDetailPage({ formatPrice, addToCart, platformOptions, cartItems = [], updateQuantity, removeFromCart }) {
+export default function ItemDetailPage({ formatPrice, addToCart, cartItems = [], updateQuantity, removeFromCart }) {
   const { categorySlug, gameSlug, itemSlug } = useParams()
   const navigate = useNavigate()
   const location = useLocation()

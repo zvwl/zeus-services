@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
       if (error) return
       const verifiedTotp = data?.totp?.find(f => f.status === 'verified')
       setRequiresMfa(Boolean(verifiedTotp))
-    } catch (_) {
+    } catch {
       // ignore
     }
   }
@@ -144,7 +144,7 @@ export default function ResetPasswordPage() {
           navigate('/login')
         }, 2000)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('An error occurred. Please try again.')
     }
 

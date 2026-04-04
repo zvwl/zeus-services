@@ -40,7 +40,7 @@ export function AccordionButton({ children, showArrow = true, isOpen, onClick })
   )
 }
 
-export function AccordionPanel({ children, keepRendered = false, transition = { type: 'spring', stiffness: 150, damping: 22 } }) {
+export function AccordionPanel({ children, transition = { type: 'spring', stiffness: 150, damping: 22 } }) {
   return (
     <motion.div
       className="accordion-panel"

@@ -145,13 +145,6 @@ export default function AdminServicesPage() {
     }))
   }
 
-  const handleRemoveDetail = (index) => {
-    setFormData(prev => ({
-      ...prev,
-      details: prev.details.filter((_, i) => i !== index)
-    }))
-  }
-
   const handleSave = async () => {
     if (!formData.name || !formData.price) {
       setError('Name and price are required')

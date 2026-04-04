@@ -11,8 +11,8 @@ import './AuthPages.css'
 export default function LoginPage() {
   const [searchParams] = useSearchParams()
   // Validate redirect parameter to prevent open redirect attacks
-  const rawRedirect = searchParams.get('redirect') || '/boosting/gta5'
-  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/boosting/gta5'
+  const rawRedirect = searchParams.get('redirect') || '/boosting'
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/boosting'
   const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
   const bypassTurnstile = isTurnstileBypassed()
   const [email, setEmail] = useState('')
@@ -116,7 +116,7 @@ export default function LoginPage() {
         setError(result.error)
         localStorage.removeItem('oauthRedirect')
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Could not start Google sign-in')
       localStorage.removeItem('oauthRedirect')
     }
@@ -136,7 +136,7 @@ export default function LoginPage() {
         setError(result.error)
         localStorage.removeItem('oauthRedirect')
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Could not start Discord sign-in')
       localStorage.removeItem('oauthRedirect')
     }

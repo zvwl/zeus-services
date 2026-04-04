@@ -16,7 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [emailVerified, setEmailVerified] = useState(false)
-  const [isRecoveringFromRedirect, setIsRecoveringFromRedirect] = useState(false)
+  const [isRecoveringFromRedirect] = useState(false)
   const [isAdmin, setIsAdmin] = useState(() => {
     try {
       return localStorage.getItem('isAdmin') === 'true'
@@ -121,7 +121,7 @@ export const AuthProvider = ({ children }) => {
       
       
       // Call the edge function to assign Discord role (it will check if Discord is connected)
-      const { data, error } = await supabase.functions.invoke('assign-discord-role', {
+      const { error } = await supabase.functions.invoke('assign-discord-role', {
         body: { 
           userId: userId,
           retroactive: true 
@@ -379,14 +379,14 @@ export const AuthProvider = ({ children }) => {
       await createSessionRecord(data.user.id)
 
       return { success: true }
-    } catch (err) {
+    } catch (_err) {
       return { success: false, error: 'An error occurred during login' }
     }
   }
 
   const verifyMfaChallenge = async ({ factorId, challengeId, code }) => {
     try {
-      const { data, error } = await supabase.auth.mfa.verify({
+      const { error } = await supabase.auth.mfa.verify({
         factorId,
         challengeId,
         code
@@ -449,7 +449,7 @@ export const AuthProvider = ({ children }) => {
 
       // Supabase will redirect; return URL for completeness in case caller wants to use it
       return { success: true, url: data?.url }
-    } catch (err) {
+    } catch (_err) {
       return { success: false, error: 'Could not start Google sign-in' }
     }
   }
@@ -469,7 +469,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       return { success: true, url: data?.url }
-    } catch (err) {
+    } catch (_err) {
       return { success: false, error: 'Could not start Discord sign-in' }
     }
   }
@@ -494,8 +494,8 @@ export const AuthProvider = ({ children }) => {
       if (error) {
         console.warn('Failed to create session record:', error)
       }
-    } catch (err) {
-      console.warn('Session record creation error:', err)
+    } catch (_err) {
+      console.warn('Session record creation error:', _err)
     }
   }
 
@@ -546,8 +546,8 @@ export const AuthProvider = ({ children }) => {
 
       // Supabase will send confirmation email via SMTP settings
       return { success: true, requiresVerification: true, message: 'Please check your email to verify your account' }
-    } catch (err) {
-      console.error('Signup error:', err)
+    } catch (_err) {
+      console.error('Signup error:', _err)
       return { success: false, error: 'An error occurred during signup' }
     }
   }
@@ -568,9 +568,9 @@ export const AuthProvider = ({ children }) => {
       const logoutPromise = supabase.auth.signOut({ scope: 'global' })
       
       await Promise.race([logoutPromise, timeoutPromise])
-    } catch (err) {
+    } catch (_err) {
       // Logout call failed or timed out - that's OK, local state is already cleared
-      console.error('Supabase logout failed (non-blocking):', err)
+      console.error('Supabase logout failed (non-blocking):', _err)
     } finally {
       // Clear ALL client storage
       try {
@@ -612,7 +612,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       return { success: true, message: 'Verification email sent! Check your inbox.' }
-    } catch (err) {
+    } catch (_err) {
       return { success: false, error: 'Failed to resend verification email' }
     }
   }
@@ -642,7 +642,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       return { success: true, message: 'Verification email sent! Check your inbox.' }
-    } catch (err) {
+    } catch (_err) {
       return { success: false, error: 'Failed to resend verification email' }
     }
   }
@@ -667,7 +667,7 @@ export const AuthProvider = ({ children }) => {
       setUser(prev => ({ ...prev, name }))
       
       return { success: true }
-    } catch (err) {
+    } catch (_err) {
       return { success: false, error: 'Failed to update profile' }
     }
   }
@@ -683,7 +683,7 @@ export const AuthProvider = ({ children }) => {
       }
 
       return { success: true }
-    } catch (err) {
+    } catch (_err) {
       return { success: false, error: 'Failed to change password' }
     }
   }

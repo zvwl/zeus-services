@@ -1,6 +1,11 @@
 {
   "redirects": [
     {
+      "source": "/boosting/forza-horizon-6",
+      "destination": "/topups/forza-horizon-6",
+      "permanent": true
+    },
+    {
       "source": "/:path*",
       "has": [
         {
@@ -70,7 +75,7 @@
         },
         {
           "key": "Cache-Control",
-          "value": "public, max-age=3600, must-revalidate"
+          "value": "public, max-age=600, must-revalidate"
         }
       ]
     },

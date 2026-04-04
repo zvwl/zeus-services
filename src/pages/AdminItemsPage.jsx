@@ -482,7 +482,7 @@ export default function AdminItemsPage() {
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                  {formData.customFields.map((field, fieldIndex) => (
+                  {formData.customFields.map((field) => (
                     <div
                       key={field.id}
                       style={{

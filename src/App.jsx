@@ -60,10 +60,8 @@ function App() {
   })
   const [isCartDrawerOpen, setIsCartDrawerOpen] = useState(false)
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
-  const [servicesLoading, setServicesLoading] = useState(false)
   const [checkoutStatus, setCheckoutStatus] = useState({ state: 'idle', message: '' })
   const [currency, setCurrency] = useState('GBP')
-  const [userCountry, setUserCountry] = useState(null)
   const [orderNote, setOrderNote] = useState('')
   const [paymentMethod, setPaymentMethod] = useState('stripe')
   const [maxVisibleToasts, setMaxVisibleToasts] = useState(
@@ -80,12 +78,13 @@ function App() {
         } else {
           return { ...state, queue: [...state.queue, action.toast] }
         }
-      case 'REMOVE':
+      case 'REMOVE': {
         const newVisible = state.visible.filter(t => t.id !== action.id)
         if (newVisible.length < maxVisible && state.queue.length > 0) {
           return { visible: [state.queue[0], ...newVisible], queue: state.queue.slice(1) }
         }
         return { ...state, visible: newVisible }
+      }
       case 'REBALANCE': {
         // If max is reduced (desktop -> mobile), move overflow into queue.
         if (state.visible.length > maxVisible) {
@@ -114,9 +113,8 @@ function App() {
 
   const [toastState, dispatchToast] = useReducer(toastReducer, { visible: [], queue: [] })
   const toasts = toastState.visible
-  const toastQueue = toastState.queue
   const isMobileViewport = maxVisibleToasts === 2
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -183,9 +181,8 @@ function App() {
       try {
         const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/detect-location`)
         const data = await response.json()
-        setUserCountry(data.country_code)
         setCurrency(data.currency)
-      } catch (err) {
+      } catch (_err) {
         setCurrency('GBP')
       }
     }
@@ -429,7 +426,7 @@ function App() {
         })
 
         let fnData = null
-        try { fnData = await fnRes.json() } catch (e) { /* ignore */ }
+        try { fnData = await fnRes.json() } catch (_e) { /* ignore */ }
 
         if (!fnRes.ok) {
           const errorMsg = `Stripe error: ${fnData?.error || fnRes.statusText || 'Request failed'}`

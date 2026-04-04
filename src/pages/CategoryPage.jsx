@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import { useAuth } from '../contexts/AuthContext'
 import SEO from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
@@ -16,7 +15,6 @@ import '../components/ServiceCard.css'
 export default function CategoryPage({ formatPrice, addToCart, platformOptions }) {
   const { categorySlug, gameSlug } = useParams()
   const navigate = useNavigate()
-  const { user } = useAuth()
   const [items, setItems] = useState([])
   const [games, setGames] = useState([]) // For "all games" view
   const [game, setGame] = useState(null) // Single game

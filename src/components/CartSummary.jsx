@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
 import './Cart.css'
 
-export default function CartSummary({ items, onRemove, onUpdateQuantity, currency, formatPrice }) {
+export default function CartSummary({ items, onRemove, onUpdateQuantity, formatPrice }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -48,7 +48,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, currenc
         <div className="empty-cart">
           <p>Your cart is empty</p>
           <span className="empty-icon"><AnimatedLucideIcon icon={ShoppingCart} size={80} animation="swing" animateOnHover={false} /></span>
-          <button onClick={() => navigate('/boosting/gta5')} className="primary-btn">
+          <button onClick={() => navigate('/boosting')} className="primary-btn">
             Start Shopping
           </button>
         </div>

@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
         setMessage('Password reset link sent! Check your email inbox.')
         setEmailSent(true)
       }
-    } catch (err) {
+    } catch (_err) {
       setError('An error occurred. Please try again.')
       setCaptchaToken(null)
       setCaptchaKey((prev) => prev + 1)

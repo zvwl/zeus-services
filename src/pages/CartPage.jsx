@@ -16,7 +16,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   const orderDetailsRef = useRef(null)
   const hardTimeoutRef = useRef(null)
   const navigate = useNavigate()
-  const { user, loading: authLoading, isRecoveringFromRedirect } = useAuth()
+  const { user, loading: authLoading } = useAuth()
 
   const success = searchParams.get('success')
   const canceled = searchParams.get('canceled')
@@ -113,7 +113,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
           new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 2000))
         ])
         accessToken = session?.access_token
-      } catch (err) {
+      } catch (_err) {
         // No user session available, continue without auth
       }
 
@@ -180,7 +180,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         console.error('Max retries reached - order not found')
         
         // Fallback: if no user and no order found, show confirmation message using lastPaymentAttempt
-        if (!userSession) {
+        if (!user) {
           try {
             const lastPayment = localStorage.getItem('lastPaymentAttempt')
             if (lastPayment) {
@@ -252,38 +252,6 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
     } catch (err) {
       console.error('Error fetching order:', err)
       setFetchError(err.message || 'Failed to load order')
-    } finally {
-      setLoadingOrder(false)
-    }
-  }
-
-  const fetchOrderDetails = async (id) => {
-    try {
-      setLoadingOrder(true)
-      const { data: sessionData } = await supabase.auth.getSession()
-      const accessToken = sessionData?.session?.access_token
-
-      if (!accessToken) {
-        throw new Error('Please log in to view your order')
-      }
-
-      const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/get-user-order?orderId=${id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${accessToken}`
-        }
-      })
-
-      const body = await res.json()
-      if (!res.ok || body?.error) {
-        throw new Error(body?.error || 'Failed to load order')
-      }
-
-      setOrderDetails(body.order)
-    } catch (err) {
-      console.error('Error fetching order:', err)
     } finally {
       setLoadingOrder(false)
     }

@@ -42,7 +42,9 @@ export default function ProtectedAdminRoute({ children }) {
     try {
       localStorage.clear()
       sessionStorage.clear()
-    } catch {}
+    } catch (_storageErr) {
+      // Ignore storage clear errors.
+    }
     
     // Try Supabase logout but don't wait long
     try {
@@ -53,7 +55,9 @@ export default function ProtectedAdminRoute({ children }) {
         supabase.auth.signOut({ scope: 'global' }),
         timeoutPromise
       ])
-    } catch {}
+    } catch (_signOutErr) {
+      // Ignore signout timeout/network errors and continue redirect.
+    }
     
     // Redirect immediately
     window.location.href = '/login'

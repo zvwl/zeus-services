@@ -10,8 +10,7 @@ export default function CartDrawer({
   cartItems, 
   onRemove, 
   onUpdateQuantity, 
-  formatPrice, 
-  currency 
+  formatPrice
 }) {
   const navigate = useNavigate()
 

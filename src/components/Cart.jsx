@@ -6,7 +6,7 @@ import { XIcon } from './XIcon'
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 
-export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
+export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
   const navigate = useNavigate()
   const { emailVerified } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)

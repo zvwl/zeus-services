@@ -62,7 +62,6 @@ export default function AdminGamesPage() {
   const handleSubmit = async (e) => {
     e.preventDefault()
 
-    const action = editingGame ? 'update' : 'create'
     const title = editingGame ? 'Update Game' : 'Create Game'
     const message = editingGame 
       ? `Are you sure you want to update "${editingGame.name}"?`

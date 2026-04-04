@@ -12,6 +12,7 @@ export default function NotFoundPage({
       <SEO
         title="404 Not Found | zeuservices"
         description="The page you are looking for does not exist."
+        robots="noindex, follow"
       />
 
       <div className="not-found-glow not-found-glow-left" aria-hidden="true" />

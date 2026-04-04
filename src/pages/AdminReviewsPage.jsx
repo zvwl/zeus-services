@@ -41,7 +41,7 @@ export default function AdminReviewsPage() {
 
       setIsAdmin(true)
       fetchReviews()
-    } catch (err) {
+    } catch (_err) {
       setError('Error checking admin status')
       setLoading(false)
     }

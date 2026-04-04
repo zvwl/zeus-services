@@ -425,7 +425,7 @@ export default function ProcessPage() {
                 cursor: 'pointer',
                 marginRight: '1rem'
               }}
-              onClick={() => window.location.href = '/accounts/gta5'}
+              onClick={() => window.location.href = '/accounts'}
             >
               Shop Modded Accounts
             </button>
@@ -441,7 +441,7 @@ export default function ProcessPage() {
                 fontWeight: '600',
                 cursor: 'pointer'
               }}
-              onClick={() => window.location.href = '/boosting/gta5'}
+              onClick={() => window.location.href = '/boosting'}
             >
               Browse Boosting Services
             </button>

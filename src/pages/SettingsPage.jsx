@@ -25,7 +25,6 @@ export default function SettingsPage() {
   const checkNameTimeoutRef = useRef(null)
   
   // Password state
-  const [currentPassword, setCurrentPassword] = useState('')
   const [newPassword, setNewPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [passwordMessage, setPasswordMessage] = useState('')
@@ -406,7 +405,7 @@ export default function SettingsPage() {
     setDiscordMessage('')
     
     try {
-      const { data, error } = await supabase.auth.linkIdentity({ 
+      const { error } = await supabase.auth.linkIdentity({ 
         provider: 'discord'
       })
       
@@ -418,7 +417,7 @@ export default function SettingsPage() {
       
       // Supabase will redirect to Discord OAuth, then back
       // The page will reload and Discord will be connected
-    } catch (err) {
+    } catch (_err) {
       setDiscordMessage('Failed to connect Discord')
       setDiscordLoading(false)
     }
@@ -535,7 +534,6 @@ export default function SettingsPage() {
       setPasswordMessage('Password changed! Refreshing your session...')
       setNewPassword('')
       setConfirmPassword('')
-      setCurrentPassword('')
       setMfaCode('')
       setPasswordLoading(false)
       

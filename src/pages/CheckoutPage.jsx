@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Gamepad2, Sparkles } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
@@ -6,7 +6,7 @@ import AnimatedLucideIcon from '../components/AnimatedLucideIcon'
 import LoadingSpinner from '../components/LoadingSpinner'
 import './CartPage.css'
 
-export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, currency, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
+export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
   const navigate = useNavigate()
   const { user, loading: authLoading, emailVerified } = useAuth()
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -60,7 +60,7 @@ export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, cu
         <h2 className="section-title">Your cart is empty</h2>
         <p className="section-subtitle">Add items to your cart to proceed to checkout.</p>
         <div className="empty-checkout">
-          <button onClick={() => navigate('/boosting/gta5')} className="primary-btn">
+          <button onClick={() => navigate('/boosting')} className="primary-btn">
             Continue Shopping
           </button>
         </div>

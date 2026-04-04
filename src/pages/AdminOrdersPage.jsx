@@ -168,7 +168,7 @@ export default function AdminOrdersPage() {
 
       setIsAdmin(true)
       fetchOrders()
-    } catch (err) {
+    } catch (_err) {
       setError('Error checking admin status')
       setLoading(false)
     }
@@ -344,17 +344,7 @@ export default function AdminOrdersPage() {
     }).format(amount)
   }
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString('en-GB', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    })
-  }
-
-  const getItemUnitPrice = (item, currency) => {
+  const getItemUnitPrice = (item) => {
     if (typeof item?.price_converted === 'number') return item.price_converted
     if (typeof item?.price_usd === 'number') return item.price_usd
     return Number(item?.price_converted ?? item?.price_usd ?? 0)
@@ -364,7 +354,7 @@ export default function AdminOrdersPage() {
     const currency = order?.currency || 'GBP'
     const subtotal = (order?.items || []).reduce((sum, item) => {
       const quantity = item?.quantity ?? 1
-      const unitPrice = getItemUnitPrice(item, currency)
+      const unitPrice = getItemUnitPrice(item)
       return sum + unitPrice * quantity
     }, 0)
 

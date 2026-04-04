@@ -3,7 +3,7 @@ import Particles from 'react-tsparticles'
 import { loadSlim } from 'tsparticles-slim'
 import './Banner.css'
 
-export default function Banner({ onGetStarted, onScrollAbout }) {
+export default function Banner({ onGetStarted }) {
   const particlesInit = useCallback(async (engine) => {
     await loadSlim(engine)
   }, [])

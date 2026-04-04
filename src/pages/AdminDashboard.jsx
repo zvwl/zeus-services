@@ -6,7 +6,8 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
 export default function AdminDashboard() {
-  const { user } = useAuth()
+  const { user, isAdmin, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [adminLogs, setAdminLogs] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
