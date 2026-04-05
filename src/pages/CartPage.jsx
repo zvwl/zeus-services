@@ -15,6 +15,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   const [fetchError, setFetchError] = useState(null)
   const orderDetailsRef = useRef(null)
   const hardTimeoutRef = useRef(null)
+  const stopPollingRef = useRef(false)
   const navigate = useNavigate()
   const { user, loading: authLoading } = useAuth()
 
@@ -28,6 +29,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       clearTimeout(hardTimeoutRef.current)
       hardTimeoutRef.current = null
       setFetchError(null)
+      stopPollingRef.current = true
     }
   }, [orderDetails])
 
@@ -44,6 +46,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
 
   useEffect(() => {
     if (success === 'true') {
+      stopPollingRef.current = false
       // Clear the cart when payment successful
       if (clearCart && cartItems.length > 0) {
         clearCart()
@@ -55,6 +58,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         
         // Set a hard timeout of 60 seconds - stop retrying after that
         hardTimeoutRef.current = setTimeout(() => {
+          stopPollingRef.current = true
           setLoadingOrder(false)
           if (!orderDetailsRef.current) {
             setFetchError('Order is taking longer than expected. Please go to "Your Orders" to see your payment status.')
@@ -62,6 +66,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
         }, 60000)
 
         return () => {
+          stopPollingRef.current = true
           if (hardTimeoutRef.current) {
             clearTimeout(hardTimeoutRef.current)
             hardTimeoutRef.current = null
@@ -87,6 +92,11 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
   const fetchOrderBySessionId = async (checkoutSessionId, retryCount = 0) => {
     const MAX_RETRIES = 15
     const RETRY_DELAY = 2000 // 2 seconds between retries
+    const REQUEST_TIMEOUT_MS = 12000
+
+    if (stopPollingRef.current) {
+      return
+    }
 
     try {
       setLoadingOrder(true)
@@ -120,17 +130,21 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       // Fetch order directly by checkout session ID using edge function
       let res
       try {
+        const controller = new AbortController()
+        const timeout = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS)
         res = await fetch(`${supabaseUrl}/functions/v1/get-order-by-session?session_id=${checkoutSessionId}`, {
           method: 'GET',
+          signal: controller.signal,
           headers: {
             'Content-Type': 'application/json',
             'apikey': anonKey,
             ...(accessToken ? { 'Authorization': `Bearer ${accessToken}` } : {})
           }
         })
+        clearTimeout(timeout)
       } catch (fetchErr) {
         console.error('Network error fetching order:', fetchErr)
-        if (retryCount < MAX_RETRIES) {
+        if (!stopPollingRef.current && retryCount < MAX_RETRIES) {
           setTimeout(() => {
             fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
           }, RETRY_DELAY)
@@ -154,7 +168,7 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       if (!res.ok || body?.error) {
         const errorMsg = body?.error || `Server error (${res.status})`
         console.error('Order fetch error:', errorMsg)
-        if (retryCount < MAX_RETRIES) {
+        if (!stopPollingRef.current && retryCount < MAX_RETRIES) {
           setTimeout(() => {
             fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
           }, RETRY_DELAY)
@@ -168,10 +182,11 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       const order = body.order
 
       if (order) {
+        stopPollingRef.current = true
         setOrderDetails(order)
         setFetchError(null)
         setLoadingOrder(false)
-      } else if (retryCount < MAX_RETRIES) {
+      } else if (!stopPollingRef.current && retryCount < MAX_RETRIES) {
         // Order not found yet, webhook might still be processing
         setTimeout(() => {
           fetchOrderBySessionId(checkoutSessionId, retryCount + 1)
@@ -179,6 +194,11 @@ export default function CartPage({ cartItems, removeFromCart, updateQuantity, cu
       } else {
         console.error('Max retries reached - order not found')
         
+        if (user) {
+          await fetchMostRecentOrder()
+          return
+        }
+
         // Fallback: if no user and no order found, show confirmation message using lastPaymentAttempt
         if (!user) {
           try {
