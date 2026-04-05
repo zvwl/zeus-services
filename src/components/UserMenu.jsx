@@ -507,6 +507,23 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
             />
             <span className="menu-label">Follow on TikTok</span>
           </a>
+          <a
+            href="https://buymeacoffee.com/zeuservices"
+            className="menu-item donate-item"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <img
+              src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+              alt="Buy Me a Coffee"
+              className="donate-icon-small"
+              width="20"
+              height="20"
+              loading="lazy"
+              decoding="async"
+            />
+            <span className="menu-label">Donate Here!</span>
+          </a>
         </div>
         </Dialog.Content>
       </Dialog.Portal>

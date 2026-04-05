@@ -43,6 +43,18 @@
   color: var(--primary-color);
 }
 
+.footer-links .discord-link,
+.footer-links .tiktok-link,
+.footer-links .donate-link,
+.footer-links .discord-link:hover,
+.footer-links .tiktok-link:hover,
+.footer-links .donate-link:hover,
+.footer-links .discord-link:visited,
+.footer-links .tiktok-link:visited,
+.footer-links .donate-link:visited {
+  color: #ffffff;
+}
+
 .footer-bottom {
   margin-top: 2rem;
   padding-top: 1.5rem;
@@ -99,6 +111,31 @@
   height: 20px;
 }
 
+.donate-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: #eab308;
+  border: none;
+  color: #ffffff;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.donate-link:hover {
+  background: #d4a106;
+  color: #ffffff;
+}
+
+.donate-icon {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
 @media (max-width: 768px) {
   .footer {
     padding: 2rem 1rem 1.5rem;
@@ -126,7 +163,13 @@
     text-align: center;
   }
 
-  .discord-link {
+  .footer-links .discord-link,
+  .footer-links .tiktok-link,
+  .footer-links .donate-link {
+    width: 100%;
+    max-width: 260px;
     justify-content: center;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 }

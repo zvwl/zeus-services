@@ -92,6 +92,23 @@ export default function Footer() {
               />
               Follow on TikTok
             </a>
+            <a
+              href="https://buymeacoffee.com/zeuservices"
+              target="_blank"
+              rel="noreferrer"
+              className="donate-link"
+            >
+              <img
+                src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+                alt="Buy Me a Coffee"
+                className="donate-icon"
+                width="20"
+                height="20"
+                loading="lazy"
+                decoding="async"
+              />
+              Donate Here!
+            </a>
           </div>
         </div>
       </div>

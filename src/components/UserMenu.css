@@ -314,6 +314,9 @@
 }
 
 .user-menu-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
   padding: 0.875rem 1.25rem;
   border-top: 1px solid rgba(251, 191, 36, 0.15);
   background: rgba(10, 14, 26, 0.5);
@@ -363,7 +366,6 @@
   transition: all 0.2s;
   font-weight: 600;
   font-size: 0.85rem;
-  margin-top: 0.5rem;
 }
 
 .tiktok-item:hover {
@@ -375,6 +377,35 @@
 }
 
 .tiktok-icon-small {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+.donate-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.75rem;
+  background: #eab308;
+  border: none;
+  border-radius: 10px;
+  color: #ffffff;
+  text-decoration: none;
+  transition: all 0.2s;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.donate-item:hover {
+  background: #d4a106;
+  color: #ffffff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 161, 6, 0.45);
+}
+
+.donate-icon-small {
   width: 20px;
   height: 20px;
   object-fit: contain;
