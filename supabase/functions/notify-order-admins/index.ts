@@ -15,6 +15,71 @@ const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "
   auth: { autoRefreshToken: false, persistSession: false }
 });
 
+function normalizeLabel(label: string) {
+  return String(label || "").trim().replace(/\s*:\s*$/, "");
+}
+
+function stripPrefixedValue(value: string, label: string) {
+  const normalizedLabel = normalizeLabel(label);
+  const text = String(value || "").trim();
+  if (!normalizedLabel || !text) return text;
+  const prefixRegex = new RegExp(`^${normalizedLabel.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}\\s*:\\s*`, "i");
+  return text.replace(prefixRegex, "").trim();
+}
+
+function getSelectionEntries(item: any): Array<{ label: string; value: string }> {
+  const entries: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+
+  const addEntry = (rawLabel: string, rawValue: any) => {
+    const label = normalizeLabel(rawLabel);
+    const value = stripPrefixedValue(String(rawValue ?? ""), label);
+    if (!label || !value) return;
+    const key = label.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    entries.push({ label, value });
+  };
+
+  const customSelections = item?.customSelections;
+  if (customSelections && typeof customSelections === "object") {
+    for (const [label, value] of Object.entries(customSelections)) {
+      addEntry(label, value);
+    }
+  }
+
+  const platformRaw = String(item?.platform || "").trim();
+  if (platformRaw) {
+    if (platformRaw.includes(":")) {
+      platformRaw.split("|").forEach((segment: string) => {
+        const trimmed = segment.trim();
+        if (!trimmed) return;
+        const sep = trimmed.indexOf(":");
+        if (sep === -1) {
+          addEntry("Platform", trimmed);
+          return;
+        }
+        const label = trimmed.slice(0, sep).trim();
+        const value = trimmed.slice(sep + 1).trim();
+        addEntry(label, value);
+      });
+    } else {
+      addEntry("Platform", platformRaw);
+    }
+  }
+
+  const versionRaw = String(item?.version || "").trim();
+  if (versionRaw && versionRaw.toLowerCase() !== "standard") {
+    addEntry("Version", versionRaw);
+  }
+
+  if (entries.length === 0) {
+    addEntry("Selection", "N/A");
+  }
+
+  return entries;
+}
+
 async function sendAdminEmail(adminEmail: string, orderDetails: any) {
   let retries = 0;
   const maxRetries = 3;
@@ -54,8 +119,11 @@ async function sendAdminEmail(adminEmail: string, orderDetails: any) {
                 <p style="margin: 0 0 12px; font-size: 16px; font-weight: 700; color: #1e293b;">Items Ordered</p>
                 <div style="margin: 0;">
                   ${orderDetails.items.map((item: any) => {
-                    const platform = item?.platform || 'No platform';
-                    const version = item?.version || 'No version';
+                    const selectionBadges = getSelectionEntries(item)
+                      .map((entry) => `
+                        <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 6px; font-weight: 600;">${entry.label}: ${entry.value}</span>
+                      `)
+                      .join("");
                     const rawPrice = item?.price_converted ?? item?.price ?? item?.price_usd ?? item?.unit_price ?? null;
                     const numeric = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
                     const priceStr = Number.isFinite(numeric) ? `${item?.currency || orderDetails.currency || "GBP"}${numeric.toFixed(2)}` : "N/A";
@@ -67,8 +135,7 @@ async function sendAdminEmail(adminEmail: string, orderDetails: any) {
                         ${item.icon || '📦'} ${item.name}
                       </div>
                       <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
-                        <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; margin-right: 6px; font-weight: 600;">Platform: ${platform}</span>
-                        <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Version: ${version}</span>
+                        ${selectionBadges}
                       </div>
                       <div style="font-size: 14px; color: #475569; margin-top: 8px;">
                         <span style="font-weight: 600;">Quantity:</span> ${quantity}x ${priceStr} = <span style="color: #059669; font-weight: 700;">${itemTotal}</span>

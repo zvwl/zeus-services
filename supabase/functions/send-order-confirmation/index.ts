@@ -10,6 +10,71 @@ if (!RESEND_API_KEY || !SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
 
 const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "");
 
+function normalizeLabel(label: string) {
+  return String(label || '').trim().replace(/\s*:\s*$/, '');
+}
+
+function stripPrefixedValue(value: string, label: string) {
+  const normalizedLabel = normalizeLabel(label);
+  const text = String(value || '').trim();
+  if (!normalizedLabel || !text) return text;
+  const prefixRegex = new RegExp(`^${normalizedLabel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*:\\s*`, 'i');
+  return text.replace(prefixRegex, '').trim();
+}
+
+function getSelectionEntries(item: any): Array<{ label: string; value: string }> {
+  const entries: Array<{ label: string; value: string }> = [];
+  const seen = new Set<string>();
+
+  const addEntry = (rawLabel: string, rawValue: any) => {
+    const label = normalizeLabel(rawLabel);
+    const value = stripPrefixedValue(String(rawValue ?? ''), label);
+    if (!label || !value) return;
+    const key = label.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    entries.push({ label, value });
+  };
+
+  const customSelections = item?.customSelections;
+  if (customSelections && typeof customSelections === 'object') {
+    for (const [label, value] of Object.entries(customSelections)) {
+      addEntry(label, value);
+    }
+  }
+
+  const platformRaw = String(item?.platform || '').trim();
+  if (platformRaw) {
+    if (platformRaw.includes(':')) {
+      platformRaw.split('|').forEach((segment: string) => {
+        const trimmed = segment.trim();
+        if (!trimmed) return;
+        const sep = trimmed.indexOf(':');
+        if (sep === -1) {
+          addEntry('Platform', trimmed);
+          return;
+        }
+        const label = trimmed.slice(0, sep).trim();
+        const value = trimmed.slice(sep + 1).trim();
+        addEntry(label, value);
+      });
+    } else {
+      addEntry('Platform', platformRaw);
+    }
+  }
+
+  const versionRaw = String(item?.version || '').trim();
+  if (versionRaw && versionRaw.toLowerCase() !== 'standard') {
+    addEntry('Version', versionRaw);
+  }
+
+  if (entries.length === 0) {
+    addEntry('Selection', 'N/A');
+  }
+
+  return entries;
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') {
     return new Response('Method not allowed', { status: 405 });
@@ -52,8 +117,11 @@ Deno.serve(async (req) => {
 
     // Format items for email
     const itemsList = (items || []).map((item: any) => {
-      const platform = item?.platform || 'No platform';
-      const version = item?.version || 'No version';
+      const selectionBadges = getSelectionEntries(item)
+        .map((entry) => `
+            <span style="display: inline-block; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 6px; font-weight: 600;">${entry.label}: ${entry.value}</span>
+        `)
+        .join('');
       const quantity = Number(item?.quantity || 1);
       const itemPrice = item?.price_converted || item?.price_usd || 0;
       const itemTotal = quantity * itemPrice;
@@ -61,8 +129,7 @@ Deno.serve(async (req) => {
         <div style="background: #fafafa; border-left: 3px solid #667eea; padding: 12px 16px; margin: 8px 0; border-radius: 6px;">
           <div style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">${item?.name || 'Item'}</div>
           <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
-            <span style="display: inline-block; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; margin-right: 6px; font-weight: 600;">Platform: ${platform}</span>
-            <span style="display: inline-block; background: #dbeafe; color: #1e40af; padding: 2px 8px; border-radius: 4px; font-weight: 600;">Version: ${version}</span>
+            ${selectionBadges}
           </div>
           <div style="font-size: 14px; color: #475569; margin-top: 8px;">
             <span style="font-weight: 600;">Quantity:</span> ${quantity}x ${formatCurrency(itemPrice, currency)} = <span style="color: #059669; font-weight: 700;">${formatCurrency(itemTotal, currency)}</span>
