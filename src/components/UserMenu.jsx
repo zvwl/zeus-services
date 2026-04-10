@@ -463,67 +463,67 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
               </button>
             </div>
           )}
-        </div>
 
-        <div className="user-menu-footer">
-          <a
-            href="http://discord.gg/zeusservices"
-            className="menu-item discord-item"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <picture>
-              <source
-                type="image/webp"
-                srcSet="/discordLogo-40.webp 40w, /discordLogo-80.webp 80w"
-                sizes="20px"
-              />
+          <div className="user-menu-footer">
+            <a
+              href="http://discord.gg/zeusservices"
+              className="menu-item discord-item"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <picture>
+                <source
+                  type="image/webp"
+                  srcSet="/discordLogo-40.webp 40w, /discordLogo-80.webp 80w"
+                  sizes="20px"
+                />
+                <img
+                  src="/discordLogo.png"
+                  alt="Discord"
+                  className="discord-icon-small"
+                  width="20"
+                  height="20"
+                  loading="lazy"
+                  decoding="async"
+                />
+              </picture>
+              <span className="menu-label">Join our Discord</span>
+            </a>
+            <a
+              href="https://www.tiktok.com/@zxzeusxzz"
+              className="menu-item tiktok-item"
+              target="_blank"
+              rel="noreferrer"
+            >
               <img
-                src="/discordLogo.png"
-                alt="Discord"
-                className="discord-icon-small"
+                src={tiktokLogo}
+                alt="TikTok"
+                className="tiktok-icon-small"
                 width="20"
                 height="20"
                 loading="lazy"
                 decoding="async"
               />
-            </picture>
-            <span className="menu-label">Join our Discord</span>
-          </a>
-          <a
-            href="https://www.tiktok.com/@zxzeusxzz"
-            className="menu-item tiktok-item"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src={tiktokLogo}
-              alt="TikTok"
-              className="tiktok-icon-small"
-              width="20"
-              height="20"
-              loading="lazy"
-              decoding="async"
-            />
-            <span className="menu-label">Follow on TikTok</span>
-          </a>
-          <a
-            href="https://buymeacoffee.com/zeuservices"
-            className="menu-item donate-item"
-            target="_blank"
-            rel="noreferrer"
-          >
-            <img
-              src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
-              alt="Buy Me a Coffee"
-              className="donate-icon-small"
-              width="20"
-              height="20"
-              loading="lazy"
-              decoding="async"
-            />
-            <span className="menu-label">Donate Here!</span>
-          </a>
+              <span className="menu-label">Follow on TikTok</span>
+            </a>
+            <a
+              href="https://buymeacoffee.com/zeuservices"
+              className="menu-item donate-item"
+              target="_blank"
+              rel="noreferrer"
+            >
+              <img
+                src="https://cdn.buymeacoffee.com/buttons/bmc-new-btn-logo.svg"
+                alt="Buy Me a Coffee"
+                className="donate-icon-small"
+                width="20"
+                height="20"
+                loading="lazy"
+                decoding="async"
+              />
+              <span className="menu-label">Donate Here!</span>
+            </a>
+          </div>
         </div>
         </Dialog.Content>
       </Dialog.Portal>
