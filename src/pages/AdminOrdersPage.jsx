@@ -558,12 +558,23 @@ export default function AdminOrdersPage() {
                           <div className="item-meta">{item.quantity} x {formatCurrency(getItemUnitPrice(item, orderCurrency), orderCurrency)}</div>
                           <div className="item-total">{formatCurrency((item.quantity || 1) * getItemUnitPrice(item, orderCurrency), orderCurrency)}</div>
                         </div>
-                        {(item.platform || item.version) && (
+                        {(item.customSelections && Object.keys(item.customSelections).length > 0) ? (
                           <div className="item-platform">
-                            {item.platform ? `Platform: ${item.platform}` : 'Platform: N/A'}
-                            {' • '}
-                            {item.version ? `Version: ${item.version}` : 'Version: N/A'}
+                            {Object.entries(item.customSelections)
+                              .filter(([, value]) => Boolean(value))
+                              .map(([field, value]) => (
+                                <span key={field}>{field}: {value}</span>
+                              ))
+                              .reduce((prev, curr, idx, arr) => idx === 0 ? [curr] : [...prev, ' • ', curr], [])}
                           </div>
+                        ) : (
+                          (item.platform || item.version) && (
+                            <div className="item-platform">
+                              {item.platform && !item.platform.includes(':') ? `Platform: ${item.platform}` : item.platform || 'Platform: N/A'}
+                              {item.platform && item.version && ' • '}
+                              {item.version ? `Version: ${item.version}` : item.platform && item.version ? 'Version: N/A' : ''}
+                            </div>
+                          )
                         )}
                       </li>
                     ))}
