@@ -4,27 +4,18 @@
 User-agent: *
 Allow: /
 
-# Disallow admin and private pages only
+# Disallow admin, private, and utility pages from crawling
 Disallow: /admin/
 Disallow: /settings/
 Disallow: /orders/
 Disallow: /checkout/
+Disallow: /cart/
+Disallow: /login
+Disallow: /signup
+Disallow: /verify-email
+Disallow: /pending-verification
 
-# Allow all public pages including auth pages
-# (They are discoverable and have good SEO value)
-Allow: /services
-Allow: /products
-Allow: /reviews
-Allow: /safety
-Allow: /trust
-Allow: /process
-Allow: /faq
-Allow: /comparison
-Allow: /terms
-Allow: /privacy
-Allow: /refund
-Allow: /login
-Allow: /signup
+# Public pages are discoverable through the homepage, nav, and sitemap.
 
 # Sitemap location - helps Google discover all pages
 Sitemap: https://zeuservices.com/sitemap.xml

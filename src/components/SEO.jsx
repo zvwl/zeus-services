@@ -110,7 +110,8 @@ export const SEO_CONFIGS = {
   cart: {
     title: "Shopping Cart - Review Your Gaming Services Order | zeuservices",
     description: "Review your selected gaming services and products. Secure checkout with Stripe payment. Fast processing and instant delivery on orders.",
-    keywords: "shopping cart, checkout, secure payment, gaming cart, order review"
+    keywords: "shopping cart, checkout, secure payment, gaming cart, order review",
+    robots: "noindex, follow"
   },
   terms: {
     title: "Terms of Service - Gaming Services Agreement | zeuservices",

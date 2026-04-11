@@ -5,6 +5,7 @@ import AnimatedLucideIcon from './AnimatedLucideIcon'
 import { XIcon } from './XIcon'
 import { useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
 
 export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
   const navigate = useNavigate()
@@ -13,6 +14,7 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
   const isLoading = checkoutStatus?.state === 'loading'
   const hasMessage = checkoutStatus?.message
   const removeButtonRefs = useRef({})
+  const itemPathCacheRef = useRef({})
 
   const buttonLabel = (() => {
     if (paymentMethod === 'dev_skip') return isLoading ? 'Placing order...' : 'Buy now (dev skip payment)'
@@ -38,8 +40,45 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
     return `/${categorySlug}/${gameSlug}/${itemSlug}`
   }
 
-  const handleItemClick = (item) => {
-    const itemPath = getItemPath(item)
+  const getRelatedRecord = (value) => (Array.isArray(value) ? value[0] : value)
+
+  const resolveItemPath = async (item) => {
+    const directPath = getItemPath(item)
+    if (directPath) return directPath
+
+    if (!item?.id) return null
+
+    if (itemPathCacheRef.current[item.id]) {
+      return itemPathCacheRef.current[item.id]
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('slug, categories(slug), games(slug)')
+        .eq('id', item.id)
+        .single()
+
+      if (error) throw error
+
+      const categorySlug = getRelatedRecord(data?.categories)?.slug || ''
+      const gameSlug = getRelatedRecord(data?.games)?.slug || ''
+      const itemSlug = data?.slug || ''
+
+      if (!categorySlug || !gameSlug || !itemSlug) return null
+
+      const resolvedPath = `/${categorySlug}/${gameSlug}/${itemSlug}`
+      itemPathCacheRef.current[item.id] = resolvedPath
+      return resolvedPath
+    } catch (_err) {
+      return null
+    }
+  }
+
+  const canNavigateToItem = (item) => Boolean(getItemPath(item) || item?.id)
+
+  const handleItemClick = async (item) => {
+    const itemPath = await resolveItemPath(item)
     if (!itemPath) return
     navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
   }
@@ -77,18 +116,18 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
         {items.map(item => (
           <div
             key={item.cartId}
-            className={`cart-item${getItemPath(item) ? ' clickable' : ''}`}
+            className={`cart-item${canNavigateToItem(item) ? ' clickable' : ''}`}
             onClick={() => handleItemClick(item)}
-            role={getItemPath(item) ? 'button' : undefined}
-            tabIndex={getItemPath(item) ? 0 : undefined}
+            role={canNavigateToItem(item) ? 'button' : undefined}
+            tabIndex={canNavigateToItem(item) ? 0 : undefined}
             onKeyDown={(event) => {
-              if (!getItemPath(item)) return
+              if (!canNavigateToItem(item)) return
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
                 handleItemClick(item)
               }
             }}
-            title={getItemPath(item) ? 'View item details' : undefined}
+            title={canNavigateToItem(item) ? 'View item details' : undefined}
           >
             <div className="item-header">
               <div className="item-icon">

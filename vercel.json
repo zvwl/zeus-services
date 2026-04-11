@@ -22,9 +22,117 @@
       "source": "/sitemap.xml",
       "destination": "https://xdvbhungoadwlmeddelt.supabase.co/functions/v1/generate-sitemap"
     },
-    { 
-      "source": "/((?!api|_next/static|_next/image|favicon.ico|robots\\.txt|sitemap\\.xml|.*\\.(?:svg|png|jpg|jpeg|gif|webp|css|js)).*)", 
-      "destination": "/" 
+    {
+      "source": "/",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/boosting",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/topups",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/accounts",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/reviews",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/safety",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/trust",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/process",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/comparison",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/terms",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/privacy",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/refund",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/cart",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/login",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/signup",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/verify-email",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/pending-verification",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/forgot-password",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/reset-password",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/settings",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/orders",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/review",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/admin/(.*)",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:categorySlug/:gameSlug/:itemSlug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:categorySlug/:gameSlug",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/:categorySlug",
+      "destination": "/index.html"
     }
   ],
   "env": {},

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
@@ -9,6 +9,19 @@ import { EyeIcon, EyeOffIcon } from '../components/AnimatedEyeIcons'
 import './AuthPages.css'
 
 export default function LoginPage() {
+  useEffect(() => {
+    document.title = 'Sign in | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const [searchParams] = useSearchParams()
   // Validate redirect parameter to prevent open redirect attacks
   const rawRedirect = searchParams.get('redirect') || '/boosting'

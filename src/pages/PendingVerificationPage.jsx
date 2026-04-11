@@ -1,11 +1,24 @@
 import { useLocation, useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '../contexts/AuthContext'
 import { isTurnstileBypassed } from '../utils/turnstile'
 import './AuthPages.css'
 
 export default function PendingVerificationPage() {
+  useEffect(() => {
+    document.title = 'Pending Verification | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const location = useLocation()
   const navigate = useNavigate()
   const email = location.state?.email || 'your email'

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import DOMPurify from 'dompurify'
 import * as Dialog from '@radix-ui/react-dialog'
+import { X } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import {
@@ -144,26 +145,48 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
         <Dialog.Content className="user-menu open" onPointerDownOutside={onClose} onEscapeKeyDown={onClose}>
           <Dialog.Title className="visually-hidden">Navigation Menu</Dialog.Title>
           <Dialog.Description className="visually-hidden">User navigation menu with account options and browsing categories</Dialog.Description>
-          <div className="user-menu-header">
-            {user ? (
-              <div className="user-info">
-                <div className="user-avatar">{user.name?.[0]?.toUpperCase() || '👤'}</div>
-                <div className="user-details">
-                  <div className="user-name">{DOMPurify.sanitize(user.name)}</div>
-                  <div className="user-email">{DOMPurify.sanitize(user.email)}</div>
+          <div className="user-menu-header-shell">
+            <div className="user-menu-topbar">
+              <div className="user-menu-heading">
+                <span className="user-menu-kicker">Menu</span>
+                <div className="user-menu-title">Browse, manage, and support</div>
+              </div>
+              <button type="button" className="user-menu-close" onClick={onClose} aria-label="Close menu">
+                <X size={18} aria-hidden="true" />
+              </button>
+            </div>
+
+            <div className="user-menu-header">
+              {user ? (
+                <div className="user-info">
+                  <div className="user-avatar">{user.name?.[0]?.toUpperCase() || '👤'}</div>
+                  <div className="user-details">
+                    <div className="user-name">{DOMPurify.sanitize(user.name)}</div>
+                    <div className="user-email">{DOMPurify.sanitize(user.email)}</div>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="user-info">
-                <div className="guest-text">Not logged in</div>
-              </div>
-            )}
+              ) : (
+                <div className="user-info">
+                  <div className="user-avatar">👤</div>
+                  <div className="user-details">
+                    <div className="user-name">Guest visitor</div>
+                    <div className="user-email">Sign in to track orders and settings</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="user-menu-summary">
+              <button type="button" className="summary-pill" onClick={() => handleNavigation('/')}>Storefront</button>
+              <button type="button" className="summary-pill" onClick={() => handleNavigation('/cart')}>Cart</button>
+              <button type="button" className="summary-pill" onClick={() => handleNavigation('/reviews')}>Reviews</button>
+              <button type="button" className="summary-pill" onClick={() => handleNavigation('/faq')}>Help</button>
+            </div>
           </div>
 
         <div className="user-menu-content">
-          {/* Browse section - always visible */}
           <div className="menu-section">
-            <div className="menu-section-title">Browse</div>
+            <div className="menu-section-title">Explore</div>
             <button
               className={`menu-item ${isActive('/') ? 'active' : ''}`}
               onClick={() => handleNavigation('/')}
@@ -173,8 +196,34 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
               <HomeIcon ref={homeIconRef} className="menu-icon" size={20} />
               <span className="menu-label">Home</span>
             </button>
+            <button
+              className={`menu-item ${isActive('/cart') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/cart')}
+              onMouseEnter={() => cartIconRef.current?.startAnimation()}
+              onMouseLeave={() => cartIconRef.current?.stopAnimation()}
+            >
+              <CartMenuIcon ref={cartIconRef} className="menu-icon" size={20} />
+              <span className="menu-label">Cart</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/reviews') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/reviews')}
+              onMouseEnter={() => reviewsIconRef.current?.startAnimation()}
+              onMouseLeave={() => reviewsIconRef.current?.stopAnimation()}
+            >
+              <ReviewsIcon ref={reviewsIconRef} className="menu-icon" size={20} />
+              <span className="menu-label">Reviews</span>
+            </button>
+            <button
+              className={`menu-item ${isActive('/faq') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/faq')}
+              onMouseEnter={() => faqIconRef.current?.startAnimation()}
+              onMouseLeave={() => faqIconRef.current?.stopAnimation()}
+            >
+              <FaqIcon ref={faqIconRef} className="menu-icon" size={20} />
+              <span className="menu-label">Help & FAQ</span>
+            </button>
             
-            {/* Boosting with game submenu */}
             <div className="menu-category-group">
               <button
                 className={`menu-item ${expandedCategory === 'boosting' ? 'expanded' : ''}`}
@@ -208,8 +257,6 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
                 </div>
               )}
             </div>
-            
-            {/* Accounts with game submenu */}
             <div className="menu-category-group">
               <button
                 className={`menu-item ${expandedCategory === 'accounts' ? 'expanded' : ''}`}
@@ -243,8 +290,6 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
                 </div>
               )}
             </div>
-
-            {/* Topups with game submenu */}
             <div className="menu-category-group">
               <button
                 className={`menu-item ${expandedCategory === 'topups' ? 'expanded' : ''}`}
@@ -278,30 +323,10 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
                 </div>
               )}
             </div>
-
-            <button
-              className={`menu-item ${isActive('/reviews') ? 'active' : ''}`}
-              onClick={() => handleNavigation('/reviews')}
-              onMouseEnter={() => reviewsIconRef.current?.startAnimation()}
-              onMouseLeave={() => reviewsIconRef.current?.stopAnimation()}
-            >
-              <ReviewsIcon ref={reviewsIconRef} className="menu-icon" size={20} />
-              <span className="menu-label">Reviews</span>
-            </button>
-            <button
-              className={`menu-item ${isActive('/cart') ? 'active' : ''}`}
-              onClick={() => handleNavigation('/cart')}
-              onMouseEnter={() => cartIconRef.current?.startAnimation()}
-              onMouseLeave={() => cartIconRef.current?.stopAnimation()}
-            >
-              <CartMenuIcon ref={cartIconRef} className="menu-icon" size={20} />
-              <span className="menu-label">Cart</span>
-            </button>
           </div>
 
-          {/* Information section */}
           <div className="menu-section">
-            <div className="menu-section-title">Information</div>
+            <div className="menu-section-title">About</div>
             <button
               className={`menu-item ${isActive('/faq') ? 'active' : ''}`}
               onClick={() => handleNavigation('/faq')}

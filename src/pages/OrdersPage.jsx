@@ -6,6 +6,19 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import './OrdersPage.css'
 
 export default function OrdersPage() {
+  useEffect(() => {
+    document.title = 'My Orders | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const navigate = useNavigate()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)

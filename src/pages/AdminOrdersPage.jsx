@@ -5,6 +5,19 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
 export default function AdminOrdersPage() {
+  useEffect(() => {
+    document.title = 'Admin Orders | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, nofollow')
+  }, [])
+
   const { user } = useAuth()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)

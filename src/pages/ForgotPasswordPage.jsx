@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { supabase } from '../supabaseClient'
@@ -6,6 +6,19 @@ import { isTurnstileBypassed } from '../utils/turnstile'
 import './AuthPages.css'
 
 export default function ForgotPasswordPage() {
+  useEffect(() => {
+    document.title = 'Reset Password | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
   const bypassTurnstile = isTurnstileBypassed()
   const [email, setEmail] = useState('')

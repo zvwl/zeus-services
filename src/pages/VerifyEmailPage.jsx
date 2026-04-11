@@ -4,6 +4,19 @@ import { supabase } from '../supabaseClient'
 import './AuthPages.css'
 
 export default function VerifyEmailPage() {
+  useEffect(() => {
+    document.title = 'Verify Email | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const [status, setStatus] = useState('verifying')
   const [message, setMessage] = useState('Verifying your email...')
   const navigate = useNavigate()

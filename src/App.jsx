@@ -273,6 +273,32 @@ function App() {
     })
   }, [location.pathname, location.search])
 
+  useEffect(() => {
+    const privateRoutePatterns = [
+      /^\/cart(?:\/|$)/i,
+      /^\/checkout(?:\/|$)/i,
+      /^\/login(?:\/|$)/i,
+      /^\/signup(?:\/|$)/i,
+      /^\/verify-email(?:\/|$)/i,
+      /^\/pending-verification(?:\/|$)/i,
+      /^\/settings(?:\/|$)/i,
+      /^\/orders(?:\/|$)/i,
+      /^\/admin(?:\/|$)/i,
+    ]
+
+    const shouldNoIndex = privateRoutePatterns.some((pattern) => pattern.test(location.pathname))
+    const robotsContent = shouldNoIndex ? 'noindex, nofollow' : 'index, follow'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', robotsContent)
+  }, [location.pathname])
+
   const platformOptions = [
     'Steam',
     'Epic Games',
@@ -477,10 +503,18 @@ function App() {
           user={user}
           currency={currency}
           onCurrencyChange={setCurrency}
-          onCartClick={() => setIsCartDrawerOpen(!isCartDrawerOpen)}
+          onCartClick={() => {
+            setIsUserMenuOpen(false)
+            setIsCartDrawerOpen((previousOpen) => !previousOpen)
+          }}
           onCloseCart={() => setIsCartDrawerOpen(false)}
           isCartDrawerOpen={isCartDrawerOpen}
-          onUserMenuToggle={setIsUserMenuOpen}
+          onUserMenuToggle={(isOpen) => {
+            setIsUserMenuOpen(isOpen)
+            if (isOpen) {
+              setIsCartDrawerOpen(false)
+            }
+          }}
         />
         <StatusBanner />
       </div>

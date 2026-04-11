@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../supabaseClient'
 import LoadingSpinner from '../components/LoadingSpinner'
+import SEO from '../components/SEO'
 import './ReviewForm.css'
 
 export default function ReviewForm() {
@@ -183,8 +184,14 @@ export default function ReviewForm() {
   }
 
   return (
-    <section className="section review-form-section">
-      <div className="review-form-container">
+    <>
+      <SEO
+        title="Write a Review | zeuservices"
+        description="Write a review for your zeuservices order."
+        robots="noindex, follow"
+      />
+      <section className="section review-form-section">
+        <div className="review-form-container">
         <div className="review-form-header">
           <h1>Write a Review</h1>
           <p>Share your experience with this order</p>
@@ -292,7 +299,8 @@ export default function ReviewForm() {
             We appreciate honest feedback that helps other customers make informed decisions.
           </p>
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+    </>
   )
 }

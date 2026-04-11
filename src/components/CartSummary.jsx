@@ -2,12 +2,15 @@ import { useNavigate } from 'react-router-dom'
 import { ShoppingCart, Gamepad2 } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
+import { useRef } from 'react'
+import { supabase } from '../supabaseClient'
 import './Cart.css'
 
 export default function CartSummary({ items, onRemove, onUpdateQuantity, formatPrice }) {
   const navigate = useNavigate()
   const { user } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
+  const itemPathCacheRef = useRef({})
 
   const toSlug = (value) => {
     if (!value) return ''
@@ -28,8 +31,45 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, formatP
     return `/${categorySlug}/${gameSlug}/${itemSlug}`
   }
 
-  const handleItemClick = (item) => {
-    const itemPath = getItemPath(item)
+  const getRelatedRecord = (value) => (Array.isArray(value) ? value[0] : value)
+
+  const resolveItemPath = async (item) => {
+    const directPath = getItemPath(item)
+    if (directPath) return directPath
+
+    if (!item?.id) return null
+
+    if (itemPathCacheRef.current[item.id]) {
+      return itemPathCacheRef.current[item.id]
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('slug, categories(slug), games(slug)')
+        .eq('id', item.id)
+        .single()
+
+      if (error) throw error
+
+      const categorySlug = getRelatedRecord(data?.categories)?.slug || ''
+      const gameSlug = getRelatedRecord(data?.games)?.slug || ''
+      const itemSlug = data?.slug || ''
+
+      if (!categorySlug || !gameSlug || !itemSlug) return null
+
+      const resolvedPath = `/${categorySlug}/${gameSlug}/${itemSlug}`
+      itemPathCacheRef.current[item.id] = resolvedPath
+      return resolvedPath
+    } catch (_err) {
+      return null
+    }
+  }
+
+  const canNavigateToItem = (item) => Boolean(getItemPath(item) || item?.id)
+
+  const handleItemClick = async (item) => {
+    const itemPath = await resolveItemPath(item)
     if (!itemPath) return
     navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
   }
@@ -63,18 +103,18 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, formatP
         {items.map(item => (
           <div
             key={item.cartId}
-            className={`cart-item${getItemPath(item) ? ' clickable' : ''}`}
+            className={`cart-item${canNavigateToItem(item) ? ' clickable' : ''}`}
             onClick={() => handleItemClick(item)}
-            role={getItemPath(item) ? 'button' : undefined}
-            tabIndex={getItemPath(item) ? 0 : undefined}
+            role={canNavigateToItem(item) ? 'button' : undefined}
+            tabIndex={canNavigateToItem(item) ? 0 : undefined}
             onKeyDown={(event) => {
-              if (!getItemPath(item)) return
+              if (!canNavigateToItem(item)) return
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
                 handleItemClick(item)
               }
             }}
-            title={getItemPath(item) ? 'View item details' : undefined}
+            title={canNavigateToItem(item) ? 'View item details' : undefined}
           >
             <div className="item-header">
               <div className="item-icon">

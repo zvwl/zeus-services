@@ -1,6 +1,7 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { X, ShoppingCart, Plus, Minus, Trash2, ArrowRight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
 import './CartDrawer.css'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
 
@@ -13,6 +14,7 @@ export default function CartDrawer({
   formatPrice
 }) {
   const navigate = useNavigate()
+  const itemPathCacheRef = useRef({})
 
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
@@ -35,8 +37,45 @@ export default function CartDrawer({
     return `/${categorySlug}/${gameSlug}/${itemSlug}`
   }
 
-  const handleItemClick = (item) => {
-    const itemPath = getItemPath(item)
+  const getRelatedRecord = (value) => (Array.isArray(value) ? value[0] : value)
+
+  const resolveItemPath = async (item) => {
+    const directPath = getItemPath(item)
+    if (directPath) return directPath
+
+    if (!item?.id) return null
+
+    if (itemPathCacheRef.current[item.id]) {
+      return itemPathCacheRef.current[item.id]
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('items')
+        .select('slug, categories(slug), games(slug)')
+        .eq('id', item.id)
+        .single()
+
+      if (error) throw error
+
+      const categorySlug = getRelatedRecord(data?.categories)?.slug || ''
+      const gameSlug = getRelatedRecord(data?.games)?.slug || ''
+      const itemSlug = data?.slug || ''
+
+      if (!categorySlug || !gameSlug || !itemSlug) return null
+
+      const resolvedPath = `/${categorySlug}/${gameSlug}/${itemSlug}`
+      itemPathCacheRef.current[item.id] = resolvedPath
+      return resolvedPath
+    } catch (_err) {
+      return null
+    }
+  }
+
+  const canNavigateToItem = (item) => Boolean(getItemPath(item) || item?.id)
+
+  const handleItemClick = async (item) => {
+    const itemPath = await resolveItemPath(item)
     if (!itemPath) return
     onClose()
     navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
@@ -84,13 +123,14 @@ export default function CartDrawer({
       <div className="cart-drawer">
         {/* Header */}
         <div className="cart-drawer-header">
-          <div>
+          <div className="cart-drawer-header-copy">
+            <span className="cart-drawer-kicker">Cart</span>
             <h2 className="cart-drawer-title">
-              <ShoppingCart size={24} />
-              Shopping Cart
+              <ShoppingCart size={22} />
+              Your cart
             </h2>
             <p className="cart-drawer-subtitle">
-              {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} in your cart
+              {cartItems.length} {cartItems.length === 1 ? 'item' : 'items'} ready for checkout
             </p>
           </div>
           <button 
@@ -120,18 +160,18 @@ export default function CartDrawer({
               {cartItems.map((item) => (
                 <div
                   key={item.cartId}
-                  className={`cart-drawer-item${getItemPath(item) ? ' clickable' : ''}`}
+                  className={`cart-drawer-item${canNavigateToItem(item) ? ' clickable' : ''}`}
                   onClick={() => handleItemClick(item)}
-                  role={getItemPath(item) ? 'button' : undefined}
-                  tabIndex={getItemPath(item) ? 0 : undefined}
+                  role={canNavigateToItem(item) ? 'button' : undefined}
+                  tabIndex={canNavigateToItem(item) ? 0 : undefined}
                   onKeyDown={(event) => {
-                    if (!getItemPath(item)) return
+                    if (!canNavigateToItem(item)) return
                     if (event.key === 'Enter' || event.key === ' ') {
                       event.preventDefault()
                       handleItemClick(item)
                     }
                   }}
-                  title={getItemPath(item) ? 'View item details' : undefined}
+                  title={canNavigateToItem(item) ? 'View item details' : undefined}
                 >
                   <div className="cart-drawer-item-image">
                     <img 
@@ -144,10 +184,13 @@ export default function CartDrawer({
                   </div>
                   
                   <div className="cart-drawer-item-details">
-                    <h4>{item.name}</h4>
-                    <p className="cart-drawer-item-platform">
-                      {item.platform}
-                    </p>
+                    <div className="cart-drawer-item-heading-row">
+                      <h4>{item.name}</h4>
+                      <div className="cart-drawer-item-price">
+                        {formatPrice ? formatPrice(item.price) : `£${item.price}`}
+                      </div>
+                    </div>
+                    <p className="cart-drawer-item-platform">{item.platform}</p>
                     
                     <div className="cart-drawer-item-footer">
                       <div className="cart-drawer-item-quantity">
@@ -172,10 +215,6 @@ export default function CartDrawer({
                         >
                           <Plus size={14} />
                         </button>
-                      </div>
-                      
-                      <div className="cart-drawer-item-price">
-                        {formatPrice ? formatPrice(item.price) : `£${item.price}`}
                       </div>
                     </div>
                   </div>
@@ -216,6 +255,10 @@ export default function CartDrawer({
         {/* Footer */}
         {cartItems.length > 0 && (
           <div className="cart-drawer-footer">
+            <div className="cart-drawer-note">
+              <span>Secure checkout</span>
+              <span>Orders are processed instantly after payment.</span>
+            </div>
             <div className="cart-drawer-actions">
               <button className="cart-drawer-btn cart-drawer-btn-primary" onClick={handleCheckout}>
                 Proceed to Checkout

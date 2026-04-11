@@ -7,6 +7,19 @@ import LoadingSpinner from '../components/LoadingSpinner'
 import './CartPage.css'
 
 export default function CheckoutPage({ cartItems, onCheckout, checkoutStatus, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
+  useEffect(() => {
+    document.title = 'Checkout | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const navigate = useNavigate()
   const { user, loading: authLoading, emailVerified } = useAuth()
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)

@@ -7,6 +7,19 @@ import './AuthPages.css'
 import './SettingsPage.css'
 
 export default function SettingsPage() {
+  useEffect(() => {
+    document.title = 'Account Settings | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const navigate = useNavigate()
   const { user, emailVerified, resendVerificationEmail, updateProfile, changePassword } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')

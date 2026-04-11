@@ -9,6 +9,19 @@ import { EyeIcon, EyeOffIcon } from '../components/AnimatedEyeIcons'
 import './AuthPages.css'
 
 export default function SignupPage() {
+  useEffect(() => {
+    document.title = 'Create account | zeuservices'
+
+    let robotsMeta = document.querySelector('meta[name="robots"]')
+    if (!robotsMeta) {
+      robotsMeta = document.createElement('meta')
+      robotsMeta.setAttribute('name', 'robots')
+      document.head.appendChild(robotsMeta)
+    }
+
+    robotsMeta.setAttribute('content', 'noindex, follow')
+  }, [])
+
   const siteKey = import.meta.env.VITE_TURNSTILE_SITEKEY
   const bypassTurnstile = isTurnstileBypassed()
   const [displayName, setDisplayName] = useState('')
