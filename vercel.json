@@ -2,7 +2,17 @@
   "redirects": [
     {
       "source": "/boosting/forza-horizon-6",
-      "destination": "/topups/forza-horizon-6",
+      "destination": "/boosting",
+      "permanent": true
+    },
+    {
+      "source": "/products",
+      "destination": "/accounts",
+      "permanent": true
+    },
+    {
+      "source": "/product/:id",
+      "destination": "/accounts",
       "permanent": true
     },
     {

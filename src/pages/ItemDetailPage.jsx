@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'motion/react'
 import { supabase } from '../supabaseClient'
 import { useAuth } from '../contexts/AuthContext'
-import SEO from '../components/SEO'
+import SEO, { stripEmojis } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
 import FlyingCartAnimation from '../components/FlyingCartAnimation'
@@ -363,17 +363,51 @@ export default function ItemDetailPage({ formatPrice, addToCart, cartItems = [],
     return <NotFoundPage />
   }
 
-  const pageTitle = `${item.name} - ${game.name} ${category.name}`
-  const pageDescription = item.description || `Get ${item.name} for ${game.name}`
+  const cleanItemName = stripEmojis(item.name)
+  const cleanGameName = stripEmojis(game.name)
+  const cleanCategoryName = stripEmojis(category.name)
 
   // Check stock status
-  const isOutOfStock = item.stock_enabled && 
-    !item.stock_unlimited && 
+  const isOutOfStock = item.stock_enabled &&
+    !item.stock_unlimited &&
     (item.stock_quantity === null || item.stock_quantity === 0)
-  
+
   const stockBadgeText = item.stock_enabled && !item.stock_unlimited && item.stock_quantity !== null
     ? `${item.stock_quantity} in stock`
     : null
+
+  const pageTitle = `${cleanItemName} - ${cleanGameName} ${cleanCategoryName} | Zeuservices`
+  const pageDescription = item.description
+    ? item.description.length > 155
+      ? item.description.slice(0, 152) + '...'
+      : item.description
+    : `Buy ${cleanItemName} for ${cleanGameName} on Zeuservices. Premium ${cleanCategoryName.toLowerCase()} delivered safely and manually via Discord. Fast delivery, 9+ years trusted.`
+
+  const productSchema = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    "name": cleanItemName,
+    "description": item.description || `${cleanItemName} for ${cleanGameName} – professional ${cleanCategoryName.toLowerCase()} delivered safely via Discord.`,
+    "image": item.icon || game.icon_url || "https://zeuservices.com/zeus-logo-main.webp",
+    "brand": {
+      "@type": "Brand",
+      "name": "Zeuservices"
+    },
+    "sku": item.slug,
+    "offers": {
+      "@type": "Offer",
+      "url": `https://zeuservices.com/${categorySlug}/${gameSlug}/${itemSlug}`,
+      "priceCurrency": "GBP",
+      "price": parseFloat(item.price).toFixed(2),
+      "availability": isOutOfStock
+        ? "https://schema.org/OutOfStock"
+        : "https://schema.org/InStock",
+      "seller": {
+        "@type": "Organization",
+        "name": "Zeuservices"
+      }
+    }
+  }
 
   return (
     <>
@@ -386,6 +420,7 @@ export default function ItemDetailPage({ formatPrice, addToCart, cartItems = [],
         title={pageTitle}
         description={pageDescription}
         path={`/${categorySlug}/${gameSlug}/${itemSlug}`}
+        structuredData={productSchema}
       />
       <section className="section service-detail">
         <Breadcrumb
@@ -413,8 +448,8 @@ export default function ItemDetailPage({ formatPrice, addToCart, cartItems = [],
               </picture>
             </div>
             <div className="service-detail-info">
-              <p className="eyebrow">{game.name} - {category.name}</p>
-              <h1 className="service-detail-title">{item.name}</h1>
+              <p className="eyebrow">{cleanGameName} - {cleanCategoryName}</p>
+              <h1 className="service-detail-title">{cleanItemName}</h1>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
                 <p className="service-detail-price">{formatPrice(item.price)}</p>
                 {stockBadgeText && !isOutOfStock && (
@@ -464,6 +499,21 @@ export default function ItemDetailPage({ formatPrice, addToCart, cartItems = [],
               </ul>
             </div>
           )}
+
+          <div className="service-detail-info-blocks" style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem', margin: '1.5rem 0'}}>
+            <div style={{background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.25)', borderRadius: '8px', padding: '1rem'}}>
+              <p style={{fontWeight: 700, color: '#fbbf24', marginBottom: '0.35rem', fontSize: '0.9rem'}}>Delivery Method</p>
+              <p style={{color: '#cbd5e1', fontSize: '0.875rem', lineHeight: '1.5'}}>Delivered manually via Discord. You'll receive full instructions and updates throughout the process.</p>
+            </div>
+            <div style={{background: 'rgba(96,165,250,0.08)', border: '1px solid rgba(96,165,250,0.25)', borderRadius: '8px', padding: '1rem'}}>
+              <p style={{fontWeight: 700, color: '#60a5fa', marginBottom: '0.35rem', fontSize: '0.9rem'}}>Delivery Time</p>
+              <p style={{color: '#cbd5e1', fontSize: '0.875rem', lineHeight: '1.5'}}>Most orders are completed within 20 minutes to 5 hours depending on the service type and current workload.</p>
+            </div>
+            <div style={{background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.25)', borderRadius: '8px', padding: '1rem'}}>
+              <p style={{fontWeight: 700, color: '#a78bfa', marginBottom: '0.35rem', fontSize: '0.9rem'}}>Safe & Secure</p>
+              <p style={{color: '#cbd5e1', fontSize: '0.875rem', lineHeight: '1.5'}}>All payments via Stripe. Services are handled carefully with game-specific safety practices to protect your account.</p>
+            </div>
+          </div>
 
           <div className="service-detail-options">
             {!game.is_coming_soon && selectableFields.map((field) => {

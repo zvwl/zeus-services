@@ -15,7 +15,7 @@ import {
 import Banner from '../components/Banner'
 import AnimatedLucideIcon from '../components/AnimatedLucideIcon'
 import { Accordion, AccordionItem, AccordionButton, AccordionPanel } from '../components/Accordion'
-import SEO, { SEO_CONFIGS } from '../components/SEO'
+import SEO, { SEO_CONFIGS, HOME_FAQ_SCHEMA } from '../components/SEO'
 import '../App.css'
 
 export default function Home({ onGetStarted }) {
@@ -44,12 +44,12 @@ export default function Home({ onGetStarted }) {
 
   return (
     <>
-      <SEO {...SEO_CONFIGS.home} />
+      <SEO {...SEO_CONFIGS.home} structuredData={HOME_FAQ_SCHEMA} />
       <Banner onGetStarted={onGetStarted} onScrollAbout={handleScrollAbout} />
 
       <section className="section intro">
         <div className="intro-container" style={{maxWidth: '900px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center'}}>
-          <h2 style={{fontSize: '1.8rem', marginBottom: '1rem', color: '#f1f5f9'}}>Professional Multi-Game Account Services & Boosting</h2>
+          <h1 style={{fontSize: '1.8rem', marginBottom: '1rem', color: '#f1f5f9'}}>Professional Multi-Game Account Services & Boosting</h1>
           <p style={{fontSize: '1.1rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1.5rem'}}>
             Welcome to Zeus Services - your trusted partner for professional gaming services across multiple platforms. We provide premium account services and boosting for GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more. With 9+ years of experience, we deliver safe, manual, and reliable services tailored to each game.
           </p>

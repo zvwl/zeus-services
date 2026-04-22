@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import SEO from '../components/SEO'
+import SEO, { stripEmojis } from '../components/SEO'
 import Breadcrumb from '../components/Breadcrumb'
 import LoadingSpinner from '../components/LoadingSpinner'
 import ServiceCard from '../components/ServiceCard'
@@ -240,13 +240,14 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
   }
 
   const isAllGamesView = !gameSlug
-  const gameName = game?.name || 'Game'
-  const pageTitle = isAllGamesView 
-    ? `${category.name} - All Games` 
-    : `${gameName} ${category.name}`
+  const gameName = stripEmojis(game?.name || 'Game')
+  const categoryName = stripEmojis(category.name)
+  const pageTitle = isAllGamesView
+    ? `${categoryName} - All Games | Zeuservices`
+    : `${gameName} ${categoryName} | Zeuservices`
   const pageDescription = isAllGamesView
-    ? `Browse ${category.name.toLowerCase()} across all games.`
-    : `Browse ${category.name.toLowerCase()} for ${gameName}. Premium ${category.name.toLowerCase()} available now.`
+    ? `Browse premium ${categoryName.toLowerCase()} across all supported games on Zeuservices. GTA 5, Fortnite, Rocket League, Forza Horizon 6 and more. Safe, manual delivery via Discord.`
+    : `Browse ${categoryName.toLowerCase()} for ${gameName} on Zeuservices. Premium ${categoryName.toLowerCase()} with safe, manual delivery. Secure checkout via Stripe. 9+ years trusted.`
 
   return (
     <>
@@ -278,8 +279,8 @@ export default function CategoryPage({ formatPrice, addToCart, platformOptions }
             />
           )}
           <div>
-            <p className="eyebrow">{category.name}</p>
-            <h1 className="section-title">{isAllGamesView ? `${category.name}` : `${gameName} ${category.name}`}</h1>
+            <p className="eyebrow">{categoryName}</p>
+            <h1 className="section-title">{isAllGamesView ? categoryName : `${gameName} ${categoryName}`}</h1>
             <p className="section-subtitle">{pageDescription}</p>
           </div>
         </div>

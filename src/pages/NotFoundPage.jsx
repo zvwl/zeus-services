@@ -10,7 +10,7 @@ export default function NotFoundPage({
   return (
     <section className="not-found-page" aria-label="Not Found">
       <SEO
-        title="404 Not Found | zeuservices"
+        title="404 Not Found | Zeuservices"
         description="The page you are looking for does not exist."
         robots="noindex, follow"
       />

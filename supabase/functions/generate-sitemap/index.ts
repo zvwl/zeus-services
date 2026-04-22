@@ -53,6 +53,13 @@ const encodePath = (path: string) =>
     .map((segment) => encodeURIComponent(segment))
     .join('/')
 
+// Slugs that resolve to redirects in the app — exclude from sitemap
+const REDIRECT_CATEGORY_SLUGS = new Set(['products', 'product'])
+
+// True if a string contains emoji characters
+const hasEmoji = (str: string) =>
+  /[\u{1F000}-\u{1FFFF}]|[☀-➿]|[\u{1F300}-\u{1FAFF}]/u.test(str)
+
 Deno.serve(async () => {
   try {
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? ''
@@ -88,11 +95,16 @@ Deno.serve(async () => {
     if (gamesResult.error) throw gamesResult.error
     if (itemsResult.error) throw itemsResult.error
 
-    const categories = ((categoriesResult.data ?? []) as CategoryRow[]).filter((category) => Boolean(category.slug))
+    const categories = ((categoriesResult.data ?? []) as CategoryRow[])
+      .filter((category) => Boolean(category.slug))
+      .filter((category) => !REDIRECT_CATEGORY_SLUGS.has(category.slug))
     const games = ((gamesResult.data ?? []) as GameRow[])
       .filter((game) => Boolean(game.slug))
-      .filter((game) => game.is_active !== false) // Include active and coming soon games
-    const items = ((itemsResult.data ?? []) as ItemRow[]).filter((item) => Boolean(item.slug))
+      .filter((game) => !hasEmoji(game.slug))
+      .filter((game) => game.is_active !== false)
+    const items = ((itemsResult.data ?? []) as ItemRow[])
+      .filter((item) => Boolean(item.slug))
+      .filter((item) => !hasEmoji(item.slug))
 
     const categoryById = new Map(categories.map((category) => [category.id, category]))
     const gameById = new Map(games.map((game) => [game.id, game]))
