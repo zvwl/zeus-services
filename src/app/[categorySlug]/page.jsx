@@ -19,6 +19,7 @@ export async function generateMetadata({ params }) {
     title: `${name} - All Games`,
     description: `Browse premium ${name.toLowerCase()} across all supported games on Zeuservices. GTA 5, Fortnite, Rocket League, Forza Horizon 6 and more. Safe, manual delivery via Discord.`,
     robots: { index: true, follow: true },
+    alternates: { canonical: `/${categorySlug}` },
   }
 }
 

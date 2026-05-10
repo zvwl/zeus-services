@@ -29,6 +29,7 @@ export async function generateMetadata({ params }) {
     title: `${cleanItemName} - ${cleanGameName} ${cleanCategoryName}`,
     description,
     robots: { index: true, follow: true },
+    alternates: { canonical: `/${categorySlug}/${gameSlug}/${itemSlug}` },
   }
 }
 

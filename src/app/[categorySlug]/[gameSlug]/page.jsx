@@ -21,6 +21,7 @@ export async function generateMetadata({ params }) {
     title: `${gameName} ${catName}`,
     description: `Browse ${catName.toLowerCase()} for ${gameName} on Zeuservices. Premium ${catName.toLowerCase()} with safe, manual delivery. Secure checkout via Stripe. 9+ years trusted.`,
     robots: { index: true, follow: true },
+    alternates: { canonical: `/${categorySlug}/${gameSlug}` },
   }
 }
 

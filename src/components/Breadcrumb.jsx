@@ -79,9 +79,7 @@ export default function Breadcrumb({ customItems }) {
 
   return (
     <>
-      <script type="application/ld+json">
-        {JSON.stringify(structuredData)}
-      </script>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
       <nav className="breadcrumb" aria-label="Breadcrumb">
         <ol className="breadcrumb-list">
           {breadcrumbItems.map((item, index) => (
