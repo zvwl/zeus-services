@@ -1,63 +1,7 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+'use client'
 
-export const stripEmojis = (str) =>
-  str ? str.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, '').trim() : str;
-
-export const HOME_FAQ_SCHEMA = {
-  "@context": "https://schema.org",
-  "@type": "FAQPage",
-  "mainEntity": [
-    {
-      "@type": "Question",
-      "name": "Why buy from Zeuservices?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "With 9+ years of experience, we craft every order carefully and handle your account with the utmost care. All services are delivered manually through Discord so you always have a full communication history."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I buy from Zeuservices?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Browse our games and services, select your version and platform, add to cart, and checkout securely via Stripe. Once payment is confirmed, we contact you via Discord for delivery."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "How do I receive my account or service?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "After payment, we reach out on Discord with full instructions and account details. For custom services, we confirm the specifications before delivery. Delivery times range from 20 minutes to 5 hours depending on the service."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "Is Zeuservices safe and legitimate?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "Yes. All transactions are secured via Stripe. Delivery is handled manually through Discord with full transparency. We follow industry best practices and game-specific safety guidelines."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What payment methods do you accept?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "We support all major credit and debit cards through Stripe Checkout. No cryptocurrency or risky payment gateways."
-      }
-    },
-    {
-      "@type": "Question",
-      "name": "What platforms do you support?",
-      "acceptedAnswer": {
-        "@type": "Answer",
-        "text": "We support Steam, Epic Games, Xbox App, and Rockstar Launcher across GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more. Platform availability varies by item."
-      }
-    }
-  ]
-};
+import { useEffect } from 'react'
+export { stripEmojis, HOME_FAQ_SCHEMA } from '@/lib/seo-utils'
 
 export default function SEO({
   title = "Zeuservices - Multi-Game Account Services & Boosting",
@@ -68,8 +12,8 @@ export default function SEO({
   robots = "index, follow",
   structuredData = null
 }) {
-  const location = useLocation();
-  const url = `https://zeuservices.com${location.pathname}`;
+  
+  const url = typeof window !== 'undefined' ? `https://zeuservices.com${window.location.pathname}` : 'https://zeuservices.com';
 
   useEffect(() => {
     document.title = title;

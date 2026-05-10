@@ -1,19 +1,20 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { useRouter, usePathname } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
 import './CategoryDropdown.css'
 
 export default function CategoryDropdown({ category, onCloseCart }) {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const fallbackIcon = '/game-icons/default.svg'
   const [games, setGames] = useState([])
   const [searchQuery, setSearchQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  // Check if this category is currently active
-  const isActive = location.pathname.startsWith(`/${category.slug}`)
+  const isActive = pathname.startsWith(`/${category.slug}`)
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -42,7 +43,7 @@ export default function CategoryDropdown({ category, onCloseCart }) {
   const handleGameClick = (game) => {
     if (game.is_coming_soon) return
     onCloseCart?.()
-    navigate(`/${category.slug}/${game.game_slug}`)
+    router.push(`/${category.slug}/${game.game_slug}`)
     setMobileOpen(false)
   }
 
@@ -50,7 +51,7 @@ export default function CategoryDropdown({ category, onCloseCart }) {
     e.preventDefault()
     // Click category name = show ALL items from all games in this category
     onCloseCart?.()
-    navigate(`/${category.slug}`)
+    router.push(`/${category.slug}`)
     setMobileOpen(false)
   }
 

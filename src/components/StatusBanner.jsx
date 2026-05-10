@@ -1,5 +1,7 @@
+'use client'
+
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/lib/supabase/client'
 import { isPrerender } from '../utils/isPrerender'
 import './StatusBanner.css'
 

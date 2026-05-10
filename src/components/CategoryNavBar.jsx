@@ -1,11 +1,13 @@
+'use client'
+
 import { useState, useEffect } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { useRouter, usePathname } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
 import './CategoryNavBar.css'
 
 export default function CategoryNavBar() {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const [categories, setCategories] = useState([])
 
   useEffect(() => {
@@ -32,10 +34,10 @@ export default function CategoryNavBar() {
     fetchCategories()
   }, [])
 
-  const isActive = (slug) => location.pathname.startsWith(`/${slug}`)
+  const isActive = (slug) => pathname.startsWith(`/${slug}`)
 
   const handleCategoryClick = (slug) => {
-    navigate(`/${slug}`)
+    router.push(`/${slug}`)
   }
 
   return (

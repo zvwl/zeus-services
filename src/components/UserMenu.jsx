@@ -1,10 +1,12 @@
+'use client'
+
 import { useState, useEffect, useRef } from 'react'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useRouter, usePathname } from 'next/navigation'
 import DOMPurify from 'dompurify'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
-import { supabase } from '../supabaseClient'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase/client'
 import {
   HomeIcon,
   BoostIcon,
@@ -27,12 +29,13 @@ import {
   SignupIcon,
   AnimatedLogoutIcon,
 } from './SidebarIcons'
-import tiktokLogo from '../assets/tiktok-logo.svg'
 import './UserMenu.css'
 
+const tiktokLogo = '/tiktok-logo.svg'
+
 export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser = null }) {
-  const navigate = useNavigate()
-  const location = useLocation()
+  const router = useRouter()
+  const pathname = usePathname()
   const { user: contextUser, isAdmin, logout } = useAuth()
   const user = propUser || contextUser
   const [expandedCategory, setExpandedCategory] = useState(null)
@@ -64,7 +67,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
 
   const handleNavigation = (path) => {
     onCloseCart?.()
-    navigate(path)
+    router.push(path)
     onClose()
   }
 
@@ -72,10 +75,10 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
     onCloseCart?.()
     onClose()
     await logout()
-    navigate('/')
+    router.push('/')
   }
 
-  const isActive = (path) => location.pathname === path
+  const isActive = (path) => pathname === path
 
   // Scroll lock when menu is open to prevent page jump
   useEffect(() => {
@@ -244,7 +247,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
                       <button
                         key={game.id}
                         className={`submenu-item ${
-                          location.pathname === `/boosting/${game.slug}` ? 'active' : ''
+                          pathname === `/boosting/${game.slug}` ? 'active' : ''
                         }`}
                         onClick={() => handleNavigation(`/boosting/${game.slug}`)}
                       >
@@ -277,7 +280,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
                       <button
                         key={game.id}
                         className={`submenu-item ${
-                          location.pathname === `/accounts/${game.slug}` ? 'active' : ''
+                          pathname === `/accounts/${game.slug}` ? 'active' : ''
                         }`}
                         onClick={() => handleNavigation(`/accounts/${game.slug}`)}
                       >
@@ -310,7 +313,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
                       <button
                         key={game.id}
                         className={`submenu-item ${
-                          location.pathname === `/topups/${game.slug}` ? 'active' : ''
+                          pathname === `/topups/${game.slug}` ? 'active' : ''
                         }`}
                         onClick={() => handleNavigation(`/topups/${game.slug}`)}
                       >

@@ -1,11 +1,13 @@
-import { useAuth } from '../contexts/AuthContext'
-import { useNavigate } from 'react-router-dom'
+'use client'
+
+import { useAuth } from '@/contexts/AuthContext'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/lib/supabase/client'
 
 export default function ProtectedAdminRoute({ children }) {
   const { user, isAdmin, loading: authLoading } = useAuth()
-  const navigate = useNavigate()
+  const router = useRouter()
   const [hasChecked, setHasChecked] = useState(false)
   const [timeoutReached, setTimeoutReached] = useState(false)
 
@@ -24,18 +26,15 @@ export default function ProtectedAdminRoute({ children }) {
     setHasChecked(true)
     
     if (!user) {
-      navigate('/login')
+      router.push('/login')
       return
     }
     
     if (!isAdmin) {
-      if (import.meta.env.DEV) {
-        console.warn(`Unauthorized access attempt by user ${user.id} (${user.email}) to admin route`)
-      }
-      navigate('/')
+      router.push('/')
       return
     }
-  }, [user, isAdmin, authLoading, navigate])
+  }, [user, isAdmin, authLoading, router])
 
   const handleForceLogout = async () => {
     // Clear state immediately

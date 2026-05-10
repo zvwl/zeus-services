@@ -1,12 +1,11 @@
-import { Link, useLocation } from 'react-router-dom'
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import './Breadcrumb.css'
 
-/**
- * Breadcrumb component with structured data for SEO
- * Automatically generates breadcrumbs based on current route
- */
 export default function Breadcrumb({ customItems }) {
-  const location = useLocation()
+  const pathname = usePathname()
   
   // If custom items provided, use those
   if (customItems) {
@@ -23,9 +22,7 @@ export default function Breadcrumb({ customItems }) {
 
     return (
       <>
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
+        <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }} />
         <nav className="breadcrumb" aria-label="Breadcrumb">
           <ol className="breadcrumb-list">
             {customItems.map((item, index) => (
@@ -34,7 +31,7 @@ export default function Breadcrumb({ customItems }) {
                   <>
                     {item.path ? (
                       <>
-                        <Link to={item.path}>{item.label}</Link>
+                        <Link href={item.path}>{item.label}</Link>
                         <span className="breadcrumb-separator">/</span>
                       </>
                     ) : (
@@ -56,7 +53,7 @@ export default function Breadcrumb({ customItems }) {
   }
 
   // Auto-generate from path
-  const pathnames = location.pathname.split('/').filter(x => x)
+  const pathnames = pathname.split('/').filter(x => x)
   
   if (pathnames.length === 0) return null
 
@@ -91,7 +88,7 @@ export default function Breadcrumb({ customItems }) {
             <li key={item.path} className="breadcrumb-item">
               {index < breadcrumbItems.length - 1 ? (
                 <>
-                  <Link to={item.path}>{item.label}</Link>
+                  <Link href={item.path}>{item.label}</Link>
                   <span className="breadcrumb-separator">/</span>
                 </>
               ) : (

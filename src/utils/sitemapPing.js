@@ -3,7 +3,7 @@
  * Call this after adding/updating categories, games, or items
  */
 
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/lib/supabase/client'
 
 export async function pingSitemap() {
   try {

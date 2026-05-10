@@ -1,10 +1,12 @@
+'use client'
+
 import { useState, useRef, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
 import './SearchBar.css'
 
 export default function SearchBar() {
-  const navigate = useNavigate()
+  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [results, setResults] = useState([])
   const [isOpen, setIsOpen] = useState(false)
@@ -105,7 +107,7 @@ export default function SearchBar() {
     const gameSlug = game?.slug || ''
 
     if (categorySlug && gameSlug) {
-      navigate(`/${categorySlug}/${gameSlug}/${item.slug}`)
+      router.push(`/${categorySlug}/${gameSlug}/${item.slug}`)
       setSearchQuery('')
       setResults([])
       setIsOpen(false)

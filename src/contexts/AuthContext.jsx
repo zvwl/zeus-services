@@ -1,5 +1,7 @@
+﻿'use client'
+
 import { createContext, useContext, useState, useEffect } from 'react'
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/lib/supabase/client'
 import { isTurnstileBypassed } from '../utils/turnstile'
 
 const AuthContext = createContext(null)
@@ -17,13 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true)
   const [emailVerified, setEmailVerified] = useState(false)
   const [isRecoveringFromRedirect] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(() => {
-    try {
-      return localStorage.getItem('isAdmin') === 'true'
-    } catch {
-      return false
-    }
-  })
+  const [isAdmin, setIsAdmin] = useState(false)
 
   // Function to check admin status with timeout
   const checkAdminStatus = async (userId) => {
@@ -439,7 +435,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: import.meta.env.VITE_FRONTEND_URL || window.location.origin
+          redirectTo: process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin
         }
       })
 
@@ -459,7 +455,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
         options: {
-          redirectTo: import.meta.env.VITE_FRONTEND_URL || window.location.origin,
+          redirectTo: process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin,
           scopes: 'identify email'
         }
       })
@@ -520,7 +516,7 @@ export const AuthProvider = ({ children }) => {
           data: {
             display_name: name
           },
-          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
           captchaToken: requireCaptcha ? captchaToken : undefined
         }
       })
@@ -601,7 +597,7 @@ export const AuthProvider = ({ children }) => {
         type: 'signup',
         email: currentUser.email,
         options: {
-          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
           captchaToken: captchaToken || undefined
         }
       })
@@ -631,7 +627,7 @@ export const AuthProvider = ({ children }) => {
         type: 'signup',
         email,
         options: {
-          emailRedirectTo: `${import.meta.env.VITE_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
+          emailRedirectTo: `${process.env.NEXT_PUBLIC_FRONTEND_URL || 'https://zeuservices.com'}/verify-email`,
           captchaToken: captchaToken || undefined
         }
       })
@@ -711,3 +707,4 @@ export const AuthProvider = ({ children }) => {
     </AuthContext.Provider>
   )
 }
+

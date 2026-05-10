@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed -i \"s|import { useParams, useNavigate } from 'react-router-dom'|import { useParams, useRouter } from 'next/navigation'|g\" src/pages/CategoryPage.jsx)",
+      "Bash(sed -i \"s|const navigate = useNavigate\\(\\)|const router = useRouter\\(\\)|g\" src/pages/CategoryPage.jsx)",
+      "Bash(sed -i \"s|navigate\\(\\\\`|router.push\\(\\\\`|g\" src/pages/CategoryPage.jsx)",
+      "Bash(sed -i \"s|navigate\\('|router.push\\('|g\" src/pages/CategoryPage.jsx)",
+      "Bash(sed -i \"s|import { useNavigate, useSearchParams } from 'react-router-dom'|import { useRouter, useSearchParams } from 'next/navigation'|g\" src/pages/ReviewForm.jsx)",
+      "Bash(sed -i \"s|const navigate = useNavigate\\(\\)|const router = useRouter\\(\\)|g\" src/pages/ReviewForm.jsx)",
+      "Bash(sed -i \"s|navigate\\('|router.push\\('|g\" src/pages/ReviewForm.jsx)",
+      "Bash(sed -i \"s|navigate\\(\\\\`|router.push\\(\\\\`|g\" src/pages/ReviewForm.jsx)",
+      "Bash(xargs sed *)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(sed -i \"s|const email = location.state?.email || 'your email'|const searchParams = useSearchParams\\(\\)\\\\n  const email = searchParams.get\\('email'\\) || 'your email'|g\" src/views/PendingVerificationPage.jsx)",
+      "Bash(sed -i \"s|const \\\\[resendEmail, setResendEmail\\\\] = useState\\(location.state?.email || ''\\)|const \\\\[resendEmail, setResendEmail\\\\] = useState\\(searchParams.get\\('email'\\) || ''\\)|g\" src/views/PendingVerificationPage.jsx)",
+      "Bash(sed -i 's|import { stripEmojis } from '\\\\''@/components/SEO'\\\\''|import { stripEmojis } from '\\\\''@/lib/seo-utils'\\\\''|g' src/app/page.jsx 'src/app/[categorySlug]/page.jsx' 'src/app/[categorySlug]/[gameSlug]/page.jsx' 'src/app/[categorySlug]/[gameSlug]/[itemSlug]/page.jsx')",
+      "Bash(sed -i \"s|import { HOME_FAQ_SCHEMA } from '@/components/SEO'|import { HOME_FAQ_SCHEMA } from '@/lib/seo-utils'|g\" src/app/page.jsx)",
+      "Bash(curl -s http://localhost:3000)",
+      "Bash(curl -s http://localhost:3000/boosting)",
+      "Bash(kill %1)",
+      "Bash(npx next *)",
+      "Bash(node -e \"const path = require\\('path'\\); console.log\\(path.resolve\\('src/views', '../App.css'\\)\\)\")",
+      "Bash(sed -i \"s|import tiktokLogo from '../assets/tiktok-logo.svg'|const tiktokLogo = '/tiktok-logo.svg'|g\" src/components/Footer.jsx)",
+      "Bash(sed -i \"s|import tiktokLogo from '../assets/tiktok-logo.svg'|const tiktokLogo = '/tiktok-logo.svg'|g\" src/components/UserMenu.jsx)",
+      "Bash(python3 - src/views/SignupPage.jsx)",
+      "Bash(curl -s http://localhost:3001/)",
+      "Bash(cat /tmp/nextdev.log | grep \"Local:\")",
+      "Read(//tmp/**)",
+      "Bash(curl -s \"http://localhost:3002/boosting/gta5\")",
+      "Bash(curl -s \"http://localhost:3002/topups/rocket-league\")",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" \"http://localhost:3002/boosting/gta5/full-account-service\")",
+      "Bash(curl -s \"http://localhost:3002/boosting/gta5/full-account-service\")",
+      "Bash(git add *)"
+    ]
+  }
+}

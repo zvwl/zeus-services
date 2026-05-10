@@ -2,12 +2,12 @@ import { createClient } from '@supabase/supabase-js';
 
 // Get Supabase credentials from environment variables
 // These will be provided by Vite as import.meta.env
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Validate that environment variables are set
 if (!supabaseUrl || !supabaseAnonKey) {
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     console.error('Missing Supabase environment variables. Please check your .env file.')
   }
 }

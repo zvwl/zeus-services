@@ -1,19 +1,16 @@
+'use client'
+
 import { useEffect, useRef } from 'react'
 import { X, ShoppingCart, Plus, Minus, Trash2, ArrowRight } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
+import { useCart } from '@/contexts/CartContext'
 import './CartDrawer.css'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
 
-export default function CartDrawer({ 
-  isOpen, 
-  onClose, 
-  cartItems, 
-  onRemove, 
-  onUpdateQuantity, 
-  formatPrice
-}) {
-  const navigate = useNavigate()
+export default function CartDrawer() {
+  const router = useRouter()
+  const { cartItems, isCartOpen: isOpen, closeCart: onClose, removeFromCart: onRemove, updateQuantity: onUpdateQuantity, formatPrice } = useCart()
   const itemPathCacheRef = useRef({})
 
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
@@ -78,7 +75,7 @@ export default function CartDrawer({
     const itemPath = await resolveItemPath(item)
     if (!itemPath) return
     onClose()
-    navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
+    router.push(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
   }
 
   // Close on Escape key
@@ -101,12 +98,12 @@ export default function CartDrawer({
 
   const handleCheckout = () => {
     onClose()
-    navigate('/checkout')
+    router.push('/checkout')
   }
 
   const handleViewCart = () => {
     onClose()
-    navigate('/cart')
+    router.push('/cart')
   }
 
   if (!isOpen) return null

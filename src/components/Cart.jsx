@@ -1,14 +1,16 @@
+'use client'
+
 import './Cart.css'
 import { ShoppingCart, Gamepad2, Sparkles } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
 import { XIcon } from './XIcon'
 import { useRef } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
+import { useRouter } from 'next/navigation'
+import { supabase } from '@/lib/supabase/client'
 
 export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, checkoutStatus, formatPrice, paymentMethod, onPaymentMethodChange, isDevUser, orderNote, onOrderNoteChange }) {
-  const navigate = useNavigate()
+  const router = useRouter()
   const { emailVerified } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const isLoading = checkoutStatus?.state === 'loading'
@@ -80,7 +82,7 @@ export default function Cart({ items, onRemove, onUpdateQuantity, onCheckout, ch
   const handleItemClick = async (item) => {
     const itemPath = await resolveItemPath(item)
     if (!itemPath) return
-    navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
+    router.push(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
   }
 
   const handleCheckout = () => {

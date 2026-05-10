@@ -1,9 +1,9 @@
 export const isTurnstileBypassed = () => {
-  if (import.meta.env.VITE_TURNSTILE_BYPASS === 'true') {
+  if (process.env.NEXT_PUBLIC_TURNSTILE_BYPASS === 'true') {
     return true
   }
 
-  if (!import.meta.env.DEV) {
+  if (!process.env.NODE_ENV === 'development') {
     return false
   }
 

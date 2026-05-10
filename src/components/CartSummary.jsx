@@ -1,13 +1,15 @@
-import { useNavigate } from 'react-router-dom'
+'use client'
+
+import { useRouter } from 'next/navigation'
 import { ShoppingCart, Gamepad2 } from 'lucide-react'
-import { useAuth } from '../contexts/AuthContext'
+import { useAuth } from '@/contexts/AuthContext'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
 import { useRef } from 'react'
-import { supabase } from '../supabaseClient'
+import { supabase } from '@/lib/supabase/client'
 import './Cart.css'
 
-export default function CartSummary({ items, onRemove, onUpdateQuantity, formatPrice }) {
-  const navigate = useNavigate()
+export default function CartSummary({ items = [], onRemove, onUpdateQuantity, formatPrice }) {
+  const router = useRouter()
   const { user } = useAuth()
   const totalUsd = items.reduce((sum, item) => sum + (item.price * item.quantity), 0)
   const itemPathCacheRef = useRef({})
@@ -71,15 +73,15 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, formatP
   const handleItemClick = async (item) => {
     const itemPath = await resolveItemPath(item)
     if (!itemPath) return
-    navigate(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
+    router.push(`${itemPath}?cartId=${encodeURIComponent(item.cartId)}`)
   }
 
   const handleCheckout = () => {
     if (!user) {
-      navigate('/login?redirect=/checkout')
+      router.push('/login?redirect=/checkout')
       return
     }
-    navigate('/checkout')
+    router.push('/checkout')
   }
 
   if (items.length === 0) {
@@ -88,7 +90,7 @@ export default function CartSummary({ items, onRemove, onUpdateQuantity, formatP
         <div className="empty-cart">
           <p>Your cart is empty</p>
           <span className="empty-icon"><AnimatedLucideIcon icon={ShoppingCart} size={80} animation="swing" animateOnHover={false} /></span>
-          <button onClick={() => navigate('/boosting')} className="primary-btn">
+          <button onClick={() => router.push('/boosting')} className="primary-btn">
             Start Shopping
           </button>
         </div>

@@ -2,7 +2,7 @@ import { useEffect, useState, lazy, Suspense, useReducer } from 'react'
 import { Routes, Route, useNavigate, useLocation, Navigate } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
 import './App.css'
-import { supabase } from './supabaseClient'
+import { supabase } from '@/lib/supabase/client'
 import { isPrerender } from './utils/isPrerender'
 import Header from './components/Header'
 import Footer from './components/Footer'
@@ -179,7 +179,7 @@ function App() {
     const detectLocation = async () => {
       if (isPrerender()) return
       try {
-        const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/detect-location`)
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/detect-location`)
         const data = await response.json()
         setCurrency(data.currency)
       } catch (_err) {
@@ -383,11 +383,11 @@ function App() {
 
       if (paymentMethod === 'dev_skip') {
         // For dev_skip, create order directly via create-order function
-        const createOrderRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-order`, {
+        const createOrderRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-order`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${accessToken}`
           },
           body: JSON.stringify({
@@ -426,11 +426,11 @@ function App() {
 
       // For Stripe payments, go directly to checkout without creating order
       if (paymentMethod === 'stripe') {
-        const fnRes = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-checkout-session`, {
+        const fnRes = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-checkout-session`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            apikey: import.meta.env.VITE_SUPABASE_ANON_KEY,
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
             Authorization: `Bearer ${accessToken}`
           },
           body: JSON.stringify({
