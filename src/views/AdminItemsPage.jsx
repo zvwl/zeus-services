@@ -17,6 +17,7 @@ export default function AdminItemsPage() {
   const [editingItem, setEditingItem] = useState(null)
   const [filterGame, setFilterGame] = useState('all')
   const [filterCategory, setFilterCategory] = useState('all')
+  const [filterName, setFilterName] = useState('')
   const [showConfirm, setShowConfirm] = useState(false)
   const [confirmConfig, setConfirmConfig] = useState({
     title: '',
@@ -210,6 +211,33 @@ export default function AdminItemsPage() {
     }
   }
 
+  const handleDuplicate = async (item) => {
+    try {
+      const duplicateData = {
+        game_id: item.game_id,
+        category_id: item.category_id,
+        name: `${item.name} (Copy)`,
+        slug: `${item.slug}-copy-${Date.now()}`,
+        price: item.price,
+        description: item.description || '',
+        icon: item.icon || '',
+        custom_fields: item.custom_fields || [],
+        details: item.details || [],
+        active: false,
+        featured: false,
+        stock_enabled: item.stock_enabled || false,
+        stock_quantity: item.stock_quantity ?? null,
+        stock_unlimited: item.stock_unlimited || false,
+      }
+      const { error } = await supabase.from('items').insert([duplicateData])
+      if (error) throw error
+      addToast(`Duplicated "${item.name}" – edit to rename and activate`, 'success')
+      fetchData()
+    } catch (err) {
+      addToast(`Failed to duplicate: ${err.message}`, 'error')
+    }
+  }
+
   const handleToggleActive = async (item) => {
     try {
       const { error } = await supabase
@@ -323,6 +351,7 @@ export default function AdminItemsPage() {
   const filteredItems = items.filter(item => {
     if (filterGame !== 'all' && item.game_id !== filterGame) return false
     if (filterCategory !== 'all' && item.category_id !== filterCategory) return false
+    if (filterName.trim() && !item.name.toLowerCase().includes(filterName.toLowerCase())) return false
     return true
   })
 
@@ -755,6 +784,13 @@ export default function AdminItemsPage() {
           <div className="list-header">
             <h2>Existing Items ({filteredItems.length})</h2>
             <div className="filter-controls">
+              <input
+                type="text"
+                placeholder="Search by name…"
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
+                style={{ padding: '0.5rem 0.75rem', borderRadius: '6px', border: '1px solid rgba(251,191,36,0.3)', background: 'rgba(10,14,26,0.6)', color: '#f8fafc', fontSize: '0.9rem', minWidth: '160px' }}
+              />
               <select name="filter_game" value={filterGame} onChange={(e) => setFilterGame(e.target.value)}>
                 <option value="all">All Games</option>
                 {games.map(game => (
@@ -778,12 +814,16 @@ export default function AdminItemsPage() {
                   <th>Game</th>
                   <th>Category</th>
                   <th>Price</th>
+                  <th>Stock</th>
                   <th>Status</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredItems.map((item) => (
+                {filteredItems.map((item) => {
+                  const isOutOfStock = item.stock_enabled && !item.stock_unlimited &&
+                    (item.stock_quantity === null || item.stock_quantity === 0)
+                  return (
                   <tr key={item.id}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -803,7 +843,18 @@ export default function AdminItemsPage() {
                     </td>
                     <td>{item.game_name}</td>
                     <td>{item.category_name}</td>
-                    <td>£{item.price}</td>
+                    <td>£{parseFloat(item.price).toFixed(2)}</td>
+                    <td>
+                      {!item.stock_enabled ? (
+                        <span style={{ color: '#64748b', fontSize: '0.8rem' }}>—</span>
+                      ) : item.stock_unlimited ? (
+                        <span style={{ color: '#10b981', fontSize: '0.8rem', fontWeight: 700 }}>∞ Unlimited</span>
+                      ) : isOutOfStock ? (
+                        <span style={{ color: '#ef4444', fontSize: '0.8rem', fontWeight: 700 }}>Out of Stock</span>
+                      ) : (
+                        <span style={{ color: '#fbbf24', fontSize: '0.8rem', fontWeight: 700 }}>{item.stock_quantity} left</span>
+                      )}
+                    </td>
                     <td>
                       <button
                         className={`status-toggle ${item.active ? 'active' : 'inactive'}`}
@@ -817,16 +868,20 @@ export default function AdminItemsPage() {
                         <button className="btn-edit" onClick={() => handleEdit(item)}>
                           Edit
                         </button>
+                        <button className="btn-duplicate" onClick={() => handleDuplicate(item)} title="Duplicate this item">
+                          Copy
+                        </button>
                         <button className="btn-delete" onClick={() => handleDelete(item)}>
                           Delete
                         </button>
                       </div>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
                 {filteredItems.length === 0 && (
                   <tr>
-                    <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
+                    <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-muted)' }}>
                       No items found
                     </td>
                   </tr>

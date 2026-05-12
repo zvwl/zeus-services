@@ -37,6 +37,14 @@ export default function AdminOrdersPage() {
     action: null, // 'refund' or 'cancel'
     orderInfo: null
   })
+  const [copiedId, setCopiedId] = useState(null)
+
+  const copyToClipboard = (text, id) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(id)
+      setTimeout(() => setCopiedId(null), 1500)
+    })
+  }
 
   // Show confirmation dialog for refund
   const openRefundConfirmation = (order) => {
@@ -464,6 +472,36 @@ export default function AdminOrdersPage() {
 
         {error && <div className="error-message">{error}</div>}
 
+        {orders.length > 0 && (() => {
+          const gbpOrders = orders.filter(o => (o.currency || 'GBP') === 'GBP' && o.payment_status !== 'refunded')
+          const totalRevenue = gbpOrders.reduce((sum, o) => sum + parseFloat(o.total_amount || 0), 0)
+          const completedCount = orders.filter(o => o.status === 'completed').length
+          const pendingCount = orders.filter(o => ['pending', 'processing', 'paid'].includes(o.status)).length
+          return (
+            <div className="orders-summary-bar">
+              <div className="osb-item">
+                <span className="osb-label">Showing</span>
+                <span className="osb-value">{orders.length}</span>
+              </div>
+              <div className="osb-divider" />
+              <div className="osb-item">
+                <span className="osb-label">Completed</span>
+                <span className="osb-value" style={{ color: '#10b981' }}>{completedCount}</span>
+              </div>
+              <div className="osb-divider" />
+              <div className="osb-item">
+                <span className="osb-label">Needs Action</span>
+                <span className="osb-value" style={{ color: pendingCount > 0 ? '#fbbf24' : '#10b981' }}>{pendingCount}</span>
+              </div>
+              <div className="osb-divider" />
+              <div className="osb-item">
+                <span className="osb-label">GBP Revenue</span>
+                <span className="osb-value" style={{ color: '#10b981' }}>£{totalRevenue.toFixed(2)}</span>
+              </div>
+            </div>
+          )
+        })()}
+
         {orders.length === 0 ? (
           <div className="no-orders">
             <p>No orders found</p>
@@ -481,7 +519,14 @@ export default function AdminOrdersPage() {
                 <div className="order-header">
                   <div className="order-id">
                     <span className="label">Order ID:</span>
-                    <span className="value" title={order.id}>{order.id.slice(0, 8)}</span>
+                    <button
+                      className="copy-id-btn"
+                      title="Click to copy full Order ID"
+                      onClick={() => copyToClipboard(order.id, order.id)}
+                    >
+                      <span className="value">{order.id.slice(0, 8)}…</span>
+                      <span className="copy-icon">{copiedId === order.id ? '✓' : '⎘'}</span>
+                    </button>
                   </div>
                   <span className={`status-badge status-${order.status}`}>
                     {order.status}
@@ -508,6 +553,16 @@ export default function AdminOrdersPage() {
                 </div>
 
                 <div className="order-actions">
+                  {order.status !== 'completed' && order.status !== 'cancelled' && order.payment_status !== 'refunded' && (
+                    <button
+                      className="quick-complete-btn"
+                      onClick={() => updateOrderStatus(order.id, 'completed')}
+                      disabled={updatingOrderId === order.id}
+                      title="Mark this order as completed and notify the customer"
+                    >
+                      {updatingOrderId === order.id ? '…' : '✓ Mark Complete'}
+                    </button>
+                  )}
                   <label htmlFor={`status-${order.id}`}>Update Status:</label>
                   <select
                     id={`status-${order.id}`}

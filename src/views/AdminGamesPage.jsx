@@ -167,6 +167,28 @@ export default function AdminGamesPage() {
     }
   }
 
+  const moveGame = async (gameId, direction) => {
+    const sorted = [...games].sort((a, b) => a.display_order - b.display_order)
+    const idx = sorted.findIndex(g => g.id === gameId)
+    const swapIdx = direction === 'up' ? idx - 1 : idx + 1
+    if (swapIdx < 0 || swapIdx >= sorted.length) return
+
+    const current = sorted[idx]
+    const swap = sorted[swapIdx]
+    const tempOrder = current.display_order
+    const newOrder = swap.display_order
+
+    try {
+      await Promise.all([
+        supabase.from('games').update({ display_order: newOrder }).eq('id', current.id),
+        supabase.from('games').update({ display_order: tempOrder }).eq('id', swap.id),
+      ])
+      fetchGames()
+    } catch (err) {
+      addToast('Failed to reorder: ' + err.message, 'error')
+    }
+  }
+
   const resetForm = () => {
     setEditingGame(null)
     setFormData({
@@ -306,7 +328,7 @@ export default function AdminGamesPage() {
                 </tr>
               </thead>
               <tbody>
-                {games.map((game) => (
+                {[...games].sort((a, b) => a.display_order - b.display_order).map((game, idx, arr) => (
                   <tr key={game.id}>
                     <td>
                       {game.icon_url ? (
@@ -331,7 +353,25 @@ export default function AdminGamesPage() {
                         <span className="badge badge-error">Inactive</span>
                       )}
                     </td>
-                    <td>{game.display_order}</td>
+                    <td>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <span style={{ minWidth: '1.5rem', textAlign: 'center' }}>{game.display_order}</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          <button
+                            className="btn-reorder"
+                            onClick={() => moveGame(game.id, 'up')}
+                            disabled={idx === 0}
+                            title="Move up"
+                          >▲</button>
+                          <button
+                            className="btn-reorder"
+                            onClick={() => moveGame(game.id, 'down')}
+                            disabled={idx === arr.length - 1}
+                            title="Move down"
+                          >▼</button>
+                        </div>
+                      </div>
+                    </td>
                     <td>
                       <div className="action-buttons">
                         <button className="btn-edit" onClick={() => handleEdit(game)}>

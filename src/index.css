@@ -24,7 +24,7 @@
   --border-color: rgba(148, 163, 184, 0.3);
   
   /* Layout */
-  --header-height: 158px;
+  --header-height: 128px;
   --banner-height: 34px;
   --top-stack-height: calc(var(--header-height) + var(--banner-height));
   
@@ -34,7 +34,7 @@
 
 @media (max-width: 480px) {
   :root {
-    --header-height: calc(144px + env(safe-area-inset-top, 0px));
+    --header-height: calc(116px + env(safe-area-inset-top, 0px));
     --banner-height: 34px;
     --top-stack-height: calc(var(--header-height) + var(--banner-height));
   }

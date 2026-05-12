@@ -585,3 +585,44 @@
     font-size: 1rem;
   }
 }
+
+/* ─── Duplicate item button ────────────────────────── */
+.btn-duplicate {
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  background: rgba(139, 92, 246, 0.2);
+  color: #a78bfa;
+}
+
+.btn-duplicate:hover {
+  background: rgba(139, 92, 246, 0.3);
+  transform: translateY(-2px);
+}
+
+/* ─── Game reorder buttons ─────────────────────────── */
+.btn-reorder {
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  color: #fbbf24;
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.7rem;
+  cursor: pointer;
+  line-height: 1.4;
+  transition: all 0.15s;
+}
+
+.btn-reorder:hover:not(:disabled) {
+  background: rgba(251, 191, 36, 0.25);
+  border-color: rgba(251, 191, 36, 0.5);
+}
+
+.btn-reorder:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}

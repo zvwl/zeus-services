@@ -1404,3 +1404,180 @@
     font-size: 2rem;
   }
 }
+
+/* ─── Dashboard stat cards ─────────────────────────── */
+.dashboard-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.dashboard-stat-card {
+  background: rgba(15, 23, 42, 0.8);
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.2s ease;
+}
+
+.dashboard-stat-card.clickable {
+  cursor: pointer;
+}
+
+.dashboard-stat-card:hover {
+  border-color: rgba(251, 191, 36, 0.4);
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.1);
+  transform: translateY(-2px);
+}
+
+.dsc-icon {
+  font-size: 2rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.dsc-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.dsc-label {
+  color: #94a3b8;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.dsc-value {
+  color: #f8fafc;
+  font-size: 1.9rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.nav-card-stat {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-top: 0.2rem;
+}
+
+/* ─── Orders summary bar ───────────────────────────── */
+.orders-summary-bar {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin-bottom: 1.5rem;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(251, 191, 36, 0.15);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.osb-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 1.5rem;
+  flex: 1;
+}
+
+.osb-label {
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.osb-value {
+  color: #f8fafc;
+  font-size: 1.4rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.osb-divider {
+  width: 1px;
+  height: 2.5rem;
+  background: rgba(251, 191, 36, 0.15);
+  flex-shrink: 0;
+}
+
+/* ─── Quick Complete button ────────────────────────── */
+.quick-complete-btn {
+  width: 100%;
+  padding: 0.85rem 1.2rem;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: all 0.2s ease;
+}
+
+.quick-complete-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+}
+
+.quick-complete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Copy ID button ───────────────────────────────── */
+.copy-id-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: inherit;
+}
+
+.copy-id-btn:hover .value {
+  color: #fff;
+}
+
+.copy-icon {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  transition: color 0.15s;
+}
+
+.copy-id-btn:hover .copy-icon {
+  color: #fbbf24;
+}
+
+@media (max-width: 640px) {
+  .dashboard-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .orders-summary-bar {
+    flex-wrap: wrap;
+  }
+
+  .osb-divider {
+    display: none;
+  }
+
+  .osb-item {
+    flex: 0 0 50%;
+    border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+  }
+}

@@ -9,6 +9,7 @@ import './AdminReviewsPage.css'
 export default function AdminReviewsPage() {
   const { user } = useAuth()
   const [reviews, setReviews] = useState([])
+  const [allReviews, setAllReviews] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [isAdmin, setIsAdmin] = useState(false)
@@ -52,29 +53,22 @@ export default function AdminReviewsPage() {
   const fetchReviews = async () => {
     setLoading(true)
     try {
-      let query = supabase
-        .from('reviews')
-        .select(`
-          id,
-          rating,
-          comment,
-          status,
-          admin_notes,
-          created_at,
-          order_id,
-          user_id
-        `)
-        .order('created_at', { ascending: false })
+      const fields = 'id, rating, comment, status, admin_notes, created_at, order_id, user_id'
 
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter)
-      }
+      // Fetch all reviews for counts, and filtered for display
+      const [allResult, filteredResult] = await Promise.all([
+        supabase.from('reviews').select('id, status').order('created_at', { ascending: false }),
+        (() => {
+          let q = supabase.from('reviews').select(fields).order('created_at', { ascending: false })
+          if (statusFilter !== 'all') q = q.eq('status', statusFilter)
+          return q
+        })(),
+      ])
 
-      const { data, error: fetchError } = await query
+      if (filteredResult.error) throw filteredResult.error
 
-      if (fetchError) throw fetchError
-
-      setReviews(data || [])
+      setAllReviews(allResult.data || [])
+      setReviews(filteredResult.data || [])
       setError('')
     } catch (err) {
       setError('Error loading reviews: ' + err.message)
@@ -268,6 +262,40 @@ export default function AdminReviewsPage() {
           <p>Moderate customer reviews</p>
         </div>
 
+        {allReviews.length > 0 && (() => {
+          const pendingCount = allReviews.filter(r => r.status === 'pending').length
+          const approvedCount = allReviews.filter(r => r.status === 'approved').length
+          const rejectedCount = allReviews.filter(r => r.status === 'rejected').length
+          return (
+            <div className="reviews-stats-bar">
+              <button
+                className={`rsb-chip ${statusFilter === 'all' ? 'rsb-active' : ''}`}
+                onClick={() => setStatusFilter('all')}
+              >
+                All <span className="rsb-count">{allReviews.length}</span>
+              </button>
+              <button
+                className={`rsb-chip rsb-pending ${statusFilter === 'pending' ? 'rsb-active' : ''}`}
+                onClick={() => setStatusFilter('pending')}
+              >
+                Pending <span className="rsb-count">{pendingCount}</span>
+              </button>
+              <button
+                className={`rsb-chip rsb-approved ${statusFilter === 'approved' ? 'rsb-active' : ''}`}
+                onClick={() => setStatusFilter('approved')}
+              >
+                Approved <span className="rsb-count">{approvedCount}</span>
+              </button>
+              <button
+                className={`rsb-chip rsb-rejected ${statusFilter === 'rejected' ? 'rsb-active' : ''}`}
+                onClick={() => setStatusFilter('rejected')}
+              >
+                Rejected <span className="rsb-count">{rejectedCount}</span>
+              </button>
+            </div>
+          )
+        })()}
+
         <div className="filter-bar">
           <label htmlFor="statusFilter">Filter by status:</label>
           <select
@@ -281,7 +309,7 @@ export default function AdminReviewsPage() {
             <option value="approved">Approved</option>
             <option value="rejected">Rejected</option>
           </select>
-          <span className="review-count">{reviews.length} reviews</span>
+          <span className="review-count">{reviews.length} showing</span>
         </div>
 
         {error && <div className="error-message">{error}</div>}
