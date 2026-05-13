@@ -4,17 +4,17 @@ import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
-import { Gamepad2, ShieldCheck, Lock, CreditCard, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
+import {
+  Gamepad2, ShieldCheck, Lock, CreditCard, CheckCircle,
+  AlertCircle, Loader2, ChevronLeft, ArrowRight,
+} from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
 import { supabase } from '@/lib/supabase/client'
 import AnimatedLucideIcon from '@/components/AnimatedLucideIcon'
 import LoadingSpinner from '@/components/LoadingSpinner'
-import './CartPage.css'
 import './CheckoutPage.css'
 
-// stripePromise with NO options — CardElement doesn't need clientSecret in
-// the Elements wrapper so Stripe.js never calls /v1/elements/sessions.
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
 const CARD_ELEMENT_OPTIONS = {
@@ -27,16 +27,13 @@ const CARD_ELEMENT_OPTIONS = {
       '::placeholder': { color: '#64748b' },
       iconColor: '#fbbf24',
     },
-    invalid: {
-      color: '#ef4444',
-      iconColor: '#ef4444',
-    },
+    invalid: { color: '#ef4444', iconColor: '#ef4444' },
   },
   hidePostalCode: false,
 }
 
 // ── Card payment form ──────────────────────────────────────────────────────
-function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, orderNote, user, onSuccess }) {
+function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, orderNote, onSuccess, formatPrice, totalUsd }) {
   const stripe = useStripe()
   const elements = useElements()
   const [error, setError] = useState('')
@@ -52,8 +49,6 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
 
     try {
       const cardElement = elements.getElement(CardElement)
-
-      // Step 1 — create PaymentIntent server-side
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData?.session?.access_token
       const sessionUser = sessionData?.session?.user
@@ -79,7 +74,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
             total_amount: amountInCents / 100,
             currency,
             customer_email: sessionUser?.email,
-            customer_name: sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0],
+            customer_name: nameOnCard.trim() || sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0],
             notes: orderNote,
           }),
         }
@@ -92,7 +87,6 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
         return
       }
 
-      // Step 2 — confirm card payment directly (no /v1/elements/sessions call)
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
         data.clientSecret,
         {
@@ -112,7 +106,6 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
       } else if (paymentIntent?.status === 'succeeded') {
         onSuccess(paymentIntent.id)
       } else if (paymentIntent?.status === 'requires_action') {
-        // 3DS handled automatically by confirmCardPayment — if we reach here it failed
         setError('Additional verification required. Please try again or use a different card.')
         setBusy(false)
       } else {
@@ -126,50 +119,66 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
   }
 
   return (
-    <form onSubmit={handleSubmit} className="payment-element-form">
-      <div className="card-field-group">
-        <div className="card-element-label">Name on card</div>
-        <input
-          className="card-name-input"
-          type="text"
-          placeholder="Full name as on card"
-          value={nameOnCard}
-          onChange={(e) => setNameOnCard(e.target.value)}
-          autoComplete="cc-name"
-          spellCheck={false}
-        />
+    <form onSubmit={handleSubmit} className="co-card-form">
+      {/* Payment method pill */}
+      <div className="co-method-selected">
+        <div className="co-method-radio" />
+        <CreditCard size={16} strokeWidth={2} color="#fbbf24" />
+        <span>Credit / Debit Card</span>
+        <div className="co-card-logos">
+          <span className="co-card-logo co-visa">VISA</span>
+          <span className="co-card-logo co-mc">MC</span>
+          <span className="co-card-logo co-amex">AMEX</span>
+        </div>
       </div>
 
-      <div className="card-section-divider" />
-
-      <div className="card-field-group">
-        <div className="card-element-label">Card details</div>
-        <div className={`card-element-wrapper ${cardReady ? 'ready' : ''}`}>
-          <CardElement
-            options={CARD_ELEMENT_OPTIONS}
-            onReady={() => setCardReady(true)}
-            onChange={(e) => { if (e.error) setError(e.error.message); else setError('') }}
+      <div className="co-card-fields">
+        <div className="co-field-group">
+          <label className="co-field-label">Name on card</label>
+          <input
+            className="co-field-input"
+            type="text"
+            placeholder="Full name as on card"
+            value={nameOnCard}
+            onChange={(e) => setNameOnCard(e.target.value)}
+            autoComplete="cc-name"
+            spellCheck={false}
           />
         </div>
-      </div>
 
-      {error && (
-        <div className="payment-error">
-          <AlertCircle size={15} strokeWidth={2} />
-          {error}
+        <div className="co-field-group">
+          <label className="co-field-label">Card number</label>
+          <div className={`co-card-stripe-wrapper ${cardReady ? 'ready' : ''}`}>
+            <CardElement
+              options={CARD_ELEMENT_OPTIONS}
+              onReady={() => setCardReady(true)}
+              onChange={(e) => { if (e.error) setError(e.error.message); else setError('') }}
+            />
+          </div>
         </div>
-      )}
 
-      <button type="submit" className="pay-now-btn" disabled={!stripe || !elements || busy || !cardReady}>
-        {busy
-          ? <><Loader2 size={18} className="spin-icon" /> Processing…</>
-          : <><Lock size={16} strokeWidth={2} /> Pay Now</>
-        }
-      </button>
+        {error && (
+          <div className="co-payment-error">
+            <AlertCircle size={15} strokeWidth={2} />
+            <span>{error}</span>
+          </div>
+        )}
 
-      <div className="payment-trust-row">
-        <ShieldCheck size={14} strokeWidth={2} />
-        <span>Secured by Stripe — your card details never reach our servers.</span>
+        <button
+          type="submit"
+          className="co-pay-btn"
+          disabled={!stripe || !elements || busy || !cardReady}
+        >
+          {busy
+            ? <><Loader2 size={18} className="co-spin" /> Processing…</>
+            : <><Lock size={16} strokeWidth={2} /> Pay {formatPrice ? formatPrice(totalUsd) : `$${totalUsd}`} now</>
+          }
+        </button>
+
+        <p className="co-stripe-note">
+          <ShieldCheck size={13} strokeWidth={2} />
+          Secured by Stripe — your card details never reach our servers
+        </p>
       </div>
     </form>
   )
@@ -194,17 +203,12 @@ export default function CheckoutPage() {
   const totalConverted = cartItems.reduce((s, i) => s + convertAmount(i.price) * i.quantity, 0)
   const amountInCents = Math.round(totalConverted * 100)
 
-  // Handle 3DS redirect return
   useEffect(() => {
     if (!searchParams.get('payment_return')) return
     const piId = searchParams.get('payment_intent')
     const status = searchParams.get('redirect_status')
-    if (status === 'succeeded' && piId) {
-      setPaymentIntentId(piId)
-      setPaymentState('polling')
-    } else if (status === 'failed') {
-      setPaymentState('error')
-    }
+    if (status === 'succeeded' && piId) { setPaymentIntentId(piId); setPaymentState('polling') }
+    else if (status === 'failed') setPaymentState('error')
   }, [searchParams])
 
   const pollForOrder = useCallback(async (piId) => {
@@ -228,18 +232,15 @@ export default function CheckoutPage() {
     if (paymentState === 'polling' && paymentIntentId) pollForOrder(paymentIntentId)
   }, [paymentState, paymentIntentId, pollForOrder])
 
-  const handlePaymentSuccess = (piId) => {
-    setPaymentIntentId(piId)
-    setPaymentState('polling')
-  }
+  const handlePaymentSuccess = (piId) => { setPaymentIntentId(piId); setPaymentState('polling') }
 
   useEffect(() => { document.title = 'Checkout | zeuservices' }, [])
   useEffect(() => { if (!authLoading && !user) router.push('/login') }, [user, authLoading, router])
 
   if (authLoading) {
     return (
-      <section className="section services" id="checkout">
-        <div className="order-summary-container"><LoadingSpinner message="Verifying authentication…" /></div>
+      <section className="section services co-page-wrap" id="checkout">
+        <LoadingSpinner message="Verifying authentication…" />
       </section>
     )
   }
@@ -247,22 +248,20 @@ export default function CheckoutPage() {
 
   if (paymentState === 'success') {
     return (
-      <section className="section services" id="checkout">
-        <div className="order-summary-container">
-          <div className="checkout-success">
-            <div className="checkout-success-icon"><CheckCircle size={64} strokeWidth={1.3} color="#10b981" /></div>
-            <h1>Payment Successful!</h1>
-            <p>Thank you for your order. We'll get started right away.</p>
-            <div className="checkout-success-actions">
-              <button className="primary-btn" onClick={() => router.push('/orders')}>View My Orders</button>
-              <a href="https://discord.gg/zeusservices" className="secondary-btn discord-btn" target="_blank" rel="noreferrer">
-                Open Discord to Continue
-              </a>
-            </div>
-            <p className="checkout-success-note">
-              Join our Discord and open a ticket — your order details will be shared with the team automatically.
-            </p>
+      <section className="section services co-page-wrap" id="checkout">
+        <div className="checkout-success">
+          <div className="checkout-success-icon"><CheckCircle size={64} strokeWidth={1.3} color="#10b981" /></div>
+          <h1>Payment Successful!</h1>
+          <p>Thank you for your order. We'll get started right away.</p>
+          <div className="checkout-success-actions">
+            <button className="primary-btn" onClick={() => router.push('/orders')}>View My Orders</button>
+            <a href="https://discord.gg/zeusservices" className="secondary-btn discord-btn" target="_blank" rel="noreferrer">
+              Open Discord to Continue
+            </a>
           </div>
+          <p className="checkout-success-note">
+            Join our Discord and open a ticket — your order details will be shared with the team automatically.
+          </p>
         </div>
       </section>
     )
@@ -270,13 +269,11 @@ export default function CheckoutPage() {
 
   if (paymentState === 'polling') {
     return (
-      <section className="section services" id="checkout">
-        <div className="order-summary-container">
-          <div className="checkout-polling">
-            <Loader2 size={48} className="spin-icon" color="#fbbf24" strokeWidth={1.5} />
-            <h2>Confirming your order…</h2>
-            <p>Payment received. Setting up your order — this takes a few seconds.</p>
-          </div>
+      <section className="section services co-page-wrap" id="checkout">
+        <div className="checkout-polling">
+          <Loader2 size={48} className="co-spin" color="#fbbf24" strokeWidth={1.5} />
+          <h2>Confirming your order…</h2>
+          <p>Payment received. Setting up your order — this takes a few seconds.</p>
         </div>
       </section>
     )
@@ -288,7 +285,7 @@ export default function CheckoutPage() {
         <p className="eyebrow">Checkout</p>
         <h2 className="section-title">Your cart is empty</h2>
         <p className="section-subtitle">Add items to your cart to proceed to checkout.</p>
-        <div className="empty-checkout">
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '2rem' }}>
           <button onClick={() => router.push('/boosting')} className="primary-btn">Continue Shopping</button>
         </div>
       </section>
@@ -296,125 +293,167 @@ export default function CheckoutPage() {
   }
 
   return (
-    <section className="section services" id="checkout">
-      <p className="eyebrow">Checkout</p>
-      <h2 className="section-title">Complete your purchase</h2>
-      <p className="section-subtitle">Review your order and pay securely.</p>
+    <section className="section services co-page-wrap" id="checkout">
+      {/* ── Page header ── */}
+      <div className="co-page-header">
+        <button className="co-back-btn" onClick={() => router.push('/cart')}>
+          <ChevronLeft size={18} strokeWidth={2} />
+          <span>Back</span>
+        </button>
+        <div className="co-page-title">
+          <Lock size={15} strokeWidth={2} color="#fbbf24" />
+          <span>Secure checkout</span>
+        </div>
+        <div />
+      </div>
 
-      <div className="checkout-container">
-        {/* Order summary */}
-        <div className="checkout-order-summary">
-          <h3>Order Summary</h3>
-          <div className="checkout-items">
+      {/* ── Two-column body ── */}
+      <div className="co-body">
+
+        {/* LEFT — form */}
+        <div className="co-left">
+
+          {/* Items */}
+          <div className="co-block">
             {cartItems.map((item) => (
-              <div key={item.cartId} className="checkout-item">
-                <div className="checkout-item-info">
-                  <div className="checkout-item-icon">
-                    {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http'))
-                      ? <img src={item.icon} alt={item.name} onError={(e) => { e.target.style.display = 'none' }} />
-                      : <span><AnimatedLucideIcon icon={Gamepad2} size={20} /></span>
-                    }
-                  </div>
-                  <div>
-                    <h4>{item.name}</h4>
-                    {item.customSelections && Object.keys(item.customSelections).length > 0
-                      ? Object.entries(item.customSelections).filter(([, v]) => Boolean(v)).map(([field, value]) => (
-                          <p key={`${item.cartId}-${field}`} className={field.toLowerCase() === 'version' ? 'version' : 'platform'}>
-                            {field}: {value}
-                          </p>
-                        ))
-                      : <>
-                          {item.platform && <p className="platform">{item.platform.includes(':') ? item.platform : `Platform: ${item.platform}`}</p>}
-                          {item.version && item.version !== 'Standard' && <p className="version">Version: {item.version}</p>}
-                        </>
-                    }
-                  </div>
+              <div key={item.cartId} className="co-item-row">
+                <div className="co-item-icon">
+                  {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http'))
+                    ? <img src={item.icon} alt={item.name} onError={(e) => { e.target.style.display = 'none' }} />
+                    : <AnimatedLucideIcon icon={Gamepad2} size={20} />
+                  }
                 </div>
-                <div className="checkout-item-details">
-                  <span className="checkout-item-qty">x{item.quantity}</span>
-                  <span className="checkout-item-price">{formatPrice ? formatPrice(item.price) : `$${item.price}`}</span>
+                <div className="co-item-info">
+                  <span className="co-item-name">{item.name}</span>
+                  <span className="co-item-meta">
+                    {[
+                      item.customSelections && Object.keys(item.customSelections).length > 0
+                        ? Object.entries(item.customSelections).filter(([, v]) => Boolean(v)).map(([k, v]) => `${k}: ${v}`).join(' · ')
+                        : [item.platform, item.version && item.version !== 'Standard' && `Version: ${item.version}`].filter(Boolean).join(' · '),
+                      `Qty: ${item.quantity}`,
+                    ].filter(Boolean).join(' | ')}
+                  </span>
                 </div>
+                <span className="co-item-price">
+                  {formatPrice ? formatPrice(item.price * item.quantity) : `$${item.price * item.quantity}`}
+                </span>
               </div>
             ))}
           </div>
 
-          <div className="checkout-total">
-            <span className="total-label">Total:</span>
-            <span className="total-amount">{formatPrice ? formatPrice(totalUsd) : `$${totalUsd}`}</span>
-          </div>
+          <div className="co-divider" />
 
-          <button onClick={() => router.push('/cart')} className="secondary-btn edit-cart-btn">Edit Cart</button>
-
-          <div className="order-note" style={{ marginTop: '1.5rem' }}>
-            <div className="order-note-header">
-              <h3>Order Notes (Optional)</h3>
-              <p>Share account email, login details, or specific instructions. Encrypted and handled securely.</p>
-            </div>
+          {/* Order notes */}
+          <div className="co-block">
+            <label className="co-section-label">
+              Order Notes <span className="co-optional">(optional)</span>
+            </label>
+            <p className="co-section-sub">Share account details or specific instructions. Encrypted and handled securely.</p>
             <textarea
-              name="order_note"
+              className="co-textarea"
               value={orderNote}
               onChange={(e) => handleOrderNoteChange?.(e.target.value)}
               placeholder="e.g. Account email is user@example.com, password is ******, please add cars to Slot 1."
               maxLength={1000}
+              rows={3}
             />
-            <div className="order-note-hint">Up to 1000 characters. Encrypted.</div>
+            <p className="co-field-hint">Up to 1000 characters. Encrypted.</p>
           </div>
 
-          {isAdmin && (
-            <div className="dev-payment-section">
-              <label className="payment-option dev-option">
-                <input
-                  type="checkbox"
-                  checked={paymentMethod === 'dev_skip'}
-                  onChange={(e) => setPaymentMethod(e.target.checked ? 'dev_skip' : 'stripe')}
-                />
-                <span className="option-title">Dev: skip payment</span>
-              </label>
-              {paymentMethod === 'dev_skip' && (
-                <button className="checkout-btn" onClick={() => devCheckout(user)} disabled={checkoutStatus?.state === 'loading'}>
-                  {checkoutStatus?.state === 'loading' ? 'Placing order…' : 'Place dev order'}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+          <div className="co-divider" />
 
-        {/* Payment form */}
-        {paymentMethod !== 'dev_skip' && (
-          <div className="checkout-payment-form">
-            <div className="payment-form-header">
-              <CreditCard size={20} strokeWidth={2} color="#fbbf24" />
-              <h3>Secure Payment</h3>
-            </div>
+          {/* Payment method */}
+          <div className="co-block">
+            <label className="co-section-label">Payment method</label>
 
-            {!emailVerified ? (
-              <div className="checkout-verify-notice">
-                <AlertCircle size={16} strokeWidth={2} />
-                <span>Please verify your email before checking out.</span>
+            {isAdmin && (
+              <div className="co-dev-toggle">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={paymentMethod === 'dev_skip'}
+                    onChange={(e) => setPaymentMethod(e.target.checked ? 'dev_skip' : 'stripe')}
+                  />
+                  <span>Dev: skip payment</span>
+                </label>
+                {paymentMethod === 'dev_skip' && (
+                  <button className="co-pay-btn" onClick={() => devCheckout(user)} disabled={checkoutStatus?.state === 'loading'}>
+                    {checkoutStatus?.state === 'loading' ? 'Placing order…' : 'Place dev order'}
+                  </button>
+                )}
               </div>
-            ) : (
-              /* Elements with NO options — CardElement doesn't call
-                 /v1/elements/sessions so the account-level 400 is bypassed */
-              <Elements stripe={stripePromise}>
-                <CardPaymentForm
-                  amountInCents={amountInCents}
-                  currency={currency}
-                  cartItems={cartItems}
-                  convertAmount={convertAmount}
-                  orderNote={orderNote}
-                  user={user}
-                  onSuccess={handlePaymentSuccess}
-                />
-              </Elements>
             )}
 
-            <div className="payment-badges">
-              <div className="payment-badge"><ShieldCheck size={14} strokeWidth={2} /><span>256-bit SSL</span></div>
-              <div className="payment-badge"><Lock size={14} strokeWidth={2} /><span>PCI Compliant</span></div>
-              <div className="payment-badge"><CreditCard size={14} strokeWidth={2} /><span>Visa / Mastercard / Amex</span></div>
+            {paymentMethod !== 'dev_skip' && (
+              !emailVerified ? (
+                <div className="co-verify-notice">
+                  <AlertCircle size={15} strokeWidth={2} />
+                  <span>Please verify your email before checking out.</span>
+                </div>
+              ) : (
+                <Elements stripe={stripePromise}>
+                  <CardPaymentForm
+                    amountInCents={amountInCents}
+                    currency={currency}
+                    cartItems={cartItems}
+                    convertAmount={convertAmount}
+                    orderNote={orderNote}
+                    onSuccess={handlePaymentSuccess}
+                    formatPrice={formatPrice}
+                    totalUsd={totalUsd}
+                  />
+                </Elements>
+              )
+            )}
+          </div>
+
+          {/* Security logos */}
+          <div className="co-sec-logos">
+            <div className="co-sec-item"><ShieldCheck size={13} /><span>256-bit SSL</span></div>
+            <div className="co-sec-item"><Lock size={13} /><span>PCI Compliant</span></div>
+            <div className="co-sec-item"><CreditCard size={13} /><span>Visa / MC / Amex</span></div>
+          </div>
+        </div>
+
+        {/* RIGHT — order summary */}
+        <div className="co-right">
+          <h3 className="co-summary-heading">Order Summary</h3>
+
+          <div className="co-summary-rows">
+            {cartItems.map((item) => (
+              <div key={item.cartId} className="co-summary-row">
+                <span className="co-summary-row-label">
+                  {item.name}{item.quantity > 1 ? ` ×${item.quantity}` : ''}
+                </span>
+                <span className="co-summary-row-val">
+                  {formatPrice ? formatPrice(item.price * item.quantity) : `$${item.price * item.quantity}`}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          <div className="co-summary-divider" />
+
+          <div className="co-summary-total">
+            <span>Total</span>
+            <span className="co-summary-total-amount">
+              {formatPrice ? formatPrice(totalUsd) : `$${totalUsd}`}
+            </span>
+          </div>
+
+          <div className="co-trust-block">
+            <ShieldCheck size={20} strokeWidth={2} color="#10b981" />
+            <div>
+              <p className="co-trust-title">Safe &amp; Secure Payment</p>
+              <p className="co-trust-sub">100% protected by Stripe</p>
             </div>
           </div>
-        )}
+
+          <button className="co-edit-cart-btn" onClick={() => router.push('/cart')}>
+            Edit cart
+          </button>
+        </div>
+
       </div>
     </section>
   )
