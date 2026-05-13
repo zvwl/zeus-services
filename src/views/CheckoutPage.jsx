@@ -306,7 +306,12 @@ export default function CheckoutPage() {
     if (paymentState === 'polling' && paymentIntentId) pollForOrder(paymentIntentId)
   }, [paymentState, paymentIntentId, pollForOrder])
 
-  const handlePaymentSuccess = (piId) => { setPaymentIntentId(piId); setPaymentState('polling') }
+  const handlePaymentSuccess = (_piId) => {
+    pollingActiveRef.current = false
+    // Defer by one tick so Stripe's CardElement can finish its internal
+    // cleanup before <Elements> unmounts — prevents the onClose crash.
+    setTimeout(() => setPaymentState('success'), 50)
+  }
 
   useEffect(() => { document.title = 'Checkout | zeuservices' }, [])
   useEffect(() => { if (!authLoading && !user) router.push('/login') }, [user, authLoading, router])
@@ -334,7 +339,8 @@ export default function CheckoutPage() {
             </a>
           </div>
           <p className="co-success-note">
-            Join our Discord and open a ticket — your order details will be shared with the team automatically.
+            Join our Discord and open a ticket — your order details will be shared with the team automatically.<br />
+            Your order will appear in <strong>My Orders</strong> within a few seconds.
           </p>
         </div>
       </section>
