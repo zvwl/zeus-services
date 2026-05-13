@@ -564,6 +564,9 @@
   border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 2rem;
+  height: fit-content;
+  position: sticky;
+  top: 120px;
 }
 
 .checkout-payment-form h3 {

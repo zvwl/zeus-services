@@ -42,6 +42,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [cardReady, setCardReady] = useState(false)
+  const [nameOnCard, setNameOnCard] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -99,7 +100,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
             card: cardElement,
             billing_details: {
               email: sessionUser?.email || undefined,
-              name: sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || undefined,
+              name: nameOnCard.trim() || sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || undefined,
             },
           },
         }
@@ -126,13 +127,30 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
 
   return (
     <form onSubmit={handleSubmit} className="payment-element-form">
-      <div className="card-element-label">Card details</div>
-      <div className={`card-element-wrapper ${cardReady ? 'ready' : ''}`}>
-        <CardElement
-          options={CARD_ELEMENT_OPTIONS}
-          onReady={() => setCardReady(true)}
-          onChange={(e) => { if (e.error) setError(e.error.message); else setError('') }}
+      <div className="card-field-group">
+        <div className="card-element-label">Name on card</div>
+        <input
+          className="card-name-input"
+          type="text"
+          placeholder="Full name as on card"
+          value={nameOnCard}
+          onChange={(e) => setNameOnCard(e.target.value)}
+          autoComplete="cc-name"
+          spellCheck={false}
         />
+      </div>
+
+      <div className="card-section-divider" />
+
+      <div className="card-field-group">
+        <div className="card-element-label">Card details</div>
+        <div className={`card-element-wrapper ${cardReady ? 'ready' : ''}`}>
+          <CardElement
+            options={CARD_ELEMENT_OPTIONS}
+            onReady={() => setCardReady(true)}
+            onChange={(e) => { if (e.error) setError(e.error.message); else setError('') }}
+          />
+        </div>
       </div>
 
       {error && (
