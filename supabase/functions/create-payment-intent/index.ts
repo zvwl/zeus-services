@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: "2025-01-27.acacia",
+      apiVersion: "2026-04-22.dahlia" as any,
       httpClient: Stripe.createFetchHttpClient(),
     });
 
@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: finalCurrency,
-      payment_method_types: ['card'],
+      payment_method_types: ['card'] as any,
       receipt_email: customer_email || undefined,
       metadata: {
         session_id: sessionId,
