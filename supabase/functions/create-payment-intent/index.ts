@@ -1,4 +1,4 @@
-import Stripe from "https://esm.sh/stripe@17.5.0?target=deno";
+import Stripe from "https://esm.sh/stripe@18.0.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.7";
 
 const corsHeaders = {
@@ -42,7 +42,6 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(STRIPE_SECRET_KEY, {
-      apiVersion: "2026-01-28.clover",
       httpClient: Stripe.createFetchHttpClient(),
     });
 
@@ -100,7 +99,7 @@ Deno.serve(async (req) => {
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
       currency: finalCurrency,
-      automatic_payment_methods: { enabled: true },
+      automatic_payment_methods: { enabled: true, allow_redirects: 'never' },
       receipt_email: customer_email || undefined,
       metadata: {
         session_id: sessionId,
