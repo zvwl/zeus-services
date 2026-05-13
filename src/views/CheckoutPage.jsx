@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
-import { Elements, PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
+import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import { Gamepad2, ShieldCheck, Lock, CreditCard, CheckCircle, AlertCircle, Loader2 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
@@ -13,33 +13,35 @@ import LoadingSpinner from '@/components/LoadingSpinner'
 import './CartPage.css'
 import './CheckoutPage.css'
 
+// stripePromise with NO options — CardElement doesn't need clientSecret in
+// the Elements wrapper so Stripe.js never calls /v1/elements/sessions.
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
-const stripeAppearance = {
-  theme: 'night',
-  variables: {
-    colorPrimary: '#fbbf24',
-    colorBackground: '#0f1729',
-    colorText: '#f1f5f9',
-    colorDanger: '#ef4444',
-    colorTextSecondary: '#94a3b8',
-    colorTextPlaceholder: '#64748b',
-    fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
-    fontSizeBase: '15px',
-    borderRadius: '8px',
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      color: '#f1f5f9',
+      fontFamily: 'Inter, Segoe UI, system-ui, sans-serif',
+      fontSize: '15px',
+      fontSmoothing: 'antialiased',
+      '::placeholder': { color: '#64748b' },
+      iconColor: '#fbbf24',
+    },
+    invalid: {
+      color: '#ef4444',
+      iconColor: '#ef4444',
+    },
   },
+  hidePostalCode: false,
 }
 
-// ── Inner payment form ─────────────────────────────────────────────────────
-// Must live inside <Elements>. In deferred-intent mode, Elements renders
-// immediately (no clientSecret needed). The PaymentIntent is created only
-// when the user clicks "Pay Now", right before confirmPayment().
-function PaymentForm({ amountInCents, currency, cartItems, convertAmount, orderNote, onSuccess }) {
+// ── Card payment form ──────────────────────────────────────────────────────
+function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, orderNote, user, onSuccess }) {
   const stripe = useStripe()
   const elements = useElements()
-  const { user } = useAuth()
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
+  const [cardReady, setCardReady] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -48,15 +50,9 @@ function PaymentForm({ amountInCents, currency, cartItems, convertAmount, orderN
     setBusy(true)
 
     try {
-      // Step 1 — validate the payment details entered by the user
-      const { error: submitError } = await elements.submit()
-      if (submitError) {
-        setError(submitError.message || 'Please check your payment details.')
-        setBusy(false)
-        return
-      }
+      const cardElement = elements.getElement(CardElement)
 
-      // Step 2 — create the PaymentIntent server-side now that we have valid details
+      // Step 1 — create PaymentIntent server-side
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData?.session?.access_token
       const sessionUser = sessionData?.session?.user
@@ -90,26 +86,34 @@ function PaymentForm({ amountInCents, currency, cartItems, convertAmount, orderN
 
       const data = await res.json()
       if (!res.ok || !data.clientSecret) {
-        setError(data.error || 'Could not create payment. Please try again.')
+        setError(data.error || 'Could not start payment. Please try again.')
         setBusy(false)
         return
       }
 
-      // Step 3 — confirm the payment with the freshly-created clientSecret
-      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        clientSecret: data.clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/checkout?payment_return=true`,
-        },
-        redirect: 'if_required',
-      })
+      // Step 2 — confirm card payment directly (no /v1/elements/sessions call)
+      const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
+        data.clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              email: sessionUser?.email || undefined,
+              name: sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || undefined,
+            },
+          },
+        }
+      )
 
       if (confirmError) {
-        setError(confirmError.message || 'Payment failed. Please try again.')
+        setError(confirmError.message || 'Payment failed. Please check your card details.')
         setBusy(false)
       } else if (paymentIntent?.status === 'succeeded') {
         onSuccess(paymentIntent.id)
+      } else if (paymentIntent?.status === 'requires_action') {
+        // 3DS handled automatically by confirmCardPayment — if we reach here it failed
+        setError('Additional verification required. Please try again or use a different card.')
+        setBusy(false)
       } else {
         setError('Unexpected payment state. Please check your Orders page.')
         setBusy(false)
@@ -122,7 +126,14 @@ function PaymentForm({ amountInCents, currency, cartItems, convertAmount, orderN
 
   return (
     <form onSubmit={handleSubmit} className="payment-element-form">
-      <PaymentElement options={{ layout: 'tabs' }} />
+      <div className="card-element-label">Card details</div>
+      <div className={`card-element-wrapper ${cardReady ? 'ready' : ''}`}>
+        <CardElement
+          options={CARD_ELEMENT_OPTIONS}
+          onReady={() => setCardReady(true)}
+          onChange={(e) => { if (e.error) setError(e.error.message); else setError('') }}
+        />
+      </div>
 
       {error && (
         <div className="payment-error">
@@ -131,7 +142,7 @@ function PaymentForm({ amountInCents, currency, cartItems, convertAmount, orderN
         </div>
       )}
 
-      <button type="submit" className="pay-now-btn" disabled={!stripe || !elements || busy}>
+      <button type="submit" className="pay-now-btn" disabled={!stripe || !elements || busy || !cardReady}>
         {busy
           ? <><Loader2 size={18} className="spin-icon" /> Processing…</>
           : <><Lock size={16} strokeWidth={2} /> Pay Now</>
@@ -158,14 +169,12 @@ export default function CheckoutPage() {
     handleCheckout: devCheckout, checkoutStatus,
   } = useCart()
 
-  const [paymentState, setPaymentState] = useState('idle') // idle | polling | success | error
+  const [paymentState, setPaymentState] = useState('idle')
   const [paymentIntentId, setPaymentIntentId] = useState(null)
 
-  // Calculate totals
   const totalUsd = cartItems.reduce((s, i) => s + i.price * i.quantity, 0)
   const totalConverted = cartItems.reduce((s, i) => s + convertAmount(i.price) * i.quantity, 0)
   const amountInCents = Math.round(totalConverted * 100)
-  const finalCurrency = currency.toLowerCase()
 
   // Handle 3DS redirect return
   useEffect(() => {
@@ -180,7 +189,6 @@ export default function CheckoutPage() {
     }
   }, [searchParams])
 
-  // Poll for order creation after payment succeeds
   const pollForOrder = useCallback(async (piId) => {
     for (let i = 0; i < 15; i++) {
       await new Promise(r => setTimeout(r, 2000))
@@ -189,24 +197,17 @@ export default function CheckoutPage() {
         const accessToken = sessionData?.session?.access_token
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-order-by-payment-intent?payment_intent_id=${piId}`,
-          {
-            headers: {
-              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
+          { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}` } }
         )
         const body = await res.json()
         if (body?.order?.id) { setPaymentState('success'); return }
       } catch { /* keep polling */ }
     }
-    setPaymentState('success') // show success anyway — webhook will create order
+    setPaymentState('success')
   }, [])
 
   useEffect(() => {
-    if (paymentState === 'polling' && paymentIntentId) {
-      pollForOrder(paymentIntentId)
-    }
+    if (paymentState === 'polling' && paymentIntentId) pollForOrder(paymentIntentId)
   }, [paymentState, paymentIntentId, pollForOrder])
 
   const handlePaymentSuccess = (piId) => {
@@ -220,15 +221,12 @@ export default function CheckoutPage() {
   if (authLoading) {
     return (
       <section className="section services" id="checkout">
-        <div className="order-summary-container">
-          <LoadingSpinner message="Verifying authentication…" />
-        </div>
+        <div className="order-summary-container"><LoadingSpinner message="Verifying authentication…" /></div>
       </section>
     )
   }
   if (!user) return null
 
-  // ── Success ──────────────────────────────────────────────────────────────
   if (paymentState === 'success') {
     return (
       <section className="section services" id="checkout">
@@ -252,7 +250,6 @@ export default function CheckoutPage() {
     )
   }
 
-  // ── Polling ──────────────────────────────────────────────────────────────
   if (paymentState === 'polling') {
     return (
       <section className="section services" id="checkout">
@@ -267,7 +264,6 @@ export default function CheckoutPage() {
     )
   }
 
-  // ── Empty cart ───────────────────────────────────────────────────────────
   if (cartItems.length === 0) {
     return (
       <section className="section services" id="checkout">
@@ -288,7 +284,7 @@ export default function CheckoutPage() {
       <p className="section-subtitle">Review your order and pay securely.</p>
 
       <div className="checkout-container">
-        {/* ── Order summary ─────────────────────────────────────────────── */}
+        {/* Order summary */}
         <div className="checkout-order-summary">
           <h3>Order Summary</h3>
           <div className="checkout-items">
@@ -331,7 +327,6 @@ export default function CheckoutPage() {
 
           <button onClick={() => router.push('/cart')} className="secondary-btn edit-cart-btn">Edit Cart</button>
 
-          {/* Order notes */}
           <div className="order-note" style={{ marginTop: '1.5rem' }}>
             <div className="order-note-header">
               <h3>Order Notes (Optional)</h3>
@@ -347,7 +342,6 @@ export default function CheckoutPage() {
             <div className="order-note-hint">Up to 1000 characters. Encrypted.</div>
           </div>
 
-          {/* Dev skip */}
           {isAdmin && (
             <div className="dev-payment-section">
               <label className="payment-option dev-option">
@@ -367,7 +361,7 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* ── Payment form ──────────────────────────────────────────────── */}
+        {/* Payment form */}
         {paymentMethod !== 'dev_skip' && (
           <div className="checkout-payment-form">
             <div className="payment-form-header">
@@ -375,42 +369,25 @@ export default function CheckoutPage() {
               <h3>Secure Payment</h3>
             </div>
 
-            {!emailVerified && (
+            {!emailVerified ? (
               <div className="checkout-verify-notice">
                 <AlertCircle size={16} strokeWidth={2} />
                 <span>Please verify your email before checking out.</span>
               </div>
-            )}
-
-            {/* Deferred-intent mode: Elements renders immediately without a
-                clientSecret. The PI is only created when the user clicks Pay. */}
-            {amountInCents >= 50 && emailVerified && (
-              <Elements
-                stripe={stripePromise}
-                options={{
-                  mode: 'payment',
-                  amount: amountInCents,
-                  currency: finalCurrency,
-                  appearance: stripeAppearance,
-                  loader: 'auto',
-                }}
-              >
-                <PaymentForm
+            ) : (
+              /* Elements with NO options — CardElement doesn't call
+                 /v1/elements/sessions so the account-level 400 is bypassed */
+              <Elements stripe={stripePromise}>
+                <CardPaymentForm
                   amountInCents={amountInCents}
                   currency={currency}
                   cartItems={cartItems}
                   convertAmount={convertAmount}
                   orderNote={orderNote}
+                  user={user}
                   onSuccess={handlePaymentSuccess}
                 />
               </Elements>
-            )}
-
-            {amountInCents < 50 && (
-              <div className="payment-error">
-                <AlertCircle size={15} strokeWidth={2} />
-                Order total is too small to process.
-              </div>
             )}
 
             <div className="payment-badges">
