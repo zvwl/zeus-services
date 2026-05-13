@@ -109,22 +109,14 @@ Deno.serve(async (req) => {
   }
 
   try {
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as any;
-      console.log(`📦 [checkout.session.completed] Session:`, session.id);
-      console.log(`📦 Metadata:`, JSON.stringify(session.metadata));
-      
-      const userId = session.metadata?.user_id;
-      const sessionId = session.metadata?.session_id;
-
-      console.log(`📦 Parsed - userId: ${userId}, sessionId: ${sessionId}`);
-
-      if (!sessionId) {
-        console.error("❌ Missing session_id in checkout session metadata");
-        return new Response("Missing session_id", { status: 400 });
-      }
-
-      // Fetch cart items from checkout_sessions table
+    // ─── Shared order-creation logic ────────────────────────────────────────
+    async function createOrderFromSession(
+      sessionId: string,
+      userId: string | null,
+      paymentIntentId: string | null,
+      checkoutSessionId: string | null,
+      customerEmailOverride?: string
+    ) {
       const { data: checkoutData, error: fetchError } = await supabase
         .from("checkout_sessions")
         .select("*")
@@ -133,36 +125,27 @@ Deno.serve(async (req) => {
 
       if (fetchError || !checkoutData) {
         console.error("❌ Failed to fetch checkout session:", fetchError);
-        return new Response("Checkout session not found", { status: 404 });
+        return { error: "Checkout session not found" };
       }
 
-      console.log(`✅ Retrieved checkout session with ${checkoutData.items?.length || 0} items`);
+      const { items, total_amount, currency, customer_email, customer_name, notes } = checkoutData;
+      const resolvedEmail = customerEmailOverride || customer_email;
 
-      const items = checkoutData.items;
-      const totalAmount = checkoutData.total_amount;
-      const currency = checkoutData.currency;
-      const customerEmail = checkoutData.customer_email || session.customer_email;
-      const customerName = checkoutData.customer_name;
-      const notes = checkoutData.notes;
-
-      if (!items || !totalAmount || !currency) {
-        console.error("❌ Missing required data in checkout session");
-        return new Response("Invalid checkout session data", { status: 400 });
+      if (!items || !total_amount || !currency) {
+        return { error: "Invalid checkout session data" };
       }
 
-      // Encrypt notes if provided
+      // Encrypt notes
       let notesCiphertext = null;
       let notesIv = null;
-      
       const NOTES_ENC_KEY = Deno.env.get("NOTES_ENC_KEY");
       if (notes && notes.trim() && NOTES_ENC_KEY) {
         try {
-          const fullNote = `${notes.trim()}\n\nSystem: Stripe payment completed`;
+          const fullNote = `${notes.trim()}\n\nSystem: Payment completed`;
           const key = await importAesKey(NOTES_ENC_KEY);
           const iv = crypto.getRandomValues(new Uint8Array(12));
           const encoder = new TextEncoder();
-          const data = encoder.encode(fullNote);
-          const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, data);
+          const encrypted = await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, encoder.encode(fullNote));
           notesCiphertext = toBase64(encrypted);
           notesIv = toBase64(iv.buffer);
         } catch (encErr) {
@@ -170,136 +153,150 @@ Deno.serve(async (req) => {
         }
       }
 
-      // Create the order NOW that payment is complete
-      console.log(`✅ [checkout.session.completed] Creating order after successful payment`);
       const { data: newOrder, error: insertError } = await supabase
         .from("orders")
         .insert([{
           user_id: userId || null,
-          customer_email: customerEmail,
-          customer_name: customerName || customerEmail?.split("@")[0] || null,
-          items: items,
-          total_amount: parseFloat(totalAmount),
-          currency: currency,
+          customer_email: resolvedEmail,
+          customer_name: customer_name || resolvedEmail?.split("@")[0] || null,
+          items,
+          total_amount: parseFloat(total_amount),
+          currency,
           status: "processing",
           payment_status: "paid",
-          payment_method: "stripe_checkout",
-          payment_intent_id: session.payment_intent ?? null,
+          payment_method: checkoutSessionId ? "stripe_checkout" : "stripe_payment_element",
+          payment_intent_id: paymentIntentId,
           paid_at: new Date().toISOString(),
-          checkout_session_id: session.id,
+          checkout_session_id: checkoutSessionId,
           payment_provider: "stripe",
           notes: null,
           notes_ciphertext: notesCiphertext,
-          notes_iv: notesIv
+          notes_iv: notesIv,
         }])
         .select()
         .single();
 
       if (insertError) {
-        console.error(`❌ Failed to create order:`, insertError);
-        return new Response("Order creation failed", { status: 500 });
+        console.error("❌ Failed to create order:", insertError);
+        return { error: "Order creation failed" };
       }
 
-      console.log(`✅ Order ${newOrder.id} created and marked as paid/processing`);
+      console.log(`✅ Order ${newOrder.id} created`);
 
-      // Decrease stock for purchased items
-      try {
-        console.log(`📦 Processing stock decrease for ${items.length} items in order ${newOrder.id}`);
-        for (const item of items) {
-          if (item.id && item.quantity) {
-            const { data: stockResult, error: stockError } = await supabase
-              .rpc('decrease_item_stock', {
-                item_id: item.id,
-                quantity: item.quantity
-              });
-
-            if (stockError) {
-              console.error(`❌ Failed to decrease stock for item ${item.id}:`, stockError);
-              // Continue processing other items even if one fails
-            } else if (stockResult === false) {
-              console.warn(`⚠️ Item ${item.id} stock was already 0 or stock tracking disabled`);
-            } else {
-              console.log(`✅ Stock decreased for item ${item.id} by ${item.quantity}`);
-            }
-          }
+      // Decrease stock
+      for (const item of items) {
+        if (item.id && item.quantity) {
+          const { error: stockError } = await supabase.rpc("decrease_item_stock", {
+            item_id: item.id,
+            quantity: item.quantity,
+          });
+          if (stockError) console.error(`❌ Stock decrease failed for ${item.id}:`, stockError);
         }
-      } catch (stockErr) {
-        console.error('❌ Stock decrease error:', stockErr);
-        // Non-fatal: order already created, continue with email/Discord
       }
+
+      const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY");
 
       // Send order confirmation email
-      try {
-        if (!SUPABASE_ANON_KEY) {
-          console.error("❌ Missing SUPABASE_ANON_KEY env var; cannot send confirmation email");
-        } else {
-          const emailUrl = `${SUPABASE_URL}/functions/v1/send-order-confirmation`;
-          console.log(`📧 Attempting to send email for order ${newOrder.id} via ${emailUrl}`);
-          const emailRes = await fetch(emailUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({ orderId: newOrder.id })
-          });
-          const emailText = await emailRes.text();
-          console.log(`📧 Email response status=${emailRes.status}, body=${emailText}`);
-          if (!emailRes.ok) {
-            console.error(`❌ Failed to send confirmation email for ${newOrder.id}`);
-          }
+      if (SUPABASE_ANON_KEY) {
+        fetch(`${SUPABASE_URL}/functions/v1/send-order-confirmation`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_ANON_KEY}` },
+          body: JSON.stringify({ orderId: newOrder.id }),
+        }).catch(err => console.error("❌ Confirmation email error:", err));
+
+        // Assign Discord role
+        if (userId) {
+          fetch(`${SUPABASE_URL}/functions/v1/assign-discord-role`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "Authorization": `Bearer ${SUPABASE_ANON_KEY}` },
+            body: JSON.stringify({ userId, orderId: newOrder.id }),
+          }).catch(err => console.error("❌ Discord role error:", err));
         }
-      } catch (emailErr) {
-        console.error('❌ Email send error:', emailErr);
       }
 
-      // Assign Discord role if user has connected Discord account
-      if (userId) {
-        try {
-          console.log(`🎮 Attempting to assign Discord role for user ${userId}`);
-          const discordRoleUrl = `${SUPABASE_URL}/functions/v1/assign-discord-role`;
-          const discordRes = await fetch(discordRoleUrl, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({ 
-              userId: userId,
-              orderId: newOrder.id 
-            })
-          });
-          
-          const discordText = await discordRes.text();
-          console.log(`🎮 Discord role response: status=${discordRes.status}, body=${discordText}`);
-          
-          if (!discordRes.ok) {
-            console.error(`❌ Failed to assign Discord role for user ${userId}`);
-          } else {
-            console.log(`✅ Discord role assignment completed for user ${userId}`);
-          }
-        } catch (discordErr) {
-          console.error('❌ Discord role assignment error:', discordErr);
-        }
-      } else {
-        console.log(`ℹ️ No userId provided - skipping Discord role assignment`);
+      // Clean up checkout session
+      await supabase.from("checkout_sessions").delete().eq("id", sessionId);
+
+      return { order: newOrder };
+    }
+    // ─────────────────────────────────────────────────────────────────────────
+
+    if (event.type === "payment_intent.succeeded") {
+      // Embedded Payment Element flow
+      const paymentIntent = event.data.object as any;
+      console.log(`💳 [payment_intent.succeeded] ${paymentIntent.id}`);
+
+      const sessionId = paymentIntent.metadata?.session_id;
+      const userId = paymentIntent.metadata?.user_id || null;
+
+      if (!sessionId) {
+        console.error("❌ Missing session_id in payment_intent metadata");
+        return new Response("Missing session_id", { status: 400 });
       }
 
-      // Clean up checkout session after successful order creation
-      try {
-        const { error: deleteError } = await supabase
-          .from("checkout_sessions")
-          .delete()
-          .eq("id", sessionId);
+      // Guard: don't create order if already created (idempotency)
+      const { data: existing } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("payment_intent_id", paymentIntent.id)
+        .maybeSingle();
 
-        if (deleteError) {
-          console.error(`❌ Failed to delete checkout session ${sessionId}:`, deleteError);
-        } else {
-          console.log(`✅ Cleaned up checkout session ${sessionId}`);
-        }
-      } catch (cleanupErr) {
-        console.error("❌ Checkout session cleanup error:", cleanupErr);
+      if (existing) {
+        console.log(`ℹ️ Order already exists for payment_intent ${paymentIntent.id}, skipping`);
+        return new Response(JSON.stringify({ received: true }), { headers: { "Content-Type": "application/json" } });
       }
+
+      const result = await createOrderFromSession(
+        sessionId,
+        userId,
+        paymentIntent.id,
+        null, // no checkout_session_id for Payment Element flow
+        paymentIntent.receipt_email
+      );
+
+      if (result.error) {
+        return new Response(result.error, { status: 500 });
+      }
+
+    } else if (event.type === "checkout.session.completed") {
+      // Legacy Stripe Checkout Session flow (kept for backwards compatibility)
+      const session = event.data.object as any;
+      console.log(`📦 [checkout.session.completed] ${session.id}`);
+
+      const userId = session.metadata?.user_id || null;
+      const sessionId = session.metadata?.session_id;
+
+      if (!sessionId) {
+        console.error("❌ Missing session_id in checkout session metadata");
+        return new Response("Missing session_id", { status: 400 });
+      }
+
+      // If a payment_intent.succeeded already handled this, skip
+      if (session.payment_intent) {
+        const { data: existing } = await supabase
+          .from("orders")
+          .select("id")
+          .eq("payment_intent_id", session.payment_intent)
+          .maybeSingle();
+
+        if (existing) {
+          console.log(`ℹ️ Order already created via payment_intent.succeeded, skipping`);
+          return new Response(JSON.stringify({ received: true }), { headers: { "Content-Type": "application/json" } });
+        }
+      }
+
+      const result = await createOrderFromSession(
+        sessionId,
+        userId,
+        session.payment_intent ?? null,
+        session.id,
+        session.customer_email
+      );
+
+      if (result.error) {
+        return new Response(result.error, { status: 500 });
+      }
+
     } else if (event.type === "payment_intent.payment_failed") {
       // Payment failed - nothing to do since order was never created
       console.log(`ℹ️ [payment_intent.payment_failed] Payment failed, no order created`);

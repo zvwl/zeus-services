@@ -141,99 +141,50 @@ export function CartProvider({ children }) {
 
   const clearCart = () => setCartItems([])
 
+  // handleCheckout is now only used for the admin dev_skip path.
+  // Stripe Payment Element is handled entirely within CheckoutPage.
   const handleCheckout = async (user) => {
-    if (!user) {
-      window.location.href = '/login'
-      return
-    }
-    if (!cartItems.length) return
+    if (!user || !cartItems.length) return
+    if (paymentMethod !== 'dev_skip') return
 
     setCheckoutStatus({ state: 'loading', message: 'Placing order...' })
 
     try {
       const { data: sessionData } = await supabase.auth.getSession()
-      const sessionUser = sessionData?.session?.user
       const accessToken = sessionData?.session?.access_token
 
-      if (!sessionUser?.id) {
-        setCheckoutStatus({ state: 'error', message: 'Your session expired. Please log in again.' })
+      if (!sessionData?.session?.user?.id) {
+        setCheckoutStatus({ state: 'error', message: 'Session expired. Please log in again.' })
         window.location.href = '/login'
         return
       }
 
       const totalConverted = cartItems.reduce((sum, item) => sum + convertAmount(item.price) * item.quantity, 0)
-      const baseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-
-      if (paymentMethod === 'dev_skip') {
-        const res = await fetch(`${baseUrl}/functions/v1/create-order`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${accessToken}`
-          },
-          body: JSON.stringify({
-            items: cartItems.map(({ id, name, platform, version, customSelections, quantity, price }) => ({
-              id, name, platform, version,
-              customSelections: customSelections && typeof customSelections === 'object' ? customSelections : undefined,
-              quantity, price_usd: price, price_converted: convertAmount(price), currency
-            })),
-            total_amount: totalConverted, currency, status: 'processing',
-            payment_status: 'skipped', payment_method: 'dev_skip', notes: orderNote
-          })
-        })
-        const data = await res.json()
-        if (!res.ok || data?.error) {
-          setCheckoutStatus({ state: 'error', message: data?.error || 'Order creation failed' })
-          return
-        }
-        clearCart()
-        setCheckoutStatus({ state: 'success', message: 'Dev order created!' })
-        window.location.href = '/orders'
-        return
-      }
-
-      const res = await fetch(`${baseUrl}/functions/v1/create-checkout-session`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-order`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${accessToken}`
+          Authorization: `Bearer ${accessToken}`,
         },
         body: JSON.stringify({
           items: cartItems.map(({ id, name, platform, version, customSelections, quantity, price }) => ({
             id, name, platform, version,
             customSelections: customSelections && typeof customSelections === 'object' ? customSelections : undefined,
-            quantity, price_usd: price, price_converted: convertAmount(price), currency
+            quantity, price_usd: price, price_converted: convertAmount(price), currency,
           })),
           total_amount: totalConverted, currency,
-          customer_email: sessionUser.email,
-          customer_name: sessionUser.user_metadata?.name || sessionUser.email?.split('@')[0],
-          notes: orderNote
-        })
+          status: 'processing', payment_status: 'skipped', payment_method: 'dev_skip', notes: orderNote,
+        }),
       })
-
-      let data = null
-      try { data = await res.json() } catch (_) {}
-
+      const data = await res.json()
       if (!res.ok || data?.error) {
-        setCheckoutStatus({ state: 'error', message: `Stripe error: ${data?.error || res.statusText}` })
+        setCheckoutStatus({ state: 'error', message: data?.error || 'Order creation failed' })
         return
       }
-
-      const url = data?.url
-      if (!url) {
-        setCheckoutStatus({ state: 'error', message: 'Stripe checkout URL missing' })
-        return
-      }
-
-      setCheckoutStatus({ state: 'loading', message: 'Redirecting to Stripe...' })
-      localStorage.setItem('lastPaymentAttempt', JSON.stringify({
-        timestamp: Date.now(),
-        cartItems: cartItems.map(i => ({ id: i.id, name: i.name, price: i.price, quantity: i.quantity })),
-        currency
-      }))
-      window.location.assign(url)
+      clearCart()
+      setCheckoutStatus({ state: 'success', message: 'Dev order created!' })
+      window.location.href = '/orders'
     } catch (err) {
       setCheckoutStatus({ state: 'error', message: err.message || 'Checkout failed' })
     }

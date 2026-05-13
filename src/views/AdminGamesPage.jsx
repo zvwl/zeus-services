@@ -5,6 +5,7 @@ import { supabase } from '@/lib/supabase/client'
 import Breadcrumb from '@/components/Breadcrumb'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import ConfirmModal from '@/components/ConfirmModal'
+import StorageImageUpload from '@/components/StorageImageUpload'
 import { ToastContainer } from '@/components/Toast'
 import '../App.css'
 import './AdminForms.css'
@@ -246,14 +247,15 @@ export default function AdminGamesPage() {
             </div>
 
             <div className="form-group">
-              <label htmlFor="icon_url">Icon URL</label>
-              <input
-                type="text"
-                id="icon_url"
+              <label>Game Icon</label>
+              <StorageImageUpload
+                bucket="game-icons"
                 value={formData.icon_url}
-                onChange={(e) => setFormData({ ...formData, icon_url: e.target.value })}
-                placeholder="/game-icons/game-name.webp"
+                onChange={(url) => setFormData({ ...formData, icon_url: url })}
               />
+              <small style={{ display: 'block', color: '#64748b', marginTop: '0.4rem' }}>
+                Square icon recommended (512×512px). Upload directly or paste a URL.
+              </small>
             </div>
 
             <div className="form-group">

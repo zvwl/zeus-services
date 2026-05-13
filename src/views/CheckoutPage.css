@@ -1,0 +1,248 @@
+/* ── Spin animation ─────────────────────────────────── */
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spin-icon { animation: spin 0.9s linear infinite; }
+
+/* ── Payment form header ─────────────────────────────── */
+.payment-form-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 1.5rem;
+}
+
+.payment-form-header h3 {
+  margin: 0;
+  color: #fbbf24;
+  font-size: 1.1rem;
+}
+
+/* ── Stripe payment element wrapper ──────────────────── */
+.payment-element-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ── Proceed button ──────────────────────────────────── */
+.proceed-to-pay-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.95rem 1.5rem;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #0a0e1a;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.2px;
+}
+
+.proceed-to-pay-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.35);
+}
+
+.proceed-to-pay-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── Pay now button ──────────────────────────────────── */
+.pay-now-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.95rem 1.5rem;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #0a0e1a;
+  border: none;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 0.5rem;
+}
+
+.pay-now-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(251, 191, 36, 0.35);
+}
+
+.pay-now-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Trust row ───────────────────────────────────────── */
+.payment-trust-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #64748b;
+  font-size: 0.78rem;
+  text-align: center;
+  justify-content: center;
+}
+
+/* ── Error message ───────────────────────────────────── */
+.payment-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #fca5a5;
+  font-size: 0.9rem;
+}
+
+/* ── Email verify notice ─────────────────────────────── */
+.checkout-verify-notice {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: rgba(251, 191, 36, 0.1);
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 8px;
+  color: #fde68a;
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+/* ── Payment badges ──────────────────────────────────── */
+.payment-badges {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
+}
+
+.payment-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.7rem;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  color: #64748b;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+/* ── Dev payment section ─────────────────────────────── */
+.dev-payment-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px dashed rgba(139, 92, 246, 0.3);
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ── Success state ───────────────────────────────────── */
+.checkout-success {
+  text-align: center;
+  padding: 3rem 2rem;
+  max-width: 560px;
+  margin: 0 auto;
+}
+
+.checkout-success-icon {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+}
+
+.checkout-success h1 {
+  color: #10b981;
+  font-size: 2rem;
+  font-weight: 800;
+  margin-bottom: 0.75rem;
+}
+
+.checkout-success p {
+  color: #94a3b8;
+  font-size: 1.05rem;
+  margin-bottom: 2rem;
+}
+
+.checkout-success-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.checkout-success-actions .discord-btn {
+  background: rgba(88, 101, 242, 0.15);
+  border: 1px solid rgba(88, 101, 242, 0.4);
+  color: #818cf8;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.checkout-success-actions .discord-btn:hover {
+  background: rgba(88, 101, 242, 0.25);
+  transform: translateY(-1px);
+}
+
+.checkout-success-note {
+  font-size: 0.85rem !important;
+  color: #64748b !important;
+  margin-bottom: 0 !important;
+}
+
+/* ── Polling state ───────────────────────────────────── */
+.checkout-polling {
+  text-align: center;
+  padding: 4rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.checkout-polling h2 {
+  color: #fbbf24;
+  font-size: 1.5rem;
+}
+
+.checkout-polling p {
+  color: #94a3b8;
+  max-width: 400px;
+}
+
+@media (max-width: 640px) {
+  .payment-badges {
+    gap: 0.5rem;
+  }
+  .checkout-success h1 {
+    font-size: 1.5rem;
+  }
+  .checkout-success-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
