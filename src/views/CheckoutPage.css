@@ -484,35 +484,81 @@
   color: #94a3b8;
 }
 
-/* ── Success / polling states ───────────────────────────────────── */
-.checkout-success {
+/* ── Success state ──────────────────────────────────────────────── */
+.co-success {
   text-align: center;
-  padding: 3rem 2rem;
-  max-width: 560px;
+  padding: 4rem 2rem;
+  max-width: 520px;
   margin: 0 auto;
 }
-.checkout-success-icon { margin-bottom: 1.5rem; display: flex; justify-content: center; }
-.checkout-success h1 { color: #10b981; font-size: 2rem; font-weight: 800; margin-bottom: 0.75rem; }
-.checkout-success p { color: #94a3b8; font-size: 1.05rem; margin-bottom: 2rem; }
-.checkout-success-actions {
-  display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.5rem;
+.co-success-icon {
+  margin-bottom: 1.75rem;
+  display: flex;
+  justify-content: center;
 }
-.checkout-success-actions .discord-btn {
-  background: rgba(88,101,242,0.15);
-  border: 1px solid rgba(88,101,242,0.4);
-  color: #818cf8; border-radius: 10px;
-  padding: 0.75rem 1.5rem; font-weight: 700;
-  cursor: pointer; text-decoration: none; transition: all 0.2s;
+.co-success h1 {
+  color: #10b981;
+  font-size: 2rem;
+  font-weight: 800;
+  margin: 0 0 0.75rem;
 }
-.checkout-success-actions .discord-btn:hover { background: rgba(88,101,242,0.25); transform: translateY(-1px); }
-.checkout-success-note { font-size: 0.85rem !important; color: #64748b !important; margin-bottom: 0 !important; }
+.co-success > p {
+  color: #94a3b8;
+  font-size: 1rem;
+  margin: 0 0 2.5rem;
+  line-height: 1.6;
+}
+.co-success-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 1.75rem;
+}
+.co-discord-btn {
+  background: rgba(88,101,242,0.12);
+  border: 1px solid rgba(88,101,242,0.35);
+  color: #818cf8;
+  border-radius: 10px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s, transform 0.2s;
+  display: inline-block;
+}
+.co-discord-btn:hover { background: rgba(88,101,242,0.22); transform: translateY(-1px); }
+.co-success-note {
+  font-size: 0.82rem;
+  color: #475569;
+  margin: 0;
+  line-height: 1.6;
+}
 
-.checkout-polling {
-  text-align: center; padding: 4rem 2rem;
-  display: flex; flex-direction: column; align-items: center; gap: 1rem;
+/* ── Polling state ──────────────────────────────────────────────── */
+.co-polling {
+  text-align: center;
+  padding: 5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  max-width: 440px;
+  margin: 0 auto;
 }
-.checkout-polling h2 { color: #fbbf24; font-size: 1.5rem; }
-.checkout-polling p { color: #94a3b8; max-width: 400px; }
+.co-polling h2 {
+  color: #fbbf24;
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+}
+.co-polling p {
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.6;
+}
 
 /* ── Responsive ─────────────────────────────────────────────────── */
 @media (max-width: 768px) {

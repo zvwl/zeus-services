@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
@@ -263,6 +263,7 @@ export default function CheckoutPage() {
 
   const [paymentState, setPaymentState] = useState('idle')
   const [paymentIntentId, setPaymentIntentId] = useState(null)
+  const pollingActiveRef = useRef(false)
 
   const totalUsd = cartItems.reduce((s, i) => s + i.price * i.quantity, 0)
   const totalConverted = cartItems.reduce((s, i) => s + convertAmount(i.price) * i.quantity, 0)
@@ -277,8 +278,11 @@ export default function CheckoutPage() {
   }, [searchParams])
 
   const pollForOrder = useCallback(async (piId) => {
-    for (let i = 0; i < 15; i++) {
-      await new Promise(r => setTimeout(r, 2000))
+    if (pollingActiveRef.current) return
+    pollingActiveRef.current = true
+    for (let i = 0; i < 12; i++) {
+      await new Promise(r => setTimeout(r, 2500))
+      if (!pollingActiveRef.current) return
       try {
         const { data: sessionData } = await supabase.auth.getSession()
         const accessToken = sessionData?.session?.access_token
@@ -287,9 +291,14 @@ export default function CheckoutPage() {
           { headers: { apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY, Authorization: `Bearer ${accessToken}` } }
         )
         const body = await res.json()
-        if (body?.order?.id) { setPaymentState('success'); return }
+        if (body?.order?.id) {
+          pollingActiveRef.current = false
+          setPaymentState('success')
+          return
+        }
       } catch { /* keep polling */ }
     }
+    pollingActiveRef.current = false
     setPaymentState('success')
   }, [])
 
