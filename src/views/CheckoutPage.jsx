@@ -6,7 +6,7 @@ import { loadStripe } from '@stripe/stripe-js'
 import { Elements, CardElement, useStripe, useElements } from '@stripe/react-stripe-js'
 import {
   Gamepad2, ShieldCheck, Lock, CreditCard, CheckCircle,
-  AlertCircle, Loader2, ChevronLeft, ArrowRight,
+  AlertCircle, Loader2, ChevronLeft,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
@@ -17,6 +17,8 @@ import './CheckoutPage.css'
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)
 
+// Postal code is handled as a separate HTML input — CardElement only accepts
+// numeric US ZIP which breaks UK postcodes. We hide it from the card element.
 const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
@@ -29,7 +31,41 @@ const CARD_ELEMENT_OPTIONS = {
     },
     invalid: { color: '#ef4444', iconColor: '#ef4444' },
   },
-  hidePostalCode: false,
+  hidePostalCode: true,
+}
+
+// ── Card brand SVG logos ────────────────────────────────────────────────────
+function VisaLogo() {
+  return (
+    <svg className="co-brand-svg" viewBox="0 0 60 38" xmlns="http://www.w3.org/2000/svg">
+      <rect width="60" height="38" rx="5" fill="#1a1f71"/>
+      <text x="30" y="27" textAnchor="middle" fill="white" fontSize="16" fontWeight="800"
+        fontFamily="Arial Black, Arial, sans-serif" letterSpacing="1.5">VISA</text>
+    </svg>
+  )
+}
+
+function MastercardLogo() {
+  return (
+    <svg className="co-brand-svg" viewBox="0 0 60 38" xmlns="http://www.w3.org/2000/svg">
+      <rect width="60" height="38" rx="5" fill="#252525"/>
+      <circle cx="22" cy="19" r="11" fill="#eb001b"/>
+      <circle cx="38" cy="19" r="11" fill="#f79e1b"/>
+      <path d="M30 10.2a11 11 0 0 1 0 17.6A11 11 0 0 1 30 10.2z" fill="#ff5f00"/>
+    </svg>
+  )
+}
+
+function AmexLogo() {
+  return (
+    <svg className="co-brand-svg" viewBox="0 0 60 38" xmlns="http://www.w3.org/2000/svg">
+      <rect width="60" height="38" rx="5" fill="#2557d6"/>
+      <text x="30" y="20" textAnchor="middle" fill="white" fontSize="8.5" fontWeight="700"
+        fontFamily="Arial, sans-serif" letterSpacing="0.4">AMERICAN</text>
+      <text x="30" y="30" textAnchor="middle" fill="white" fontSize="7.5"
+        fontFamily="Arial, sans-serif" letterSpacing="1">EXPRESS</text>
+    </svg>
+  )
 }
 
 // ── Card payment form ──────────────────────────────────────────────────────
@@ -40,6 +76,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
   const [busy, setBusy] = useState(false)
   const [cardReady, setCardReady] = useState(false)
   const [nameOnCard, setNameOnCard] = useState('')
+  const [postcode, setPostcode] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -47,38 +84,46 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
     setError('')
     setBusy(true)
 
+    const timeout = new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Request timed out. Please check your connection and try again.')), 30000)
+    )
+
     try {
       const cardElement = elements.getElement(CardElement)
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData?.session?.access_token
       const sessionUser = sessionData?.session?.user
 
-      const res = await fetch(
-        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-payment-intent`,
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({
-            items: cartItems.map(({ id, name, platform, version, customSelections, quantity, price }) => ({
-              id, name, platform, version,
-              customSelections: customSelections && typeof customSelections === 'object' ? customSelections : undefined,
-              quantity,
-              price_usd: price,
-              price_converted: convertAmount(price),
+      // Step 1 — create PaymentIntent on the server
+      const res = await Promise.race([
+        fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/create-payment-intent`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: JSON.stringify({
+              items: cartItems.map(({ id, name, platform, version, customSelections, quantity, price }) => ({
+                id, name, platform, version,
+                customSelections: customSelections && typeof customSelections === 'object' ? customSelections : undefined,
+                quantity,
+                price_usd: price,
+                price_converted: convertAmount(price),
+                currency,
+              })),
+              total_amount: amountInCents / 100,
               currency,
-            })),
-            total_amount: amountInCents / 100,
-            currency,
-            customer_email: sessionUser?.email,
-            customer_name: nameOnCard.trim() || sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0],
-            notes: orderNote,
-          }),
-        }
-      )
+              customer_email: sessionUser?.email,
+              customer_name: nameOnCard.trim() || sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0],
+              notes: orderNote,
+            }),
+          }
+        ),
+        timeout,
+      ])
 
       const data = await res.json()
       if (!res.ok || !data.clientSecret) {
@@ -87,6 +132,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
         return
       }
 
+      // Step 2 — confirm the card payment
       const { error: confirmError, paymentIntent } = await stripe.confirmCardPayment(
         data.clientSecret,
         {
@@ -95,6 +141,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
             billing_details: {
               email: sessionUser?.email || undefined,
               name: nameOnCard.trim() || sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0] || undefined,
+              address: postcode.trim() ? { postal_code: postcode.trim() } : undefined,
             },
           },
         }
@@ -120,35 +167,53 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
 
   return (
     <form onSubmit={handleSubmit} className="co-card-form">
-      {/* Payment method pill */}
-      <div className="co-method-selected">
-        <div className="co-method-radio" />
+      {/* Selected payment method pill */}
+      <div className="co-method-pill">
+        <div className="co-method-radio-dot" />
         <CreditCard size={16} strokeWidth={2} color="#fbbf24" />
-        <span>Credit / Debit Card</span>
-        <div className="co-card-logos">
-          <span className="co-card-logo co-visa">VISA</span>
-          <span className="co-card-logo co-mc">MC</span>
-          <span className="co-card-logo co-amex">AMEX</span>
+        <span className="co-method-label">Credit / Debit Card</span>
+        <div className="co-brand-logos">
+          <VisaLogo />
+          <MastercardLogo />
+          <AmexLogo />
         </div>
       </div>
 
+      {/* Form fields */}
       <div className="co-card-fields">
-        <div className="co-field-group">
-          <label className="co-field-label">Name on card</label>
-          <input
-            className="co-field-input"
-            type="text"
-            placeholder="Full name as on card"
-            value={nameOnCard}
-            onChange={(e) => setNameOnCard(e.target.value)}
-            autoComplete="cc-name"
-            spellCheck={false}
-          />
+        {/* Name + Postcode row */}
+        <div className="co-fields-row">
+          <div className="co-field-group">
+            <label className="co-field-label">Name on card</label>
+            <input
+              className="co-field-input"
+              type="text"
+              placeholder="Full name"
+              value={nameOnCard}
+              onChange={(e) => setNameOnCard(e.target.value)}
+              autoComplete="cc-name"
+              spellCheck={false}
+            />
+          </div>
+          <div className="co-field-group co-field-group--postcode">
+            <label className="co-field-label">Postcode</label>
+            <input
+              className="co-field-input"
+              type="text"
+              placeholder="e.g. SW1A 1AA"
+              value={postcode}
+              onChange={(e) => setPostcode(e.target.value.toUpperCase())}
+              autoComplete="postal-code"
+              spellCheck={false}
+              maxLength={10}
+            />
+          </div>
         </div>
 
+        {/* Card number (full-width Stripe iframe) */}
         <div className="co-field-group">
           <label className="co-field-label">Card number</label>
-          <div className={`co-card-stripe-wrapper ${cardReady ? 'ready' : ''}`}>
+          <div className={`co-stripe-wrapper ${cardReady ? 'ready' : ''}`}>
             <CardElement
               options={CARD_ELEMENT_OPTIONS}
               onReady={() => setCardReady(true)}
@@ -158,7 +223,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
         </div>
 
         {error && (
-          <div className="co-payment-error">
+          <div className="co-error-box">
             <AlertCircle size={15} strokeWidth={2} />
             <span>{error}</span>
           </div>
@@ -249,17 +314,17 @@ export default function CheckoutPage() {
   if (paymentState === 'success') {
     return (
       <section className="section services co-page-wrap" id="checkout">
-        <div className="checkout-success">
-          <div className="checkout-success-icon"><CheckCircle size={64} strokeWidth={1.3} color="#10b981" /></div>
+        <div className="co-success">
+          <div className="co-success-icon"><CheckCircle size={64} strokeWidth={1.3} color="#10b981" /></div>
           <h1>Payment Successful!</h1>
           <p>Thank you for your order. We'll get started right away.</p>
-          <div className="checkout-success-actions">
+          <div className="co-success-actions">
             <button className="primary-btn" onClick={() => router.push('/orders')}>View My Orders</button>
-            <a href="https://discord.gg/zeusservices" className="secondary-btn discord-btn" target="_blank" rel="noreferrer">
+            <a href="https://discord.gg/zeusservices" className="co-discord-btn" target="_blank" rel="noreferrer">
               Open Discord to Continue
             </a>
           </div>
-          <p className="checkout-success-note">
+          <p className="co-success-note">
             Join our Discord and open a ticket — your order details will be shared with the team automatically.
           </p>
         </div>
@@ -270,7 +335,7 @@ export default function CheckoutPage() {
   if (paymentState === 'polling') {
     return (
       <section className="section services co-page-wrap" id="checkout">
-        <div className="checkout-polling">
+        <div className="co-polling">
           <Loader2 size={48} className="co-spin" color="#fbbf24" strokeWidth={1.5} />
           <h2>Confirming your order…</h2>
           <p>Payment received. Setting up your order — this takes a few seconds.</p>
@@ -294,6 +359,7 @@ export default function CheckoutPage() {
 
   return (
     <section className="section services co-page-wrap" id="checkout">
+
       {/* ── Page header ── */}
       <div className="co-page-header">
         <button className="co-back-btn" onClick={() => router.push('/cart')}>
