@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
 import { supabase } from '@/lib/supabase/client'
+import { CheckCircle } from 'lucide-react'
 import CartSummary from '@/components/CartSummary'
 import SEO, { SEO_CONFIGS } from '@/components/SEO'
 import LoadingSpinner from '@/components/LoadingSpinner'
@@ -344,7 +345,7 @@ export default function CartPage() {
         <section className="section services" id="cart">
           <div className="order-summary-container">
             <div className="success-header">
-              <div className="success-icon">✓</div>
+              <div className="success-icon"><CheckCircle size={56} strokeWidth={1.4} color="#10b981" /></div>
               <h1>Payment Successful!</h1>
               <p>Thank you for your order. We'll get started right away.</p>
             </div>

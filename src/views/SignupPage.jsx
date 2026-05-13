@@ -4,6 +4,7 @@ import { useRef, useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import DOMPurify from 'dompurify'
 import { Turnstile } from '@marsidev/react-turnstile'
+import { Loader2, CheckCircle, XCircle, Info } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import { isTurnstileBypassed } from '../utils/turnstile'
@@ -221,7 +222,7 @@ export default function SignupPage() {
                     transform: 'translateY(-50%)',
                     fontSize: '0.9rem'
                   }}>
-                    ⏳
+                    <Loader2 size={15} strokeWidth={2} style={{ animation: 'spin 1s linear infinite' }} />
                   </span>
                 )}
                 {!isCheckingName && nameAvailable === true && (
@@ -231,9 +232,8 @@ export default function SignupPage() {
                     top: '50%',
                     transform: 'translateY(-50%)',
                     color: '#10b981',
-                    fontSize: '1.1rem'
                   }}>
-                    ✓
+                    <CheckCircle size={16} strokeWidth={2.5} />
                   </span>
                 )}
                 {!isCheckingName && nameAvailable === false && (
@@ -243,9 +243,8 @@ export default function SignupPage() {
                     top: '50%',
                     transform: 'translateY(-50%)',
                     color: '#ef4444',
-                    fontSize: '1.1rem'
                   }}>
-                    ✗
+                    <XCircle size={16} strokeWidth={2.5} />
                   </span>
                 )}
               </div>
@@ -351,7 +350,7 @@ export default function SignupPage() {
           <div className="auth-footer">
             <p>Already have an account? <a href="/login">Sign in</a></p>
             <p style={{fontSize: '0.85rem', color: '#94a3b8', marginTop: '1rem'}}>
-              💡 Choose carefully - display names are unique and can only be changed once every 60 days.
+              <Info size={13} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} />Choose carefully — display names are unique and can only be changed once every 60 days.
             </p>
           </div>
         </div>

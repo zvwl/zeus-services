@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import { useRouter, usePathname } from 'next/navigation'
 import DOMPurify from 'dompurify'
 import * as Dialog from '@radix-ui/react-dialog'
-import { X } from 'lucide-react'
+import { X, User, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
 import {
@@ -162,7 +162,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
             <div className="user-menu-header">
               {user ? (
                 <div className="user-info">
-                  <div className="user-avatar">{user.name?.[0]?.toUpperCase() || '👤'}</div>
+                  <div className="user-avatar">{user.name?.[0]?.toUpperCase() || <User size={18} strokeWidth={2} />}</div>
                   <div className="user-details">
                     <div className="user-name">{DOMPurify.sanitize(user.name)}</div>
                     <div className="user-email">{DOMPurify.sanitize(user.email)}</div>
@@ -170,7 +170,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
                 </div>
               ) : (
                 <div className="user-info">
-                  <div className="user-avatar">👤</div>
+                  <div className="user-avatar"><User size={18} strokeWidth={2} /></div>
                   <div className="user-details">
                     <div className="user-name">Guest visitor</div>
                     <div className="user-email">Sign in to track orders and settings</div>
@@ -236,7 +236,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
               >
                 <BoostIcon ref={boostIconRef} className="menu-icon" size={20} />
                 <span className="menu-label">Boosting</span>
-                <span className="menu-expand-arrow">▶</span>
+                <ChevronRight size={14} className="menu-expand-arrow" strokeWidth={2.5} />
               </button>
               {expandedCategory === 'boosting' && (
                 <div className="game-submenu">
@@ -269,7 +269,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
               >
                 <AccountsIcon ref={accountsIconRef} className="menu-icon" size={20} />
                 <span className="menu-label">Accounts</span>
-                <span className="menu-expand-arrow">▶</span>
+                <ChevronRight size={14} className="menu-expand-arrow" strokeWidth={2.5} />
               </button>
               {expandedCategory === 'accounts' && (
                 <div className="game-submenu">
@@ -302,7 +302,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
               >
                 <TopupIcon ref={topupsIconRef} className="menu-icon" size={20} />
                 <span className="menu-label">Topups</span>
-                <span className="menu-expand-arrow">▶</span>
+                <ChevronRight size={14} className="menu-expand-arrow" strokeWidth={2.5} />
               </button>
               {expandedCategory === 'topups' && (
                 <div className="game-submenu">

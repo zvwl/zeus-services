@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Star } from 'lucide-react'
+import { Star, BadgeCheck } from 'lucide-react'
 import DOMPurify from 'dompurify'
 import { supabase } from '@/lib/supabase/client'
 import SEO, { SEO_CONFIGS } from '@/components/SEO'
@@ -126,12 +126,13 @@ export default function ReviewsPage() {
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
-      <span
+      <Star
         key={index}
+        size={16}
+        strokeWidth={1.5}
         className={`star ${index < rating ? 'filled' : ''}`}
-      >
-        ★
-      </span>
+        fill={index < rating ? 'currentColor' : 'none'}
+      />
     ))
   }
 
@@ -206,7 +207,7 @@ export default function ReviewsPage() {
                 const percentage = reviews.length > 0 ? (count / reviews.length) * 100 : 0
                 return (
                   <div key={star} className="distribution-row">
-                    <span className="star-label">{star} ★</span>
+                    <span className="star-label">{star} <Star size={12} fill="currentColor" strokeWidth={0} style={{ display: 'inline-block', verticalAlign: 'middle', color: '#fbbf24' }} /></span>
                     <div className="distribution-bar">
                       <div
                         className="distribution-fill"
@@ -285,7 +286,7 @@ export default function ReviewsPage() {
                 </div>
 
                 <div className="review-footer">
-                  <span className="verified-badge">✓ Verified Purchase</span>
+                  <span className="verified-badge"><BadgeCheck size={13} strokeWidth={2.5} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '3px' }} /> Verified Purchase</span>
                   <span className="reviewer-initials">{getDisplayNameInitials(DOMPurify.sanitize(review.userName))}</span>
                 </div>
               </div>

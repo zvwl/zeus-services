@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
+import { Star, Check, X, RotateCcw, Trash2 } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './AdminReviewsPage.css'
 
@@ -222,12 +223,13 @@ export default function AdminReviewsPage() {
 
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
-      <span
+      <Star
         key={index}
+        size={16}
+        strokeWidth={1.5}
         className={`star ${index < rating ? 'filled' : ''}`}
-      >
-        ★
-      </span>
+        fill={index < rating ? 'currentColor' : 'none'}
+      />
     ))
   }
 
@@ -380,7 +382,7 @@ export default function AdminReviewsPage() {
                       onClick={() => updateReviewStatus(review.id, 'approved')}
                       disabled={updatingReviewId === review.id}
                     >
-                      ✓ Approve
+                      <Check size={14} strokeWidth={2.5} /> Approve
                     </button>
                   )}
                   {review.status !== 'rejected' && (
@@ -389,7 +391,7 @@ export default function AdminReviewsPage() {
                       onClick={() => updateReviewStatus(review.id, 'rejected')}
                       disabled={updatingReviewId === review.id}
                     >
-                      ✗ Reject
+                      <X size={14} strokeWidth={2.5} /> Reject
                     </button>
                   )}
                   {review.status !== 'pending' && (
@@ -398,7 +400,7 @@ export default function AdminReviewsPage() {
                       onClick={() => updateReviewStatus(review.id, 'pending')}
                       disabled={updatingReviewId === review.id}
                     >
-                      ⟲ Set Pending
+                      <RotateCcw size={14} strokeWidth={2.5} /> Set Pending
                     </button>
                   )}
                   <button
@@ -406,7 +408,7 @@ export default function AdminReviewsPage() {
                     onClick={() => deleteReview(review.id)}
                     disabled={updatingReviewId === review.id}
                   >
-                    🗑 Delete
+                    <Trash2 size={14} strokeWidth={2} /> Delete
                   </button>
                 </div>
               </div>

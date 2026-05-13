@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
+import { Star, CheckCircle } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import SEO from '@/components/SEO'
 import './ReviewForm.css'
@@ -175,7 +176,7 @@ export default function ReviewForm() {
       <section className="section review-form-section">
         <div className="review-form-container">
           <div className="success-message">
-            <span className="success-icon">✓</span>
+            <CheckCircle size={48} strokeWidth={1.5} className="success-icon" />
             <h2>Review Submitted!</h2>
             <p>Thank you for your feedback. Your review is pending approval and will be visible once approved by our team.</p>
             <p>Redirecting to your orders...</p>
@@ -240,7 +241,7 @@ export default function ReviewForm() {
                   onMouseEnter={() => setHoveredRating(star)}
                   onMouseLeave={() => setHoveredRating(0)}
                 >
-                  ★
+                  <Star size={28} strokeWidth={1.5} fill={star <= (hoveredRating || rating) ? 'currentColor' : 'none'} />
                 </button>
               ))}
             </div>

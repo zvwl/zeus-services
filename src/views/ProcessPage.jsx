@@ -1,5 +1,6 @@
 'use client'
 
+import { Ticket } from 'lucide-react'
 import SEO from '@/components/SEO'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -32,7 +33,7 @@ export default function ProcessPage() {
             </h2>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', color: '#f9fafb' }}>
               <div>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}>🎫 Discord Ticket Required</h3>
+                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.75rem', fontWeight: '600' }}><Ticket size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Discord Ticket Required</h3>
                 <p style={{ lineHeight: '1.6' }}>
                   After purchase, you MUST open a Discord ticket to begin service. Services will NOT start without an active Discord ticket. This is how we communicate with you.
                 </p>

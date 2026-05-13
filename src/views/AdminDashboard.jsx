@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
+import { Package, Clock, Star, TrendingUp, Gamepad2, Joystick, ShoppingCart } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
@@ -151,7 +152,7 @@ export default function AdminDashboard() {
       path: '/admin/orders',
       title: 'Orders',
       desc: 'Manage customer orders',
-      icon: '📦',
+      Icon: ShoppingCart,
       stat: stats.pendingOrders !== null ? `${stats.pendingOrders} awaiting action` : null,
       statColor: stats.pendingOrders > 0 ? '#fbbf24' : '#10b981',
     },
@@ -159,21 +160,21 @@ export default function AdminDashboard() {
       path: '/admin/items',
       title: 'Items',
       desc: 'Add, edit and manage items',
-      icon: '🎮',
+      Icon: Gamepad2,
       stat: null,
     },
     {
       path: '/admin/games',
       title: 'Games',
       desc: 'Manage games & display order',
-      icon: '🕹️',
+      Icon: Joystick,
       stat: null,
     },
     {
       path: '/admin/reviews',
       title: 'Reviews',
       desc: 'Moderate customer reviews',
-      icon: '⭐',
+      Icon: Star,
       stat: stats.pendingReviews !== null ? `${stats.pendingReviews} pending` : null,
       statColor: stats.pendingReviews > 0 ? '#f97316' : '#10b981',
     },
@@ -191,7 +192,7 @@ export default function AdminDashboard() {
       {/* Stats Cards */}
       <div className="dashboard-stats-grid">
         <div className="dashboard-stat-card">
-          <div className="dsc-icon">📦</div>
+          <div className="dsc-icon"><Package size={28} strokeWidth={1.8} color="#fbbf24" /></div>
           <div className="dsc-content">
             <div className="dsc-label">Orders Today</div>
             <div className="dsc-value">{stats.todayOrders !== null ? stats.todayOrders : '—'}</div>
@@ -202,7 +203,7 @@ export default function AdminDashboard() {
           onClick={() => router.push('/admin/orders?status=pending')}
           title="View pending orders"
         >
-          <div className="dsc-icon">⏳</div>
+          <div className="dsc-icon"><Clock size={28} strokeWidth={1.8} color="#fbbf24" /></div>
           <div className="dsc-content">
             <div className="dsc-label">Pending Orders</div>
             <div className="dsc-value" style={{ color: stats.pendingOrders > 0 ? '#fbbf24' : '#10b981' }}>
@@ -215,7 +216,7 @@ export default function AdminDashboard() {
           onClick={() => router.push('/admin/reviews')}
           title="View pending reviews"
         >
-          <div className="dsc-icon">⭐</div>
+          <div className="dsc-icon"><Star size={28} strokeWidth={1.8} color="#f97316" /></div>
           <div className="dsc-content">
             <div className="dsc-label">Pending Reviews</div>
             <div className="dsc-value" style={{ color: stats.pendingReviews > 0 ? '#f97316' : '#10b981' }}>
@@ -224,7 +225,7 @@ export default function AdminDashboard() {
           </div>
         </div>
         <div className="dashboard-stat-card">
-          <div className="dsc-icon">💰</div>
+          <div className="dsc-icon"><TrendingUp size={28} strokeWidth={1.8} color="#10b981" /></div>
           <div className="dsc-content">
             <div className="dsc-label">Revenue This Month (GBP)</div>
             <div className="dsc-value" style={{ color: '#10b981' }}>
@@ -238,7 +239,7 @@ export default function AdminDashboard() {
       <div className="admin-nav-cards">
         {navItems.map(item => (
           <button key={item.path} className="admin-nav-card" onClick={() => router.push(item.path)}>
-            <div className="nav-card-icon">{item.icon}</div>
+            <div className="nav-card-icon"><item.Icon size={32} strokeWidth={1.5} /></div>
             <div className="nav-card-title">{item.title}</div>
             <div className="nav-card-desc">{item.desc}</div>
             {item.stat && (

@@ -1,5 +1,13 @@
 import { useState, useEffect } from 'react'
+import { CheckCircle, XCircle, Info, AlertTriangle, X } from 'lucide-react'
 import './Toast.css'
+
+const TOAST_ICONS = {
+  success: CheckCircle,
+  error: XCircle,
+  info: Info,
+  warning: AlertTriangle,
+}
 
 export default function Toast({ message, type = 'info', duration = 3500, onClose }) {
   const [isVisible, setIsVisible] = useState(true)
@@ -11,7 +19,7 @@ export default function Toast({ message, type = 'info', duration = 3500, onClose
       setTimeout(() => {
         setIsVisible(false)
         if (onClose) onClose()
-      }, 300) // Match animation duration
+      }, 300)
     }, duration)
 
     return () => clearTimeout(timer)
@@ -19,19 +27,14 @@ export default function Toast({ message, type = 'info', duration = 3500, onClose
 
   if (!isVisible) return null
 
-  const icons = {
-    success: '✓',
-    error: '✕',
-    info: 'ℹ',
-    warning: '⚠'
-  }
+  const Icon = TOAST_ICONS[type] || Info
 
   return (
     <div className={`toast toast-${type} ${isExiting ? 'toast-exit' : 'toast-enter'}`}>
-      <div className="toast-icon">{icons[type]}</div>
+      <div className="toast-icon"><Icon size={18} strokeWidth={2.2} /></div>
       <div className="toast-message">{message}</div>
-      <button 
-        className="toast-close" 
+      <button
+        className="toast-close"
         onClick={() => {
           setIsExiting(true)
           setTimeout(() => {
@@ -41,7 +44,7 @@ export default function Toast({ message, type = 'info', duration = 3500, onClose
         }}
         aria-label="Close notification"
       >
-        ✕
+        <X size={14} strokeWidth={2.5} />
       </button>
     </div>
   )

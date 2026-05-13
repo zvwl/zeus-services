@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase/client'
+import { Trophy, Check } from 'lucide-react'
 import SEO from '@/components/SEO'
 import Breadcrumb from '@/components/Breadcrumb'
 import { isPrerender } from '../utils/isPrerender'
@@ -203,7 +204,7 @@ export default function TrustPage() {
             <div className="trust-grid" style={{ display: 'grid', gap: '1.5rem' }}>
               <div className="trust-card" style={{ borderLeft: '3px solid #fbbf24', paddingLeft: '1rem' }}>
                 <h3 style={{ color: '#fbbf24', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  🏆 Proven Track Record
+                  <Trophy size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Proven Track Record
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   9+ years of consistent, reliable service. We've been around longer than 99% of competing services. That longevity speaks to our legitimacy and consistency.
@@ -212,7 +213,7 @@ export default function TrustPage() {
 
               <div className="trust-card" style={{ borderLeft: '3px solid #60a5fa', paddingLeft: '1rem' }}>
                 <h3 style={{ color: '#60a5fa', marginBottom: '0.75rem', fontSize: '1rem', fontWeight: '600' }}>
-                  ✓ Honest About Risks
+                  <Check size={16} strokeWidth={2.5} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Honest About Risks
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.7' }}>
                   We don't hide that Rockstar enforces against boosted/modded accounts. We tell you upfront the risks involved. This honesty is why people trust us - we don't overpromise safety.

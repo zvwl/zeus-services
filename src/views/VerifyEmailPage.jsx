@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import './AuthPages.css'
 
@@ -168,7 +169,7 @@ export default function VerifyEmailPage() {
 
           {status === 'success' && (
             <div className="success-animation">
-              <div className="checkmark">✓</div>
+              <div className="checkmark"><CheckCircle size={52} strokeWidth={1.5} color="#10b981" /></div>
             </div>
           )}
 

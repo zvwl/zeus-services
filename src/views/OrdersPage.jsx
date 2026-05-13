@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
+import { Package, CheckCircle } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './OrdersPage.css'
 
@@ -215,7 +216,7 @@ export default function OrdersPage() {
 
         {orders.length === 0 ? (
           <div className="empty-state">
-            <span className="empty-icon">📦</span>
+            <Package size={56} strokeWidth={1.2} className="empty-icon" />
             <h2>No orders yet</h2>
             <p>Start shopping to see your orders here!</p>
           </div>
@@ -300,7 +301,7 @@ export default function OrdersPage() {
                   
                   {orderReviews[order.id] && (
                     <div className="order-review-status">
-                      <span className="review-submitted">✓ Review Submitted</span>
+                      <span className="review-submitted"><CheckCircle size={13} strokeWidth={2.5} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '4px' }} />Review Submitted</span>
                     </div>
                   )}
                 </div>

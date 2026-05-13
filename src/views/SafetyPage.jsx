@@ -1,5 +1,6 @@
 'use client'
 
+import { CheckCircle } from 'lucide-react'
 import SEO from '@/components/SEO'
 import Breadcrumb from '@/components/Breadcrumb'
 
@@ -53,7 +54,7 @@ export default function SafetyPage() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1.5rem' }}>
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #fbbf24' }}>
                 <h3 style={{ color: '#fbbf24', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ 9+ Years of Experience
+                  <CheckCircle size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />9+ Years of Experience
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
                   We've been operating gaming services for over 9 years across multiple games and platforms. This experience means we understand what patterns publishers look for and how to minimize detection risk. However, bans are ultimately luck-based and cannot be prevented.
@@ -62,7 +63,7 @@ export default function SafetyPage() {
 
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #60a5fa' }}>
                 <h3 style={{ color: '#60a5fa', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Multi-Game & Platform Support
+                  <CheckCircle size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Multi-Game & Platform Support
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
                   We support multiple games (GTA 5, Fortnite, Rocket League, Forza Horizon 6) across all major PC platforms: Steam, Epic Games, Xbox App (Microsoft Store), PlayStation Network, Xbox Live, and Rockstar Social Club. Services are tailored to your specific game and platform.
@@ -71,7 +72,7 @@ export default function SafetyPage() {
 
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #a78bfa' }}>
                 <h3 style={{ color: '#a78bfa', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Safe Progression Limits
+                  <CheckCircle size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Safe Progression Limits
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
                   <strong>CRITICAL:</strong> We follow safe daily limits when building your account to minimize detection risk. These limits vary by game (currency caps, rank progression speed, unlock frequency). Requesting accelerated service beyond our recommendations significantly increases ban risk. We're not responsible for bans if you choose faster delivery.
@@ -80,7 +81,7 @@ export default function SafetyPage() {
 
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #34d399' }}>
                 <h3 style={{ color: '#34d399', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Tested Accounts (For Ready-Made Accounts)
+                  <CheckCircle size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Tested Accounts (For Ready-Made Accounts)
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
                   Pre-built accounts are tested on live game servers before delivery. This verifies they work at that moment. It does not mean they'll never get banned - publishers can issue a ban retroactively at any time.
@@ -89,7 +90,7 @@ export default function SafetyPage() {
 
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #f97316' }}>
                 <h3 style={{ color: '#f97316', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Immediate Account Security
+                  <CheckCircle size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Immediate Account Security
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
                   For pre-built accounts, you change credentials immediately after delivery. We don't store passwords. For boosting services, you maintain full account control throughout. Your account security is always in your hands.
@@ -98,7 +99,7 @@ export default function SafetyPage() {
 
               <div style={{ backgroundColor: '#1a2332', padding: '1.5rem', borderRadius: '8px', borderLeft: '4px solid #06b6d4' }}>
                 <h3 style={{ color: '#06b6d4', marginBottom: '1rem', fontSize: '1.1rem' }}>
-                  ✓ Possible Free Recovery (Conditions Apply)
+                  <CheckCircle size={16} strokeWidth={2} style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '6px' }} />Possible Free Recovery (Conditions Apply)
                 </h3>
                 <p style={{ color: '#cbd5e1', lineHeight: '1.8' }}>
                   If you follow our guidelines when using the account AND get banned, we may offer a discretionary free replacement depending on the game and service. <strong>This is NOT guaranteed.</strong> If you requested accelerated service beyond our recommendations or violate our guidelines, there's no recovery offered.

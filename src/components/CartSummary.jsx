@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, Gamepad2 } from 'lucide-react'
+import { ShoppingCart, Gamepad2, X } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import AnimatedLucideIcon from './AnimatedLucideIcon'
 import { useRef } from 'react'
@@ -179,7 +179,7 @@ export default function CartSummary({ items = [], onRemove, onUpdateQuantity, fo
                 aria-label="Remove item"
                 title="Remove item"
               >
-                ✕
+                <X size={14} strokeWidth={2.5} />
               </button>
             </div>
           </div>

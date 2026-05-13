@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { Search } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import './SearchBar.css'
 
@@ -124,7 +125,7 @@ export default function SearchBar() {
   return (
     <div className="search-bar-wrapper" ref={searchRef}>
       <div className="search-bar-input">
-        <span className="search-icon">🔍</span>
+        <Search size={16} className="search-icon" strokeWidth={2} />
         <input
           type="text"
           placeholder="Search Zeuservices..."

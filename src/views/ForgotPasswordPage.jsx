@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Turnstile } from '@marsidev/react-turnstile'
+import { CheckCircle } from 'lucide-react'
 import { supabase } from '@/lib/supabase/client'
 import { isTurnstileBypassed } from '../utils/turnstile'
 import './AuthPages.css'
@@ -136,7 +137,7 @@ export default function ForgotPasswordPage() {
             </form>
           ) : (
             <div className="email-sent-message">
-              <div className="checkmark">✓</div>
+              <div className="checkmark"><CheckCircle size={52} strokeWidth={1.5} color="#10b981" /></div>
               <p>Check your email for the password reset link.</p>
             </div>
           )}

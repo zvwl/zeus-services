@@ -1,5 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { motion, AnimatePresence } from 'motion/react'
+import { Check } from 'lucide-react'
 import './FlyingCartAnimation.css'
 
 export default function FlyingCartAnimation({ isActive, itemIcon, onComplete }) {
@@ -140,7 +141,7 @@ export default function FlyingCartAnimation({ isActive, itemIcon, onComplete }) 
                 <img src={itemIcon} alt="flying item" className="flying-item-icon" />
               ) : (
                 <div className="flying-item-placeholder">
-                  <span>✓</span>
+                  <Check size={16} strokeWidth={2.5} />
                 </div>
               )}
             </motion.div>
