@@ -30,137 +30,33 @@ const stripeAppearance = {
   },
 }
 
-// ── Inner payment form (must live inside <Elements> provider) ─────────────
-function PaymentForm({ onSuccess, onError, isSubmitting, setIsSubmitting }) {
+// ── Inner payment form ─────────────────────────────────────────────────────
+// Must live inside <Elements>. In deferred-intent mode, Elements renders
+// immediately (no clientSecret needed). The PaymentIntent is created only
+// when the user clicks "Pay Now", right before confirmPayment().
+function PaymentForm({ amountInCents, currency, cartItems, convertAmount, orderNote, onSuccess }) {
   const stripe = useStripe()
   const elements = useElements()
-  const [localError, setLocalError] = useState('')
+  const { user } = useAuth()
+  const [error, setError] = useState('')
+  const [busy, setBusy] = useState(false)
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!stripe || !elements || isSubmitting) return
-    setLocalError('')
-    setIsSubmitting(true)
+    if (!stripe || !elements || busy) return
+    setError('')
+    setBusy(true)
 
-    const { error, paymentIntent } = await stripe.confirmPayment({
-      elements,
-      confirmParams: {
-        return_url: `${window.location.origin}/checkout?payment_return=true`,
-      },
-      redirect: 'if_required',
-    })
-
-    if (error) {
-      setLocalError(error.message || 'Payment failed. Please try again.')
-      onError(error.message)
-      setIsSubmitting(false)
-    } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-      onSuccess(paymentIntent.id)
-    } else {
-      setLocalError('Unexpected payment state. Please check your orders page.')
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="payment-element-form">
-      <PaymentElement options={{ layout: 'tabs' }} />
-      {localError && (
-        <div className="payment-error">
-          <AlertCircle size={15} strokeWidth={2} />
-          {localError}
-        </div>
-      )}
-      <button
-        type="submit"
-        className="pay-now-btn"
-        disabled={!stripe || !elements || isSubmitting}
-      >
-        {isSubmitting ? (
-          <><Loader2 size={18} className="spin-icon" /> Processing...</>
-        ) : (
-          <><Lock size={16} strokeWidth={2} /> Pay Now</>
-        )}
-      </button>
-      <div className="payment-trust-row">
-        <ShieldCheck size={14} strokeWidth={2} />
-        <span>Secured by Stripe. Your card details never touch our servers.</span>
-      </div>
-    </form>
-  )
-}
-
-// ── Main checkout page ────────────────────────────────────────────────────
-export default function CheckoutPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { user, loading: authLoading, emailVerified, isAdmin } = useAuth()
-  const { cartItems, formatPrice, convertAmount, currency, orderNote, handleOrderNoteChange, paymentMethod, setPaymentMethod, handleCheckout: devCheckout, checkoutStatus } = useCart()
-
-  const [clientSecret, setClientSecret] = useState(null)
-  const [paymentIntentId, setPaymentIntentId] = useState(null)
-  const [isInitializing, setIsInitializing] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [initError, setInitError] = useState('')
-  const [paymentState, setPaymentState] = useState('idle') // idle | paying | polling | success | error
-  const [orderId, setOrderId] = useState(null)
-
-  const totalConverted = cartItems.reduce((sum, item) => sum + convertAmount(item.price) * item.quantity, 0)
-
-  // Handle return from 3D Secure redirect
-  useEffect(() => {
-    if (!searchParams.get('payment_return')) return
-    const piId = searchParams.get('payment_intent')
-    const status = searchParams.get('redirect_status')
-    if (status === 'succeeded' && piId) {
-      setPaymentIntentId(piId)
-      setPaymentState('polling')
-    } else if (status === 'failed') {
-      setPaymentState('error')
-      setInitError('Payment was declined. Please try again.')
-    }
-  }, [searchParams])
-
-  // Poll for order after payment succeeds
-  const pollForOrder = useCallback(async (piId) => {
-    const maxAttempts = 15
-    for (let i = 0; i < maxAttempts; i++) {
-      await new Promise(r => setTimeout(r, 2000))
-      try {
-        const { data: sessionData } = await supabase.auth.getSession()
-        const accessToken = sessionData?.session?.access_token
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-order-by-payment-intent?payment_intent_id=${piId}`,
-          {
-            headers: {
-              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        )
-        const body = await res.json()
-        if (body?.order?.id) {
-          setOrderId(body.order.id)
-          setPaymentState('success')
-          return
-        }
-      } catch { /* keep polling */ }
-    }
-    // Order might still be processing, but show success — webhook will eventually fire
-    setPaymentState('success')
-  }, [])
-
-  useEffect(() => {
-    if (paymentState === 'polling' && paymentIntentId) {
-      pollForOrder(paymentIntentId)
-    }
-  }, [paymentState, paymentIntentId, pollForOrder])
-
-  // Initialize payment intent when user clicks "Proceed to Payment"
-  const initializePayment = async () => {
-    setIsInitializing(true)
-    setInitError('')
     try {
+      // Step 1 — validate the payment details entered by the user
+      const { error: submitError } = await elements.submit()
+      if (submitError) {
+        setError(submitError.message || 'Please check your payment details.')
+        setBusy(false)
+        return
+      }
+
+      // Step 2 — create the PaymentIntent server-side now that we have valid details
       const { data: sessionData } = await supabase.auth.getSession()
       const accessToken = sessionData?.session?.access_token
       const sessionUser = sessionData?.session?.user
@@ -183,7 +79,7 @@ export default function CheckoutPage() {
               price_converted: convertAmount(price),
               currency,
             })),
-            total_amount: totalConverted,
+            total_amount: amountInCents / 100,
             currency,
             customer_email: sessionUser?.email,
             customer_name: sessionUser?.user_metadata?.name || sessionUser?.email?.split('@')[0],
@@ -191,69 +87,159 @@ export default function CheckoutPage() {
           }),
         }
       )
+
       const data = await res.json()
-      if (!res.ok || data.error) throw new Error(data.error || 'Failed to initialise payment')
-      setClientSecret(data.clientSecret)
-      setPaymentIntentId(data.paymentIntentId)
+      if (!res.ok || !data.clientSecret) {
+        setError(data.error || 'Could not create payment. Please try again.')
+        setBusy(false)
+        return
+      }
+
+      // Step 3 — confirm the payment with the freshly-created clientSecret
+      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        clientSecret: data.clientSecret,
+        confirmParams: {
+          return_url: `${window.location.origin}/checkout?payment_return=true`,
+        },
+        redirect: 'if_required',
+      })
+
+      if (confirmError) {
+        setError(confirmError.message || 'Payment failed. Please try again.')
+        setBusy(false)
+      } else if (paymentIntent?.status === 'succeeded') {
+        onSuccess(paymentIntent.id)
+      } else {
+        setError('Unexpected payment state. Please check your Orders page.')
+        setBusy(false)
+      }
     } catch (err) {
-      setInitError(err.message || 'Could not start payment. Please try again.')
-    } finally {
-      setIsInitializing(false)
+      setError(err.message || 'Something went wrong. Please try again.')
+      setBusy(false)
     }
   }
+
+  return (
+    <form onSubmit={handleSubmit} className="payment-element-form">
+      <PaymentElement options={{ layout: 'tabs' }} />
+
+      {error && (
+        <div className="payment-error">
+          <AlertCircle size={15} strokeWidth={2} />
+          {error}
+        </div>
+      )}
+
+      <button type="submit" className="pay-now-btn" disabled={!stripe || !elements || busy}>
+        {busy
+          ? <><Loader2 size={18} className="spin-icon" /> Processing…</>
+          : <><Lock size={16} strokeWidth={2} /> Pay Now</>
+        }
+      </button>
+
+      <div className="payment-trust-row">
+        <ShieldCheck size={14} strokeWidth={2} />
+        <span>Secured by Stripe — your card details never reach our servers.</span>
+      </div>
+    </form>
+  )
+}
+
+// ── Main checkout page ─────────────────────────────────────────────────────
+export default function CheckoutPage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { user, loading: authLoading, emailVerified, isAdmin } = useAuth()
+  const {
+    cartItems, formatPrice, convertAmount, currency,
+    orderNote, handleOrderNoteChange,
+    paymentMethod, setPaymentMethod,
+    handleCheckout: devCheckout, checkoutStatus,
+  } = useCart()
+
+  const [paymentState, setPaymentState] = useState('idle') // idle | polling | success | error
+  const [paymentIntentId, setPaymentIntentId] = useState(null)
+
+  // Calculate totals
+  const totalUsd = cartItems.reduce((s, i) => s + i.price * i.quantity, 0)
+  const totalConverted = cartItems.reduce((s, i) => s + convertAmount(i.price) * i.quantity, 0)
+  const amountInCents = Math.round(totalConverted * 100)
+  const finalCurrency = currency.toLowerCase()
+
+  // Handle 3DS redirect return
+  useEffect(() => {
+    if (!searchParams.get('payment_return')) return
+    const piId = searchParams.get('payment_intent')
+    const status = searchParams.get('redirect_status')
+    if (status === 'succeeded' && piId) {
+      setPaymentIntentId(piId)
+      setPaymentState('polling')
+    } else if (status === 'failed') {
+      setPaymentState('error')
+    }
+  }, [searchParams])
+
+  // Poll for order creation after payment succeeds
+  const pollForOrder = useCallback(async (piId) => {
+    for (let i = 0; i < 15; i++) {
+      await new Promise(r => setTimeout(r, 2000))
+      try {
+        const { data: sessionData } = await supabase.auth.getSession()
+        const accessToken = sessionData?.session?.access_token
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/get-order-by-payment-intent?payment_intent_id=${piId}`,
+          {
+            headers: {
+              apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        )
+        const body = await res.json()
+        if (body?.order?.id) { setPaymentState('success'); return }
+      } catch { /* keep polling */ }
+    }
+    setPaymentState('success') // show success anyway — webhook will create order
+  }, [])
+
+  useEffect(() => {
+    if (paymentState === 'polling' && paymentIntentId) {
+      pollForOrder(paymentIntentId)
+    }
+  }, [paymentState, paymentIntentId, pollForOrder])
 
   const handlePaymentSuccess = (piId) => {
     setPaymentIntentId(piId)
     setPaymentState('polling')
-    // Cart will be cleared once we confirm the order exists
   }
 
-  const handlePaymentError = (msg) => {
-    setInitError(msg || 'Payment failed')
-  }
-
-  // ── Auth guards ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    document.title = 'Checkout | zeuservices'
-  }, [])
-
-  useEffect(() => {
-    if (!authLoading && !user) router.push('/login')
-  }, [user, authLoading, router])
+  useEffect(() => { document.title = 'Checkout | zeuservices' }, [])
+  useEffect(() => { if (!authLoading && !user) router.push('/login') }, [user, authLoading, router])
 
   if (authLoading) {
     return (
       <section className="section services" id="checkout">
         <div className="order-summary-container">
-          <LoadingSpinner message="Verifying authentication..." />
+          <LoadingSpinner message="Verifying authentication…" />
         </div>
       </section>
     )
   }
-
   if (!user) return null
 
-  // ── Success state ────────────────────────────────────────────────────────
+  // ── Success ──────────────────────────────────────────────────────────────
   if (paymentState === 'success') {
     return (
       <section className="section services" id="checkout">
         <div className="order-summary-container">
           <div className="checkout-success">
-            <div className="checkout-success-icon">
-              <CheckCircle size={64} strokeWidth={1.3} color="#10b981" />
-            </div>
+            <div className="checkout-success-icon"><CheckCircle size={64} strokeWidth={1.3} color="#10b981" /></div>
             <h1>Payment Successful!</h1>
             <p>Thank you for your order. We'll get started right away.</p>
             <div className="checkout-success-actions">
-              <button className="primary-btn" onClick={() => router.push('/orders')}>
-                View My Orders
-              </button>
-              <a
-                href="https://discord.gg/zeusservices"
-                className="secondary-btn discord-btn"
-                target="_blank"
-                rel="noreferrer"
-              >
+              <button className="primary-btn" onClick={() => router.push('/orders')}>View My Orders</button>
+              <a href="https://discord.gg/zeusservices" className="secondary-btn discord-btn" target="_blank" rel="noreferrer">
                 Open Discord to Continue
               </a>
             </div>
@@ -266,7 +252,7 @@ export default function CheckoutPage() {
     )
   }
 
-  // ── Polling state ────────────────────────────────────────────────────────
+  // ── Polling ──────────────────────────────────────────────────────────────
   if (paymentState === 'polling') {
     return (
       <section className="section services" id="checkout">
@@ -274,7 +260,7 @@ export default function CheckoutPage() {
           <div className="checkout-polling">
             <Loader2 size={48} className="spin-icon" color="#fbbf24" strokeWidth={1.5} />
             <h2>Confirming your order…</h2>
-            <p>Payment received. Setting up your order now — this takes a few seconds.</p>
+            <p>Payment received. Setting up your order — this takes a few seconds.</p>
           </div>
         </div>
       </section>
@@ -302,7 +288,7 @@ export default function CheckoutPage() {
       <p className="section-subtitle">Review your order and pay securely.</p>
 
       <div className="checkout-container">
-        {/* ── Order summary ── */}
+        {/* ── Order summary ─────────────────────────────────────────────── */}
         <div className="checkout-order-summary">
           <h3>Order Summary</h3>
           <div className="checkout-items">
@@ -310,11 +296,10 @@ export default function CheckoutPage() {
               <div key={item.cartId} className="checkout-item">
                 <div className="checkout-item-info">
                   <div className="checkout-item-icon">
-                    {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http')) ? (
-                      <img src={item.icon} alt={item.name} onError={(e) => { e.target.style.display = 'none' }} />
-                    ) : (
-                      <span><AnimatedLucideIcon icon={Gamepad2} size={20} /></span>
-                    )}
+                    {item.icon && typeof item.icon === 'string' && (item.icon.startsWith('/') || item.icon.startsWith('http'))
+                      ? <img src={item.icon} alt={item.name} onError={(e) => { e.target.style.display = 'none' }} />
+                      : <span><AnimatedLucideIcon icon={Gamepad2} size={20} /></span>
+                    }
                   </div>
                   <div>
                     <h4>{item.name}</h4>
@@ -341,7 +326,7 @@ export default function CheckoutPage() {
 
           <div className="checkout-total">
             <span className="total-label">Total:</span>
-            <span className="total-amount">{formatPrice ? formatPrice(cartItems.reduce((s, i) => s + i.price * i.quantity, 0)) : `$${cartItems.reduce((s, i) => s + i.price * i.quantity, 0)}`}</span>
+            <span className="total-amount">{formatPrice ? formatPrice(totalUsd) : `$${totalUsd}`}</span>
           </div>
 
           <button onClick={() => router.push('/cart')} className="secondary-btn edit-cart-btn">Edit Cart</button>
@@ -350,7 +335,7 @@ export default function CheckoutPage() {
           <div className="order-note" style={{ marginTop: '1.5rem' }}>
             <div className="order-note-header">
               <h3>Order Notes (Optional)</h3>
-              <p>Share account email, login details, or specific instructions. Login details are encrypted.</p>
+              <p>Share account email, login details, or specific instructions. Encrypted and handled securely.</p>
             </div>
             <textarea
               name="order_note"
@@ -359,10 +344,10 @@ export default function CheckoutPage() {
               placeholder="e.g. Account email is user@example.com, password is ******, please add cars to Slot 1."
               maxLength={1000}
             />
-            <div className="order-note-hint">Up to 1000 characters. Encrypted and handled securely.</div>
+            <div className="order-note-hint">Up to 1000 characters. Encrypted.</div>
           </div>
 
-          {/* Dev skip option */}
+          {/* Dev skip */}
           {isAdmin && (
             <div className="dev-payment-section">
               <label className="payment-option dev-option">
@@ -374,11 +359,7 @@ export default function CheckoutPage() {
                 <span className="option-title">Dev: skip payment</span>
               </label>
               {paymentMethod === 'dev_skip' && (
-                <button
-                  className="checkout-btn"
-                  onClick={() => devCheckout(user)}
-                  disabled={checkoutStatus?.state === 'loading'}
-                >
+                <button className="checkout-btn" onClick={() => devCheckout(user)} disabled={checkoutStatus?.state === 'loading'}>
                   {checkoutStatus?.state === 'loading' ? 'Placing order…' : 'Place dev order'}
                 </button>
               )}
@@ -386,7 +367,7 @@ export default function CheckoutPage() {
           )}
         </div>
 
-        {/* ── Payment form ── */}
+        {/* ── Payment form ──────────────────────────────────────────────── */}
         {paymentMethod !== 'dev_skip' && (
           <div className="checkout-payment-form">
             <div className="payment-form-header">
@@ -401,36 +382,35 @@ export default function CheckoutPage() {
               </div>
             )}
 
-            {initError && (
-              <div className="payment-error" style={{ marginBottom: '1rem' }}>
-                <AlertCircle size={15} strokeWidth={2} />
-                {initError}
-              </div>
-            )}
-
-            {!clientSecret ? (
-              <button
-                className="proceed-to-pay-btn"
-                onClick={initializePayment}
-                disabled={isInitializing || !emailVerified}
-              >
-                {isInitializing
-                  ? <><Loader2 size={18} className="spin-icon" /> Preparing payment…</>
-                  : <><Lock size={16} strokeWidth={2} /> Proceed to Payment</>
-                }
-              </button>
-            ) : (
+            {/* Deferred-intent mode: Elements renders immediately without a
+                clientSecret. The PI is only created when the user clicks Pay. */}
+            {amountInCents >= 50 && emailVerified && (
               <Elements
                 stripe={stripePromise}
-                options={{ clientSecret, appearance: stripeAppearance, loader: 'auto' }}
+                options={{
+                  mode: 'payment',
+                  amount: amountInCents,
+                  currency: finalCurrency,
+                  appearance: stripeAppearance,
+                  loader: 'auto',
+                }}
               >
                 <PaymentForm
+                  amountInCents={amountInCents}
+                  currency={currency}
+                  cartItems={cartItems}
+                  convertAmount={convertAmount}
+                  orderNote={orderNote}
                   onSuccess={handlePaymentSuccess}
-                  onError={handlePaymentError}
-                  isSubmitting={isSubmitting}
-                  setIsSubmitting={setIsSubmitting}
                 />
               </Elements>
+            )}
+
+            {amountInCents < 50 && (
+              <div className="payment-error">
+                <AlertCircle size={15} strokeWidth={2} />
+                Order total is too small to process.
+              </div>
             )}
 
             <div className="payment-badges">
