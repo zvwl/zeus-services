@@ -491,6 +491,7 @@ export default function CheckoutPage() {
     orderNote, handleOrderNoteChange,
     paymentMethod, setPaymentMethod,
     handleCheckout: devCheckout, checkoutStatus,
+    clearCart,
   } = useCart()
 
   const [paymentState, setPaymentState] = useState('idle') // idle | success
@@ -502,6 +503,7 @@ export default function CheckoutPage() {
 
   const handlePaymentSuccess = (_piId) => {
     pollingActiveRef.current = false
+    clearCart()
     setPaymentState('success')
   }
 

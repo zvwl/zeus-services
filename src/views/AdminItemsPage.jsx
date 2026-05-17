@@ -108,8 +108,17 @@ export default function AdminItemsPage() {
         icon: formData.icon,
         custom_fields: formData.customFields.map(field => ({
           fieldName: field.fieldName,
+          type: field.type || 'dropdown',
           selectedOptions: field.selectedOptions,
-          availableOptions: field.availableOptions
+          availableOptions: field.availableOptions,
+          required: field.required || false,
+          ...(field.type === 'number' ? {
+            unit: field.unit || '',
+            pricePerUnit: parseFloat(field.pricePerUnit) || 0,
+            minValue: parseInt(field.minValue) || 0,
+            maxValue: parseInt(field.maxValue) || 0,
+            stepValue: parseInt(field.stepValue) || 1,
+          } : {})
         })),
         details: formData.detailsText
           .split('\n')
@@ -160,8 +169,15 @@ export default function AdminItemsPage() {
         ? item.custom_fields.map((field, index) => ({
             id: `field-${Date.now()}-${index}`,
             fieldName: field.fieldName || '',
+            type: field.type || 'dropdown',
             availableOptions: field.availableOptions || [],
-            selectedOptions: field.selectedOptions || []
+            selectedOptions: field.selectedOptions || [],
+            required: field.required || false,
+            unit: field.unit || '',
+            pricePerUnit: field.pricePerUnit || '',
+            minValue: field.minValue || '',
+            maxValue: field.maxValue || '',
+            stepValue: field.stepValue || '',
           }))
         : []
     
@@ -276,15 +292,30 @@ export default function AdminItemsPage() {
 
   // Custom Fields Management
   const addCustomField = () => {
-    const newField = {
-      id: `field-${Date.now()}`,
-      fieldName: '',
-      availableOptions: [],
-      selectedOptions: []
-    }
     setFormData(prev => ({
       ...prev,
-      customFields: [...prev.customFields, newField]
+      customFields: [...prev.customFields, {
+        id: `field-${Date.now()}`,
+        fieldName: '',
+        type: 'dropdown',
+        availableOptions: [],
+        selectedOptions: [],
+        required: false,
+        unit: '',
+        pricePerUnit: '',
+        minValue: '',
+        maxValue: '',
+        stepValue: '',
+      }]
+    }))
+  }
+
+  const updateFieldProp = (fieldId, prop, value) => {
+    setFormData(prev => ({
+      ...prev,
+      customFields: prev.customFields.map(f =>
+        f.id === fieldId ? { ...f, [prop]: value } : f
+      )
     }))
   }
 
@@ -470,7 +501,7 @@ export default function AdminItemsPage() {
             {/* Custom Fields Section */}
             <div className="form-group" style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <label style={{ margin: 0, color: '#3b82f6', fontWeight: 600 }}>Custom Dropdown Fields</label>
+                <label style={{ margin: 0, color: '#3b82f6', fontWeight: 600 }}>Custom Fields</label>
                 <button
                   type="button"
                   className="btn-add"
@@ -480,13 +511,10 @@ export default function AdminItemsPage() {
                   + Add Field Group
                 </button>
               </div>
-              <small style={{ display: 'block', color: '#94a3b8', marginBottom: '1rem', lineHeight: '1.5' }}>
-                Create custom dropdown fields like Platform, Version, Region, Language, etc. Each field can have multiple checkbox options.
-              </small>
 
               {formData.customFields.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontStyle: 'italic' }}>
-                  No custom fields yet. Click "Add Field Group" to create your first dropdown field.
+                  No custom fields yet. Click "Add Field Group" to create your first field.
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -500,17 +528,16 @@ export default function AdminItemsPage() {
                         borderRadius: '8px'
                       }}
                     >
-                      <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', alignItems: 'flex-start' }}>
-                        <div style={{ flex: 1 }}>
-                          <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
-                            Field Name (e.g., Platform, Version, Region)
-                          </label>
+                      {/* Row 1: field name, type selector, required checkbox, delete button */}
+                      <div className="form-row" style={{ alignItems: 'flex-end', gap: '0.75rem', marginBottom: '1rem' }}>
+                        <div className="form-group" style={{ flex: 2, margin: 0 }}>
+                          <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Field Name</label>
                           <input
                             type="text"
                             name={`custom-field-name-${field.id}`}
                             value={field.fieldName}
                             onChange={(e) => updateFieldName(field.id, e.target.value)}
-                            placeholder="Enter field name..."
+                            placeholder="e.g. Platform, Region..."
                             style={{
                               width: '100%',
                               padding: '0.6rem',
@@ -521,114 +548,167 @@ export default function AdminItemsPage() {
                             }}
                           />
                         </div>
+                        <div className="form-group" style={{ flex: 1, margin: 0 }}>
+                          <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Type</label>
+                          <select
+                            value={field.type || 'dropdown'}
+                            onChange={(e) => updateFieldProp(field.id, 'type', e.target.value)}
+                          >
+                            <option value="dropdown">Dropdown</option>
+                            <option value="multiselect">Multiselect</option>
+                            <option value="number">Number</option>
+                          </select>
+                        </div>
+                        <div className="form-group checkbox-group" style={{ margin: 0, paddingBottom: '0.35rem' }}>
+                          <label style={{ fontSize: '0.9rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
+                            <input
+                              type="checkbox"
+                              checked={field.required || false}
+                              onChange={(e) => updateFieldProp(field.id, 'required', e.target.checked)}
+                              style={{ marginRight: '0.4rem' }}
+                            />
+                            Required
+                          </label>
+                        </div>
                         <button
                           type="button"
                           className="btn-remove"
                           onClick={() => removeCustomField(field.id)}
                           title="Remove this field group"
-                          style={{ marginTop: '1.7rem' }}
+                          style={{ marginBottom: '0.1rem' }}
                         >
                           ✕
                         </button>
                       </div>
 
-                      <div style={{ marginBottom: '1rem' }}>
-                        <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
-                          Add Options for this field
-                        </label>
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <input
-                            type="text"
-                            name={`custom-field-option-input-${field.id}`}
-                            placeholder="Enter option name..."
-                            onKeyPress={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault()
-                                addFieldOption(field.id, e.target.value)
-                                e.target.value = ''
-                              }
-                            }}
-                            style={{
-                              flex: 1,
-                              padding: '0.6rem',
-                              background: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(212, 175, 55, 0.3)',
-                              borderRadius: '6px',
-                              color: '#f1f5f9'
-                            }}
-                          />
-                          <button
-                            type="button"
-                            className="btn-add"
-                            onClick={(e) => {
-                              const input = e.target.previousElementSibling
-                              addFieldOption(field.id, input.value)
-                              input.value = ''
-                            }}
-                            style={{ whiteSpace: 'nowrap' }}
-                          >
-                            + Add
-                          </button>
-                        </div>
-                      </div>
-
-                      {field.availableOptions.length > 0 && (
-                        <div>
-                          <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#fbbf24' }}>
-                            Select options to include:
-                          </label>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
-                            {field.availableOptions.map((option) => (
-                              <div
-                                key={option}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '0.5rem',
-                                  padding: '0.5rem 0.75rem',
-                                  background: field.selectedOptions.includes(option)
-                                    ? 'rgba(251, 191, 36, 0.15)'
-                                    : 'rgba(255, 255, 255, 0.05)',
-                                  border: `1px solid ${
-                                    field.selectedOptions.includes(option)
-                                      ? 'rgba(251, 191, 36, 0.5)'
-                                      : 'rgba(148, 163, 184, 0.3)'
-                                  }`,
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.2s'
+                      {/* Dropdown / Multiselect: option adding UI */}
+                      {(field.type === 'dropdown' || field.type === 'multiselect' || !field.type) && (
+                        <>
+                          <div style={{ marginBottom: '1rem' }}>
+                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
+                              Add Options
+                            </label>
+                            <div style={{ display: 'flex', gap: '0.5rem' }}>
+                              <input
+                                type="text"
+                                name={`custom-field-option-input-${field.id}`}
+                                placeholder="Enter option name..."
+                                onKeyPress={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault()
+                                    addFieldOption(field.id, e.target.value)
+                                    e.target.value = ''
+                                  }
                                 }}
-                                onClick={() => toggleFieldOption(field.id, option)}
+                                style={{
+                                  flex: 1,
+                                  padding: '0.6rem',
+                                  background: 'rgba(255, 255, 255, 0.05)',
+                                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                                  borderRadius: '6px',
+                                  color: '#f1f5f9'
+                                }}
+                              />
+                              <button
+                                type="button"
+                                className="btn-add"
+                                onClick={(e) => {
+                                  const input = e.target.previousElementSibling
+                                  addFieldOption(field.id, input.value)
+                                  input.value = ''
+                                }}
+                                style={{ whiteSpace: 'nowrap' }}
                               >
-                                <input
-                                  type="checkbox"
-                                  name={`custom-field-option-${field.id}-${option}`}
-                                  checked={field.selectedOptions.includes(option)}
-                                  onChange={() => toggleFieldOption(field.id, option)}
-                                  style={{ cursor: 'pointer' }}
-                                />
-                                <span style={{ color: '#f1f5f9', fontSize: '0.9rem' }}>{option}</span>
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    removeFieldOption(field.id, option)
-                                  }}
-                                  style={{
-                                    background: 'none',
-                                    border: 'none',
-                                    color: '#ef4444',
-                                    cursor: 'pointer',
-                                    padding: '0 0.25rem',
-                                    fontSize: '1.1rem',
-                                    lineHeight: 1
-                                  }}
-                                  title="Remove this option"
-                                >
-                                  ✕
-                                </button>
+                                + Add
+                              </button>
+                            </div>
+                          </div>
+
+                          {field.availableOptions.length > 0 && (
+                            <div>
+                              <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#fbbf24' }}>
+                                Select options to include:
+                              </label>
+                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                                {field.availableOptions.map((option) => (
+                                  <div
+                                    key={option}
+                                    style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '0.5rem',
+                                      padding: '0.5rem 0.75rem',
+                                      background: field.selectedOptions.includes(option)
+                                        ? 'rgba(251, 191, 36, 0.15)'
+                                        : 'rgba(255, 255, 255, 0.05)',
+                                      border: `1px solid ${
+                                        field.selectedOptions.includes(option)
+                                          ? 'rgba(251, 191, 36, 0.5)'
+                                          : 'rgba(148, 163, 184, 0.3)'
+                                      }`,
+                                      borderRadius: '6px',
+                                      cursor: 'pointer',
+                                      transition: 'all 0.2s'
+                                    }}
+                                    onClick={() => toggleFieldOption(field.id, option)}
+                                  >
+                                    <input
+                                      type="checkbox"
+                                      name={`custom-field-option-${field.id}-${option}`}
+                                      checked={field.selectedOptions.includes(option)}
+                                      onChange={() => toggleFieldOption(field.id, option)}
+                                      style={{ cursor: 'pointer' }}
+                                    />
+                                    <span style={{ color: '#f1f5f9', fontSize: '0.9rem' }}>{option}</span>
+                                    <button
+                                      type="button"
+                                      onClick={(e) => {
+                                        e.stopPropagation()
+                                        removeFieldOption(field.id, option)
+                                      }}
+                                      style={{
+                                        background: 'none',
+                                        border: 'none',
+                                        color: '#ef4444',
+                                        cursor: 'pointer',
+                                        padding: '0 0.25rem',
+                                        fontSize: '1.1rem',
+                                        lineHeight: 1
+                                      }}
+                                      title="Remove this option"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                ))}
                               </div>
-                            ))}
+                            </div>
+                          )}
+                        </>
+                      )}
+
+                      {/* Number type: pricing inputs */}
+                      {field.type === 'number' && (
+                        <div className="form-row" style={{ flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.75rem' }}>
+                          <div className="form-group" style={{ flex: '1', minWidth: '120px' }}>
+                            <label>Unit label (e.g. coins)</label>
+                            <input type="text" value={field.unit} onChange={e => updateFieldProp(field.id, 'unit', e.target.value)} placeholder="coins" />
+                          </div>
+                          <div className="form-group" style={{ flex: '1', minWidth: '120px' }}>
+                            <label>Price per unit (£)</label>
+                            <input type="number" step="0.0001" value={field.pricePerUnit} onChange={e => updateFieldProp(field.id, 'pricePerUnit', e.target.value)} placeholder="0.005" />
+                          </div>
+                          <div className="form-group" style={{ flex: '1', minWidth: '100px' }}>
+                            <label>Min value</label>
+                            <input type="number" value={field.minValue} onChange={e => updateFieldProp(field.id, 'minValue', e.target.value)} placeholder="1000" />
+                          </div>
+                          <div className="form-group" style={{ flex: '1', minWidth: '100px' }}>
+                            <label>Max value</label>
+                            <input type="number" value={field.maxValue} onChange={e => updateFieldProp(field.id, 'maxValue', e.target.value)} placeholder="100000" />
+                          </div>
+                          <div className="form-group" style={{ flex: '1', minWidth: '100px' }}>
+                            <label>Step</label>
+                            <input type="number" value={field.stepValue} onChange={e => updateFieldProp(field.id, 'stepValue', e.target.value)} placeholder="1000" />
                           </div>
                         </div>
                       )}
@@ -636,6 +716,12 @@ export default function AdminItemsPage() {
                   ))}
                 </div>
               )}
+
+              <small style={{ display: 'block', color: '#94a3b8', marginTop: '1rem', lineHeight: '1.6' }}>
+                <strong style={{ color: '#cbd5e1' }}>Dropdown</strong> — user picks one option from a list.{' '}
+                <strong style={{ color: '#cbd5e1' }}>Multiselect</strong> — user can tick multiple options (checkboxes).{' '}
+                <strong style={{ color: '#cbd5e1' }}>Number</strong> — user types a quantity; price is calculated as base_price + (amount &times; price_per_unit).
+              </small>
             </div>
 
             <div className="form-group">

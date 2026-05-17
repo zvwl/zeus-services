@@ -13,11 +13,18 @@ function getSelectableFields(itemData) {
         .filter(f => f && f.fieldName)
         .map(f => ({
           fieldName: f.fieldName,
+          type: f.type || 'dropdown',
+          required: f.required !== false,
           options: Array.isArray(f.availableOptions) && f.availableOptions.length > 0
             ? f.availableOptions
-            : (Array.isArray(f.selectedOptions) ? f.selectedOptions : [])
+            : (Array.isArray(f.selectedOptions) ? f.selectedOptions : []),
+          unit: f.unit || '',
+          pricePerUnit: parseFloat(f.pricePerUnit) || 0,
+          minValue: parseInt(f.minValue) || 0,
+          maxValue: parseInt(f.maxValue) || 1000000,
+          stepValue: parseInt(f.stepValue) || 1,
         }))
-        .filter(f => f.options.length > 0)
+        .filter(f => f.type === 'number' || f.options.length > 0)
     : []
 }
 
@@ -68,12 +75,26 @@ export default function ItemPurchaseSection({ item, game, category, categorySlug
   const selectableFields = getSelectableFields(item)
   const selectedCartId = searchParams.get('cartId') || ''
 
+  // Compute adjusted price based on number fields
+  const computePrice = (options) => {
+    let total = item.price
+    selectableFields.forEach(f => {
+      if (f.type === 'number' && f.pricePerUnit > 0) {
+        const val = parseFloat(options[f.fieldName]) || 0
+        total += val * f.pricePerUnit
+      }
+    })
+    return total
+  }
+
   const [selectedOptions, setSelectedOptions] = useState(() => {
     const initial = {}
     selectableFields.forEach(f => { initial[f.fieldName] = f.options.length === 1 ? f.options[0] : '' })
     return initial
   })
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
+
+  const adjustedPrice = computePrice(selectedOptions)
   const [addingToCart, setAddingToCart] = useState(false)
   const [showFlyingAnimation, setShowFlyingAnimation] = useState(false)
 
@@ -97,7 +118,12 @@ export default function ItemPurchaseSection({ item, game, category, categorySlug
   const versionValue = selectedOptions.Version || ''
   const cartId = `${item.id}-${platformDisplay}-${versionValue}`
 
-  const hasMissingSelections = selectableFields.some(f => !selectedOptions[f.fieldName])
+  const hasMissingSelections = selectableFields.some(f => {
+    const val = selectedOptions[f.fieldName]
+    if (f.type === 'number') return !val || parseFloat(val) <= 0
+    if (f.type === 'multiselect') return !Array.isArray(val) || val.length === 0
+    return !val // dropdown
+  })
   const existingCartItem = !hasMissingSelections ? cartItems.find(ci => ci.cartId === cartId) : null
   const isInCart = !!existingCartItem
   const cartQuantity = existingCartItem?.quantity ?? 1
@@ -134,23 +160,33 @@ export default function ItemPurchaseSection({ item, game, category, categorySlug
     ? `${item.stock_quantity} in stock`
     : null
 
-  const buildCartItem = () => ({
-    ...item,
-    platform: platformDisplay,
-    version: versionValue,
-    customSelections: selectedOptions,
-    category_slug: categorySlug,
-    game_slug: gameSlug,
-    item_slug: itemSlug,
-    game_id: game.id,
-    game_name: game.name,
-    category_id: category.id,
-    category_name: category.name,
-  })
+  const buildCartItem = () => {
+    // Flatten multiselect arrays to comma-separated strings for storage compatibility
+    const flatSelections = {}
+    selectableFields.forEach(f => {
+      const val = selectedOptions[f.fieldName]
+      flatSelections[f.fieldName] = Array.isArray(val) ? val.join(', ') : val
+    })
+
+    return {
+      ...item,
+      price: adjustedPrice,        // use computed price (accounts for number fields)
+      platform: platformDisplay,
+      version: versionValue,
+      customSelections: flatSelections,
+      category_slug: categorySlug,
+      game_slug: gameSlug,
+      item_slug: itemSlug,
+      game_id: game.id,
+      game_name: game.name,
+      category_id: category.id,
+      category_name: category.name,
+    }
+  }
 
   const handleAddToCart = () => {
     if (isOutOfStock) return
-    if (selectableFields.some(f => !selectedOptions[f.fieldName])) {
+    if (hasMissingSelections) {
       setAttemptedSubmit(true)
       return
     }
@@ -176,7 +212,7 @@ export default function ItemPurchaseSection({ item, game, category, categorySlug
       />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap', margin: '0.5rem 0 1rem' }}>
-        <p className="service-detail-price">{formatPrice(item.price)}</p>
+        <p className="service-detail-price">{formatPrice(adjustedPrice)}</p>
         {stockBadgeText && !isOutOfStock && (
           <span style={{ padding: '0.4rem 0.9rem', background: 'rgba(34,197,94,0.15)', color: '#22c55e', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, border: '1px solid rgba(34,197,94,0.3)' }}>
             {stockBadgeText}
@@ -193,15 +229,87 @@ export default function ItemPurchaseSection({ item, game, category, categorySlug
         {!game.is_coming_soon && selectableFields.map(field => {
           const fieldKey = `field-${field.fieldName.toLowerCase().replace(/\s+/g, '-')}`
           const currentValue = selectedOptions[field.fieldName] || ''
+
+          // NUMBER field
+          if (field.type === 'number') {
+            return (
+              <div className="option-group" key={field.fieldName}>
+                <label htmlFor={fieldKey}>
+                  {field.fieldName}{field.unit ? ` (${field.unit})` : ''}:
+                  {field.pricePerUnit > 0 && (
+                    <span style={{ color: '#fbbf24', fontSize: '0.85rem', marginLeft: '0.5rem', fontWeight: 500 }}>
+                      {formatPrice(field.pricePerUnit)} per {field.unit || 'unit'}
+                    </span>
+                  )}
+                </label>
+                <input
+                  id={fieldKey}
+                  type="number"
+                  min={field.minValue}
+                  max={field.maxValue}
+                  step={field.stepValue}
+                  value={currentValue}
+                  onChange={e => setSelectedOptions(prev => ({ ...prev, [field.fieldName]: e.target.value }))}
+                  className="option-select"
+                  placeholder={`Enter amount (${field.minValue.toLocaleString()} – ${field.maxValue.toLocaleString()})`}
+                  style={{ maxWidth: '220px' }}
+                />
+                {currentValue && field.pricePerUnit > 0 && (
+                  <p style={{ marginTop: '0.35rem', fontSize: '0.85rem', color: '#94a3b8' }}>
+                    {parseFloat(currentValue).toLocaleString()} {field.unit} = {formatPrice(parseFloat(currentValue) * field.pricePerUnit)}
+                  </p>
+                )}
+                {attemptedSubmit && !currentValue && (
+                  <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
+                    Please enter {field.fieldName.toLowerCase()} to continue.
+                  </p>
+                )}
+              </div>
+            )
+          }
+
+          // MULTISELECT field (checkboxes)
+          if (field.type === 'multiselect') {
+            const selectedArr = Array.isArray(currentValue) ? currentValue : (currentValue ? [currentValue] : [])
+            return (
+              <div className="option-group" key={field.fieldName}>
+                <label>{field.fieldName}:</label>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
+                  {field.options.map(opt => {
+                    const checked = selectedArr.includes(opt)
+                    return (
+                      <label key={opt} style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer', padding: '0.35rem 0.75rem', background: checked ? 'rgba(251,191,36,0.15)' : 'rgba(255,255,255,0.04)', border: `1px solid ${checked ? 'rgba(251,191,36,0.5)' : 'rgba(255,255,255,0.1)'}`, borderRadius: '6px', fontSize: '0.9rem', transition: 'all 0.15s' }}>
+                        <input
+                          type="checkbox"
+                          checked={checked}
+                          onChange={() => {
+                            const next = checked ? selectedArr.filter(s => s !== opt) : [...selectedArr, opt]
+                            setSelectedOptions(prev => ({ ...prev, [field.fieldName]: next }))
+                          }}
+                          style={{ accentColor: '#fbbf24' }}
+                        />
+                        {opt}
+                      </label>
+                    )
+                  })}
+                </div>
+                {attemptedSubmit && selectedArr.length === 0 && (
+                  <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
+                    Please select at least one {field.fieldName.toLowerCase()}.
+                  </p>
+                )}
+              </div>
+            )
+          }
+
+          // DROPDOWN field (default — existing behaviour)
           return (
             <div className="option-group" key={field.fieldName}>
               <label htmlFor={fieldKey}>Select {field.fieldName}:</label>
               <select
                 id={fieldKey}
                 value={currentValue}
-                onChange={e => {
-                  setSelectedOptions(prev => ({ ...prev, [field.fieldName]: e.target.value }))
-                }}
+                onChange={e => setSelectedOptions(prev => ({ ...prev, [field.fieldName]: e.target.value }))}
                 className="option-select"
               >
                 <option value="">Select {field.fieldName.toLowerCase()}</option>

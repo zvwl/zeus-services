@@ -254,8 +254,21 @@ export default function OrdersPage() {
                         <div className="order-item-info">
                           <span className="order-item-name">{item.name}</span>
                           <div className="order-item-meta">
-                            <span className="order-item-platform">Platform: {item.platform || 'No platform'}</span>
-                            <span className="order-item-version">Version: {item.version || 'No version'}</span>
+                            {item.customSelections && typeof item.customSelections === 'object' && Object.keys(item.customSelections).length > 0
+                              ? Object.entries(item.customSelections)
+                                  .filter(([, v]) => Boolean(v))
+                                  .map(([k, v]) => (
+                                    <span key={k} className="order-item-platform">{k}: {v}</span>
+                                  ))
+                              : <>
+                                  {item.platform && item.platform !== 'No platform' && (
+                                    <span className="order-item-platform">{item.platform}</span>
+                                  )}
+                                  {item.version && item.version !== 'No version' && (
+                                    <span className="order-item-version">{item.version}</span>
+                                  )}
+                                </>
+                            }
                           </div>
                         </div>
                         <div className="order-item-details">
