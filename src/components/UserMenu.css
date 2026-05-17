@@ -39,11 +39,11 @@
   width: 100%;
   max-width: 448px;
   background:
-    radial-gradient(circle at top right, rgba(251, 191, 36, 0.16), transparent 32%),
-    linear-gradient(180deg, rgba(12, 16, 30, 0.99), rgba(15, 23, 42, 0.98));
+    radial-gradient(circle at top right, var(--glow-gold), transparent 32%),
+    var(--nav-bg);
   backdrop-filter: blur(14px);
   border-left: 1px solid rgba(251, 191, 36, 0.18);
-  box-shadow: -20px 0 40px rgba(0, 0, 0, 0.35);
+  box-shadow: -20px 0 40px var(--shadow-color);
   z-index: 100001;
   display: flex;
   flex-direction: column;
@@ -72,8 +72,8 @@
 .user-menu-header-shell {
   padding: 1rem 1rem 0.85rem;
   background:
-    radial-gradient(circle at top right, rgba(251, 191, 36, 0.15), transparent 40%),
-    linear-gradient(180deg, rgba(10, 14, 26, 0.9), rgba(10, 14, 26, 0.6));
+    radial-gradient(circle at top right, var(--glow-gold), transparent 40%),
+    var(--surface-overlay);
   border-bottom: 1px solid rgba(251, 191, 36, 0.1);
 }
 
@@ -104,7 +104,7 @@
 }
 
 .user-menu-title {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 1.18rem;
   font-weight: 800;
   line-height: 1.15;
@@ -118,15 +118,15 @@
   height: 42px;
   border: none;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
+  background: var(--btn-ghost-hover);
+  color: var(--text);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .user-menu-close:hover {
-  background: rgba(255, 255, 255, 0.14);
-  color: #fff;
+  background: var(--border-default);
+  color: var(--text-primary);
 }
 
 @keyframes slideInRight {
@@ -163,7 +163,7 @@
 }
 
 .user-menu-header .user-email {
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .user-menu-summary {
@@ -173,9 +173,9 @@
 }
 
 .summary-pill {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
+  border: 1px solid var(--border-subtle);
+  background: var(--btn-ghost-bg);
+  color: var(--text);
   border-radius: 999px;
   padding: 0.5rem 0.85rem;
   font-size: 0.86rem;
@@ -221,7 +221,7 @@
 .user-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-primary);
   margin-bottom: 0.25rem;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -230,7 +230,7 @@
 
 .user-email {
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -238,7 +238,7 @@
 
 .guest-text {
   font-size: 0.95rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -253,7 +253,7 @@
 }
 
 .user-menu-content::-webkit-scrollbar-track {
-  background: rgba(10, 14, 26, 0.3);
+  background: var(--surface-overlay);
 }
 
 .user-menu-content::-webkit-scrollbar-thumb {
@@ -291,23 +291,23 @@
   align-items: center;
   gap: 0.875rem;
   padding: 0.9rem 1rem;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--btn-ghost-bg);
+  border: 1px solid var(--border-subtle);
   border-radius: 16px;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   text-decoration: none;
   cursor: pointer;
   transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 0.55rem;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 6px 16px var(--shadow-color);
 }
 
 .menu-item:hover {
   transform: translateY(-1px);
-  background: rgba(251, 191, 36, 0.08);
-  color: #f8fafc;
+  background: var(--glow-gold);
+  color: var(--text-primary);
   border-color: rgba(251, 191, 36, 0.16);
 }
 
@@ -349,7 +349,7 @@
 
 /* Game submenu */
 .game-submenu {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--btn-ghost-bg);
   border: 1px solid rgba(251, 191, 36, 0.08);
   border-radius: 14px;
   margin: 0 0 0.55rem;
@@ -373,10 +373,10 @@
   display: flex;
   align-items: center;
   padding: 0.7rem 0.9rem 0.7rem 1rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--btn-ghost-bg);
   border-radius: 12px;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary);
   text-decoration: none;
   cursor: pointer;
   transition: background-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
@@ -387,8 +387,8 @@
 }
 
 .submenu-item:hover {
-  background: rgba(251, 191, 36, 0.08);
-  color: #cbd5e1;
+  background: var(--glow-gold);
+  color: var(--text-secondary);
   transform: translateX(2px);
 }
 
@@ -402,7 +402,7 @@
 .submenu-item.loading,
 .submenu-item.empty {
   cursor: default;
-  color: #64748b;
+  color: var(--text-muted);
   font-style: italic;
 }
 

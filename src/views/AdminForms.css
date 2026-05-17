@@ -11,7 +11,7 @@
 
 .admin-form-section,
 .admin-list-section {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--btn-ghost-bg);
   border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 12px;
   padding: 2rem;
@@ -56,7 +56,7 @@
 .form-group select,
 .form-group textarea {
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--input-bg);
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 6px;
   color: var(--text);
@@ -69,8 +69,8 @@
 
 .form-group select option,
 .filter-controls select option {
-  background: #1a1f35;
-  color: #f1f5f9;
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .form-group input:focus,
@@ -78,7 +78,7 @@
 .form-group textarea:focus {
   outline: none;
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--btn-ghost-hover);
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
 }
 
@@ -197,13 +197,13 @@
 }
 
 .secondary-button {
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--btn-ghost-bg);
   color: var(--text);
   border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .secondary-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--btn-ghost-hover);
 }
 
 .admin-table-container {
@@ -241,11 +241,11 @@
 }
 
 .admin-table tbody tr:hover {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--btn-ghost-bg);
 }
 
 .admin-table code {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--btn-ghost-hover);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-family: 'Courier New', monospace;
@@ -364,7 +364,7 @@
 
 .list-header .filter-controls select {
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--input-bg);
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 6px;
   color: var(--text);

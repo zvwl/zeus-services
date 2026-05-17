@@ -102,7 +102,7 @@
 }
 
 .admin-header p {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 1.1rem;
 }
 
@@ -112,13 +112,13 @@
   gap: 1rem;
   margin-bottom: 2rem;
   padding: 1rem;
-  background: rgba(26, 31, 53, 0.6);
+  background: var(--surface-2);
   border: 1px solid rgba(251, 191, 36, 0.2);
   border-radius: 12px;
 }
 
 .filter-bar label {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -126,15 +126,15 @@
   padding: 0.5rem 1rem;
   border-radius: 8px;
   border: 1px solid rgba(251, 191, 36, 0.3);
-  background: rgba(10, 14, 26, 0.6);
-  color: #f8fafc;
+  background: var(--input-bg);
+  color: var(--text-primary);
   font-size: 1rem;
   cursor: pointer;
 }
 
 .filter-select option {
-  background: #1a1f35;
-  color: #f1f5f9;
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .filter-select:focus {
@@ -154,12 +154,12 @@
   padding: 0.5rem 0.9rem;
   border-radius: 8px;
   border: 1px solid rgba(251, 191, 36, 0.3);
-  background: rgba(10, 14, 26, 0.6);
-  color: #f8fafc;
+  background: var(--input-bg);
+  color: var(--text-primary);
   font-size: 1rem;
 }
 .search-input::placeholder {
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 .search-input:focus {
   outline: none;
@@ -194,7 +194,7 @@
 }
 
 .order-card {
-  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
   border: 2px solid rgba(251, 191, 36, 0.25);
   border-radius: 16px;
   padding: 1.75rem;
@@ -232,7 +232,7 @@
 }
 
 .order-id .label {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.8rem;
   font-weight: 500;
   text-transform: uppercase;
@@ -285,7 +285,7 @@
 }
 
 .customer-info .value {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 0.95rem;
 }
@@ -303,7 +303,7 @@
 }
 
 .detail-row .label {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 600;
   font-size: 0.9rem;
   text-transform: uppercase;
@@ -311,7 +311,7 @@
 }
 
 .detail-row .value {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-weight: 600;
   text-align: right;
   display: inline-block;
@@ -424,7 +424,7 @@
 .order-items {
   margin-bottom: 1.25rem;
   padding: 1.25rem;
-  background: rgba(10, 14, 26, 0.5);
+  background: var(--surface-overlay);
   border-left: 3px solid #3b82f6;
   border-radius: 8px;
 }
@@ -445,11 +445,11 @@
 }
 
 .order-items li {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   padding: 0.5rem 0;
   font-size: 0.9rem;
   line-height: 1.4;
-  border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+  border-bottom: 1px solid var(--border-subtle);
 }
 
 .order-items li:last-child {
@@ -465,11 +465,11 @@
 
 .item-name {
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-primary);
 }
 
 .item-meta {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.85rem;
   text-align: right;
 }
@@ -482,7 +482,7 @@
 
 .item-platform {
   margin-top: 0.25rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.85rem;
 }
 
@@ -492,12 +492,13 @@
   background: rgba(59, 130, 246, 0.08);
   border-left: 3px solid #3b82f6;
   border-radius: 8px;
+  color: var(--text-secondary);
 }
 
 .order-totals {
   margin-bottom: 1.25rem;
   padding: 1rem 1.25rem;
-  background: rgba(10, 14, 26, 0.5);
+  background: var(--surface-overlay);
   border-left: 3px solid #fbbf24;
   border-radius: 8px;
 }
@@ -507,7 +508,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.4rem 0;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 0.95rem;
 }
 
@@ -519,7 +520,7 @@
 .totals-note {
   margin-top: 0.5rem;
   font-size: 0.85rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .order-notes strong {
@@ -532,7 +533,7 @@
 }
 
 .order-notes p {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   margin: 0;
   font-size: 0.9rem;
   line-height: 1.4;
@@ -547,7 +548,7 @@
 }
 
 .order-actions label {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 600;
   font-size: 0.8rem;
   text-transform: uppercase;
@@ -559,16 +560,16 @@
   padding: 0.7rem 1rem;
   border-radius: 8px;
   border: 1px solid rgba(251, 191, 36, 0.3);
-  background: rgba(10, 14, 26, 0.6);
-  color: #f8fafc;
+  background: var(--input-bg);
+  color: var(--text-primary);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .status-select option {
-  background: #1a1f35;
-  color: #f1f5f9;
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .status-select:focus {
@@ -585,7 +586,7 @@
 .admin-notes-section {
   margin-bottom: 1.25rem;
   padding: 1rem;
-  background: rgba(59, 130, 246, 0.08);
+  background: rgba(59, 130, 246, 0.06);
   border-left: 3px solid #3b82f6;
   border-radius: 8px;
 }
@@ -605,8 +606,8 @@
   padding: 0.75rem;
   border-radius: 6px;
   border: 1px solid rgba(59, 130, 246, 0.4);
-  background: rgba(10, 14, 26, 0.6);
-  color: #f8fafc;
+  background: var(--input-bg);
+  color: var(--text-primary);
   font-size: 0.95rem;
   font-family: inherit;
   resize: vertical;
@@ -621,7 +622,7 @@
 }
 
 .admin-notes-input::placeholder {
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .error-card {
@@ -646,7 +647,7 @@
 .no-orders {
   text-align: center;
   padding: 4rem 2rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 1.2rem;
 }
 
@@ -732,7 +733,7 @@
 }
 
 .modal-content {
-  background: #1a1f35;
+  background: var(--surface-2);
   border-radius: 10px;
   padding: 2rem;
   max-width: 500px;
@@ -756,7 +757,7 @@
 .modal-content h2 {
   margin: 0 0 1.5rem 0;
   font-size: 1.5rem;
-  color: #f1f5f9;
+  color: var(--text-primary);
 }
 
 .modal-body {
@@ -765,7 +766,7 @@
 
 .modal-body > p:first-child {
   font-size: 1rem;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   margin-bottom: 1.5rem;
 }
 
@@ -780,7 +781,7 @@
 
 .order-summary p {
   margin: 0.5rem 0;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .order-summary strong {
@@ -1005,13 +1006,13 @@
 
 .date-filter label {
   font-weight: 600;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .date-filter select {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--input-bg);
   border: 1px solid rgba(251, 191, 36, 0.3);
-  color: #f8fafc;
+  color: var(--text-primary);
   padding: 0.6rem 1rem;
   border-radius: 6px;
   cursor: pointer;
@@ -1019,8 +1020,8 @@
 }
 
 .date-filter select option {
-  background: #1a1f35;
-  color: #f1f5f9;
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .date-filter select:hover {
@@ -1035,13 +1036,13 @@
 
 .stats-section h2,
 .logs-section h2 {
-  color: #f8fafc;
+  color: var(--text-primary);
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
 }
 
 .no-data {
-  color: #94a3b8;
+  color: var(--text-secondary);
   text-align: center;
   padding: 2rem;
   font-style: italic;
@@ -1055,7 +1056,7 @@
 }
 
 .stat-card {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--surface-1);
   border: 1px solid rgba(251, 191, 36, 0.2);
   border-radius: 12px;
   padding: 1.5rem;
@@ -1087,17 +1088,17 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.5rem 0;
-  color: #cbd5e1;
+  color: var(--text-secondary);
 }
 
 .stat-label {
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-secondary);
 }
 
 .stat-value {
   font-weight: 700;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 1.1rem;
 }
 
@@ -1128,7 +1129,7 @@
 }
 
 .currency-item .currency {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.85rem;
 }
 
@@ -1144,7 +1145,7 @@
   width: 100%;
   min-width: 800px;
   border-collapse: collapse;
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--surface-1);
 }
 
 .logs-table thead {
@@ -1163,7 +1164,7 @@
 }
 
 .logs-table td {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   padding: 1rem;
   border-bottom: 1px solid rgba(251, 191, 36, 0.1);
   vertical-align: top;
@@ -1229,7 +1230,7 @@
 }
 
 .no-change {
-  color: #64748b;
+  color: var(--text-muted);
   font-style: italic;
 }
 
@@ -1238,7 +1239,7 @@
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: normal;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   line-height: 1.4;
 }
@@ -1354,7 +1355,7 @@
 }
 
 .admin-nav-card {
-  background: rgba(255, 255, 255, 0.03);
+  background: var(--btn-ghost-bg);
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 12px;
   padding: 1.5rem;
@@ -1414,7 +1415,7 @@
 }
 
 .dashboard-stat-card {
-  background: rgba(15, 23, 42, 0.8);
+  background: var(--surface-1);
   border: 1px solid rgba(251, 191, 36, 0.2);
   border-radius: 12px;
   padding: 1.25rem 1.5rem;
@@ -1448,7 +1449,7 @@
 }
 
 .dsc-label {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1457,7 +1458,7 @@
 }
 
 .dsc-value {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 1.9rem;
   font-weight: 800;
   line-height: 1;
@@ -1475,7 +1476,7 @@
   align-items: center;
   gap: 0;
   margin-bottom: 1.5rem;
-  background: rgba(15, 23, 42, 0.7);
+  background: var(--surface-1);
   border: 1px solid rgba(251, 191, 36, 0.15);
   border-radius: 10px;
   overflow: hidden;
@@ -1490,7 +1491,7 @@
 }
 
 .osb-label {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1498,7 +1499,7 @@
 }
 
 .osb-value {
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 1.4rem;
   font-weight: 800;
   line-height: 1.2;

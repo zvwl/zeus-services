@@ -191,7 +191,7 @@
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  background: #1e3a5f;
+  background: var(--surface-2);
   border: 2px solid var(--primary-color);
   border-radius: 12px;
   margin-bottom: 2rem;
@@ -200,7 +200,7 @@
 .total-label {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .total-amount {
@@ -212,20 +212,20 @@
 .order-confirmation-note {
   text-align: center;
   padding: 1rem;
-  background: #2a3f5f;
+  background: var(--surface-2);
   border-radius: 10px;
   margin-bottom: 2rem;
   border-left: 4px solid var(--primary-color);
 }
 
 .order-confirmation-note p {
-  color: #e0e0e0;
+  color: var(--text-secondary);
   font-size: 0.9375rem;
   margin: 0;
 }
 
 .order-confirmation-note strong {
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .discord-cta {
@@ -317,8 +317,8 @@
 }
 
 .secondary-btn {
-  background: #1e40af;
-  color: #fff;
+  background: var(--surface-2);
+  color: var(--text-primary);
   border: 2px solid #fbbf24;
 }
 
@@ -583,7 +583,7 @@
   padding: 1.25rem;
   border: 1px solid rgba(251, 191, 36, 0.25);
   border-radius: 14px;
-  background: rgba(15, 23, 42, 0.55);
+  background: var(--input-bg);
 }
 
 .payment-option {
@@ -645,7 +645,7 @@
 .order-note {
   margin: 2rem 0;
   padding: 1.5rem;
-  background: rgba(15, 23, 42, 0.55);
+  background: var(--input-bg);
   border: 1px solid rgba(251, 191, 36, 0.25);
   border-radius: 12px;
 }
@@ -669,12 +669,12 @@
   padding: 1rem;
   border: 2px solid rgba(251, 191, 36, 0.45);
   border-radius: 8px;
-  background: rgba(10, 14, 26, 0.92);
+  background: var(--input-bg);
   color: var(--text-primary);
   font-family: inherit;
   font-size: 0.95rem;
   resize: vertical;
-  box-shadow: inset 0 0 0 1px rgba(15, 23, 42, 0.6);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
@@ -686,7 +686,7 @@
   outline: none;
   border-color: rgba(251, 191, 36, 0.75);
   box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.2);
-  background: rgba(10, 14, 26, 0.97);
+  background: var(--surface-1);
 }
 
 .order-note-hint {

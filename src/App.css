@@ -18,7 +18,7 @@ html, body {
 }
 
 body {
-  background: linear-gradient(135deg, var(--bg) 0%, #0f1729 100%);
+  background: linear-gradient(160deg, var(--bg) 0%, var(--surface-1) 60%, var(--bg) 100%);
   color: var(--text);
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   min-height: 100vh;
@@ -48,7 +48,7 @@ a,
 .app {
   width: 100%;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--bg) 0%, #0f1729 100%);
+  background: linear-gradient(160deg, var(--bg) 0%, var(--surface-1) 60%, var(--bg) 100%);
   max-width: 100vw;
   overflow-x: hidden;
   display: flex;
@@ -114,13 +114,13 @@ a,
 }
 
 .secondary-button {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--btn-ghost-bg);
+  color: var(--text);
+  border: 1px solid var(--border-default);
 }
 
 .secondary-button:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--btn-ghost-hover);
 }
 
 .primary-btn {
@@ -134,13 +134,13 @@ a,
 }
 
 .ghost-btn {
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: var(--btn-ghost-bg);
+  color: var(--text);
+  border: 1px solid var(--border-default);
 }
 
 .ghost-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--btn-ghost-hover);
 }
 
 @media (hover: none) and (pointer: coarse) {
@@ -176,8 +176,8 @@ a,
   gap: 0.4rem;
   padding: 0.35rem 0.8rem;
   border-radius: 999px;
-  background: rgba(251, 191, 36, 0.15);
-  color: #fde68a;
+  background: var(--glow-gold);
+  color: var(--eyebrow-color);
   font-weight: 600;
   letter-spacing: 0.3px;
   text-transform: uppercase;
@@ -250,7 +250,7 @@ a,
 .section-description p {
   font-size: 1.05rem;
   line-height: 1.8;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   margin-bottom: 1rem;
 }
 
@@ -265,11 +265,11 @@ a,
 }
 
 .about-card {
-  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
   border: 1px solid rgba(251, 191, 36, 0.25);
   border-radius: 16px;
   padding: 1.5rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 30px var(--shadow-color);
 }
 
 .about-card:hover {
@@ -284,7 +284,7 @@ a,
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: rgba(251, 191, 36, 0.15);
+  background: var(--glow-gold);
   font-size: 1.3rem;
   margin-bottom: 0.75rem;
 }
@@ -322,7 +322,7 @@ a,
 }
 
 .auth-prompt {
-  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
   border: 2px solid rgba(251, 191, 36, 0.4);
   border-radius: 20px;
   padding: 2.5rem;
@@ -351,7 +351,7 @@ a,
 }
 
 .auth-prompt p {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 1.05rem;
   margin-bottom: 1.5rem;
   line-height: 1.5;
@@ -425,7 +425,7 @@ a,
 }
 
 .verification-text p {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin: 0;
 }
@@ -449,7 +449,7 @@ a,
 .verification-message {
   margin-top: 1rem;
   padding: 0.75rem;
-  background: rgba(10, 14, 26, 0.5);
+  background: var(--surface-overlay);
   border-radius: 8px;
   text-align: center;
   font-size: 0.9rem;
@@ -526,7 +526,7 @@ a,
   height: 36px;
   border-radius: 10px;
   border: 1px solid rgba(251, 191, 36, 0.4);
-  background: rgba(10, 14, 26, 0.9);
+  background: var(--surface-overlay);
   color: #fbbf24;
   font-weight: 800;
   font-size: 1.05rem;
@@ -545,7 +545,7 @@ a,
 }
 
 .qty-btn:hover {
-  background: #1a1f35;
+  background: var(--surface-2);
   border-color: #fbbf24;
 }
 
@@ -559,10 +559,10 @@ a,
   text-align: center;
   font-weight: 700;
   font-size: 0.95rem;
-  color: #f1f5f9;
+  color: var(--text-primary);
   padding: 0.25rem 0.6rem;
   border-radius: 8px;
-  background: rgba(26, 31, 53, 0.8);
+  background: var(--surface-2);
   border: 1px solid rgba(251, 191, 36, 0.2);
   flex-shrink: 0;
 }
@@ -571,8 +571,8 @@ a,
   display: flex;
   gap: 1.5rem;
   padding: 2rem;
-  background: rgba(26, 31, 53, 0.4);
-  border: 1px solid rgba(251, 191, 36, 0.1);
+  background: var(--surface-2);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   margin: 2rem 2rem 0 2rem;
   flex-wrap: wrap;
@@ -671,10 +671,10 @@ a,
 .search-input {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(10, 14, 26, 0.6);
+  background: var(--input-bg);
   border: 1px solid rgba(251, 191, 36, 0.3);
   border-radius: 8px;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 1rem;
   transition: all 0.2s;
 }
@@ -686,7 +686,7 @@ a,
 }
 
 .search-input::placeholder {
-  color: #64748b;
+  color: var(--text-muted);
 }
 
 .filter-controls {
@@ -696,17 +696,17 @@ a,
 }
 
 .filter-controls label {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-weight: 600;
   white-space: nowrap;
 }
 
 .filter-select {
   padding: 0.75rem 1rem;
-  background: rgba(10, 14, 26, 0.6);
+  background: var(--input-bg);
   border: 1px solid rgba(251, 191, 36, 0.3);
   border-radius: 8px;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s;
@@ -724,14 +724,14 @@ a,
 }
 
 .filter-select option {
-  background: #0a0e1a;
-  color: #f8fafc;
+  background: var(--surface-1);
+  color: var(--text-primary);
 }
 
 .no-results {
   padding: 3rem 2rem;
   text-align: center;
-  color: #94a3b8;
+  color: var(--text-secondary);
   min-height: 60vh;
 }
 
@@ -859,11 +859,11 @@ a,
 }
 
 .safe-easy-card {
-  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
   border: 1px solid rgba(59, 130, 246, 0.3);
   border-radius: 16px;
   padding: 1.75rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 30px var(--shadow-color);
   transition: all 0.3s ease;
   position: relative;
   overflow: hidden;
@@ -926,11 +926,11 @@ a,
 }
 
 .why-zeus-card {
-  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
+  background: linear-gradient(135deg, var(--surface-2) 0%, var(--surface-1) 100%);
   border: 1px solid rgba(251, 191, 36, 0.25);
   border-radius: 16px;
   padding: 1.75rem;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 30px var(--shadow-color);
   transition: all 0.3s ease;
 }
 
@@ -1053,7 +1053,7 @@ a,
   background: transparent;
   border: none;
   border-radius: 0;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.85rem;
   font-weight: 400;
   text-transform: uppercase;
@@ -1074,7 +1074,7 @@ a,
   border-radius: 12px;
   object-fit: cover;
   border: 2px solid rgba(212, 175, 55, 0.3);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--btn-ghost-bg);
 }
 
 @media (max-width: 768px) {
@@ -1145,7 +1145,7 @@ a,
   border-radius: 12px;
   overflow: hidden;
   border: 2px solid rgba(212, 175, 55, 0.3);
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--btn-ghost-bg);
 }
 
 .service-detail-icon img {
@@ -1201,7 +1201,7 @@ a,
   padding: 1rem 0;
   padding-left: 0;
   position: relative;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 1rem;
   line-height: 1.6;
   display: flex;
@@ -1239,7 +1239,7 @@ a,
 .option-select {
   width: 100%;
   padding: 0.75rem 1rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--btn-ghost-bg);
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 6px;
   color: var(--text);
@@ -1250,7 +1250,7 @@ a,
 
 .option-select:hover {
   border-color: var(--primary);
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--btn-ghost-hover);
 }
 
 .option-select:focus {
@@ -1264,8 +1264,8 @@ a,
 .platform-select option,
 .version-select option,
 select option {
-  background: #1a1f35;
-  color: #f1f5f9;
+  background: var(--surface-2);
+  color: var(--text-primary);
   padding: 0.5rem;
 }
 
@@ -1291,7 +1291,7 @@ select option {
   border-radius: 6px;
   background: rgba(251, 191, 36, 0.4);
   border: 1.5px solid rgba(251, 191, 36, 0.7);
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-weight: 600;
   transition: all 0.2s ease;
   font-size: 1rem;
@@ -1317,7 +1317,7 @@ select option {
   border-radius: 6px;
   background: transparent;
   border: none;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 0.95rem;
   padding: 0;
@@ -1330,7 +1330,7 @@ select option {
 
 .secondary-button {
   padding: 1rem 2rem;
-  background: rgba(255, 255, 255, 0.05);
+  background: var(--btn-ghost-bg);
   color: var(--text);
   border: 1px solid rgba(212, 175, 55, 0.3);
   border-radius: 8px;
@@ -1341,7 +1341,7 @@ select option {
 }
 
 .secondary-button:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--btn-ghost-hover);
   border-color: var(--primary);
 }
 
@@ -1476,7 +1476,7 @@ select option {
   background: rgba(251, 191, 36, 0.4);
   border: 1.5px solid rgba(251, 191, 36, 0.7);
   border-radius: 6px;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
@@ -1516,7 +1516,7 @@ select option {
   padding: 0;
   background: transparent;
   border: none;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-size: 0.95rem;
   text-align: center;
   font-weight: 600;
@@ -1573,7 +1573,7 @@ select option {
     border-radius: 6px;
     background: rgba(251, 191, 36, 0.4);
     border: 1.5px solid rgba(251, 191, 36, 0.7);
-    color: #f1f5f9;
+    color: var(--text-primary);
     font-weight: 600;
     transition: all 0.2s ease;
     flex: 0 0 32px;
@@ -1597,7 +1597,7 @@ select option {
     padding: 0;
     background: transparent;
     border: none;
-    color: #f1f5f9;
+    color: var(--text-primary);
     font-weight: 600;
   }
 
@@ -1717,7 +1717,7 @@ select option {
     font-size: 1rem;
     background: rgba(251, 191, 36, 0.4);
     border: 1.5px solid rgba(251, 191, 36, 0.7);
-    color: #f1f5f9;
+    color: var(--text-primary);
     font-weight: 600;
     transition: all 0.2s ease;
   }
@@ -1737,7 +1737,7 @@ select option {
     padding: 0;
     background: transparent;
     border: none;
-    color: #f1f5f9;
+    color: var(--text-primary);
     font-weight: 600;
     flex: 0 0 44px;
   }

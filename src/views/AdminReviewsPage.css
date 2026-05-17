@@ -33,31 +33,31 @@
   align-items: center;
   margin-bottom: 2rem;
   padding: 1rem;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--surface-2);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   flex-wrap: wrap;
 }
 
 .filter-bar label {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .filter-select {
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   padding: 0.5rem 1rem;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .filter-select option {
-  background: #1a1f35;
-  color: #f1f5f9;
+  background: var(--surface-2);
+  color: var(--text-primary);
 }
 
 .filter-select:hover {
@@ -105,8 +105,8 @@
 }
 
 .review-card {
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: var(--surface-1);
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   padding: 1.5rem;
   transition: all 0.2s ease;
@@ -133,7 +133,7 @@
 
 .star {
   font-size: 1.25rem;
-  color: #475569;
+  color: var(--text-dim);
 }
 
 .star.filled {
@@ -169,7 +169,7 @@
 .review-meta {
   margin-bottom: 1rem;
   padding: 1rem;
-  background: rgba(10, 14, 26, 0.5);
+  background: var(--surface-overlay);
   border-radius: 8px;
 }
 
@@ -181,12 +181,12 @@
 }
 
 .meta-row .label {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
 .meta-row .value {
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-weight: 600;
   font-family: monospace;
 }
@@ -202,7 +202,7 @@
 }
 
 .review-content p {
-  color: #f1f5f9;
+  color: var(--text-primary);
   line-height: 1.6;
   white-space: pre-wrap;
   word-wrap: break-word;
@@ -224,7 +224,7 @@
 }
 
 .admin-notes-display p {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   line-height: 1.5;
   margin: 0;
@@ -236,18 +236,18 @@
 
 .admin-notes-section label {
   display: block;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin-bottom: 0.5rem;
 }
 
 .admin-notes-input {
   width: 100%;
-  background: rgba(15, 23, 42, 0.8);
-  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: 6px;
   padding: 0.5rem;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-family: inherit;
   font-size: 0.875rem;
   resize: vertical;
@@ -341,9 +341,9 @@
   gap: 0.5rem;
   padding: 0.5rem 1.1rem;
   border-radius: 999px;
-  border: 2px solid rgba(148, 163, 184, 0.25);
-  background: rgba(15, 23, 42, 0.5);
-  color: #94a3b8;
+  border: 2px solid var(--border-default);
+  background: var(--surface-1);
+  color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
@@ -351,14 +351,14 @@
 }
 
 .rsb-chip:hover {
-  border-color: rgba(148, 163, 184, 0.5);
-  color: #f1f5f9;
+  border-color: var(--border-strong);
+  color: var(--text-primary);
 }
 
 .rsb-chip.rsb-active {
-  border-color: #64748b;
-  background: rgba(100, 116, 139, 0.2);
-  color: #f1f5f9;
+  border-color: var(--text-muted);
+  background: var(--btn-ghost-hover);
+  color: var(--text-primary);
 }
 
 .rsb-chip.rsb-pending {
@@ -392,7 +392,7 @@
 }
 
 .rsb-count {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--btn-ghost-hover);
   border-radius: 999px;
   padding: 0.1rem 0.5rem;
   font-size: 0.78rem;

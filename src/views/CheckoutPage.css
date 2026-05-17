@@ -26,7 +26,7 @@
   gap: 0.35rem;
   background: none;
   border: none;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   cursor: pointer;
   padding: 0.4rem 0.6rem;
@@ -34,7 +34,7 @@
   transition: color 0.15s, background 0.15s;
   justify-self: start;
 }
-.co-back-btn:hover { color: #f1f5f9; background: rgba(255,255,255,0.05); }
+.co-back-btn:hover { color: var(--text-primary); background: var(--btn-ghost-bg); }
 
 .co-page-title {
   display: flex;
@@ -42,7 +42,7 @@
   gap: 0.5rem;
   font-size: 1rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--text-primary);
   letter-spacing: 0.2px;
 }
 
@@ -82,7 +82,7 @@
   padding: 0.65rem 0;
 }
 .co-item-row + .co-item-row {
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid var(--border-subtle);
 }
 
 .co-item-icon {
@@ -90,7 +90,7 @@
   height: 42px;
   border-radius: 8px;
   overflow: hidden;
-  background: rgba(251,191,36,0.08);
+  background: var(--glow-gold);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -111,11 +111,11 @@
 .co-item-name {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-primary);
 }
 .co-item-meta {
   font-size: 0.8rem;
-  color: #64748b;
+  color: var(--text-muted);
 }
 .co-item-price {
   font-size: 0.95rem;
@@ -128,7 +128,7 @@
 .co-section-label {
   font-size: 0.88rem;
   font-weight: 700;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   display: block;
   margin-bottom: 0.3rem;
   text-transform: uppercase;
@@ -136,14 +136,14 @@
 }
 .co-optional {
   font-weight: 400;
-  color: #475569;
+  color: var(--text-dim);
   text-transform: none;
   letter-spacing: 0;
   font-size: 0.8rem;
 }
 .co-section-sub {
   font-size: 0.82rem;
-  color: #64748b;
+  color: var(--text-muted);
   margin: 0 0 0.85rem;
 }
 
@@ -152,10 +152,10 @@
   width: 100%;
   box-sizing: border-box;
   padding: 0.85rem 1rem;
-  background: rgba(15,23,42,0.6);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--input-bg);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-size: 0.9rem;
   font-family: inherit;
   resize: vertical;
@@ -166,11 +166,11 @@
   border-color: #fbbf24;
   box-shadow: 0 0 0 3px rgba(251,191,36,0.1);
 }
-.co-textarea::placeholder { color: #475569; }
+.co-textarea::placeholder { color: var(--text-dim); }
 
 .co-field-hint {
   font-size: 0.75rem;
-  color: #475569;
+  color: var(--text-dim);
   margin: 0.4rem 0 0;
 }
 .co-field-hint--warning {
@@ -190,7 +190,7 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.9rem 1rem;
-  background: rgba(251,191,36,0.06);
+  background: var(--glow-gold);
   border: 1.5px solid rgba(251,191,36,0.4);
   border-radius: 10px;
   margin-bottom: 1.25rem;
@@ -209,7 +209,7 @@
 .co-method-label {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-primary);
   flex: 1;
 }
 
@@ -250,16 +250,16 @@
 .co-field-label {
   font-size: 0.78rem;
   font-weight: 600;
-  color: #94a3b8;
+  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.6px;
 }
 .co-field-input {
   padding: 0.85rem 1rem;
-  background: rgba(15,23,42,0.55);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--input-bg);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-size: 15px;
   font-family: inherit;
   width: 100%;
@@ -271,13 +271,13 @@
   border-color: #fbbf24;
   box-shadow: 0 0 0 3px rgba(251,191,36,0.1);
 }
-.co-field-input::placeholder { color: #475569; }
+.co-field-input::placeholder { color: var(--text-dim); }
 
 /* Stripe CardElement wrapper */
 .co-stripe-wrapper {
   padding: 0.85rem 1rem;
-  background: rgba(15,23,42,0.55);
-  border: 1px solid rgba(255,255,255,0.1);
+  background: var(--input-bg);
+  border: 1px solid var(--border-default);
   border-radius: 10px;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
@@ -334,7 +334,7 @@
   align-items: center;
   gap: 0.4rem;
   font-size: 0.75rem;
-  color: #475569;
+  color: var(--text-dim);
   justify-content: center;
   margin: 0;
 }
@@ -385,7 +385,7 @@
   align-items: center;
   gap: 0.35rem;
   font-size: 0.75rem;
-  color: #475569;
+  color: var(--text-dim);
   font-weight: 600;
 }
 
@@ -402,7 +402,7 @@
 .co-summary-heading {
   font-size: 1rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--text-primary);
   margin: 0 0 1.25rem;
 }
 
@@ -420,13 +420,13 @@
 }
 .co-summary-row-label {
   font-size: 0.88rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   flex: 1;
 }
 .co-summary-row-val {
   font-size: 0.9rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--text-primary);
   white-space: nowrap;
 }
 
@@ -444,7 +444,7 @@
 }
 .co-summary-total span:first-child {
   font-size: 0.95rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 .co-summary-total-amount {
@@ -471,7 +471,7 @@
 }
 .co-trust-sub {
   font-size: 0.78rem;
-  color: #475569;
+  color: var(--text-dim);
   margin: 0;
 }
 
@@ -479,16 +479,16 @@
   width: 100%;
   padding: 0.65rem;
   background: none;
-  border: 1px solid rgba(255,255,255,0.1);
+  border: 1px solid var(--border-default);
   border-radius: 9px;
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.85rem;
   cursor: pointer;
   transition: border-color 0.15s, color 0.15s;
 }
 .co-edit-cart-btn:hover {
-  border-color: rgba(255,255,255,0.2);
-  color: #94a3b8;
+  border-color: var(--border-strong);
+  color: var(--text-secondary);
 }
 
 /* ── Success state ──────────────────────────────────────────────── */
@@ -510,7 +510,7 @@
   margin: 0 0 0.75rem;
 }
 .co-success > p {
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-size: 1rem;
   margin: 0 0 2.5rem;
   line-height: 1.6;
@@ -538,7 +538,7 @@
 .co-discord-btn:hover { background: rgba(88,101,242,0.22); transform: translateY(-1px); }
 .co-success-note {
   font-size: 0.82rem;
-  color: #475569;
+  color: var(--text-dim);
   margin: 0;
   line-height: 1.6;
 }
@@ -561,7 +561,7 @@
   margin: 0;
 }
 .co-polling p {
-  color: #64748b;
+  color: var(--text-muted);
   font-size: 0.9rem;
   margin: 0;
   line-height: 1.6;

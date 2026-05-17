@@ -1,7 +1,7 @@
 .orders-section {
   min-height: 80vh;
   padding: 6rem 2rem 4rem;
-  background: linear-gradient(135deg, #0a0e1a 0%, #0f1729 50%, #1a1f35 100%);
+  background: var(--section-bg);
 }
 
 .orders-container {
@@ -26,7 +26,7 @@
 
 .orders-header p {
   font-size: 1.25rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   font-weight: 400;
 }
 
@@ -71,14 +71,14 @@
 }
 
 .order-card {
-  background: linear-gradient(135deg, rgba(26, 31, 53, 0.8) 0%, rgba(15, 23, 41, 0.9) 100%);
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 2rem;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px var(--shadow-color);
 }
 
 .order-card::before {
@@ -128,7 +128,7 @@
 .order-id {
   font-weight: 700;
   font-size: 1.25rem;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-family: 'Courier New', monospace;
   letter-spacing: 0.5px;
   display: flex;
@@ -143,7 +143,7 @@
 
 .order-date {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -244,14 +244,14 @@
   justify-content: space-between;
   align-items: flex-start;
   padding: 1rem 1.25rem;
-  background: rgba(15, 23, 41, 0.5);
-  border: 1px solid rgba(148, 163, 184, 0.08);
+  background: var(--surface-1);
+  border: 1px solid var(--border-subtle);
   border-radius: 12px;
   transition: all 0.2s ease;
 }
 
 .order-item:hover {
-  background: rgba(15, 23, 41, 0.8);
+  background: var(--surface-2);
   border-color: rgba(251, 191, 36, 0.2);
   transform: translateX(4px);
 }
@@ -267,7 +267,7 @@
 
 .order-item-name {
   font-weight: 600;
-  color: #f8fafc;
+  color: var(--text-primary);
   font-size: 1rem;
   line-height: 1.35;
 }
@@ -280,12 +280,12 @@
 
 .order-item-platform,
 .order-item-version {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 0.82rem;
   padding: 0.24rem 0.68rem;
-  background: rgba(148, 163, 184, 0.1);
+  background: var(--btn-ghost-bg);
   border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.15);
+  border: 1px solid var(--border-subtle);
 }
 
 .order-item-details {
@@ -298,11 +298,11 @@
 }
 
 .order-item-quantity {
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-size: 0.9rem;
   font-weight: 600;
   padding: 0.25rem 0.75rem;
-  background: rgba(148, 163, 184, 0.15);
+  background: var(--btn-ghost-bg);
   border-radius: 8px;
 }
 
@@ -331,7 +331,7 @@
 
 .total-label {
   font-size: 1.1rem;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   font-weight: 600;
 }
 
@@ -346,13 +346,13 @@
 
 .payment-method {
   font-size: 0.9rem;
-  color: #94a3b8;
+  color: var(--text-secondary);
   text-transform: capitalize;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.5rem 1rem;
-  background: rgba(148, 163, 184, 0.08);
+  background: var(--btn-ghost-bg);
   border-radius: 8px;
 }
 
@@ -368,7 +368,7 @@
   border-left: 3px solid #3b82f6;
   border-radius: 8px;
   font-size: 0.9rem;
-  color: #cbd5e1;
+  color: var(--text-secondary);
   word-wrap: break-word;
   overflow-wrap: break-word;
   white-space: pre-wrap;
