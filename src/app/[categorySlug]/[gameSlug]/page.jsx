@@ -16,12 +16,19 @@ export async function generateMetadata({ params }) {
 
   const catName = stripEmojis(category.name)
   const gameName = stripEmojis(game.name)
+  const title = `Buy ${gameName} ${catName} | Zeuservices`
+  const description = `Buy ${catName.toLowerCase()} for ${gameName} — fast, safe delivery via Discord. Trusted service for 9+ years. Secure checkout via Stripe.`
 
   return {
-    title: `${gameName} ${catName}`,
-    description: `Browse ${catName.toLowerCase()} for ${gameName} on Zeuservices. Premium ${catName.toLowerCase()} with safe, manual delivery. Secure checkout via Stripe. 9+ years trusted.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://zeuservices.com/${categorySlug}/${gameSlug}`,
+    },
     robots: { index: true, follow: true },
-    alternates: { canonical: `/${categorySlug}/${gameSlug}` },
+    alternates: { canonical: `https://zeuservices.com/${categorySlug}/${gameSlug}` },
   }
 }
 

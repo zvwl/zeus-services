@@ -15,11 +15,18 @@ export async function generateMetadata({ params }) {
   if (!category) return { title: 'Not Found' }
 
   const name = stripEmojis(category.name)
+  const title = `${name} - GTA 5, Fortnite, Rocket League & More`
+  const description = `Buy premium ${name.toLowerCase()} for GTA 5, Fortnite, Rocket League, Forza Horizon 6 and more. Safe manual delivery via Discord. Trusted for 9+ years.`
   return {
-    title: `${name} - All Games`,
-    description: `Browse premium ${name.toLowerCase()} across all supported games on Zeuservices. GTA 5, Fortnite, Rocket League, Forza Horizon 6 and more. Safe, manual delivery via Discord.`,
+    title,
+    description,
+    openGraph: {
+      title,
+      description,
+      url: `https://zeuservices.com/${categorySlug}`,
+    },
     robots: { index: true, follow: true },
-    alternates: { canonical: `/${categorySlug}` },
+    alternates: { canonical: `https://zeuservices.com/${categorySlug}` },
   }
 }
 

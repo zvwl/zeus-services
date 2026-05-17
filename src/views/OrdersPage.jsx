@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
-import { Package, CheckCircle } from 'lucide-react'
+import { Package, CheckCircle, ShoppingBag } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './OrdersPage.css'
 
@@ -174,7 +174,7 @@ export default function OrdersPage() {
 
   if (loading) {
     return (
-      <section className="section orders-section">
+      <section className="orders-section">
         <div className="orders-container">
           <LoadingSpinner message="Loading your orders..." />
         </div>
@@ -184,7 +184,7 @@ export default function OrdersPage() {
 
   if (error) {
     return (
-      <section className="section orders-section">
+      <section className="orders-section">
         <div className="orders-container">
           <div className="error-message">
             <p>{error}</p>
@@ -207,18 +207,28 @@ export default function OrdersPage() {
   }
 
   return (
-    <section className="section orders-section">
+    <section className="orders-section">
       <div className="orders-container">
         <div className="orders-header">
-          <h1>Your Orders</h1>
-          <p>View and track all your orders</p>
+          <div className="orders-header-icon">
+            <ShoppingBag size={22} strokeWidth={2} />
+          </div>
+          <div className="orders-header-text">
+            <h1>My Orders</h1>
+            <p>View and track all your purchases</p>
+          </div>
+          {orders.length > 0 && (
+            <span className="orders-count">{orders.length}</span>
+          )}
         </div>
 
         {orders.length === 0 ? (
           <div className="empty-state">
-            <Package size={56} strokeWidth={1.2} className="empty-icon" />
+            <div className="empty-icon">
+              <Package size={32} strokeWidth={1.5} />
+            </div>
             <h2>No orders yet</h2>
-            <p>Start shopping to see your orders here!</p>
+            <p>Start shopping to see your orders here.</p>
           </div>
         ) : (
           <div className="orders-list">
@@ -283,16 +293,11 @@ export default function OrdersPage() {
 
                   <div className="order-footer">
                     <div className="order-total">
-                      <span className="total-label">Total:</span>
+                      <span className="total-label">Total</span>
                       <span className="total-amount">
                         {formatCurrency(order.total_amount, order.currency)}
                       </span>
                     </div>
-                    {order.payment_method && (
-                      <div className="payment-method">
-                        Payment: {order.payment_method.replace('_', ' ')}
-                      </div>
-                    )}
                   </div>
 
                   {(order.note_plaintext || order.notes) && (
