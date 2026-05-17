@@ -1,195 +1,174 @@
-
+/* ── Banner — always dark, gaming brand hero ──────────── */
 .banner {
-  background: #0a1024;
-  padding: 4rem 2rem;
-  text-align: center;
   position: relative;
+  background: #060c1a;
+  padding: 6rem 2rem 5rem;
+  text-align: center;
   overflow: hidden;
-  min-height: 320px;
+  min-height: 380px;
   display: flex;
   align-items: center;
   justify-content: center;
+  isolation: isolate;
 }
 
-.banner-particles {
+/* ── Animated orbs ────────────────────────────────────── */
+.banner-orb {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.55;
+  pointer-events: none;
+  animation: orb-drift 12s ease-in-out infinite;
+}
+
+.banner-orb--1 {
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.7) 0%, transparent 70%);
+  top: -120px;
+  left: -100px;
+  animation-duration: 14s;
+}
+
+.banner-orb--2 {
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(251, 191, 36, 0.5) 0%, transparent 70%);
+  top: -60px;
+  right: -80px;
+  animation-duration: 10s;
+  animation-delay: -3s;
+}
+
+.banner-orb--3 {
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.45) 0%, transparent 70%);
+  bottom: -80px;
+  left: 35%;
+  animation-duration: 16s;
+  animation-delay: -7s;
+}
+
+@keyframes orb-drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%       { transform: translate(30px, -20px) scale(1.08); }
+  66%       { transform: translate(-20px, 15px) scale(0.94); }
+}
+
+/* ── Subtle dot grid overlay ──────────────────────────── */
+.banner-grid {
   position: absolute;
   inset: 0;
+  background-image:
+    radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+  pointer-events: none;
   z-index: 0;
 }
 
+/* ── Vignette ─────────────────────────────────────────── */
 .banner-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(12, 18, 34, 0.8) 0%, rgba(30, 64, 175, 0.35) 100%);
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(6, 12, 26, 0) 0%, rgba(6, 12, 26, 0.6) 100%),
+    linear-gradient(to bottom, rgba(6,12,26,0.15) 0%, rgba(6,12,26,0.4) 100%);
   pointer-events: none;
   z-index: 1;
-  box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.35);
 }
 
-.banner::before {
-  content: '';
-  position: absolute;
-  top: -50%;
-  right: -10%;
-  width: 500px;
-  height: 500px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 50%;
-  z-index: 0;
-}
-
-.banner::after {
-  content: '';
-  position: absolute;
-  bottom: -30%;
-  left: -5%;
-  width: 400px;
-  height: 400px;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 50%;
-  z-index: 0;
-}
-
+/* ── Content ──────────────────────────────────────────── */
 .banner-content {
   position: relative;
   z-index: 2;
-  color: white;
-  max-width: 960px;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+.banner-content .eyebrow {
+  display: inline-flex;
+  margin-bottom: 1.25rem;
+  /* keep eyebrow gold in the dark hero */
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
 }
 
 .banner-title {
-  font-size: 3rem;
-  font-weight: 800;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  font-weight: 900;
+  color: #f8fafc;
   margin-bottom: 1rem;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  line-height: 1.15;
+  letter-spacing: -0.5px;
+  text-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
 .banner-subtitle {
-  font-size: 1.3rem;
-  opacity: 0.95;
-  text-shadow: 0 1px 5px rgba(0, 0, 0, 0.2);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: #94a3b8;
+  line-height: 1.65;
+  max-width: 640px;
+  margin: 0 auto;
 }
 
 .banner-actions {
-  display: inline-flex;
-  gap: 0.8rem;
-  margin-top: 1.4rem;
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
 }
 
-.primary-btn,
-.ghost-btn {
+.banner-cta {
+  padding: 0.95rem 2.5rem;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: #0a0e1a;
   border: none;
   border-radius: 999px;
-  padding: 0.85rem 1.4rem;
-  font-weight: 700;
+  font-weight: 800;
+  font-size: 1.1rem;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  box-shadow: 0 8px 28px rgba(251, 191, 36, 0.45);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  letter-spacing: 0.2px;
 }
 
-.primary-btn {
-  background: #fbbf24;
-  color: #0a0e1a;
-  box-shadow: 0 10px 30px rgba(251, 191, 36, 0.35);
-  font-size: 1.4rem;
-  padding: 1rem 5rem;
+.banner-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 36px rgba(251, 191, 36, 0.55);
 }
 
-.primary-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+.banner-cta:active {
+  transform: translateY(-1px);
 }
 
-.ghost-btn {
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.35);
-}
-
-.ghost-btn:hover {
-  transform: translateY(-2px);
-  background: rgba(255, 255, 255, 0.2);
-}
-
+/* ── Bottom accent ────────────────────────────────────── */
 .banner-accent {
   position: absolute;
   bottom: 0;
-  width: 100%;
-  height: 5px;
-  background: linear-gradient(90deg, transparent, #60a5fa, transparent);
-  animation: glow 2s ease-in-out infinite;
-  z-index: 2;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent 0%, #60a5fa 30%, #fbbf24 70%, transparent 100%);
+  z-index: 3;
+  animation: accent-pulse 3s ease-in-out infinite;
 }
 
-@keyframes glow {
-  0%, 100% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 1;
-  }
+@keyframes accent-pulse {
+  0%, 100% { opacity: 0.5; }
+  50%       { opacity: 1; }
 }
 
-@media (max-width: 768px) {
-  .banner {
-    padding: 2.5rem 1.5rem;
-    min-height: 200px;
-  }
-
-  .banner-title {
-    font-size: 2rem;
-  }
-
-  .banner-subtitle {
-    font-size: 1rem;
-  }
-}
-
-/* Tablet */
+/* ── Responsive ───────────────────────────────────────── */
 @media (max-width: 1024px) {
-  .banner {
-    padding: 3.5rem 2rem;
-    min-height: 280px;
-  }
-
-  .banner-title {
-    font-size: 2.5rem;
-  }
-
-  .banner-subtitle {
-    font-size: 1.1rem;
-  }
+  .banner { padding: 4.5rem 2rem 4rem; min-height: 320px; }
 }
-
-/* Mobile - Medium */
-@media (max-width: 600px) {
-  .banner {
-    padding: 2rem 1rem;
-    min-height: 160px;
-  }
-
-  .banner-title {
-    font-size: 1.6rem;
-    margin-bottom: 0.7rem;
-  }
-
-  .banner-subtitle {
-    font-size: 0.9rem;
-  }
+@media (max-width: 768px) {
+  .banner { padding: 3.5rem 1.5rem 3rem; min-height: 260px; }
+  .banner-orb--1 { width: 300px; height: 300px; }
+  .banner-orb--2 { width: 240px; height: 240px; }
+  .banner-orb--3 { width: 180px; height: 180px; }
 }
-
-/* Mobile - Small */
 @media (max-width: 480px) {
-  .banner {
-    padding: 1.5rem 0.8rem;
-    min-height: 140px;
-  }
-
-  .banner-title {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  .banner-subtitle {
-    font-size: 0.8rem;
-  }
+  .banner { padding: 3rem 1rem 2.5rem; min-height: 220px; }
 }

@@ -1,63 +1,32 @@
-import { useCallback } from 'react'
-import Particles from 'react-tsparticles'
-import { loadSlim } from 'tsparticles-slim'
 import './Banner.css'
 
 export default function Banner({ onGetStarted }) {
-  const particlesInit = useCallback(async (engine) => {
-    await loadSlim(engine)
-  }, [])
-
   return (
     <div className="banner">
-      <Particles
-        className="banner-particles"
-        init={particlesInit}
-        options={{
-          background: { color: { value: 'transparent' } },
-          fpsLimit: 60,
-          detectRetina: true,
-          interactivity: {
-            events: {
-              onHover: { enable: false },
-              onClick: { enable: false },
-              resize: true,
-            },
-          },
-          particles: {
-            color: { value: ['#38bdf8', '#60a5fa', '#fbbf24'] },
-            links: {
-              enable: true,
-              color: '#60a5fa',
-              distance: 140,
-              opacity: 0.2,
-              width: 1,
-            },
-            move: {
-              enable: true,
-              speed: 1.2,
-              outModes: { default: 'out' },
-            },
-            number: {
-              value: 55,
-              density: { enable: true, area: 800 },
-            },
-            opacity: { value: 0.6 },
-            shape: { type: 'circle' },
-            size: { value: { min: 1, max: 3 } },
-          },
-        }}
-      />
-      <div className="banner-overlay"></div>
+      {/* Animated gradient orbs */}
+      <div className="banner-orb banner-orb--1" />
+      <div className="banner-orb banner-orb--2" />
+      <div className="banner-orb banner-orb--3" />
+
+      {/* Grid overlay */}
+      <div className="banner-grid" />
+
+      {/* Overlay vignette */}
+      <div className="banner-overlay" />
+
       <div className="banner-content">
         <p className="eyebrow">Multi-Game Account Services</p>
         <h2 className="banner-title">Level Up Your Game</h2>
-        <p className="banner-subtitle">Professional boosting and account services for GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more.</p>
+        <p className="banner-subtitle">
+          Professional boosting and account services for GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more.
+        </p>
         <div className="banner-actions">
-          <button className="primary-btn" onClick={onGetStarted}>Get started</button>
+          <button className="banner-cta" onClick={onGetStarted}>Get started</button>
         </div>
       </div>
-      <div className="banner-accent"></div>
+
+      {/* Bottom accent line */}
+      <div className="banner-accent" />
     </div>
   )
 }

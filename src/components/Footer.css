@@ -1,6 +1,7 @@
+/* Footer is always dark — part of the brand chrome */
 .footer {
-  background: var(--card-bg);
-  border-top: 1px solid var(--border-color);
+  background: #080c18;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
   padding: 3rem 2rem 2rem;
   margin-top: auto;
   min-height: 280px;
@@ -17,8 +18,9 @@
   min-height: 140px;
 }
 
+/* Footer text always dark-theme colours */
 .footer-section h3 {
-  color: var(--text-primary);
+  color: #f1f5f9;
   font-size: 1rem;
   font-weight: 600;
   margin-bottom: 1rem;
@@ -33,14 +35,14 @@
 }
 
 .footer-links a {
-  color: var(--text-secondary);
+  color: #94a3b8;
   text-decoration: none;
   font-size: 0.9rem;
   transition: color 0.2s;
 }
 
 .footer-links a:hover {
-  color: var(--primary-color);
+  color: #fbbf24;
 }
 
 .footer-links .discord-link,
@@ -58,9 +60,9 @@
 .footer-bottom {
   margin-top: 2rem;
   padding-top: 1.5rem;
-  border-top: 1px solid var(--border-color);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
   text-align: center;
-  color: var(--text-secondary);
+  color: #64748b;
   font-size: 0.875rem;
   min-height: 3rem;
 }

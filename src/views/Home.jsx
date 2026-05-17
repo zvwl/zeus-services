@@ -19,6 +19,7 @@ import AnimatedLucideIcon from '@/components/AnimatedLucideIcon'
 import { Accordion, AccordionItem, AccordionButton, AccordionPanel } from '@/components/Accordion'
 import SEO, { SEO_CONFIGS, HOME_FAQ_SCHEMA } from '@/components/SEO'
 import '../App.css'
+import './Home.css'
 
 export default function Home({ onGetStarted }) {
   const aboutRef = useRef(null)
@@ -49,54 +50,50 @@ export default function Home({ onGetStarted }) {
       <SEO {...SEO_CONFIGS.home} structuredData={HOME_FAQ_SCHEMA} />
       <Banner onGetStarted={onGetStarted} onScrollAbout={handleScrollAbout} />
 
-      <section className="section intro">
-        <div className="intro-container" style={{maxWidth: '900px', margin: '0 auto', padding: '3rem 2rem', textAlign: 'center'}}>
-          <h1 style={{fontSize: '1.8rem', marginBottom: '1rem', color: '#f1f5f9'}}>Professional Multi-Game Account Services & Boosting</h1>
-          <p style={{fontSize: '1.1rem', lineHeight: '1.8', color: '#cbd5e1', marginBottom: '1.5rem'}}>
-            Welcome to Zeus Services - your trusted partner for professional gaming services across multiple platforms. We provide premium account services and boosting for GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more. With 9+ years of experience, we deliver safe, manual, and reliable services tailored to each game.
+      <section className="home-intro-section">
+        <div className="home-intro-inner">
+          <h1 className="home-intro-title">Professional Multi-Game Account Services &amp; Boosting</h1>
+          <p className="home-intro-text">
+            Welcome to Zeus Services — your trusted partner for professional gaming services across multiple platforms. We provide premium account services and boosting for GTA 5, Fortnite, Rocket League, Forza Horizon 6, and more. With 9+ years of experience, we deliver safe, manual, and reliable services tailored to each game.
           </p>
         </div>
       </section>
 
-      <section className="section" style={{backgroundColor: '#0f1720', padding: '3rem 2rem'}}>
-        <div style={{maxWidth: '1200px', margin: '0 auto'}}>
-          <h2 style={{fontSize: '2rem', marginBottom: '1rem', color: '#fbbf24', textAlign: 'center'}}>Our Services</h2>
-          <p style={{fontSize: '1.05rem', color: '#cbd5e1', textAlign: 'center', marginBottom: '3rem', maxWidth: '700px', margin: '0 auto 3rem'}}>
-            Choose the service type that fits your gaming needs. Available across all our supported games.
-          </p>
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem'}}>
-            {/* Topups */}
-            <div 
-              style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}
+      <section className="home-services-section">
+        <div className="home-services-inner">
+          <p className="eyebrow" style={{margin: '0 auto 0.75rem', display: 'table'}}>What we offer</p>
+          <h2 className="home-services-heading">Our Services</h2>
+          <p className="home-services-sub">Choose the service type that fits your gaming needs. Available across all our supported games.</p>
+          <div className="home-services-grid">
+            <div
+              className="home-service-card"
               onMouseEnter={() => walletIconRef.current?.startAnimation?.()}
               onMouseLeave={() => walletIconRef.current?.stopAnimation?.()}
             >
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}><AnimatedLucideIcon ref={walletIconRef} icon={Wallet} size={42} animation="pulse" animateOnHover={false} /></div>
-              <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Topups</h3>
-              <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>In-game currency and credits. Get the currency you need instantly for faster gameplay and better gear.</p>
-              <a href="/topups" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#fbbf24', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Topups</a>
+              <div className="home-service-icon"><AnimatedLucideIcon ref={walletIconRef} icon={Wallet} size={42} animation="pulse" animateOnHover={false} /></div>
+              <h3>Topups</h3>
+              <p>In-game currency and credits. Get the currency you need instantly for faster gameplay and better gear.</p>
+              <a href="/topups" className="home-service-btn home-service-btn--topups">Browse Topups</a>
             </div>
-            {/* Boosting */}
-            <div 
-              style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}
+            <div
+              className="home-service-card"
               onMouseEnter={() => zapIconRef.current?.startAnimation?.()}
               onMouseLeave={() => zapIconRef.current?.stopAnimation?.()}
             >
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}><AnimatedLucideIcon ref={zapIconRef} icon={Zap} size={42} animation="bounce" animateOnHover={false} /></div>
-              <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Boosting</h3>
-              <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Rank progression, level boosting, and achievement grinding. Let us handle the grind while you relax.</p>
-              <a href="/boosting" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#60a5fa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Boosting</a>
+              <div className="home-service-icon"><AnimatedLucideIcon ref={zapIconRef} icon={Zap} size={42} animation="bounce" animateOnHover={false} /></div>
+              <h3>Boosting</h3>
+              <p>Rank progression, level boosting, and achievement grinding. Let us handle the grind while you relax.</p>
+              <a href="/boosting" className="home-service-btn home-service-btn--boosting">Browse Boosting</a>
             </div>
-            {/* Accounts */}
-            <div 
-              style={{backgroundColor: '#1a2332', padding: '2rem', borderRadius: '8px', textAlign: 'center', border: '1px solid #334155'}}
+            <div
+              className="home-service-card"
               onMouseEnter={() => userRoundIconRef.current?.startAnimation?.()}
               onMouseLeave={() => userRoundIconRef.current?.stopAnimation?.()}
             >
-              <div style={{fontSize: '3rem', marginBottom: '1rem'}}><AnimatedLucideIcon ref={userRoundIconRef} icon={UserRound} size={42} animation="wiggle" animateOnHover={false} /></div>
-              <h3 style={{fontSize: '1.5rem', color: '#f1f5f9', marginBottom: '0.75rem'}}>Accounts</h3>
-              <p style={{color: '#cbd5e1', marginBottom: '1.5rem', lineHeight: '1.6'}}>Pre-built accounts with progression ready to play. Skip the grind and jump straight into fun.</p>
-              <a href="/accounts" style={{display: 'inline-block', padding: '0.75rem 1.5rem', backgroundColor: '#a78bfa', color: '#000', borderRadius: '4px', textDecoration: 'none', fontWeight: '600'}}>Browse Accounts</a>
+              <div className="home-service-icon"><AnimatedLucideIcon ref={userRoundIconRef} icon={UserRound} size={42} animation="wiggle" animateOnHover={false} /></div>
+              <h3>Accounts</h3>
+              <p>Pre-built accounts with progression ready to play. Skip the grind and jump straight into fun.</p>
+              <a href="/accounts" className="home-service-btn home-service-btn--accounts">Browse Accounts</a>
             </div>
           </div>
         </div>

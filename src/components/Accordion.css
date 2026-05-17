@@ -6,16 +6,16 @@
 }
 
 .accordion-item {
-  background: linear-gradient(135deg, #1a1f35 0%, #0a0e1a 100%);
-  border: 1px solid rgba(251, 191, 36, 0.25);
+  background: var(--surface-2);
+  border: 1px solid rgba(251, 191, 36, 0.2);
   border-radius: 12px;
   overflow: hidden;
-  transition: all 0.3s ease;
+  transition: border-color 0.2s, background 0.2s;
 }
 
 .accordion-item:hover {
-  border-color: rgba(251, 191, 36, 0.5);
-  background: linear-gradient(135deg, #232a43 0%, #141821 100%);
+  border-color: rgba(251, 191, 36, 0.45);
+  background: var(--surface-3);
 }
 
 .accordion-button {
@@ -23,12 +23,12 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  padding: 1.5rem;
+  padding: 1.25rem 1.5rem;
   background: transparent;
   border: none;
   cursor: pointer;
   outline: none;
-  color: #f1f5f9;
+  color: var(--text-primary);
   font-weight: 700;
   font-size: 1rem;
   text-align: left;
@@ -59,14 +59,14 @@
 }
 
 .accordion-panel-content {
-  padding: 0 1.5rem 1.5rem 1.5rem;
-  color: #94a3b8;
+  padding: 0 1.5rem 1.5rem;
+  color: var(--text-secondary);
   line-height: 1.6;
   font-size: 0.95rem;
 }
 
 .accordion-panel-content p {
   margin: 0;
-  color: #94a3b8;
+  color: var(--text-secondary);
   line-height: 1.6;
 }
