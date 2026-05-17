@@ -126,6 +126,13 @@
 .co-field-input:focus { outline: none; border-color: #fbbf24; box-shadow: 0 0 0 3px rgba(251,191,36,0.1); }
 .co-field-input::placeholder { color: var(--text-dim); }
 .co-field-input--sm { max-width: 180px; }
+.co-field-input--error { border-color: rgba(239,68,68,0.6) !important; }
+
+.co-stripe-wrapper--error { border-color: rgba(239,68,68,0.6) !important; }
+
+.co-field-error { font-size: 0.73rem; color: #f87171; margin: 0.3rem 0 0; }
+
+.co-required { color: #f87171; font-size: 0.7rem; margin-left: 1px; }
 
 .co-stripe-wrapper {
   padding: 0.8rem 1rem;

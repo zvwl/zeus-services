@@ -77,13 +77,25 @@ function CheckoutInner({
   const [nameOnCard, setNameOnCard] = useState('')
   const [postcode, setPostcode] = useState('')
   const [error, setError] = useState('')
+  const [fieldErrors, setFieldErrors] = useState({})
   const [busy, setBusy] = useState(false)
   const [cardReady, setCardReady] = useState(false)
+  const [cardComplete, setCardComplete] = useState(false)
   const [cardBrand, setCardBrand] = useState('')
 
   const handleCardChange = (e) => {
     setCardBrand(e.brand || '')
-    setError(e.error ? e.error.message : '')
+    setCardComplete(e.complete)
+    setFieldErrors(prev => ({ ...prev, card: e.error ? e.error.message : '' }))
+    if (!e.error) setError('')
+  }
+
+  const validate = () => {
+    const errs = {}
+    if (!nameOnCard.trim()) errs.name = 'Name on card is required.'
+    if (!cardComplete) errs.card = fieldErrors.card || 'Please complete your card details.'
+    setFieldErrors(errs)
+    return Object.keys(errs).length === 0
   }
 
   const handlePay = async () => {
@@ -92,6 +104,8 @@ function CheckoutInner({
       devCheckout(user)
       return
     }
+
+    if (!validate()) return   // show field-level errors, don't submit
 
     setError('')
     setBusy(true)
@@ -318,31 +332,38 @@ function CheckoutInner({
                     </div>
                   </div>
 
-                  {/* Name on card */}
+                  {/* Name on card — required */}
                   <div className="co-field-group">
-                    <label className="co-field-label" htmlFor="cc-name">Name on card</label>
+                    <label className="co-field-label" htmlFor="cc-name">
+                      Name on card <span className="co-required">*</span>
+                    </label>
                     <input
                       id="cc-name"
                       name="ccName"
-                      className="co-field-input"
+                      className={`co-field-input${fieldErrors.name ? ' co-field-input--error' : ''}`}
                       type="text"
                       placeholder="Full name as it appears on your card"
                       value={nameOnCard}
-                      onChange={(e) => setNameOnCard(e.target.value)}
+                      onChange={(e) => {
+                        setNameOnCard(e.target.value)
+                        if (e.target.value.trim()) setFieldErrors(p => ({ ...p, name: '' }))
+                      }}
                       autoComplete="cc-name"
                       spellCheck={false}
+                      required
                     />
+                    {fieldErrors.name && <p className="co-field-error">{fieldErrors.name}</p>}
                   </div>
 
-                  {/* Card number + expiry + CVC */}
+                  {/* Card number + expiry + CVC — required */}
                   <div className="co-field-group">
                     <label className="co-field-label" htmlFor="card-element">
-                      Card number
+                      Card details <span className="co-required">*</span>
                       {cardBrand && cardBrand !== 'unknown' && (
                         <span className="co-detected-brand"> · {cardBrand.charAt(0).toUpperCase() + cardBrand.slice(1)} detected</span>
                       )}
                     </label>
-                    <div className={`co-stripe-wrapper${cardReady ? ' ready' : ''}`}>
+                    <div className={`co-stripe-wrapper${cardReady ? ' ready' : ''}${fieldErrors.card ? ' co-stripe-wrapper--error' : ''}`}>
                       <CardElement
                         id="card-element"
                         options={CARD_ELEMENT_OPTIONS}
@@ -350,6 +371,7 @@ function CheckoutInner({
                         onChange={handleCardChange}
                       />
                     </div>
+                    {fieldErrors.card && <p className="co-field-error">{fieldErrors.card}</p>}
                   </div>
 
                   {/* Postcode */}
