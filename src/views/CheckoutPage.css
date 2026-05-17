@@ -173,6 +173,13 @@
   color: #475569;
   margin: 0.4rem 0 0;
 }
+.co-field-hint--warning {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: #6ee7b7;
+  margin-top: 0.5rem;
+}
 
 /* ── Card form ──────────────────────────────────────────────────── */
 .co-card-form { display: flex; flex-direction: column; gap: 0; }

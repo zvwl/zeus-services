@@ -184,8 +184,10 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
         {/* Name + Postcode row */}
         <div className="co-fields-row">
           <div className="co-field-group">
-            <label className="co-field-label">Name on card</label>
+            <label className="co-field-label" htmlFor="cc-name">Name on card</label>
             <input
+              id="cc-name"
+              name="ccName"
               className="co-field-input"
               type="text"
               placeholder="Full name"
@@ -196,8 +198,10 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
             />
           </div>
           <div className="co-field-group co-field-group--postcode">
-            <label className="co-field-label">Postcode</label>
+            <label className="co-field-label" htmlFor="billing-postcode">Postcode</label>
             <input
+              id="billing-postcode"
+              name="billingPostcode"
               className="co-field-input"
               type="text"
               placeholder="e.g. SW1A 1AA"
@@ -212,7 +216,7 @@ function CardPaymentForm({ amountInCents, currency, cartItems, convertAmount, or
 
         {/* Card number (full-width Stripe iframe) */}
         <div className="co-field-group">
-          <label className="co-field-label">Card number</label>
+          <label className="co-field-label" htmlFor="card-element">Card details</label>
           <div className={`co-stripe-wrapper ${cardReady ? 'ready' : ''}`}>
             <CardElement
               options={CARD_ELEMENT_OPTIONS}
@@ -426,19 +430,27 @@ export default function CheckoutPage() {
 
           {/* Order notes */}
           <div className="co-block">
-            <label className="co-section-label">
+            <label className="co-section-label" htmlFor="order-notes">
               Order Notes <span className="co-optional">(optional)</span>
             </label>
-            <p className="co-section-sub">Share account details or specific instructions. Encrypted and handled securely.</p>
+            <p className="co-section-sub">
+              Share account details or specific instructions for your order.
+            </p>
             <textarea
+              id="order-notes"
+              name="orderNotes"
               className="co-textarea"
               value={orderNote}
               onChange={(e) => handleOrderNoteChange?.(e.target.value)}
-              placeholder="e.g. Account email is user@example.com, password is ******, please add cars to Slot 1."
+              placeholder="e.g. Account email is user@example.com, please boost Slot 1."
               maxLength={1000}
               rows={3}
             />
-            <p className="co-field-hint">Up to 1000 characters. Encrypted.</p>
+            <p className="co-field-hint co-field-hint--warning">
+              <ShieldCheck size={12} strokeWidth={2} />
+              Notes are encrypted at rest. We do not store or log plain-text passwords beyond this order.
+            </p>
+            <p className="co-field-hint">Up to 1000 characters.</p>
           </div>
 
           <div className="co-divider" />

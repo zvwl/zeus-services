@@ -11,6 +11,8 @@ import {
   ShoppingCart,
   UserRound,
   X,
+  Sun,
+  Moon,
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useCart } from '@/contexts/CartContext'
@@ -35,6 +37,7 @@ export default function Header() {
   const [searchResults, setSearchResults] = useState([])
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const [isSearching, setIsSearching] = useState(false)
+  const [theme, setTheme] = useState('dark')
 
   const searchRef = useRef(null)
   const currencyRef = useRef(null)
@@ -42,6 +45,19 @@ export default function Header() {
   const currencyIconRefs = useRef({})
   const prevCartCountRef = useRef(cartCount)
   const cartCountAnimTimeoutRef = useRef(null)
+
+  useEffect(() => {
+    const saved = localStorage.getItem('theme') || 'dark'
+    setTheme(saved)
+    document.documentElement.setAttribute('data-theme', saved)
+  }, [])
+
+  const toggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    document.documentElement.setAttribute('data-theme', next)
+    localStorage.setItem('theme', next)
+  }
 
   useEffect(() => {
     if (isCartOpen) setIsMenuOpen(false)
@@ -324,6 +340,16 @@ export default function Header() {
               </span>
               <span className="header-action-label cart-label">Cart</span>
               <span className={`cart-count ${isCartCountAnimating ? 'is-animating' : ''}`}>{cartCount}</span>
+            </button>
+
+            <button
+              type="button"
+              className="header-action theme-toggle"
+              onClick={toggleTheme}
+              aria-label={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
+              title={theme === 'dark' ? 'Light mode' : 'Dark mode'}
+            >
+              {theme === 'dark' ? <Sun size={18} strokeWidth={2} /> : <Moon size={18} strokeWidth={2} />}
             </button>
 
             <button
