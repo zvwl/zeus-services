@@ -83,16 +83,6 @@ export default function ServiceCard({
 
       {/* ── Info area ── */}
       <div className="sc-info">
-        {data.platforms && data.platforms.length > 0 && (
-          <div className="sc-platforms">
-            {data.platforms.slice(0, 2).map((p, i) => (
-              <span key={i} className="sc-platform">{p}</span>
-            ))}
-            {data.platforms.length > 2 && (
-              <span className="sc-platform">+{data.platforms.length - 2}</span>
-            )}
-          </div>
-        )}
         <h3 className="sc-name">{data.name}</h3>
         {data.price && (
           <p className="sc-price">

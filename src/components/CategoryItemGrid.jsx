@@ -11,8 +11,6 @@ import Pagination from '@/components/Pagination'
 import { Search, SlidersHorizontal, X, ChevronDown, ChevronUp } from 'lucide-react'
 import './CategoryItemGrid.css'
 
-const PLATFORM_OPTIONS = ['PC', 'PlayStation', 'Xbox', 'Nintendo Switch', 'Mobile']
-
 function SidebarSection({ title, children, defaultOpen = true }) {
   const [open, setOpen] = useState(defaultOpen)
   return (
@@ -30,7 +28,6 @@ export default function CategoryItemGrid({ category, game, games, items: initial
   const router = useRouter()
   const { formatPrice, addToCart } = useCart()
   const [searchQuery, setSearchQuery] = useState('')
-  const [selectedPlatform, setSelectedPlatform] = useState('all')
   const [selectedGameId, setSelectedGameId] = useState('all')
   const [sortBy, setSortBy] = useState('none')
   const [currentPage, setCurrentPage] = useState(1)
@@ -50,7 +47,7 @@ export default function CategoryItemGrid({ category, game, games, items: initial
 
   useEffect(() => {
     setCurrentPage(1)
-  }, [searchQuery, selectedPlatform, sortBy, selectedGameId])
+  }, [searchQuery, sortBy, selectedGameId])
 
   const filteredItems = useMemo(() => {
     let filtered = initialItems
@@ -67,15 +64,11 @@ export default function CategoryItemGrid({ category, game, games, items: initial
       )
     }
 
-    if (selectedPlatform !== 'all') {
-      filtered = filtered.filter(item => item.platforms && item.platforms.includes(selectedPlatform))
-    }
-
     if (sortBy === 'low-to-high') filtered = [...filtered].sort((a, b) => a.price - b.price)
     else if (sortBy === 'high-to-low') filtered = [...filtered].sort((a, b) => b.price - a.price)
 
     return filtered
-  }, [initialItems, searchQuery, selectedPlatform, sortBy, selectedGameId, isAllGamesView])
+  }, [initialItems, searchQuery, sortBy, selectedGameId, isAllGamesView])
 
   const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
   const paginatedItems = useMemo(() => {
@@ -103,11 +96,10 @@ export default function CategoryItemGrid({ category, game, games, items: initial
   const categoryName = stripEmojis(category.name)
   const gameName = game ? stripEmojis(game.name) : null
 
-  const hasFilters = searchQuery || selectedPlatform !== 'all' || selectedGameId !== 'all' || sortBy !== 'none'
+  const hasFilters = searchQuery || selectedGameId !== 'all' || sortBy !== 'none'
 
   const clearFilters = () => {
     setSearchQuery('')
-    setSelectedPlatform('all')
     setSelectedGameId('all')
     setSortBy('none')
   }
@@ -179,22 +171,6 @@ export default function CategoryItemGrid({ category, game, games, items: initial
             </SidebarSection>
           )}
 
-          {/* Platform filter */}
-          <SidebarSection title="Platform">
-            <div className="cig-sb-radio-list">
-              <label className="cig-sb-radio">
-                <input type="radio" name="platform" checked={selectedPlatform === 'all'} onChange={() => setSelectedPlatform('all')} />
-                <span>All Platforms</span>
-              </label>
-              {PLATFORM_OPTIONS.map(p => (
-                <label key={p} className="cig-sb-radio">
-                  <input type="radio" name="platform" checked={selectedPlatform === p} onChange={() => setSelectedPlatform(p)} />
-                  <span>{p}</span>
-                </label>
-              ))}
-            </div>
-          </SidebarSection>
-
           {/* Sort */}
           <SidebarSection title="Sort by Price">
             <div className="cig-sb-radio-list">
@@ -243,9 +219,6 @@ export default function CategoryItemGrid({ category, game, games, items: initial
             <div className="cig-chips">
               {searchQuery && (
                 <span className="cig-chip">"{searchQuery}" <button onClick={() => setSearchQuery('')}><X size={11} /></button></span>
-              )}
-              {selectedPlatform !== 'all' && (
-                <span className="cig-chip">{selectedPlatform} <button onClick={() => setSelectedPlatform('all')}><X size={11} /></button></span>
               )}
               {selectedGameId !== 'all' && (
                 <span className="cig-chip">{games.find(g => String(g.id) === selectedGameId)?.name || 'Game'} <button onClick={() => setSelectedGameId('all')}><X size={11} /></button></span>

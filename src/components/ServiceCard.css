@@ -151,24 +151,6 @@
   flex: 1;
 }
 
-.sc-platforms {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.sc-platform {
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #94a3b8;
-  background: rgba(255,255,255,0.06);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 4px;
-  padding: 0.1rem 0.45rem;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
-}
-
 .sc-name {
   font-size: 0.9rem;
   font-weight: 700;
