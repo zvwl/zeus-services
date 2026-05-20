@@ -112,6 +112,10 @@ export function CartProvider({ children }) {
     dispatchToast({ type: 'REMOVE', id, maxVisible: maxVisibleToasts })
   }
 
+  const clearAllToasts = () => {
+    dispatchToast({ type: 'CLEAR_ALL' })
+  }
+
   const addToCart = (service, platform) => {
     const versionKey = service?.version || ''
     const cartId = `${service.id}-${platform || ''}-${versionKey}`
@@ -245,7 +249,7 @@ export function CartProvider({ children }) {
     addToCart, removeFromCart, updateQuantity, clearCart,
     isCartOpen, openCart: () => setIsCartOpen(true), closeCart: () => setIsCartOpen(false),
     currency, setCurrency, formatPrice, convertAmount,
-    toasts: toastState.visible, addToast, removeToast,
+    toasts: toastState.visible, addToast, removeToast, clearAllToasts,
     orderNote, handleOrderNoteChange,
     paymentMethod, setPaymentMethod,
     checkoutStatus, setCheckoutStatus, handleCheckout,

@@ -10,13 +10,14 @@ import AnimatedLucideIcon from './AnimatedLucideIcon'
 
 export default function CartDrawer() {
   const router = useRouter()
-  const { cartItems, isCartOpen: isOpen, closeCart: onClose, removeFromCart: onRemove, updateQuantity: onUpdateQuantity, formatPrice } = useCart()
+  const { cartItems, isCartOpen: isOpen, closeCart: onClose, removeFromCart: onRemove, updateQuantity: onUpdateQuantity, formatPrice, clearAllToasts } = useCart()
   const itemPathCacheRef = useRef({})
 
   useEffect(() => {
     document.body.classList.toggle('overlay-cart-open', isOpen)
+    if (isOpen) clearAllToasts()
     return () => document.body.classList.remove('overlay-cart-open')
-  }, [isOpen])
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 

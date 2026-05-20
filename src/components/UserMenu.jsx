@@ -6,6 +6,7 @@ import DOMPurify from 'dompurify'
 import * as Dialog from '@radix-ui/react-dialog'
 import { X, User, ChevronRight } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
+import { useCart } from '@/contexts/CartContext'
 import { supabase } from '@/lib/supabase/client'
 import {
   HomeIcon,
@@ -37,6 +38,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
   const router = useRouter()
   const pathname = usePathname()
   const { user: contextUser, isAdmin, logout } = useAuth()
+  const { clearAllToasts } = useCart()
   const user = propUser || contextUser
   const [expandedCategory, setExpandedCategory] = useState(null)
   const [games, setGames] = useState({})
@@ -82,8 +84,9 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
 
   useEffect(() => {
     document.body.classList.toggle('overlay-menu-open', isOpen)
+    if (isOpen) clearAllToasts()
     return () => document.body.classList.remove('overlay-menu-open')
-  }, [isOpen])
+  }, [isOpen]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Scroll lock when menu is open to prevent page jump
   useEffect(() => {
