@@ -48,16 +48,6 @@ export default function ServiceCard({
           }}
         />
 
-        {/* Status badges */}
-        {isOutOfStock && <span className="sc-badge sc-badge-out">Out of Stock</span>}
-        {stockBadgeText && !isOutOfStock && !isComingSoon && (
-          <span className="sc-badge sc-badge-stock">{stockBadgeText}</span>
-        )}
-        {data.featured && !isComingSoon && !isOutOfStock && (
-          <span className="sc-badge sc-badge-featured">Featured</span>
-        )}
-        {isComingSoon && <span className="sc-badge sc-badge-soon">Coming Soon</span>}
-
         {/* Hover action overlay — slides up from bottom of image */}
         {!isDisabled && (
           <div className="sc-overlay">
@@ -79,6 +69,16 @@ export default function ServiceCard({
             </button>
           </div>
         )}
+
+        {/* Status badges — rendered after overlay so they sit on top */}
+        {isOutOfStock && <span className="sc-badge sc-badge-out">Out of Stock</span>}
+        {stockBadgeText && !isOutOfStock && !isComingSoon && (
+          <span className="sc-badge sc-badge-stock">{stockBadgeText}</span>
+        )}
+        {data.featured && !isComingSoon && !isOutOfStock && (
+          <span className="sc-badge sc-badge-featured">Featured</span>
+        )}
+        {isComingSoon && <span className="sc-badge sc-badge-soon">Coming Soon</span>}
       </div>
 
       {/* ── Info area ── */}

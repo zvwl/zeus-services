@@ -32,7 +32,7 @@
 .sc-img-wrap {
   position: relative;
   overflow: hidden;
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 4 / 3;
   background: #0a0e1a;
   flex-shrink: 0;
 }
@@ -152,7 +152,7 @@
 }
 
 .sc-name {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #f1f5f9;
   margin: 0;
@@ -165,12 +165,12 @@
 }
 
 .sc-price {
-  font-size: 1.05rem;
+  font-size: 1.1rem;
   font-weight: 800;
   color: #fbbf24;
   margin: 0;
   margin-top: auto;
-  padding-top: 0.25rem;
+  padding-top: 0.3rem;
 }
 
 /* ── Skeleton ─────────────────────────────────────────── */

@@ -424,6 +424,6 @@
   .cig-sort-select { display: none; }
 }
 
-@media (max-width: 380px) {
+@media (max-width: 460px) {
   .cig-grid { grid-template-columns: 1fr; }
 }
