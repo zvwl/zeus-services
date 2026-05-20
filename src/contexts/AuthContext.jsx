@@ -281,6 +281,17 @@ export const AuthProvider = ({ children }) => {
             checkDiscordRoleAssignment(session.user.id).catch(err => {
               console.warn('Discord role check failed:', err)
             })
+
+            // After OAuth (Google/Discord) the browser returns to the origin root.
+            // LoginPage stores the intended destination in localStorage before the
+            // OAuth redirect so we can pick it up here and navigate to it.
+            try {
+              const dest = localStorage.getItem('oauthRedirect')
+              if (dest && dest.startsWith('/') && !dest.startsWith('//')) {
+                localStorage.removeItem('oauthRedirect')
+                window.location.assign(dest)
+              }
+            } catch (_) {}
           }
         } catch (err) {
           console.error('Error processing auth session:', err)

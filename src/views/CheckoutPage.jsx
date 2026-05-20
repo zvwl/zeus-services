@@ -31,10 +31,10 @@ export default function CheckoutPage() {
   const isLoading = checkoutStatus?.state === 'loading'
   const hasMessage = checkoutStatus?.message
 
-  // Redirect to login if not logged in (but wait for auth to finish loading)
+  // Redirect to login with return destination so OAuth flows come back here
   useEffect(() => {
     if (!authLoading && !user) {
-      router.push('/login')
+      router.push('/login?redirect=/checkout')
     }
   }, [user, authLoading, router])
 
@@ -45,7 +45,7 @@ export default function CheckoutPage() {
 
   const handleCheckout = () => {
     if (!user) {
-      router.push('/login')
+      router.push('/login?redirect=/checkout')
       return
     }
     if (!emailVerified) {
