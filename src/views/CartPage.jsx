@@ -458,25 +458,26 @@ export default function CartPage() {
   return (
     <>
       <SEO {...SEO_CONFIGS.cart} />
-      <section className="section services" id="cart">
-        <p className="eyebrow">Cart</p>
-      <h2 className="section-title">Your selections</h2>
-      <p className="section-subtitle">Adjust quantities or remove items before checkout.</p>
-      
-      {canceled === 'true' && (
-        <div className="payment-cancelled-banner">
-          <p>Payment was cancelled. Your items are still in your cart.</p>
+      <section className="section" id="cart" style={{ paddingTop: '2rem', paddingBottom: 0 }}>
+        <div style={{ maxWidth: '1060px', margin: '0 auto' }}>
+          <h1 className="section-title" style={{ marginBottom: '0.25rem' }}>Your Cart</h1>
+          <p className="section-subtitle" style={{ marginBottom: canceled === 'true' ? '1rem' : '1.5rem' }}>
+            Review your items and proceed to checkout.
+          </p>
+          {canceled === 'true' && (
+            <div className="payment-cancelled-banner">
+              Payment was cancelled. Your items are still in your cart.
+            </div>
+          )}
         </div>
-      )}
-      
-      <CartSummary
-        items={cartItems}
-        onRemove={removeFromCart}
-        onUpdateQuantity={updateQuantity}
-        currency={currency}
-        formatPrice={formatPrice}
-      />
-    </section>
+        <CartSummary
+          items={cartItems}
+          onRemove={removeFromCart}
+          onUpdateQuantity={updateQuantity}
+          currency={currency}
+          formatPrice={formatPrice}
+        />
+      </section>
     </>
   )
 }
