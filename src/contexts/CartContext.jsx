@@ -141,8 +141,7 @@ export function CartProvider({ children }) {
 
   const clearCart = () => setCartItems([])
 
-  const handleCheckout = async (user) => {
-    if (!user) { window.location.href = '/login'; return }
+  const handleCheckout = async () => {
     if (!cartItems.length) return
 
     setCheckoutStatus({ state: 'loading', message: 'Placing order...' })
@@ -154,7 +153,7 @@ export function CartProvider({ children }) {
 
       if (!sessionUser?.id) {
         setCheckoutStatus({ state: 'error', message: 'Session expired. Please log in again.' })
-        window.location.href = '/login'
+        window.location.href = '/login?redirect=/checkout'
         return
       }
 
