@@ -20,9 +20,10 @@ function getSelectableFields(itemData) {
             : (Array.isArray(f.selectedOptions) ? f.selectedOptions : []),
           unit: f.unit || '',
           pricePerUnit: parseFloat(f.pricePerUnit) || 0,
-          minValue: parseInt(f.minValue) || 0,
-          maxValue: parseInt(f.maxValue) || 1000000,
-          stepValue: parseInt(f.stepValue) || 1,
+          minValue: f.minValue !== '' && f.minValue != null ? Number(f.minValue) : null,
+          maxValue: f.maxValue !== '' && f.maxValue != null ? Number(f.maxValue) : null,
+          stepValue: f.stepValue !== '' && f.stepValue != null ? Number(f.stepValue) : 1,
+          defaultValue: f.defaultValue !== '' && f.defaultValue != null ? String(f.defaultValue) : '',
         }))
         .filter(f => f.type === 'number' || f.options.length > 0)
     : []
@@ -89,7 +90,13 @@ export default function ItemPurchaseSection({ item, game, category, categorySlug
 
   const [selectedOptions, setSelectedOptions] = useState(() => {
     const initial = {}
-    selectableFields.forEach(f => { initial[f.fieldName] = f.options.length === 1 ? f.options[0] : '' })
+    selectableFields.forEach(f => {
+      if (f.type === 'number') {
+        initial[f.fieldName] = f.defaultValue || ''
+      } else {
+        initial[f.fieldName] = f.options.length === 1 ? f.options[0] : ''
+      }
+    })
     return initial
   })
   const [attemptedSubmit, setAttemptedSubmit] = useState(false)
@@ -232,36 +239,47 @@ export default function ItemPurchaseSection({ item, game, category, categorySlug
 
           // NUMBER field
           if (field.type === 'number') {
+            const numVal = parseFloat(currentValue)
+            const validNum = Number.isFinite(numVal) && numVal > 0
+            const pricePerUnit = field.pricePerUnit || 0
+            const formattedPpu = pricePerUnit > 0
+              ? (pricePerUnit < 0.01
+                  ? `£${pricePerUnit.toFixed(4)}`
+                  : formatPrice(pricePerUnit))
+              : null
+
             return (
               <div className="option-group" key={field.fieldName}>
                 <label htmlFor={fieldKey}>
-                  {field.fieldName}{field.unit ? ` (${field.unit})` : ''}:
-                  {field.pricePerUnit > 0 && (
-                    <span style={{ color: '#fbbf24', fontSize: '0.85rem', marginLeft: '0.5rem', fontWeight: 500 }}>
-                      {formatPrice(field.pricePerUnit)} per {field.unit || 'unit'}
+                  {field.fieldName}{field.unit ? ` (${field.unit})` : ''}
+                  {formattedPpu && (
+                    <span style={{ color: '#fbbf24', fontSize: '0.82rem', marginLeft: '0.6rem', fontWeight: 500 }}>
+                      {formattedPpu} per {field.unit || 'unit'}
                     </span>
                   )}
                 </label>
                 <input
                   id={fieldKey}
                   type="number"
-                  min={field.minValue}
-                  max={field.maxValue}
-                  step={field.stepValue}
+                  min={field.minValue || 0}
+                  max={field.maxValue || undefined}
+                  step={field.stepValue || 1}
                   value={currentValue}
                   onChange={e => setSelectedOptions(prev => ({ ...prev, [field.fieldName]: e.target.value }))}
                   className="option-select"
-                  placeholder={`Enter amount (${field.minValue.toLocaleString()} – ${field.maxValue.toLocaleString()})`}
-                  style={{ maxWidth: '220px' }}
+                  placeholder={field.minValue && field.maxValue
+                    ? `Enter amount (${Number(field.minValue).toLocaleString()} – ${Number(field.maxValue).toLocaleString()})`
+                    : `Enter ${field.unit || 'amount'}`}
+                  style={{ maxWidth: '260px' }}
                 />
-                {currentValue && field.pricePerUnit > 0 && (
+                {validNum && pricePerUnit > 0 && (
                   <p style={{ marginTop: '0.35rem', fontSize: '0.85rem', color: '#94a3b8' }}>
-                    {parseFloat(currentValue).toLocaleString()} {field.unit} = {formatPrice(parseFloat(currentValue) * field.pricePerUnit)}
+                    {numVal.toLocaleString()} {field.unit} = {formatPrice(numVal * pricePerUnit)}
                   </p>
                 )}
-                {attemptedSubmit && !currentValue && (
+                {attemptedSubmit && !validNum && (
                   <p style={{ marginTop: '0.5rem', color: '#fbbf24', fontSize: '0.9rem', fontWeight: 600 }}>
-                    Please enter {field.fieldName.toLowerCase()} to continue.
+                    Please enter a valid {field.fieldName.toLowerCase()} to continue.
                   </p>
                 )}
               </div>

@@ -115,9 +115,10 @@ export default function AdminItemsPage() {
           ...(field.type === 'number' ? {
             unit: field.unit || '',
             pricePerUnit: parseFloat(field.pricePerUnit) || 0,
-            minValue: parseInt(field.minValue) || 0,
-            maxValue: parseInt(field.maxValue) || 0,
+            minValue: field.minValue !== '' ? parseInt(field.minValue) : null,
+            maxValue: field.maxValue !== '' ? parseInt(field.maxValue) : null,
             stepValue: parseInt(field.stepValue) || 1,
+            defaultValue: field.defaultValue !== '' ? field.defaultValue : null,
           } : {})
         })),
         details: formData.detailsText
@@ -178,6 +179,7 @@ export default function AdminItemsPage() {
             minValue: field.minValue || '',
             maxValue: field.maxValue || '',
             stepValue: field.stepValue || '',
+            defaultValue: field.defaultValue || '',
           }))
         : []
     
@@ -306,6 +308,7 @@ export default function AdminItemsPage() {
         minValue: '',
         maxValue: '',
         stepValue: '',
+        defaultValue: '',
       }]
     }))
   }
@@ -499,216 +502,131 @@ export default function AdminItemsPage() {
             </div>
 
             {/* Custom Fields Section */}
-            <div className="form-group" style={{ marginTop: '1.5rem', padding: '1.5rem', background: 'rgba(59, 130, 246, 0.05)', borderRadius: '8px', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                <label style={{ margin: 0, color: '#3b82f6', fontWeight: 600 }}>Custom Fields</label>
-                <button
-                  type="button"
-                  className="btn-add"
-                  onClick={addCustomField}
-                  style={{ fontSize: '0.9rem' }}
-                >
-                  + Add Field Group
-                </button>
+            <div className="cf-section">
+              <div className="cf-section-header">
+                <label className="cf-section-label">Custom Fields</label>
+                <button type="button" className="btn-add" onClick={addCustomField}>+ Add Field</button>
               </div>
+              <p className="cf-section-hint">Add dropdowns, checkboxes, or number inputs shown to buyers. E.g. "Currency Amount", "Server Region", "Rank".</p>
 
               {formData.customFields.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: '#64748b', fontStyle: 'italic' }}>
-                  No custom fields yet. Click "Add Field Group" to create your first field.
-                </div>
+                <div className="cf-empty">No custom fields yet. Click "+ Add Field" to start.</div>
               ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                <div className="cf-list">
                   {formData.customFields.map((field) => (
-                    <div
-                      key={field.id}
-                      style={{
-                        padding: '1.25rem',
-                        background: 'rgba(255, 255, 255, 0.02)',
-                        border: '1px solid rgba(251, 191, 36, 0.25)',
-                        borderRadius: '8px'
-                      }}
-                    >
-                      {/* Row 1: field name, type selector, required checkbox, delete button */}
-                      <div className="form-row" style={{ alignItems: 'flex-end', gap: '0.75rem', marginBottom: '1rem' }}>
-                        <div className="form-group" style={{ flex: 2, margin: 0 }}>
-                          <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Field Name</label>
+                    <div key={field.id} className="cf-card">
+                      {/* Row: name + type + required + delete */}
+                      <div className="cf-top-row">
+                        <div className="form-group cf-name-group">
+                          <label>Field Label</label>
                           <input
                             type="text"
-                            name={`custom-field-name-${field.id}`}
                             value={field.fieldName}
                             onChange={(e) => updateFieldName(field.id, e.target.value)}
-                            placeholder="e.g. Platform, Region..."
-                            style={{
-                              width: '100%',
-                              padding: '0.6rem',
-                              background: 'rgba(255, 255, 255, 0.05)',
-                              border: '1px solid rgba(212, 175, 55, 0.3)',
-                              borderRadius: '6px',
-                              color: '#f1f5f9'
-                            }}
+                            placeholder="e.g. Currency Amount, Server, Rank…"
                           />
                         </div>
-                        <div className="form-group" style={{ flex: 1, margin: 0 }}>
-                          <label style={{ fontSize: '0.9rem', color: '#94a3b8' }}>Type</label>
-                          <select
-                            value={field.type || 'dropdown'}
-                            onChange={(e) => updateFieldProp(field.id, 'type', e.target.value)}
-                          >
+                        <div className="form-group cf-type-group">
+                          <label>Type</label>
+                          <select value={field.type || 'dropdown'} onChange={(e) => updateFieldProp(field.id, 'type', e.target.value)}>
                             <option value="dropdown">Dropdown</option>
                             <option value="multiselect">Multiselect</option>
                             <option value="number">Number</option>
                           </select>
                         </div>
-                        <div className="form-group checkbox-group" style={{ margin: 0, paddingBottom: '0.35rem' }}>
-                          <label style={{ fontSize: '0.9rem', color: '#94a3b8', whiteSpace: 'nowrap' }}>
-                            <input
-                              type="checkbox"
-                              checked={field.required || false}
-                              onChange={(e) => updateFieldProp(field.id, 'required', e.target.checked)}
-                              style={{ marginRight: '0.4rem' }}
-                            />
-                            Required
-                          </label>
-                        </div>
-                        <button
-                          type="button"
-                          className="btn-remove"
-                          onClick={() => removeCustomField(field.id)}
-                          title="Remove this field group"
-                          style={{ marginBottom: '0.1rem' }}
-                        >
-                          ✕
-                        </button>
+                        <label className="cf-required-check">
+                          <input
+                            type="checkbox"
+                            checked={field.required || false}
+                            onChange={(e) => updateFieldProp(field.id, 'required', e.target.checked)}
+                          />
+                          Required
+                        </label>
+                        <button type="button" className="btn-remove cf-delete" onClick={() => removeCustomField(field.id)} title="Remove field">✕</button>
                       </div>
 
-                      {/* Dropdown / Multiselect: option adding UI */}
+                      {/* Dropdown / Multiselect options */}
                       {(field.type === 'dropdown' || field.type === 'multiselect' || !field.type) && (
-                        <>
-                          <div style={{ marginBottom: '1rem' }}>
-                            <label style={{ display: 'block', marginBottom: '0.5rem', fontSize: '0.9rem', color: '#94a3b8' }}>
-                              Add Options
-                            </label>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <input
-                                type="text"
-                                name={`custom-field-option-input-${field.id}`}
-                                placeholder="Enter option name..."
-                                onKeyPress={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault()
-                                    addFieldOption(field.id, e.target.value)
-                                    e.target.value = ''
-                                  }
-                                }}
-                                style={{
-                                  flex: 1,
-                                  padding: '0.6rem',
-                                  background: 'rgba(255, 255, 255, 0.05)',
-                                  border: '1px solid rgba(212, 175, 55, 0.3)',
-                                  borderRadius: '6px',
-                                  color: '#f1f5f9'
-                                }}
-                              />
-                              <button
-                                type="button"
-                                className="btn-add"
-                                onClick={(e) => {
-                                  const input = e.target.previousElementSibling
-                                  addFieldOption(field.id, input.value)
-                                  input.value = ''
-                                }}
-                                style={{ whiteSpace: 'nowrap' }}
-                              >
-                                + Add
-                              </button>
-                            </div>
+                        <div className="cf-options-section">
+                          <label className="cf-sub-label">Add Options</label>
+                          <div className="cf-add-option-row">
+                            <input
+                              type="text"
+                              placeholder="Type an option and press Enter or click Add"
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault()
+                                  addFieldOption(field.id, e.target.value)
+                                  e.target.value = ''
+                                }
+                              }}
+                            />
+                            <button
+                              type="button"
+                              className="btn-add"
+                              onClick={(e) => {
+                                const input = e.currentTarget.previousElementSibling
+                                addFieldOption(field.id, input.value)
+                                input.value = ''
+                              }}
+                            >+ Add</button>
                           </div>
-
                           {field.availableOptions.length > 0 && (
-                            <div>
-                              <label style={{ display: 'block', marginBottom: '0.75rem', fontSize: '0.9rem', color: '#fbbf24' }}>
-                                Select options to include:
-                              </label>
-                              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem' }}>
+                            <>
+                              <p className="cf-sub-label" style={{ color: '#fbbf24', marginTop: '0.75rem' }}>Check options to include by default:</p>
+                              <div className="cf-options-pills">
                                 {field.availableOptions.map((option) => (
                                   <div
                                     key={option}
-                                    style={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      gap: '0.5rem',
-                                      padding: '0.5rem 0.75rem',
-                                      background: field.selectedOptions.includes(option)
-                                        ? 'rgba(251, 191, 36, 0.15)'
-                                        : 'rgba(255, 255, 255, 0.05)',
-                                      border: `1px solid ${
-                                        field.selectedOptions.includes(option)
-                                          ? 'rgba(251, 191, 36, 0.5)'
-                                          : 'rgba(148, 163, 184, 0.3)'
-                                      }`,
-                                      borderRadius: '6px',
-                                      cursor: 'pointer',
-                                      transition: 'all 0.2s'
-                                    }}
+                                    className={`cf-option-pill${field.selectedOptions.includes(option) ? ' selected' : ''}`}
                                     onClick={() => toggleFieldOption(field.id, option)}
                                   >
                                     <input
                                       type="checkbox"
-                                      name={`custom-field-option-${field.id}-${option}`}
                                       checked={field.selectedOptions.includes(option)}
                                       onChange={() => toggleFieldOption(field.id, option)}
-                                      style={{ cursor: 'pointer' }}
                                     />
-                                    <span style={{ color: '#f1f5f9', fontSize: '0.9rem' }}>{option}</span>
+                                    <span>{option}</span>
                                     <button
                                       type="button"
-                                      onClick={(e) => {
-                                        e.stopPropagation()
-                                        removeFieldOption(field.id, option)
-                                      }}
-                                      style={{
-                                        background: 'none',
-                                        border: 'none',
-                                        color: '#ef4444',
-                                        cursor: 'pointer',
-                                        padding: '0 0.25rem',
-                                        fontSize: '1.1rem',
-                                        lineHeight: 1
-                                      }}
-                                      title="Remove this option"
-                                    >
-                                      ✕
-                                    </button>
+                                      className="cf-pill-remove"
+                                      onClick={(e) => { e.stopPropagation(); removeFieldOption(field.id, option) }}
+                                      title="Remove option"
+                                    >✕</button>
                                   </div>
                                 ))}
                               </div>
-                            </div>
+                            </>
                           )}
-                        </>
+                        </div>
                       )}
 
-                      {/* Number type: pricing inputs */}
+                      {/* Number type inputs */}
                       {field.type === 'number' && (
-                        <div className="form-row" style={{ flexWrap: 'wrap', gap: '0.75rem', marginTop: '0.75rem' }}>
-                          <div className="form-group" style={{ flex: '1', minWidth: '120px' }}>
-                            <label>Unit label (e.g. coins)</label>
-                            <input type="text" value={field.unit} onChange={e => updateFieldProp(field.id, 'unit', e.target.value)} placeholder="coins" />
+                        <div className="cf-number-grid">
+                          <div className="form-group">
+                            <label>Unit label</label>
+                            <input type="text" value={field.unit} onChange={e => updateFieldProp(field.id, 'unit', e.target.value)} placeholder="e.g. Credits, Coins" />
                           </div>
-                          <div className="form-group" style={{ flex: '1', minWidth: '120px' }}>
+                          <div className="form-group">
                             <label>Price per unit (£)</label>
-                            <input type="number" step="0.0001" value={field.pricePerUnit} onChange={e => updateFieldProp(field.id, 'pricePerUnit', e.target.value)} placeholder="0.005" />
+                            <input type="number" step="0.0001" min="0" value={field.pricePerUnit} onChange={e => updateFieldProp(field.id, 'pricePerUnit', e.target.value)} placeholder="0.00" />
                           </div>
-                          <div className="form-group" style={{ flex: '1', minWidth: '100px' }}>
+                          <div className="form-group">
+                            <label>Default value</label>
+                            <input type="number" value={field.defaultValue} onChange={e => updateFieldProp(field.id, 'defaultValue', e.target.value)} placeholder="e.g. 1000" />
+                          </div>
+                          <div className="form-group">
                             <label>Min value</label>
-                            <input type="number" value={field.minValue} onChange={e => updateFieldProp(field.id, 'minValue', e.target.value)} placeholder="1000" />
+                            <input type="number" value={field.minValue} onChange={e => updateFieldProp(field.id, 'minValue', e.target.value)} placeholder="e.g. 100" />
                           </div>
-                          <div className="form-group" style={{ flex: '1', minWidth: '100px' }}>
+                          <div className="form-group">
                             <label>Max value</label>
-                            <input type="number" value={field.maxValue} onChange={e => updateFieldProp(field.id, 'maxValue', e.target.value)} placeholder="100000" />
+                            <input type="number" value={field.maxValue} onChange={e => updateFieldProp(field.id, 'maxValue', e.target.value)} placeholder="e.g. 99999" />
                           </div>
-                          <div className="form-group" style={{ flex: '1', minWidth: '100px' }}>
+                          <div className="form-group">
                             <label>Step</label>
-                            <input type="number" value={field.stepValue} onChange={e => updateFieldProp(field.id, 'stepValue', e.target.value)} placeholder="1000" />
+                            <input type="number" value={field.stepValue} onChange={e => updateFieldProp(field.id, 'stepValue', e.target.value)} placeholder="e.g. 100" />
                           </div>
                         </div>
                       )}
