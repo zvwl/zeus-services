@@ -138,19 +138,16 @@ export const AuthProvider = ({ children }) => {
     // Check for existing Supabase session
     // Supabase with persistSession: true will automatically restore from localStorage
     const checkSession = async () => {
+      // Keep a reference so the catch block can use it as fallback
+      let savedSession = null
+
       try {
-        
-        // CRITICAL: Give Supabase time to initialize and restore session from localStorage
-        // Without this delay, getSession() might run before Supabase reads from storage
         await new Promise(resolve => setTimeout(resolve, 200))
-        
-        // CRITICAL: Wait for Supabase to finish initializing and restoring session from localStorage
-        // By default, Supabase checks localStorage on first getSession() call
+
         const { data: { session }, error } = await supabase.auth.getSession()
-        
+        savedSession = session
 
         if (error) {
-          console.error('Session error:', error)
           setUser(null)
           setEmailVerified(false)
           setLoading(false)
@@ -158,13 +155,10 @@ export const AuthProvider = ({ children }) => {
         }
 
         if (session?.user) {
-          // Verify the user actually exists in the database
           const { data: { user: verifiedUser }, error: userError } = await supabase.auth.getUser()
 
           if (userError) {
-            console.warn('User verification warning:', userError)
             const status = userError?.status
-            // Only force logout on definitive auth errors
             if (status === 401 || status === 403) {
               await supabase.auth.signOut({ scope: 'local' })
               setUser(null)
@@ -172,6 +166,7 @@ export const AuthProvider = ({ children }) => {
               setLoading(false)
               return
             }
+            // Non-auth error — fall through and use session.user below
           }
 
           const effectiveUser = verifiedUser || session.user
@@ -182,9 +177,7 @@ export const AuthProvider = ({ children }) => {
             return
           }
 
-          const isVerified = effectiveUser.email_confirmed_at !== null
-
-          if (!isVerified) {
+          if (!effectiveUser.email_confirmed_at) {
             await supabase.auth.signOut({ scope: 'local' })
             setUser(null)
             setEmailVerified(false)
@@ -193,31 +186,40 @@ export const AuthProvider = ({ children }) => {
             return
           }
 
-          // Fetch display name from customers table
           const displayName = await fetchDisplayName(effectiveUser.id)
-          
+
           setUser({
             id: effectiveUser.id,
             email: effectiveUser.email,
             name: displayName || effectiveUser.email.split('@')[0],
-            created_at: effectiveUser.created_at
+            created_at: effectiveUser.created_at,
           })
           setEmailVerified(true)
-          
-          // Check admin status in the background (don't block page load)
           checkAdminStatus(effectiveUser.id)
-          
           setLoading(false)
         } else {
           setLoading(false)
         }
       } catch (err) {
         console.error('Session check error:', err)
-        // If session check fails, clear everything
-        setUser(null)
-        setEmailVerified(false)
-        setIsAdmin(false)
-        setLoading(false)
+        // If we have a valid cached session, keep the user logged in rather than
+        // kicking them out due to a transient network/API error.
+        if (savedSession?.user?.email_confirmed_at) {
+          const u = savedSession.user
+          setUser({
+            id: u.id,
+            email: u.email,
+            name: u.email.split('@')[0],
+            created_at: u.created_at,
+          })
+          setEmailVerified(true)
+          setLoading(false)
+        } else {
+          setUser(null)
+          setEmailVerified(false)
+          setIsAdmin(false)
+          setLoading(false)
+        }
       }
     }
 

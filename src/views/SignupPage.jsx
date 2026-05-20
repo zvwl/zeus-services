@@ -44,8 +44,15 @@ export default function SignupPage() {
   const [nameAvailable, setNameAvailable] = useState(null) // null = not checked, true = available, false = taken
   const [nameError, setNameError] = useState('')
   const checkNameTimeoutRef = useRef(null)
-  const { signup } = useAuth()
+  const { signup, user, loading: authLoading } = useAuth()
   const router = useRouter()
+
+  // Redirect already-logged-in users
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace('/boosting')
+    }
+  }, [user, authLoading, router])
 
   // Check display name availability with debouncing
   useEffect(() => {
@@ -92,13 +99,9 @@ export default function SignupPage() {
     
     checkNameTimeoutRef.current = setTimeout(async () => {
       try {
-        console.log('Checking display name availability for:', trimmedName)
-        // Call the database function to check availability
         const { data, error } = await supabase.rpc('is_display_name_available', {
           check_name: trimmedName
         })
-
-        console.log('RPC result:', { data, error })
 
         if (error) {
           console.error('Error checking display name:', error)
@@ -177,11 +180,8 @@ export default function SignupPage() {
     const result = await signup(displayName.trim(), email, password, bypassTurnstile ? 'bypass' : captchaToken)
     if (result.success) {
       resetCaptcha()
-      console.log('Signup success, navigating to pending-verification')
-      // Redirect to pending verification page
-      router.push('/pending-verification', { state: { email } })
+      router.push('/pending-verification')
     } else {
-      console.log('Signup failed:', result.error)
       setError(result.error)
       resetCaptcha()
     }

@@ -43,12 +43,19 @@ export default function LoginPage() {
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
   const [captchaKey, setCaptchaKey] = useState(0)
-  const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge } = useAuth()
+  const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge, user, loading: authLoading } = useAuth()
   const router = useRouter()
 
   useEffect(() => {
     setBypassTurnstile(isTurnstileBypassed())
   }, [])
+
+  // Redirect already-logged-in users
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.replace(redirectTo)
+    }
+  }, [user, authLoading, router, redirectTo])
 
   const resetCaptcha = () => {
     setCaptchaToken(null)
