@@ -437,7 +437,7 @@
   padding: 2rem;
   height: fit-content;
   position: sticky;
-  top: 120px;
+  top: calc(var(--top-stack-height) + 1rem);
 }
 
 .checkout-order-summary h3 {
@@ -566,7 +566,7 @@
   padding: 2rem;
   height: fit-content;
   position: sticky;
-  top: 120px;
+  top: calc(var(--top-stack-height) + 1rem);
 }
 
 .checkout-payment-form h3 {
