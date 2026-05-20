@@ -50,12 +50,14 @@ export default function LoginPage() {
     setBypassTurnstile(isTurnstileBypassed())
   }, [])
 
-  // Redirect already-logged-in users
+  // Redirect already-logged-in users — but only on mount, not during the login flow.
+  // We gate on a ref so the effect never fires after the user just signed in.
+  const isLoggingInRef = useRef(false)
   useEffect(() => {
-    if (!authLoading && user) {
+    if (!authLoading && user && !isLoggingInRef.current) {
       router.replace(redirectTo)
     }
-  }, [user, authLoading, router, redirectTo])
+  }, [user, authLoading]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const resetCaptcha = () => {
     setCaptchaToken(null)
@@ -86,19 +88,17 @@ export default function LoginPage() {
       return
     }
 
+    isLoggingInRef.current = true
     const result = await login(email, password, bypassTurnstile ? 'bypass' : captchaToken)
-    
-    // Reset CAPTCHA immediately after login attempt (success or failure)
     resetCaptcha()
-    
+
     if (result.success) {
-      // If user came from checkout, go to checkout. Otherwise check for pending cart item.
-      if (redirectTo === '/checkout') {
-        router.push('/checkout')
+      // If there is an explicit redirect destination, always honour it.
+      if (redirectTo !== '/boosting') {
+        router.push(redirectTo)
         return
       }
-      
-      // Check if there's a pending cart item to add
+      // Default: check for a pending cart item added before login.
       const pendingItem = localStorage.getItem('pendingCartItem')
       if (pendingItem) {
         try {
@@ -107,14 +107,11 @@ export default function LoginPage() {
             router.push(`/${categorySlug}/${gameSlug}/${itemSlug}`)
             return
           }
-        } catch (err) {
-          console.error('Error processing pending cart item:', err)
+        } catch {
           localStorage.removeItem('pendingCartItem')
-          router.push(redirectTo)
         }
-      } else {
-        router.push(redirectTo)
       }
+      router.push(redirectTo)
       return
     }
 
@@ -198,32 +195,13 @@ export default function LoginPage() {
       if (result.success) {
         setMfaRequired(false)
         setMfaCode('')
-        setCaptchaToken(null)
-        setCaptchaKey((prev) => prev + 1)
-        
-        // If user came from checkout, go to checkout. Otherwise check for pending cart item.
-        if (redirectTo === '/checkout') {
-          router.push('/checkout')
+        resetCaptcha()
+        isLoggingInRef.current = true
+        if (redirectTo !== '/boosting') {
+          router.push(redirectTo)
           return
         }
-        
-        // Check if there's a pending cart item to add
-        const pendingItem = localStorage.getItem('pendingCartItem')
-        if (pendingItem) {
-          try {
-            const { itemSlug, gameSlug, categorySlug } = JSON.parse(pendingItem)
-            if (itemSlug && gameSlug && categorySlug) {
-              router.push(`/${categorySlug}/${gameSlug}/${itemSlug}`)
-              return
-            }
-          } catch (err) {
-            console.error('Error processing pending cart item:', err)
-            localStorage.removeItem('pendingCartItem')
-            router.push(redirectTo)
-          }
-        } else {
-          router.push(redirectTo)
-        }
+        router.push(redirectTo)
       } else {
         setMfaError(result.error || 'Verification failed')
       }
