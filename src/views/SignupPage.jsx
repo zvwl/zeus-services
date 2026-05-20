@@ -39,7 +39,7 @@ export default function SignupPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState('')
   const [captchaToken, setCaptchaToken] = useState(null)
-  const [captchaKey, setCaptchaKey] = useState(0)
+  const turnstileRef = useRef(null)
   const [isCheckingName, setIsCheckingName] = useState(false)
   const [nameAvailable, setNameAvailable] = useState(null) // null = not checked, true = available, false = taken
   const [nameError, setNameError] = useState('')
@@ -134,7 +134,7 @@ export default function SignupPage() {
 
   const resetCaptcha = () => {
     setCaptchaToken(null)
-    setCaptchaKey((prev) => prev + 1)
+    turnstileRef.current?.reset()
   }
 
   const handleSubmit = async (e) => {
@@ -320,7 +320,7 @@ export default function SignupPage() {
               <label>Security check</label>
               {siteKey && !bypassTurnstile ? (
                 <Turnstile
-                  key={captchaKey}
+                  ref={turnstileRef}
                   siteKey={siteKey}
                   onSuccess={(token) => {
                     setCaptchaToken(token)
@@ -332,7 +332,7 @@ export default function SignupPage() {
                     theme: 'dark',
                     retry: 'auto',
                     retryInterval: 2000,
-                    refreshExpired: 'auto'
+                    refreshExpired: 'auto',
                   }}
                 />
               ) : bypassTurnstile ? (

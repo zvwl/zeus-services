@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Turnstile } from '@marsidev/react-turnstile'
 import { useAuth } from '@/contexts/AuthContext'
@@ -42,7 +42,7 @@ export default function LoginPage() {
   const [mfaChallengeId, setMfaChallengeId] = useState(null)
   const [isVerifyingMfa, setIsVerifyingMfa] = useState(false)
   const [captchaToken, setCaptchaToken] = useState(null)
-  const [captchaKey, setCaptchaKey] = useState(0)
+  const turnstileRef = useRef(null)
   const { login, loginWithGoogle, loginWithDiscord, verifyMfaChallenge, user, loading: authLoading } = useAuth()
   const router = useRouter()
 
@@ -59,7 +59,7 @@ export default function LoginPage() {
 
   const resetCaptcha = () => {
     setCaptchaToken(null)
-    setCaptchaKey((prev) => prev + 1)
+    turnstileRef.current?.reset()
   }
 
   const handleSubmit = async (e) => {
@@ -299,7 +299,7 @@ export default function LoginPage() {
               <label>Security check</label>
               {siteKey && !bypassTurnstile ? (
                 <Turnstile
-                  key={captchaKey}
+                  ref={turnstileRef}
                   siteKey={siteKey}
                   onSuccess={(token) => {
                     setCaptchaToken(token)
@@ -311,7 +311,7 @@ export default function LoginPage() {
                     theme: 'dark',
                     retry: 'auto',
                     retryInterval: 2000,
-                    refreshExpired: 'auto'
+                    refreshExpired: 'auto',
                   }}
                 />
               ) : bypassTurnstile ? (
