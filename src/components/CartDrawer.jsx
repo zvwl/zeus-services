@@ -13,6 +13,11 @@ export default function CartDrawer() {
   const { cartItems, isCartOpen: isOpen, closeCart: onClose, removeFromCart: onRemove, updateQuantity: onUpdateQuantity, formatPrice } = useCart()
   const itemPathCacheRef = useRef({})
 
+  useEffect(() => {
+    document.body.classList.toggle('overlay-cart-open', isOpen)
+    return () => document.body.classList.remove('overlay-cart-open')
+  }, [isOpen])
+
   const totalUsd = cartItems.reduce((sum, item) => sum + (item.price * item.quantity), 0)
 
   const toSlug = (value) => {

@@ -80,6 +80,11 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
 
   const isActive = (path) => pathname === path
 
+  useEffect(() => {
+    document.body.classList.toggle('overlay-menu-open', isOpen)
+    return () => document.body.classList.remove('overlay-menu-open')
+  }, [isOpen])
+
   // Scroll lock when menu is open to prevent page jump
   useEffect(() => {
     if (!isOpen) return
