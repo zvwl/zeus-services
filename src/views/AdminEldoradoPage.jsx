@@ -377,10 +377,15 @@ function OrdersTab({ sellers, callApi, setGlobalError }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/orders/me/sales',
+        endpoint: '/api/orders/me/seller',
         params: statusFilter !== 'all' ? { status: statusFilter } : {},
       })
       console.log('RAW ORDERS:', data)
+
+      if (data?.ok === false) {
+  setLocalError(JSON.stringify(data.data, null, 2))
+  return
+}
 
 const list =
   Array.isArray(data?.data) ? data.data :
