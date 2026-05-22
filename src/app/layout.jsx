@@ -66,9 +66,17 @@ const globalSchemas = [
     url: 'https://zeuservices.com',
     logo: { '@type': 'ImageObject', url: 'https://zeuservices.com/zeus-logo-main.webp', width: 512, height: 512 },
     image: 'https://zeuservices.com/zeus-logo-main.webp',
-    description: 'Professional multi-game account services with safe manual delivery. 9+ years of experience.',
+    description: 'Professional multi-game top-ups, boosting, and account services with safe manual delivery via Discord. 9+ years of trusted experience.',
     sameAs: ['https://www.zeuservices.com'],
     contactPoint: { '@type': 'ContactPoint', contactType: 'Customer Service', availableLanguage: ['English'] },
+    aggregateRating: {
+      '@type': 'AggregateRating',
+      ratingValue: '5.0',
+      bestRating: '5',
+      worstRating: '1',
+      ratingCount: '20',
+      reviewCount: '20',
+    },
   },
 ]
 

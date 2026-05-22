@@ -31,6 +31,7 @@ export default function Footer() {
         <div className="footer-section">
           <h3>Resources</h3>
           <div className="footer-links">
+            <Link href="/blog" onClick={scrollTop}>Gaming Guides</Link>
             <Link href="/faq" onClick={scrollTop}>FAQ</Link>
             <Link href="/process" onClick={scrollTop}>How It Works</Link>
             <Link href="/comparison" onClick={scrollTop}>Modded vs Boosting</Link>

@@ -341,6 +341,7 @@ export default function Header() {
             {categories.map(category => (
               <CategoryDropdown key={category.id} category={category} onCloseCart={closeCart} />
             ))}
+            <Link href="/blog" className={fixedNavLinkClass('/blog')} onClick={closeCart}>Guides</Link>
             <Link href="/reviews" className={fixedNavLinkClass('/reviews')} onClick={closeCart}>Reviews</Link>
             <Link href="/faq" className={fixedNavLinkClass('/faq')} onClick={closeCart}>FAQ</Link>
           </nav>

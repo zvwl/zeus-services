@@ -15,16 +15,17 @@ export async function generateMetadata({ params }) {
   if (!category) return { title: 'Not Found' }
 
   const name = stripEmojis(category.name)
-  const title = `${name} - GTA 5, Fortnite, Rocket League & More`
-  const description = `Buy premium ${name.toLowerCase()} for GTA 5, Fortnite, Rocket League, Forza Horizon 6 and more. Safe manual delivery via Discord. Trusted for 9+ years.`
+  const categoryDescriptions = {
+    topups: `Buy cheap ${name} for GTA 5, Fortnite, Rocket League and Forza Horizon 6. Fast, safe currency delivery via Discord. No account sharing. From £2.36. Trusted service since 2015.`,
+    boosting: `Professional ${name} services for GTA 5, Rocket League, Fortnite and more. Rank up fast with safe manual boosting delivered via Discord. 9+ years experience. Secure Stripe checkout.`,
+    accounts: `Buy modded ${name} for GTA 5 and more. Pre-built accounts loaded with GTA$, rank, properties and vehicles — ready to play instantly. Safe delivery via Discord. Trusted for 9+ years.`,
+  }
+  const title = `${name} - Buy Cheap ${name} for GTA 5, Fortnite, Rocket League | Zeuservices`
+  const description = categoryDescriptions[categorySlug] || `Buy premium ${name.toLowerCase()} for GTA 5, Fortnite, Rocket League, Forza Horizon 6 and more. Safe manual delivery via Discord. Trusted for 9+ years.`
   return {
     title,
     description,
-    openGraph: {
-      title,
-      description,
-      url: `https://zeuservices.com/${categorySlug}`,
-    },
+    openGraph: { title, description, url: `https://zeuservices.com/${categorySlug}` },
     robots: { index: true, follow: true },
     alternates: { canonical: `https://zeuservices.com/${categorySlug}` },
   }

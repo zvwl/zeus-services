@@ -1,4 +1,5 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { getBlogPosts } from '@/data/blog-posts'
 
 const BASE = 'https://zeuservices.com'
 
@@ -8,14 +9,22 @@ export default async function sitemap() {
   const staticPages = [
     { url: BASE, changeFrequency: 'daily', priority: 1.0 },
     { url: `${BASE}/reviews`, changeFrequency: 'daily', priority: 0.9 },
+    { url: `${BASE}/blog`, changeFrequency: 'weekly', priority: 0.85 },
+    { url: `${BASE}/faq`, changeFrequency: 'monthly', priority: 0.75 },
     { url: `${BASE}/process`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/safety`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/trust`, changeFrequency: 'monthly', priority: 0.7 },
-    { url: `${BASE}/faq`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${BASE}/terms`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE}/privacy`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${BASE}/refund`, changeFrequency: 'monthly', priority: 0.5 },
   ].map(p => ({ ...p, lastModified: now }))
+
+  const blogPages = getBlogPosts().map(post => ({
+    url: `${BASE}/blog/${post.slug}`,
+    lastModified: new Date(post.publishedAt),
+    changeFrequency: 'monthly',
+    priority: 0.75,
+  }))
 
   try {
     const supabase = await createSupabaseServerClient()
@@ -79,8 +88,8 @@ export default async function sitemap() {
         priority: 0.8,
       }))
 
-    return [...staticPages, ...categoryPages, ...gamePages, ...itemPages]
+    return [...staticPages, ...blogPages, ...categoryPages, ...gamePages, ...itemPages]
   } catch {
-    return staticPages
+    return [...staticPages, ...blogPages]
   }
 }
