@@ -377,7 +377,7 @@ function OrdersTab({ sellers, callApi, setGlobalError }) {
   action: 'call_api',
   sellerId: sid,
   method: 'GET',
-  endpoint: '/api/orders/me',
+  endpoint: '/api/v1/orders/me/seller/orders',
   params: statusFilter !== 'all'
     ? { status: statusFilter }
     : {},
@@ -542,12 +542,8 @@ function OffersTab({ sellers, callApi, setGlobalError, setGlobalSuccess }) {
   action: 'call_api',
   sellerId: sid,
   method: 'GET',
-  endpoint: '/api/flexibleOffers',
-  params: {
-    offerType: 'Account',
-    itemTreeId: '16-1-0',
-    isInstantDelivery: 'true',
-  },
+  endpoint: '/api/flexibleOffers/me/search',
+
 })
       console.log('RAW OFFERS:', data)
 
