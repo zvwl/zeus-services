@@ -388,24 +388,20 @@ function OrdersTab({ sellers, callApi }) {
   const [orders, setOrders] = useState([])
   const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
-  const [page, setPage] = useState(1)
-  const [hasMore, setHasMore] = useState(false)
   const [actionLoading, setActionLoading] = useState(null)
   const [error, setError] = useState('')
 
-  const PAGE_SIZE = 20
-
-  const fetchOrders = async (sid, pageNum = 1, append = false) => {
+  const fetchOrders = async (sid) => {
     if (!sid) return
-    if (append) setLoadingMore(true)
-    else { setLoading(true); setOrders([]); setHasLoaded(false) }
+    setLoading(true)
     setError('')
+    setOrders([])
     setRawResponse(null)
+    setHasLoaded(false)
     try {
-      const params = { page: String(pageNum), pageSize: String(PAGE_SIZE) }
+      const params = { limit: '100' }
       if (statusFilter !== 'all') params.status = statusFilter
       const result = await callApi({
         action: 'call_api',
@@ -419,17 +415,12 @@ function OrdersTab({ sellers, callApi }) {
         setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
         return
       }
-      const list = extractList(result.data)
-      if (append) setOrders(prev => [...prev, ...list])
-      else setOrders(list)
-      setPage(pageNum)
-      setHasMore(list.length === PAGE_SIZE)
+      setOrders(extractList(result.data))
       setHasLoaded(true)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
-      setLoadingMore(false)
     }
   }
 
@@ -473,7 +464,7 @@ function OrdersTab({ sellers, callApi }) {
           <option value="Completed">Completed</option>
           <option value="Cancelled">Cancelled</option>
         </select>
-        <button className="btn btn-primary btn-sm" onClick={() => fetchOrders(sellerId, 1, false)} disabled={!sellerId || loading}>
+        <button className="btn btn-primary btn-sm" onClick={() => fetchOrders(sellerId)} disabled={!sellerId || loading}>
           <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Orders'}
         </button>
       </div>
@@ -493,9 +484,6 @@ function OrdersTab({ sellers, callApi }) {
         </>
       ) : (
         <>
-          <div style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
-            Showing {orders.length} orders
-          </div>
           <div className="eldorado-table-wrapper">
             <table className="eldorado-table">
               <thead>
@@ -546,17 +534,6 @@ function OrdersTab({ sellers, callApi }) {
               </tbody>
             </table>
           </div>
-          {hasMore && (
-            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-              <button
-                className="btn btn-secondary"
-                onClick={() => fetchOrders(sellerId, page + 1, true)}
-                disabled={loadingMore}
-              >
-                {loadingMore ? 'Loading more...' : `Load more (page ${page + 1})`}
-              </button>
-            </div>
-          )}
           <RawDebug raw={rawResponse} />
         </>
       )}
@@ -756,7 +733,7 @@ function NotificationsTab({ sellers, callApi }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/notifications/me',
+        endpoint: '/api/v1/notifications/me',
       })
       setRawResponse(result)
       if (!result.ok) {
