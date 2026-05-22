@@ -383,9 +383,34 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
 
 // ── Orders Tab ────────────────────────────────────────────────────────────────
 
+function fmtDelivery(dt) {
+  if (!dt) return null
+  // "00:08:31.3906076" → "8m 31s"
+  const parts = dt.split(':')
+  if (parts.length < 3) return dt
+  const h = parseInt(parts[0])
+  const m = parseInt(parts[1])
+  const s = Math.floor(parseFloat(parts[2]))
+  if (h > 0) return `${h}h ${m}m`
+  if (m > 0) return `${m}m ${s}s`
+  return `${s}s`
+}
+
+const STATUS_COLORS = {
+  initialized: '#64748b',
+  paid:        '#fbbf24',
+  delivered:   '#3b82f6',
+  received:    '#8b5cf6',
+  completed:   '#10b981',
+  canceled:    '#ef4444',
+  cancelled:   '#ef4444',
+}
+
 function OrdersTab({ sellers, callApi }) {
   const [sellerId, setSellerId] = useState('')
   const [orders, setOrders] = useState([])
+  const [nextCursor, setNextCursor] = useState(null)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
@@ -393,34 +418,52 @@ function OrdersTab({ sellers, callApi }) {
   const [actionLoading, setActionLoading] = useState(null)
   const [error, setError] = useState('')
 
+  const doFetch = async (sid, cursor, append) => {
+    const params = { pageSize: '20' }
+    if (cursor) params.cursor = cursor
+    if (statusFilter !== 'all') params.status = statusFilter
+    const result = await callApi({
+      action: 'call_api',
+      sellerId: sid,
+      method: 'GET',
+      endpoint: '/api/v1/orders/me/seller/orders',
+      params,
+    })
+    setRawResponse(result)
+    if (!result.ok) throw new Error(`Eldorado error (${result.status}): ${JSON.stringify(result.data)}`)
+    const list = result.data?.results || []
+    if (append) setOrders(prev => [...prev, ...list])
+    else setOrders(list)
+    setNextCursor(result.data?.nextPageCursor || null)
+  }
+
   const fetchOrders = async (sid) => {
     if (!sid) return
     setLoading(true)
     setError('')
     setOrders([])
+    setNextCursor(null)
     setRawResponse(null)
     setHasLoaded(false)
     try {
-      const params = { limit: '100' }
-      if (statusFilter !== 'all') params.status = statusFilter
-      const result = await callApi({
-        action: 'call_api',
-        sellerId: sid,
-        method: 'GET',
-        endpoint: '/api/v1/orders/me/seller/orders',
-        params,
-      })
-      setRawResponse(result)
-      if (!result.ok) {
-        setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
-        return
-      }
-      setOrders(extractList(result.data))
+      await doFetch(sid, null, false)
       setHasLoaded(true)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadMore = async () => {
+    if (!nextCursor) return
+    setLoadingMore(true)
+    try {
+      await doFetch(sellerId, nextCursor, true)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoadingMore(false)
     }
   }
 
@@ -452,17 +495,17 @@ function OrdersTab({ sellers, callApi }) {
 
       <div className="seller-selector-bar">
         <label>Seller:</label>
-        <select value={sellerId} onChange={e => { setSellerId(e.target.value); setOrders([]); setHasLoaded(false); setRawResponse(null) }}>
+        <select value={sellerId} onChange={e => { setSellerId(e.target.value); setOrders([]); setHasLoaded(false); setNextCursor(null); setRawResponse(null) }}>
           <option value="">— Select seller —</option>
           {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
         </select>
         <label>Status:</label>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           <option value="all">All</option>
-          <option value="Initialized">Initialized</option>
           <option value="Paid">Paid</option>
+          <option value="Delivered">Delivered</option>
           <option value="Completed">Completed</option>
-          <option value="Cancelled">Cancelled</option>
+          <option value="Canceled">Canceled</option>
         </select>
         <button className="btn btn-primary btn-sm" onClick={() => fetchOrders(sellerId)} disabled={!sellerId || loading}>
           <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Orders'}
@@ -484,15 +527,21 @@ function OrdersTab({ sellers, callApi }) {
         </>
       ) : (
         <>
+          <div style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '0.6rem' }}>
+            {orders.length} orders loaded{nextCursor ? ' — more available' : ''}
+          </div>
           <div className="eldorado-table-wrapper">
             <table className="eldorado-table">
               <thead>
                 <tr>
                   <th>Order ID</th>
                   <th>Item</th>
+                  <th>Platform</th>
+                  <th>Qty</th>
                   <th>Buyer</th>
                   <th>Price</th>
                   <th>Status</th>
+                  <th>Delivered in</th>
                   <th>Created</th>
                   <th>Actions</th>
                 </tr>
@@ -500,31 +549,45 @@ function OrdersTab({ sellers, callApi }) {
               <tbody>
                 {orders.map(order => {
                   const oid = order.id
-                  const status = order.state?.state || order.status || ''
+                  const status = order.state?.state || ''
+                  const statusKey = status.toLowerCase()
+                  const color = STATUS_COLORS[statusKey] || '#94a3b8'
+                  const platform = order.orderOfferDetails?.tradeEnvironmentProperties?.[0]?.value || '—'
+                  const qty = order.purchaseQuantity
+                  const fmtQty = qty >= 1_000_000
+                    ? `${(qty / 1_000_000).toFixed(0)}M`
+                    : qty >= 1_000 ? `${(qty / 1_000).toFixed(0)}K` : String(qty ?? '—')
                   return (
                     <tr key={oid}>
-                      <td className="order-id-cell" title={String(oid)}>{String(oid).substring(0, 10)}…</td>
-                      <td>{order.orderOfferDetails?.gameCategoryTitle || order.orderOfferDetails?.category || order.title || '—'}</td>
-                      <td>{order.buyerUsername || order.buyer?.username || '—'}</td>
+                      <td className="order-id-cell" title={String(oid)}>{String(oid).substring(0, 8)}…</td>
+                      <td>{order.orderOfferDetails?.gameCategoryTitle || '—'}</td>
+                      <td style={{ fontSize: '0.8rem' }}>{platform}</td>
+                      <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>{fmtQty}</td>
+                      <td>{order.buyerUsername || '—'}</td>
                       <td className="price-tag">
-                        {order.totalPrice?.amount != null
-                          ? `${order.totalPrice.amount} ${order.totalPrice.currency ?? ''}`
-                          : order.price != null ? `$${Number(order.price).toFixed(2)}` : '—'}
+                        {order.totalPrice?.amount != null ? `${order.totalPrice.amount} ${order.totalPrice.currency}` : '—'}
                       </td>
-                      <td><span className={`status-badge status-${status.toLowerCase()}`}>{status || '—'}</span></td>
+                      <td>
+                        <span className="status-badge" style={{ background: `${color}22`, color }}>
+                          {status || '—'}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '0.8rem', color: '#64748b' }}>
+                        {fmtDelivery(order.deliveryTime) || '—'}
+                      </td>
                       <td style={{ fontSize: '0.8rem' }}>
                         {order.createdDate
                           ? new Date(order.createdDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
                           : '—'}
                       </td>
                       <td>
-                        {(status === 'Paid' || status === 'Initialized') && (
+                        {status === 'Paid' && (
                           <button
                             className="btn btn-primary btn-sm"
                             onClick={() => handleDeliver(oid)}
                             disabled={actionLoading === oid}
                           >
-                            {actionLoading === oid ? 'Delivering...' : 'Mark Delivered'}
+                            {actionLoading === oid ? '...' : 'Deliver'}
                           </button>
                         )}
                       </td>
@@ -534,6 +597,13 @@ function OrdersTab({ sellers, callApi }) {
               </tbody>
             </table>
           </div>
+          {nextCursor && (
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <button className="btn btn-secondary" onClick={loadMore} disabled={loadingMore}>
+                {loadingMore ? 'Loading...' : 'Load more orders'}
+              </button>
+            </div>
+          )}
           <RawDebug raw={rawResponse} />
         </>
       )}
