@@ -15,7 +15,8 @@ Disallow: /signup
 Disallow: /verify-email
 Disallow: /pending-verification
 
-# Public pages are discoverable through the homepage, nav, and sitemap.
+# Block query-parameter variants that produce thin/duplicate content
+Disallow: /*?search=
+Disallow: /*?*search=
 
-# Sitemap location - helps Google discover all pages
 Sitemap: https://zeuservices.com/sitemap.xml
