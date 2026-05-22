@@ -4,11 +4,24 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { RefreshCw, Plus, Trash2, Eye, EyeOff, Package, Tag, Bell, Users } from 'lucide-react'
+import { RefreshCw, Plus, Trash2, Eye, EyeOff, Package, Tag, Bell, Users, ChevronDown, ChevronUp } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './AdminEldoradoPage.css'
 
 const EDGE_FN = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/eldorado-api`
+
+// Extract a list from any shape Eldorado might return
+function extractList(d) {
+  if (!d) return []
+  if (Array.isArray(d)) return d
+  if (Array.isArray(d.results)) return d.results
+  if (Array.isArray(d.orders)) return d.orders
+  if (Array.isArray(d.offers)) return d.offers
+  if (Array.isArray(d.items)) return d.items
+  if (Array.isArray(d.notifications)) return d.notifications
+  if (Array.isArray(d.data)) return d.data
+  return []
+}
 
 export default function AdminEldoradoPage() {
   const { user, isAdmin, loading: authLoading } = useAuth()
@@ -52,11 +65,7 @@ export default function AdminEldoradoPage() {
   }, [user, isAdmin, fetchSellers])
 
   if (authLoading) {
-    return (
-      <div className="eldorado-container">
-        <LoadingSpinner message="Verifying admin access..." />
-      </div>
-    )
+    return <div className="eldorado-container"><LoadingSpinner message="Verifying admin access..." /></div>
   }
 
   if (!user || !isAdmin) {
@@ -81,13 +90,21 @@ export default function AdminEldoradoPage() {
           <h1 className="eldorado-title">Eldorado Management</h1>
           <p className="eldorado-subtitle">Manage seller accounts and monitor orders on Eldorado.gg</p>
         </div>
-        <button className="btn btn-secondary" onClick={() => router.push('/admin/dashboard')}>
-          ← Dashboard
-        </button>
+        <button className="btn btn-secondary" onClick={() => router.push('/admin/dashboard')}>← Dashboard</button>
       </div>
 
-      {globalError && <div className="eldorado-error">{globalError}<button style={{ marginLeft: '0.75rem', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 700 }} onClick={() => setGlobalError('')}>✕</button></div>}
-      {globalSuccess && <div className="eldorado-success">{globalSuccess}<button style={{ marginLeft: '0.75rem', background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', fontWeight: 700 }} onClick={() => setGlobalSuccess('')}>✕</button></div>}
+      {globalError && (
+        <div className="eldorado-error">
+          {globalError}
+          <button className="eldorado-dismiss" onClick={() => setGlobalError('')}>✕</button>
+        </div>
+      )}
+      {globalSuccess && (
+        <div className="eldorado-success">
+          {globalSuccess}
+          <button className="eldorado-dismiss" onClick={() => setGlobalSuccess('')}>✕</button>
+        </div>
+      )}
 
       <div className="eldorado-tabs">
         {tabs.map(({ id, label, Icon }) => (
@@ -103,23 +120,39 @@ export default function AdminEldoradoPage() {
       </div>
 
       {activeTab === 'sellers' && (
-        <SellersTab
-          sellers={sellers}
-          loadingSellers={loadingSellers}
-          callApi={callApi}
-          onRefresh={fetchSellers}
-          setGlobalError={setGlobalError}
-          setGlobalSuccess={setGlobalSuccess}
-        />
+        <SellersTab sellers={sellers} loadingSellers={loadingSellers} callApi={callApi} onRefresh={fetchSellers} setGlobalError={setGlobalError} setGlobalSuccess={setGlobalSuccess} />
       )}
       {activeTab === 'orders' && (
-        <OrdersTab sellers={sellers} callApi={callApi} setGlobalError={setGlobalError} />
+        <OrdersTab sellers={sellers} callApi={callApi} />
       )}
       {activeTab === 'offers' && (
-        <OffersTab sellers={sellers} callApi={callApi} setGlobalError={setGlobalError} setGlobalSuccess={setGlobalSuccess} />
+        <OffersTab sellers={sellers} callApi={callApi} setGlobalSuccess={setGlobalSuccess} />
       )}
       {activeTab === 'notifications' && (
-        <NotificationsTab sellers={sellers} callApi={callApi} setGlobalError={setGlobalError} />
+        <NotificationsTab sellers={sellers} callApi={callApi} />
+      )}
+    </div>
+  )
+}
+
+// ── Raw response debug panel ──────────────────────────────────────────────────
+
+function RawDebug({ raw }) {
+  const [open, setOpen] = useState(false)
+  if (!raw) return null
+  return (
+    <div style={{ marginTop: '1rem', border: '1px solid #1e293b', borderRadius: '8px', overflow: 'hidden' }}>
+      <button
+        onClick={() => setOpen(v => !v)}
+        style={{ width: '100%', background: '#0f172a', border: 'none', color: '#64748b', padding: '0.6rem 1rem', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.8rem', fontWeight: 600 }}
+      >
+        {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+        Raw API response (debug)
+      </button>
+      {open && (
+        <pre style={{ margin: 0, padding: '1rem', background: '#020617', color: '#94a3b8', fontSize: '0.75rem', overflowX: 'auto', maxHeight: '300px', overflowY: 'auto' }}>
+          {JSON.stringify(raw, null, 2)}
+        </pre>
       )}
     </div>
   )
@@ -138,7 +171,8 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
   const [newPassword, setNewPassword] = useState('')
   const [updatingPwd, setUpdatingPwd] = useState(false)
 
-  const handleAdd = async () => {
+  const handleAdd = async (e) => {
+    e.preventDefault()
     if (!addForm.display_name || !addForm.eldorado_email || !addForm.password) {
       setGlobalError('All fields are required')
       return
@@ -217,12 +251,10 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
         <h2 className="eldorado-section-title" style={{ margin: 0 }}>Seller Accounts</h2>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <button className="btn btn-secondary btn-sm" onClick={onRefresh} disabled={loadingSellers}>
-            <RefreshCw size={13} />
-            Refresh
+            <RefreshCw size={13} /> Refresh
           </button>
           <button className="btn btn-primary btn-sm" onClick={() => setShowAddForm(v => !v)}>
-            <Plus size={13} />
-            Add Seller
+            <Plus size={13} /> Add Seller
           </button>
         </div>
       </div>
@@ -230,13 +262,7 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
       {showAddForm && (
         <div className="add-seller-card">
           <p className="add-seller-title">Add New Seller</p>
-          <form
-  className="add-seller-form"
-  onSubmit={(e) => {
-    e.preventDefault()
-    handleAdd()
-  }}
->
+          <form className="add-seller-form" onSubmit={handleAdd}>
             <div className="form-field">
               <label>Display Name</label>
               <input
@@ -274,13 +300,13 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
               </div>
             </div>
             <div className="add-seller-actions">
-<button className="btn btn-primary" type="submit" disabled={addingLoading}>
-                  {addingLoading ? 'Verifying & Adding...' : 'Add Seller'}
+              <button className="btn btn-primary" type="submit" disabled={addingLoading}>
+                {addingLoading ? 'Verifying & Adding...' : 'Add Seller'}
               </button>
-              <button className="btn btn-secondary" onClick={() => { setShowAddForm(false); setAddForm({ display_name: '', eldorado_email: '', password: '' }) }}>
+              <button type="button" className="btn btn-secondary" onClick={() => { setShowAddForm(false); setAddForm({ display_name: '', eldorado_email: '', password: '' }) }}>
                 Cancel
               </button>
-              <span style={{ color: '#475569', fontSize: '0.8rem' }}>Credentials will be verified immediately</span>
+              <span style={{ color: '#475569', fontSize: '0.8rem' }}>Credentials are verified immediately</span>
             </div>
           </form>
         </div>
@@ -309,22 +335,20 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
               <div className="token-expires">{fmtExpiry(seller.token_expires_at)}</div>
 
               {updatePwdId === seller.id ? (
-                <div style={{ marginTop: '0.75rem' }}>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <input
-                      type="password"
-                      placeholder="New password"
-                      value={newPassword}
-                      onChange={e => setNewPassword(e.target.value)}
-                      style={{ flex: 1, background: '#0a0e1a', border: '1px solid #334155', borderRadius: '6px', padding: '0.45rem 0.65rem', color: '#f8fafc', fontSize: '0.85rem' }}
-                    />
-                    <button className="btn btn-primary btn-sm" onClick={() => handleUpdatePassword(seller.id)} disabled={updatingPwd}>
-                      {updatingPwd ? '...' : 'Save'}
-                    </button>
-                    <button className="btn btn-secondary btn-sm" onClick={() => { setUpdatePwdId(null); setNewPassword('') }}>
-                      Cancel
-                    </button>
-                  </div>
+                <div style={{ marginTop: '0.75rem', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <input
+                    type="password"
+                    placeholder="New password"
+                    value={newPassword}
+                    onChange={e => setNewPassword(e.target.value)}
+                    style={{ flex: 1, background: '#0a0e1a', border: '1px solid #334155', borderRadius: '6px', padding: '0.45rem 0.65rem', color: '#f8fafc', fontSize: '0.85rem' }}
+                  />
+                  <button className="btn btn-primary btn-sm" onClick={() => handleUpdatePassword(seller.id)} disabled={updatingPwd}>
+                    {updatingPwd ? '...' : 'Save'}
+                  </button>
+                  <button className="btn btn-secondary btn-sm" onClick={() => { setUpdatePwdId(null); setNewPassword('') }}>
+                    Cancel
+                  </button>
                 </div>
               ) : (
                 <div className="seller-card-actions" style={{ marginTop: '0.75rem' }}>
@@ -359,51 +383,41 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
 
 // ── Orders Tab ────────────────────────────────────────────────────────────────
 
-function OrdersTab({ sellers, callApi, setGlobalError }) {
+function OrdersTab({ sellers, callApi }) {
   const [sellerId, setSellerId] = useState('')
   const [orders, setOrders] = useState([])
+  const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
   const [actionLoading, setActionLoading] = useState(null)
-  const [localError, setLocalError] = useState('')
+  const [error, setError] = useState('')
 
   const fetchOrders = async (sid) => {
     if (!sid) return
     setLoading(true)
-    setLocalError('')
+    setError('')
     setOrders([])
+    setRawResponse(null)
+    setHasLoaded(false)
     try {
-      const data = await callApi({
-  action: 'call_api',
-  sellerId: sid,
-  method: 'GET',
-  endpoint: '/api/v1/orders/me/seller/orders',
-  params: statusFilter !== 'all'
-    ? { status: statusFilter }
-    : {},
-})
-
-console.log('RAW ORDERS:', data)
-
-if (data?.ok === false) {
-  setLocalError(JSON.stringify(data.data, null, 2))
-  return
-}
-
-// Eldorado returns account summary object here
-
-
-const list =
-  Array.isArray(data?.data?.results) ? data.data.results :
-  Array.isArray(data?.data?.orders) ? data.data.orders :
-  Array.isArray(data?.data) ? data.data :
-  Array.isArray(data?.orders) ? data.orders :
-  Array.isArray(data) ? data :
-  []
-
-setOrders(list)
-  } catch (err) {
-      setLocalError(err.message)
+      const result = await callApi({
+        action: 'call_api',
+        sellerId: sid,
+        method: 'GET',
+        endpoint: '/api/v1/orders/me/seller/orders',
+        params: statusFilter !== 'all' ? { status: statusFilter } : {},
+      })
+      // result = { status, ok, data: <eldorado_response> }
+      setRawResponse(result)
+      if (!result.ok) {
+        setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
+      setOrders(extractList(result.data))
+      setHasLoaded(true)
+    } catch (err) {
+      setError(err.message)
     } finally {
       setLoading(false)
     }
@@ -411,23 +425,25 @@ setOrders(list)
 
   const handleDeliver = async (orderId) => {
     setActionLoading(orderId)
-    setLocalError('')
+    setError('')
     try {
-      await callApi({
+      const result = await callApi({
         action: 'call_api',
         sellerId,
         method: 'PUT',
         endpoint: `/api/v1/orders/me/${orderId}/deliver`,
       })
+      if (!result.ok) {
+        setError(`Deliver failed (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
       fetchOrders(sellerId)
     } catch (err) {
-      setLocalError(err.message)
+      setError(err.message)
     } finally {
       setActionLoading(null)
     }
   }
-
-  const orderList = Array.isArray(orders) ? orders : []
 
   return (
     <div>
@@ -435,91 +451,90 @@ setOrders(list)
 
       <div className="seller-selector-bar">
         <label>Seller:</label>
-        <select value={sellerId} onChange={e => setSellerId(e.target.value)}>
+        <select value={sellerId} onChange={e => { setSellerId(e.target.value); setOrders([]); setHasLoaded(false); setRawResponse(null) }}>
           <option value="">— Select seller —</option>
           {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
         </select>
         <label>Status:</label>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
           <option value="all">All</option>
-          <option value="pending">Pending</option>
-          <option value="processing">Processing</option>
-          <option value="completed">Completed</option>
-          <option value="cancelled">Cancelled</option>
+          <option value="Initialized">Initialized</option>
+          <option value="Paid">Paid</option>
+          <option value="Completed">Completed</option>
+          <option value="Cancelled">Cancelled</option>
         </select>
         <button className="btn btn-primary btn-sm" onClick={() => fetchOrders(sellerId)} disabled={!sellerId || loading}>
-          <RefreshCw size={13} />
-          {loading ? 'Loading...' : 'Load Orders'}
+          <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Orders'}
         </button>
       </div>
 
-      {localError && <div className="eldorado-error">{localError}</div>}
+      {error && <div className="eldorado-error">{error}</div>}
 
       {loading ? (
         <div className="eldorado-spinner">Fetching orders...</div>
-      ) : orderList.length === 0 && sellerId ? (
-        <div className="eldorado-empty">No orders found for this seller.</div>
-      ) : orderList.length === 0 ? (
+      ) : !sellerId ? (
         <div className="eldorado-empty">Select a seller and click Load Orders.</div>
+      ) : !hasLoaded ? (
+        <div className="eldorado-empty">Click Load Orders to fetch orders for this seller.</div>
+      ) : orders.length === 0 ? (
+        <>
+          <div className="eldorado-empty">No orders found for this seller.</div>
+          <RawDebug raw={rawResponse} />
+        </>
       ) : (
-        <div className="eldorado-table-wrapper">
-          <table className="eldorado-table">
-            <thead>
-              <tr>
-                <th>Order ID</th>
-                <th>Item</th>
-                <th>Buyer</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Created</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {orderList.map(order => {
-                const oid = order.id
-const status = order.state?.state || ''
-const statusClass = status.toLowerCase()
-                return (
-                  <tr key={oid}>
-                    <td className="order-id-cell">{String(oid).substring(0, 12)}…</td>
-                    <td>{order.orderOfferDetails?.gameCategoryTitle || order.orderOfferDetails?.category || '—'}</td>
-<td>{order.buyerUsername || '—'}</td>
-<td className="price-tag">
-  {order.totalPrice?.amount != null
-    ? `${order.totalPrice.amount} ${order.totalPrice.currency}`
-    : '—'}
-</td>
-                    <td>
-                      <span className={`status-badge status-${statusClass}`}>{status || '—'}</span>
-                    </td>
-                    <td>
-                      {order.createdDate
-  ? new Date(order.createdDate).toLocaleString('en-GB', {
-      day: 'numeric',
-      month: 'short',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  : '—'}
-                    </td>
-                    <td>
-                      {(status === 'Paid' || status === 'Initialized') && (
-                        <button
-                          className="btn btn-primary btn-sm"
-                          onClick={() => handleDeliver(oid)}
-                          disabled={actionLoading === oid}
-                        >
-                          {actionLoading === oid ? 'Delivering...' : 'Mark Delivered'}
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="eldorado-table-wrapper">
+            <table className="eldorado-table">
+              <thead>
+                <tr>
+                  <th>Order ID</th>
+                  <th>Item</th>
+                  <th>Buyer</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Created</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {orders.map(order => {
+                  const oid = order.id
+                  const status = order.state?.state || order.status || ''
+                  return (
+                    <tr key={oid}>
+                      <td className="order-id-cell" title={String(oid)}>{String(oid).substring(0, 10)}…</td>
+                      <td>{order.orderOfferDetails?.gameCategoryTitle || order.orderOfferDetails?.category || order.title || '—'}</td>
+                      <td>{order.buyerUsername || order.buyer?.username || '—'}</td>
+                      <td className="price-tag">
+                        {order.totalPrice?.amount != null
+                          ? `${order.totalPrice.amount} ${order.totalPrice.currency ?? ''}`
+                          : order.price != null ? `$${Number(order.price).toFixed(2)}` : '—'}
+                      </td>
+                      <td><span className={`status-badge status-${status.toLowerCase()}`}>{status || '—'}</span></td>
+                      <td style={{ fontSize: '0.8rem' }}>
+                        {order.createdDate
+                          ? new Date(order.createdDate).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                          : '—'}
+                      </td>
+                      <td>
+                        {(status === 'Paid' || status === 'Initialized') && (
+                          <button
+                            className="btn btn-primary btn-sm"
+                            onClick={() => handleDeliver(oid)}
+                            disabled={actionLoading === oid}
+                          >
+                            {actionLoading === oid ? 'Delivering...' : 'Mark Delivered'}
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <RawDebug raw={rawResponse} />
+        </>
       )}
     </div>
   )
@@ -527,40 +542,38 @@ const statusClass = status.toLowerCase()
 
 // ── Offers Tab ────────────────────────────────────────────────────────────────
 
-function OffersTab({ sellers, callApi, setGlobalError, setGlobalSuccess }) {
+function OffersTab({ sellers, callApi, setGlobalSuccess }) {
   const [sellerId, setSellerId] = useState('')
   const [offers, setOffers] = useState([])
+  const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
   const [actionLoading, setActionLoading] = useState(null)
-  const [localError, setLocalError] = useState('')
+  const [error, setError] = useState('')
 
   const fetchOffers = async (sid) => {
     if (!sid) return
     setLoading(true)
-    setLocalError('')
+    setError('')
     setOffers([])
+    setRawResponse(null)
+    setHasLoaded(false)
     try {
-      const data = await callApi({
-  action: 'call_api',
-  sellerId: sid,
-  method: 'GET',
-  endpoint: '/api/flexibleOffers/me/search',
-
-})
-      console.log('RAW OFFERS:', data)
-
-const list =
-  Array.isArray(data?.data) ? data.data :
-  Array.isArray(data?.data?.results) ? data.data.results :
-  Array.isArray(data?.data?.offers) ? data.data.offers :
-  Array.isArray(data?.offers) ? data.offers :
-  Array.isArray(data?.items) ? data.items :
-  Array.isArray(data) ? data :
-  []
-
-setOffers(list)
+      const result = await callApi({
+        action: 'call_api',
+        sellerId: sid,
+        method: 'GET',
+        endpoint: '/api/flexibleOffers/me/search',
+      })
+      setRawResponse(result)
+      if (!result.ok) {
+        setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
+      setOffers(extractList(result.data))
+      setHasLoaded(true)
     } catch (err) {
-      setLocalError(err.message)
+      setError(err.message)
     } finally {
       setLoading(false)
     }
@@ -573,24 +586,26 @@ setOffers(list)
       delete: `/api/flexibleOffers/me/${offerId}`,
     }
     setActionLoading(`${offerId}-${action}`)
-    setLocalError('')
+    setError('')
     try {
-      await callApi({
+      const result = await callApi({
         action: 'call_api',
         sellerId,
         method: action === 'delete' ? 'DELETE' : 'PUT',
         endpoint: endpointMap[action],
       })
+      if (!result.ok) {
+        setError(`Action failed (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
       setGlobalSuccess(`Offer ${action}d successfully`)
       fetchOffers(sellerId)
     } catch (err) {
-      setLocalError(err.message)
+      setError(err.message)
     } finally {
       setActionLoading(null)
     }
   }
-
-  const offerList = Array.isArray(offers) ? offers : []
 
   return (
     <div>
@@ -598,83 +613,89 @@ setOffers(list)
 
       <div className="seller-selector-bar">
         <label>Seller:</label>
-        <select value={sellerId} onChange={e => setSellerId(e.target.value)}>
+        <select value={sellerId} onChange={e => { setSellerId(e.target.value); setOffers([]); setHasLoaded(false); setRawResponse(null) }}>
           <option value="">— Select seller —</option>
           {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
         </select>
         <button className="btn btn-primary btn-sm" onClick={() => fetchOffers(sellerId)} disabled={!sellerId || loading}>
-          <RefreshCw size={13} />
-          {loading ? 'Loading...' : 'Load Offers'}
+          <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Offers'}
         </button>
       </div>
 
-      {localError && <div className="eldorado-error">{localError}</div>}
+      {error && <div className="eldorado-error">{error}</div>}
 
       {loading ? (
         <div className="eldorado-spinner">Fetching offers...</div>
-      ) : offerList.length === 0 && sellerId ? (
-        <div className="eldorado-empty">No offers found for this seller.</div>
-      ) : offerList.length === 0 ? (
+      ) : !sellerId ? (
         <div className="eldorado-empty">Select a seller and click Load Offers.</div>
+      ) : !hasLoaded ? (
+        <div className="eldorado-empty">Click Load Offers to fetch offers for this seller.</div>
+      ) : offers.length === 0 ? (
+        <>
+          <div className="eldorado-empty">No offers found for this seller.</div>
+          <RawDebug raw={rawResponse} />
+        </>
       ) : (
-        <div className="eldorado-table-wrapper">
-          <table className="eldorado-table">
-            <thead>
-              <tr>
-                <th>Offer Name</th>
-                <th>Game</th>
-                <th>Price</th>
-                <th>Status</th>
-                <th>Min / Max</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {offerList.map(offer => {
-                const oid = offer.id || offer.offerId
-                const status = (offer.status || offer.offerStatus || '').toLowerCase()
-                const isPaused = status === 'paused' || status === 'inactive'
-                return (
-                  <tr key={oid}>
-                    <td>{offer.name || offer.title || '—'}</td>
-                    <td>{offer.game?.name || offer.gameName || '—'}</td>
-                    <td className="price-tag">
-                      {offer.price != null ? `$${Number(offer.price).toFixed(2)}` : '—'}
-                    </td>
-                    <td>
-                      <span className={`status-badge status-${isPaused ? 'paused' : 'active'}`}>
-                        {status || '—'}
-                      </span>
-                    </td>
-                    <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                      {offer.minAmount != null ? `${offer.minAmount}` : '—'}
-                      {offer.maxAmount != null ? ` / ${offer.maxAmount}` : ''}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
-                        <button
-                          className="btn btn-secondary btn-sm"
-                          onClick={() => handleOfferAction(oid, isPaused ? 'activate' : 'pause')}
-                          disabled={actionLoading === `${oid}-${isPaused ? 'activate' : 'pause'}`}
-                        >
-                          {isPaused ? 'Activate' : 'Pause'}
-                        </button>
-                        <button
-                          className="btn btn-danger btn-sm"
-                          onClick={() => handleOfferAction(oid, 'delete')}
-                          disabled={actionLoading === `${oid}-delete`}
-                        >
-                          <Trash2 size={11} />
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
+        <>
+          <div className="eldorado-table-wrapper">
+            <table className="eldorado-table">
+              <thead>
+                <tr>
+                  <th>Offer Name</th>
+                  <th>Game</th>
+                  <th>Price</th>
+                  <th>Status</th>
+                  <th>Min / Max</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {offers.map(offer => {
+                  const oid = offer.id || offer.offerId
+                  const status = (offer.status || offer.offerStatus || '').toLowerCase()
+                  const isPaused = status === 'paused' || status === 'inactive' || status === 'disabled'
+                  return (
+                    <tr key={oid}>
+                      <td>{offer.name || offer.title || '—'}</td>
+                      <td>{offer.game?.name || offer.gameName || offer.gameTitle || '—'}</td>
+                      <td className="price-tag">
+                        {offer.price != null ? `$${Number(offer.price).toFixed(2)}` : '—'}
+                      </td>
+                      <td>
+                        <span className={`status-badge ${isPaused ? 'status-paused' : 'status-active'}`}>
+                          {status || '—'}
+                        </span>
+                      </td>
+                      <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                        {offer.minAmount != null ? offer.minAmount : '—'}
+                        {offer.maxAmount != null ? ` / ${offer.maxAmount}` : ''}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                          <button
+                            className="btn btn-secondary btn-sm"
+                            onClick={() => handleOfferAction(oid, isPaused ? 'activate' : 'pause')}
+                            disabled={actionLoading === `${oid}-${isPaused ? 'activate' : 'pause'}`}
+                          >
+                            {isPaused ? 'Activate' : 'Pause'}
+                          </button>
+                          <button
+                            className="btn btn-danger btn-sm"
+                            onClick={() => handleOfferAction(oid, 'delete')}
+                            disabled={actionLoading === `${oid}-delete`}
+                          >
+                            <Trash2 size={11} /> Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
+          </div>
+          <RawDebug raw={rawResponse} />
+        </>
       )}
     </div>
   )
@@ -682,44 +703,42 @@ setOffers(list)
 
 // ── Notifications Tab ─────────────────────────────────────────────────────────
 
-function NotificationsTab({ sellers, callApi, setGlobalError }) {
+function NotificationsTab({ sellers, callApi }) {
   const [sellerId, setSellerId] = useState('')
   const [notifications, setNotifications] = useState([])
+  const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
-  const [localError, setLocalError] = useState('')
+  const [hasLoaded, setHasLoaded] = useState(false)
+  const [error, setError] = useState('')
 
   const fetchNotifications = async (sid) => {
     if (!sid) return
     setLoading(true)
-    setLocalError('')
+    setError('')
     setNotifications([])
+    setRawResponse(null)
+    setHasLoaded(false)
     try {
-      const data = await callApi({
+      const result = await callApi({
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
         endpoint: '/api/notifications/me',
         params: { unread: 'true' },
       })
-      console.log('RAW NOTIFICATIONS:', data)
-
-const list =
-  Array.isArray(data?.data) ? data.data :
-  Array.isArray(data?.data?.results) ? data.data.results :
-  Array.isArray(data?.data?.notifications) ? data.data.notifications :
-  Array.isArray(data?.notifications) ? data.notifications :
-  Array.isArray(data) ? data :
-  []
-
-setNotifications(list)
+      setRawResponse(result)
+      if (!result.ok) {
+        setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
+      setNotifications(extractList(result.data))
+      setHasLoaded(true)
     } catch (err) {
-      setLocalError(err.message)
+      setError(err.message)
     } finally {
       setLoading(false)
     }
   }
-
-  const notifList = Array.isArray(notifications) ? notifications : []
 
   const fmtType = (type) =>
     (type || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
@@ -730,46 +749,52 @@ setNotifications(list)
 
       <div className="seller-selector-bar">
         <label>Seller:</label>
-        <select value={sellerId} onChange={e => setSellerId(e.target.value)}>
+        <select value={sellerId} onChange={e => { setSellerId(e.target.value); setNotifications([]); setHasLoaded(false); setRawResponse(null) }}>
           <option value="">— Select seller —</option>
           {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
         </select>
         <button className="btn btn-primary btn-sm" onClick={() => fetchNotifications(sellerId)} disabled={!sellerId || loading}>
-          <RefreshCw size={13} />
-          {loading ? 'Loading...' : 'Load Notifications'}
+          <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Notifications'}
         </button>
       </div>
 
-      {localError && <div className="eldorado-error">{localError}</div>}
+      {error && <div className="eldorado-error">{error}</div>}
 
       {loading ? (
         <div className="eldorado-spinner">Fetching notifications...</div>
-      ) : notifList.length === 0 && sellerId ? (
-        <div className="eldorado-empty">No unread notifications.</div>
-      ) : notifList.length === 0 ? (
+      ) : !sellerId ? (
         <div className="eldorado-empty">Select a seller and click Load Notifications.</div>
+      ) : !hasLoaded ? (
+        <div className="eldorado-empty">Click Load Notifications to fetch for this seller.</div>
+      ) : notifications.length === 0 ? (
+        <>
+          <div className="eldorado-empty">No unread notifications.</div>
+          <RawDebug raw={rawResponse} />
+        </>
       ) : (
-        <div className="notif-list">
-          {notifList.map((n, i) => {
-            const nid = n.id || i
-            return (
-              <div key={nid} className="notif-card">
+        <>
+          <div className="notif-list">
+            {notifications.map((n, i) => (
+              <div key={n.id || i} className="notif-card">
                 <div className="notif-dot" />
                 <div className="notif-content">
                   <div className="notif-type">{fmtType(n.type || n.notificationType)}</div>
-                  <div className="notif-message">{n.message || n.body || n.text || JSON.stringify(n)}</div>
-                  {(n.createdAt || n.created_at) && (
+                  <div className="notif-message">
+                    {n.message || n.body || n.text || n.content || JSON.stringify(n)}
+                  </div>
+                  {(n.createdAt || n.created_at || n.createdDate) && (
                     <div className="notif-time">
-                      {new Date(n.createdAt || n.created_at).toLocaleString('en-GB', {
+                      {new Date(n.createdAt || n.created_at || n.createdDate).toLocaleString('en-GB', {
                         day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
                       })}
                     </div>
                   )}
                 </div>
               </div>
-            )
-          })}
-        </div>
+            ))}
+          </div>
+          <RawDebug raw={rawResponse} />
+        </>
       )}
     </div>
   )
