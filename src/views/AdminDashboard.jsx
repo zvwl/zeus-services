@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { Package, Clock, Star, TrendingUp, Gamepad2, Joystick, ShoppingCart } from 'lucide-react'
+import { Package, Clock, Star, TrendingUp, Gamepad2, Joystick, ShoppingCart, DollarSign } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './AdminOrdersPage.css'
 
@@ -177,6 +177,13 @@ export default function AdminDashboard() {
       Icon: Star,
       stat: stats.pendingReviews !== null ? `${stats.pendingReviews} pending` : null,
       statColor: stats.pendingReviews > 0 ? '#f97316' : '#10b981',
+    },
+    {
+      path: '/admin/eldorado',
+      title: 'Eldorado',
+      desc: 'Manage sellers, orders & offers',
+      Icon: DollarSign,
+      stat: null,
     },
   ]
 
