@@ -22,29 +22,52 @@ function stripPrefixedValue(value: string, label: string) {
   return text.replace(prefixRegex, '').trim();
 }
 
+// Format a numeric string nicely (e.g. "5000000" → "5,000,000")
+function formatDisplayValue(value: string): string {
+  const trimmed = value.trim();
+  // If it looks like a plain integer or float with no letters, format with commas
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const num = parseFloat(trimmed);
+    if (!isNaN(num)) {
+      return num % 1 === 0
+        ? num.toLocaleString('en-GB')
+        : num.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    }
+  }
+  return trimmed;
+}
+
+function isNaNString(v: string): boolean {
+  return v.toLowerCase() === 'nan' || v.toLowerCase() === 'undefined' || v.toLowerCase() === 'null';
+}
+
 function getSelectionEntries(item: any): Array<{ label: string; value: string }> {
   const entries: Array<{ label: string; value: string }> = [];
   const seen = new Set<string>();
 
   const addEntry = (rawLabel: string, rawValue: any) => {
     const label = normalizeLabel(rawLabel);
-    const value = stripPrefixedValue(String(rawValue ?? ''), label);
-    if (!label || !value) return;
+    const raw = String(rawValue ?? '').trim();
+    const value = stripPrefixedValue(raw, label);
+    // Skip empty, NaN, undefined, null strings
+    if (!label || !value || isNaNString(value)) return;
     const key = label.toLowerCase();
     if (seen.has(key)) return;
     seen.add(key);
-    entries.push({ label, value });
+    entries.push({ label, value: formatDisplayValue(value) });
   };
 
+  // Primary source: customSelections object (has every field the customer filled)
   const customSelections = item?.customSelections;
-  if (customSelections && typeof customSelections === 'object') {
+  if (customSelections && typeof customSelections === 'object' && !Array.isArray(customSelections)) {
     for (const [label, value] of Object.entries(customSelections)) {
       addEntry(label, value);
     }
   }
 
+  // Fallback: platform string (e.g. "Platform: Epic Games | Version: Enhanced | Credits: 5000000")
   const platformRaw = String(item?.platform || '').trim();
-  if (platformRaw) {
+  if (platformRaw && !isNaNString(platformRaw)) {
     if (platformRaw.includes(':')) {
       platformRaw.split('|').forEach((segment: string) => {
         const trimmed = segment.trim();
@@ -63,16 +86,42 @@ function getSelectionEntries(item: any): Array<{ label: string; value: string }>
     }
   }
 
+  // Fallback: version string
   const versionRaw = String(item?.version || '').trim();
-  if (versionRaw && versionRaw.toLowerCase() !== 'standard') {
+  if (versionRaw && versionRaw.toLowerCase() !== 'standard' && !isNaNString(versionRaw)) {
     addEntry('Version', versionRaw);
   }
 
-  if (entries.length === 0) {
-    addEntry('Selection', 'N/A');
-  }
+  return entries; // empty array = no selections (item had no custom fields)
+}
 
-  return entries;
+function formatCurrency(amount: number, currency: string): string {
+  const symbols: Record<string, string> = { USD: '$', GBP: '£', EUR: '€' };
+  const symbol = symbols[currency?.toUpperCase()] || currency || '£';
+  return `${symbol}${Number(amount).toFixed(2)}`;
+}
+
+function buildItemHtml(item: any, currency: string): string {
+  const entries = getSelectionEntries(item);
+  const quantity = Number(item?.quantity || 1);
+  const itemPrice = Number(item?.price_converted ?? item?.price_usd ?? 0);
+  const itemTotal = quantity * itemPrice;
+  const itemName = String(item?.name || 'Item').replace(/[<>]/g, '');
+
+  const selectionBadges = entries.length > 0
+    ? entries.map(e => `<span style="display:inline-block;background:#fef3c7;color:#92400e;padding:3px 10px;border-radius:5px;margin:2px 4px 2px 0;font-size:12px;font-weight:700;border:1px solid #fbbf24;">${e.label}: ${e.value}</span>`).join('')
+    : '';
+
+  return `
+    <div style="background:#1e293b;border-left:3px solid #fbbf24;padding:14px 16px;margin:10px 0;border-radius:8px;">
+      <div style="font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:${selectionBadges ? '8px' : '4px'};">${itemName}</div>
+      ${selectionBadges ? `<div style="margin-bottom:8px;line-height:1.8;">${selectionBadges}</div>` : ''}
+      <div style="font-size:13px;color:#94a3b8;">
+        ${quantity > 1 ? `${quantity}× ` : ''}${formatCurrency(itemPrice, currency)}
+        ${quantity > 1 ? `= <span style="color:#fbbf24;font-weight:700;">${formatCurrency(itemTotal, currency)}</span>` : ''}
+      </div>
+    </div>
+  `;
 }
 
 Deno.serve(async (req) => {
@@ -86,11 +135,10 @@ Deno.serve(async (req) => {
     if (!orderId) {
       return new Response(JSON.stringify({ error: 'Missing orderId' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Fetch order details
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .select('*')
@@ -101,167 +149,154 @@ Deno.serve(async (req) => {
       console.error('Order fetch error:', orderError);
       return new Response(JSON.stringify({ error: 'Order not found' }), {
         status: 404,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
     const { customer_email, customer_name, items, total_amount, currency, created_at } = order;
 
     if (!customer_email) {
-      console.error('No customer email for order:', orderId);
       return new Response(JSON.stringify({ error: 'No customer email' }), {
         status: 400,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    // Format items for email
-    const itemsList = (items || []).map((item: any) => {
-      const selectionBadges = getSelectionEntries(item)
-        .map((entry) => `
-            <span style="display: inline-block; background: #e0e7ff; color: #4338ca; padding: 2px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 6px; font-weight: 600;">${entry.label}: ${entry.value}</span>
-        `)
-        .join('');
-      const quantity = Number(item?.quantity || 1);
-      const itemPrice = item?.price_converted || item?.price_usd || 0;
-      const itemTotal = quantity * itemPrice;
-      return `
-        <div style="background: #fafafa; border-left: 3px solid #667eea; padding: 12px 16px; margin: 8px 0; border-radius: 6px;">
-          <div style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">${item?.name || 'Item'}</div>
-          <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
-            ${selectionBadges}
-          </div>
-          <div style="font-size: 14px; color: #475569; margin-top: 8px;">
-            <span style="font-weight: 600;">Quantity:</span> ${quantity}x ${formatCurrency(itemPrice, currency)} = <span style="color: #059669; font-weight: 700;">${formatCurrency(itemTotal, currency)}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
+    const itemsHtml = (items || []).map((item: any) => buildItemHtml(item, currency)).join('');
 
     const orderDate = new Date(created_at).toLocaleDateString('en-GB', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
+      year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit',
     });
 
-    console.log('Sending order confirmation to:', customer_email);
+    const displayName = customer_name || customer_email.split('@')[0] || 'there';
+    const shortId = String(orderId).slice(0, 8).toUpperCase();
 
-    // Add small delay to avoid rate limiting
     await new Promise(resolve => setTimeout(resolve, 100));
 
-    // Send email via Resend with retry logic
-    let resendRes;
-    let resendData;
-    let retries = 0;
-    const maxRetries = 3;
+    let resendRes: Response | undefined;
+    let resendData: any;
 
-    while (retries < maxRetries) {
+    for (let attempt = 0; attempt < 3; attempt++) {
       resendRes = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${RESEND_API_KEY}`,
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          from: 'Zeus Services <orders@zeuservices.com>',
+          from: 'Zeuservices <orders@zeuservices.com>',
           to: customer_email,
-          subject: `Order Confirmation #${orderId.slice(0, 8)}`,
+          subject: `Order Confirmed #${shortId} – Zeuservices`,
           html: `
-<div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 20px; text-align: center; color: white;">
-    <h1 style="margin: 0; font-size: 26px; letter-spacing: 0.5px;">Zeus Services</h1>
-    <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">Order Confirmation</p>
-  </div>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#0a0e1a;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0e1a;padding:32px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#111827;border-radius:16px;overflow:hidden;border:1px solid rgba(251,191,36,0.2);">
 
-  <div style="padding: 32px 20px; max-width: 640px; margin: 0 auto; background: #f8fafc;">
-    <p style="font-size: 16px; margin: 0 0 12px;">Hi ${customer_name || 'there'},</p>
-    <p style="font-size: 15px; color: #555; margin: 0 0 16px;">Thank you for your purchase! We've received your payment and are processing your order.</p>
+      <!-- Header -->
+      <tr>
+        <td style="background:linear-gradient(135deg,#0a0e1a 0%,#1a1f35 100%);padding:32px 24px;text-align:center;border-bottom:2px solid #fbbf24;">
+          <div style="font-size:28px;font-weight:900;color:#fbbf24;letter-spacing:1px;">Zeuservices</div>
+          <div style="font-size:13px;color:#94a3b8;margin-top:6px;letter-spacing:0.5px;">ORDER CONFIRMATION</div>
+        </td>
+      </tr>
 
-    <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
-      <p style="margin: 4px 0; font-size: 14px;"><strong>Order ID:</strong> ${orderId}</p>
-      <p style="margin: 4px 0; font-size: 14px;"><strong>Order Date:</strong> ${orderDate}</p>
-      <p style="margin: 4px 0; font-size: 14px;"><strong>Total:</strong> ${formatCurrency(total_amount, currency)}</p>
-    </div>
+      <!-- Body -->
+      <tr>
+        <td style="padding:28px 24px;">
 
-    <div style="margin: 20px 0;">
-      <h3 style="margin: 0 0 12px 0; font-size: 16px; color: #1e293b; font-weight: 700;">Items Ordered</h3>
-      <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 12px;">
-        ${itemsList}
-      </div>
-    </div>
+          <p style="font-size:16px;color:#f1f5f9;margin:0 0 8px;">Hi ${displayName},</p>
+          <p style="font-size:15px;color:#94a3b8;margin:0 0 24px;line-height:1.6;">Thanks for your order! Your payment has been received and we&apos;re now processing your service. We&apos;ll contact you on Discord shortly.</p>
 
-    <div style="text-align: center; margin: 28px 0;">
-      <a href="https://zeuservices.com/orders" style="display: inline-block; background-color: #FFD700; color: #000; padding: 12px 28px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">View Your Order</a>
-    </div>
+          <!-- Order details box -->
+          <div style="background:#1e293b;border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:16px;margin-bottom:24px;">
+            <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700;">Order Details</div>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td style="font-size:13px;color:#94a3b8;padding:3px 0;">Order ID</td>
+                <td style="font-size:13px;color:#f1f5f9;text-align:right;font-weight:700;">#${shortId}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#94a3b8;padding:3px 0;">Date</td>
+                <td style="font-size:13px;color:#f1f5f9;text-align:right;">${orderDate}</td>
+              </tr>
+              <tr>
+                <td style="font-size:13px;color:#94a3b8;padding:3px 0;">Total Paid</td>
+                <td style="font-size:15px;color:#fbbf24;text-align:right;font-weight:900;">${formatCurrency(total_amount, currency)}</td>
+              </tr>
+            </table>
+          </div>
 
-    <div style="background: #f1f5f9; border-left: 4px solid #667eea; padding: 16px; border-radius: 6px; margin: 24px 0;">
-      <p style="font-size: 14px; color: #334155; margin: 0 0 12px;"><strong>Need help or have questions?</strong></p>
-      <p style="font-size: 13px; color: #64748b; margin: 0 0 12px;">Join our Discord community for instant support and updates:</p>
-      <a href="http://discord.gg/zeusservices" style="display: inline-block; background-color: #5865F2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px;">Join Discord Server</a>
-    </div>
+          <!-- Items -->
+          <div style="font-size:12px;color:#64748b;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700;">Items Ordered</div>
+          ${itemsHtml || '<div style="color:#94a3b8;font-size:14px;padding:12px 0;">No items found.</div>'}
 
-    <div style="text-align: center; padding-top: 18px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #999;">
-      <p style="margin: 6px 0;">© 2026 Zeus Services. All rights reserved.</p>
-      <p style="margin: 6px 0;"><a href="https://zeuservices.com" style="color: #0066cc; text-decoration: none;">Visit Our Website</a></p>
-    </div>
-  </div>
-</div>
-        `
-        })
+          <!-- CTA -->
+          <div style="text-align:center;margin:28px 0 0;">
+            <a href="https://zeuservices.com/orders" style="display:inline-block;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0a0e1a;padding:13px 32px;text-decoration:none;border-radius:8px;font-weight:800;font-size:15px;">View Your Order</a>
+          </div>
+        </td>
+      </tr>
+
+      <!-- Discord CTA -->
+      <tr>
+        <td style="background:#1e293b;border-top:1px solid rgba(251,191,36,0.15);padding:20px 24px;">
+          <p style="font-size:14px;color:#94a3b8;margin:0 0 12px;font-weight:600;">Need help or have questions?</p>
+          <p style="font-size:13px;color:#64748b;margin:0 0 14px;">Join our Discord for instant support and delivery updates.</p>
+          <a href="https://discord.gg/zeusservices" style="display:inline-block;background:#5865f2;color:#fff;padding:10px 22px;text-decoration:none;border-radius:8px;font-weight:700;font-size:13px;">Join Discord</a>
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="padding:16px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+          <p style="font-size:12px;color:#475569;margin:0;">&copy; 2026 Zeuservices. All rights reserved.</p>
+          <p style="font-size:12px;color:#475569;margin:4px 0 0;"><a href="https://zeuservices.com" style="color:#fbbf24;text-decoration:none;">zeuservices.com</a></p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+          `,
+        }),
       });
 
       resendData = await resendRes.json();
 
-      // If rate limited, wait and retry
-      if (resendRes.status === 429 && retries < maxRetries - 1) {
-        const waitTime = Math.pow(2, retries) * 1000; // Exponential backoff: 1s, 2s, 4s
-        console.log(`Rate limited, retrying in ${waitTime}ms (attempt ${retries + 1}/${maxRetries})`);
-        await new Promise(resolve => setTimeout(resolve, waitTime));
-        retries++;
+      if (resendRes.status === 429 && attempt < 2) {
+        const wait = Math.pow(2, attempt) * 1000;
+        console.log(`Rate limited, retrying in ${wait}ms (attempt ${attempt + 1}/3)`);
+        await new Promise(r => setTimeout(r, wait));
         continue;
       }
+      break;
+    }
 
-      // If successful, break the loop
-      if (resendRes.ok) {
-        break;
-      }
-
-      // If not rate limited and not ok, fail
+    if (!resendRes!.ok) {
       console.error('Resend error:', resendData);
       return new Response(JSON.stringify({ error: resendData }), {
-        status: resendRes.status,
-        headers: { 'Content-Type': 'application/json' }
+        status: resendRes!.status,
+        headers: { 'Content-Type': 'application/json' },
       });
     }
 
-    console.log('Resend API response:', resendData);
-
-    if (!resendRes.ok) {
-      console.error('Resend error:', resendData);
-      return new Response(JSON.stringify({ error: resendData }), {
-        status: resendRes.status,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-
+    console.log(`✅ Order confirmation sent to ${customer_email} (order ${shortId})`);
     return new Response(JSON.stringify({ success: true, emailId: resendData.id }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
 
   } catch (error) {
-    console.error('Send order confirmation error:', error);
-    return new Response(JSON.stringify({ error: "Failed to send order confirmation" }), {
+    console.error('send-order-confirmation error:', error);
+    return new Response(JSON.stringify({ error: 'Failed to send order confirmation' }), {
       status: 500,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     });
   }
 });
-
-function formatCurrency(amount: number, currency: string): string {
-  const symbols: Record<string, string> = { USD: '$', GBP: '£', EUR: '€' };
-  const symbol = symbols[currency] || currency;
-  return `${symbol}${Number(amount).toFixed(2)}`;
-}

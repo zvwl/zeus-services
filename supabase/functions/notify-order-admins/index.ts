@@ -8,11 +8,11 @@ const FRONTEND_URL = Deno.env.get("FRONTEND_URL") || "https://zeuservices.com";
 const corsHeaders = {
   "Access-Control-Allow-Origin": FRONTEND_URL,
   "Access-Control-Allow-Headers": "authorization,apikey,content-type",
-  "Access-Control-Allow-Methods": "POST,OPTIONS"
+  "Access-Control-Allow-Methods": "POST,OPTIONS",
 };
 
 const supabase = createClient(SUPABASE_URL ?? "", SUPABASE_SERVICE_ROLE_KEY ?? "", {
-  auth: { autoRefreshToken: false, persistSession: false }
+  auth: { autoRefreshToken: false, persistSession: false },
 });
 
 function normalizeLabel(label: string) {
@@ -27,41 +27,55 @@ function stripPrefixedValue(value: string, label: string) {
   return text.replace(prefixRegex, "").trim();
 }
 
+function formatDisplayValue(value: string): string {
+  const trimmed = value.trim();
+  if (/^\d+(\.\d+)?$/.test(trimmed)) {
+    const num = parseFloat(trimmed);
+    if (!isNaN(num)) {
+      return num % 1 === 0
+        ? num.toLocaleString("en-GB")
+        : num.toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    }
+  }
+  return trimmed;
+}
+
+function isNaNString(v: string): boolean {
+  const l = v.toLowerCase();
+  return l === "nan" || l === "undefined" || l === "null";
+}
+
 function getSelectionEntries(item: any): Array<{ label: string; value: string }> {
   const entries: Array<{ label: string; value: string }> = [];
   const seen = new Set<string>();
 
   const addEntry = (rawLabel: string, rawValue: any) => {
     const label = normalizeLabel(rawLabel);
-    const value = stripPrefixedValue(String(rawValue ?? ""), label);
-    if (!label || !value) return;
+    const raw = String(rawValue ?? "").trim();
+    const value = stripPrefixedValue(raw, label);
+    if (!label || !value || isNaNString(value)) return;
     const key = label.toLowerCase();
     if (seen.has(key)) return;
     seen.add(key);
-    entries.push({ label, value });
+    entries.push({ label, value: formatDisplayValue(value) });
   };
 
   const customSelections = item?.customSelections;
-  if (customSelections && typeof customSelections === "object") {
+  if (customSelections && typeof customSelections === "object" && !Array.isArray(customSelections)) {
     for (const [label, value] of Object.entries(customSelections)) {
       addEntry(label, value);
     }
   }
 
   const platformRaw = String(item?.platform || "").trim();
-  if (platformRaw) {
+  if (platformRaw && !isNaNString(platformRaw)) {
     if (platformRaw.includes(":")) {
       platformRaw.split("|").forEach((segment: string) => {
         const trimmed = segment.trim();
         if (!trimmed) return;
         const sep = trimmed.indexOf(":");
-        if (sep === -1) {
-          addEntry("Platform", trimmed);
-          return;
-        }
-        const label = trimmed.slice(0, sep).trim();
-        const value = trimmed.slice(sep + 1).trim();
-        addEntry(label, value);
+        if (sep === -1) { addEntry("Platform", trimmed); return; }
+        addEntry(trimmed.slice(0, sep).trim(), trimmed.slice(sep + 1).trim());
       });
     } else {
       addEntry("Platform", platformRaw);
@@ -69,244 +83,192 @@ function getSelectionEntries(item: any): Array<{ label: string; value: string }>
   }
 
   const versionRaw = String(item?.version || "").trim();
-  if (versionRaw && versionRaw.toLowerCase() !== "standard") {
+  if (versionRaw && versionRaw.toLowerCase() !== "standard" && !isNaNString(versionRaw)) {
     addEntry("Version", versionRaw);
-  }
-
-  if (entries.length === 0) {
-    addEntry("Selection", "N/A");
   }
 
   return entries;
 }
 
+function formatCurrency(amount: number, currency: string): string {
+  const symbols: Record<string, string> = { USD: "$", GBP: "£", EUR: "€" };
+  const symbol = symbols[String(currency || "").toUpperCase()] || currency || "£";
+  return `${symbol}${Number(amount).toFixed(2)}`;
+}
+
+function buildItemHtml(item: any, currency: string): string {
+  const entries = getSelectionEntries(item);
+  const quantity = Number(item?.quantity || 1);
+  const rawPrice = item?.price_converted ?? item?.price ?? item?.price_usd ?? null;
+  const numeric = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
+  const priceStr = Number.isFinite(numeric) ? formatCurrency(numeric, currency) : "N/A";
+  const itemTotal = Number.isFinite(numeric) ? formatCurrency(numeric * quantity, currency) : "N/A";
+  const itemName = String(item?.name || "Item").replace(/[<>]/g, "");
+
+  const selectionRows = entries.length > 0
+    ? entries.map(e => `<span style="display:inline-block;background:#292524;color:#fbbf24;border:1px solid rgba(251,191,36,0.4);padding:3px 10px;border-radius:5px;margin:2px 4px 2px 0;font-size:12px;font-weight:700;">${e.label}: ${e.value}</span>`).join("")
+    : '<span style="font-size:12px;color:#78716c;font-style:italic;">No custom options</span>';
+
+  return `
+    <div style="background:#1c1917;border-left:3px solid #fbbf24;padding:14px 16px;margin:8px 0;border-radius:8px;">
+      <div style="font-size:15px;font-weight:700;color:#f5f5f4;margin-bottom:8px;">${itemName}</div>
+      <div style="margin-bottom:8px;line-height:1.9;">${selectionRows}</div>
+      <div style="font-size:13px;color:#a8a29e;">
+        ${quantity > 1 ? `${quantity}× ${priceStr} = <strong style="color:#fbbf24;">${itemTotal}</strong>` : priceStr}
+      </div>
+    </div>
+  `;
+}
+
 async function sendAdminEmail(adminEmail: string, orderDetails: any) {
-  let retries = 0;
-  const maxRetries = 3;
-  
-  while (retries < maxRetries) {
+  const shortId = String(orderDetails.order_id).slice(0, 8).toUpperCase();
+  const itemsHtml = (orderDetails.items || []).map((item: any) => buildItemHtml(item, orderDetails.currency)).join("");
+  const orderDate = new Date(orderDetails.created_at).toLocaleString("en-GB", {
+    year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit",
+  });
+
+  for (let attempt = 0; attempt < 3; attempt++) {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${RESEND_API_KEY}`,
-        "Content-Type": "application/json"
+        Authorization: `Bearer ${RESEND_API_KEY}`,
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "admin@zeuservices.com",
+        from: "Zeuservices Admin <admin@zeuservices.com>",
         to: adminEmail,
-        subject: `[ADMIN] New Order #${orderDetails.order_id} - ${orderDetails.currency}${orderDetails.total_amount}`,
+        subject: `[NEW ORDER] #${shortId} — ${formatCurrency(orderDetails.total_amount, orderDetails.currency)}`,
         html: `
-          <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-            <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 32px 20px; text-align: center; color: white;">
-              <h1 style="margin: 0; font-size: 26px; letter-spacing: 0.5px;">Zeus Services</h1>
-              <p style="margin: 8px 0 0 0; font-size: 14px; opacity: 0.9;">New Order Received</p>
-            </div>
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"></head>
+<body style="margin:0;padding:0;background:#0c0a09;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#0c0a09;padding:28px 0;">
+  <tr><td align="center">
+    <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#1c1917;border-radius:12px;overflow:hidden;border:1px solid rgba(251,191,36,0.25);">
 
-            <div style="padding: 32px 20px; max-width: 640px; margin: 0 auto; background: #f8fafc;">
-              <p style="font-size: 16px; margin: 0 0 12px;">Hello Admin,</p>
-              <p style="font-size: 15px; color: #555; margin: 0 0 16px;">A new order has been placed. Details are below.</p>
+      <!-- Header -->
+      <tr>
+        <td style="background:#0c0a09;padding:24px;text-align:center;border-bottom:2px solid #fbbf24;">
+          <div style="font-size:11px;color:#fbbf24;text-transform:uppercase;letter-spacing:2px;font-weight:700;">Zeuservices</div>
+          <div style="font-size:20px;font-weight:900;color:#f5f5f4;margin-top:4px;">New Order Received</div>
+        </td>
+      </tr>
 
-              <div style="background: white; border-left: 4px solid #fbbf24; padding: 16px; border-radius: 6px; margin: 20px 0;">
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Order ID:</strong> ${orderDetails.order_id}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Customer:</strong> ${orderDetails.customer_name || orderDetails.customer_email}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Email:</strong> <a href="mailto:${orderDetails.customer_email}" style="color: #0066cc; text-decoration: none;">${orderDetails.customer_email}</a></p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Amount:</strong> ${orderDetails.currency}${orderDetails.total_amount}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Payment Method:</strong> ${orderDetails.payment_method === 'stripe_checkout' ? 'Stripe' : orderDetails.payment_method}</p>
-                <p style="margin: 4px 0; font-size: 14px;"><strong>Date:</strong> ${new Date(orderDetails.created_at).toLocaleString()}</p>
-              </div>
+      <!-- Body -->
+      <tr>
+        <td style="padding:24px;">
 
-              <div style="background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px 18px; margin: 20px 0;">
-                <p style="margin: 0 0 12px; font-size: 16px; font-weight: 700; color: #1e293b;">Items Ordered</p>
-                <div style="margin: 0;">
-                  ${orderDetails.items.map((item: any) => {
-                    const selectionBadges = getSelectionEntries(item)
-                      .map((entry) => `
-                        <span style="display: inline-block; background: #fef3c7; color: #92400e; padding: 2px 8px; border-radius: 4px; margin-right: 6px; margin-bottom: 6px; font-weight: 600;">${entry.label}: ${entry.value}</span>
-                      `)
-                      .join("");
-                    const rawPrice = item?.price_converted ?? item?.price ?? item?.price_usd ?? item?.unit_price ?? null;
-                    const numeric = typeof rawPrice === "number" ? rawPrice : Number(rawPrice);
-                    const priceStr = Number.isFinite(numeric) ? `${item?.currency || orderDetails.currency || "GBP"}${numeric.toFixed(2)}` : "N/A";
-                    const quantity = item.quantity || 1;
-                    const itemTotal = Number.isFinite(numeric) ? `${item?.currency || orderDetails.currency || "GBP"}${(numeric * quantity).toFixed(2)}` : "N/A";
-                    return `
-                    <div style="background: #fafafa; border-left: 3px solid #fbbf24; padding: 12px 14px; margin: 8px 0; border-radius: 6px;">
-                      <div style="font-size: 15px; font-weight: 700; color: #1e293b; margin-bottom: 6px;">
-                        ${item.icon || '📦'} ${item.name}
-                      </div>
-                      <div style="font-size: 13px; color: #64748b; margin-bottom: 4px;">
-                        ${selectionBadges}
-                      </div>
-                      <div style="font-size: 14px; color: #475569; margin-top: 8px;">
-                        <span style="font-weight: 600;">Quantity:</span> ${quantity}x ${priceStr} = <span style="color: #059669; font-weight: 700;">${itemTotal}</span>
-                      </div>
-                    </div>
-                  `}).join('')}
-                </div>
-              </div>
-
-              <div style="text-align: center; margin: 28px 0;">
-                <a href="https://zeuservices.com/admin/orders" style="display: inline-block; background-color: #FFD700; color: #000; padding: 12px 32px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 16px;">
-                  View in Admin Panel
-                </a>
-              </div>
-
-              <p style="font-size: 12px; color: #999; text-align: center; margin: 0 0 18px;">
-                This is an automated notification. Do not reply to this email.
-              </p>
-
-              <div style="text-align: center; padding-top: 18px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #999;">
-                <p style="margin: 12px 0; font-size: 14px; color: #555;"><strong>Need help?</strong> Join our Discord for instant support:</p>
-                <p style="margin: 12px 0;">
-                  <a href="http://discord.gg/zeusservices" style="display: inline-block; background-color: #5865f2; color: white; padding: 10px 20px; text-decoration: none; border-radius: 6px; font-weight: bold;">Join Discord Server</a>
-                </p>
-                <p style="margin: 6px 0;">2026 Zeus Services. All rights reserved.</p>
-                <p style="margin: 6px 0;"><a href="https://zeuservices.com" style="color: #0066cc; text-decoration: none;">Visit Our Website</a></p>
-              </div>
-            </div>
+          <!-- Order summary -->
+          <div style="background:#0c0a09;border:1px solid rgba(251,191,36,0.2);border-radius:10px;padding:16px;margin-bottom:20px;">
+            <div style="font-size:11px;color:#78716c;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700;">Order Info</div>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr><td style="font-size:13px;color:#a8a29e;padding:3px 0;">Order ID</td><td style="font-size:13px;color:#f5f5f4;text-align:right;font-weight:700;">#${shortId}</td></tr>
+              <tr><td style="font-size:13px;color:#a8a29e;padding:3px 0;">Customer</td><td style="font-size:13px;color:#f5f5f4;text-align:right;">${orderDetails.customer_name || orderDetails.customer_email}</td></tr>
+              <tr><td style="font-size:13px;color:#a8a29e;padding:3px 0;">Email</td><td style="font-size:13px;text-align:right;"><a href="mailto:${orderDetails.customer_email}" style="color:#fbbf24;text-decoration:none;">${orderDetails.customer_email}</a></td></tr>
+              <tr><td style="font-size:13px;color:#a8a29e;padding:3px 0;">Date</td><td style="font-size:13px;color:#f5f5f4;text-align:right;">${orderDate}</td></tr>
+              <tr><td style="font-size:13px;color:#a8a29e;padding:3px 0;">Payment</td><td style="font-size:13px;color:#f5f5f4;text-align:right;">${orderDetails.payment_method === "stripe_checkout" ? "Stripe" : (orderDetails.payment_method || "Stripe")}</td></tr>
+              <tr><td style="font-size:14px;color:#a8a29e;padding:6px 0 0;font-weight:700;">Total</td><td style="font-size:18px;color:#fbbf24;text-align:right;font-weight:900;">${formatCurrency(orderDetails.total_amount, orderDetails.currency)}</td></tr>
+            </table>
           </div>
-        `
-      })
+
+          <!-- Items -->
+          <div style="font-size:11px;color:#78716c;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;font-weight:700;">Items Ordered</div>
+          ${itemsHtml || '<div style="color:#78716c;font-size:14px;">No items.</div>'}
+
+          <!-- CTA -->
+          <div style="text-align:center;margin:24px 0 0;">
+            <a href="https://zeuservices.com/admin/orders" style="display:inline-block;background:linear-gradient(135deg,#fbbf24,#f59e0b);color:#0c0a09;padding:12px 28px;text-decoration:none;border-radius:8px;font-weight:800;font-size:14px;">Open Admin Panel</a>
+          </div>
+
+        </td>
+      </tr>
+
+      <!-- Footer -->
+      <tr>
+        <td style="padding:14px 24px;text-align:center;border-top:1px solid rgba(255,255,255,0.06);">
+          <p style="font-size:11px;color:#57534e;margin:0;">Automated admin notification · Zeuservices · <a href="https://zeuservices.com" style="color:#fbbf24;text-decoration:none;">zeuservices.com</a></p>
+        </td>
+      </tr>
+
+    </table>
+  </td></tr>
+</table>
+</body>
+</html>
+        `,
+      }),
     });
-    
+
     const result = await response.json();
-    
-    // If rate limited, retry with exponential backoff
-    if (response.status === 429 && retries < maxRetries - 1) {
-      const waitTime = Math.pow(2, retries) * 1000;
-      console.log(`Rate limited for ${adminEmail}, retrying in ${waitTime}ms (attempt ${retries + 1}/${maxRetries})`);
-      await new Promise(resolve => setTimeout(resolve, waitTime));
-      retries++;
+
+    if (response.status === 429 && attempt < 2) {
+      const wait = Math.pow(2, attempt) * 1000;
+      console.log(`Rate limited for ${adminEmail}, retrying in ${wait}ms`);
+      await new Promise(r => setTimeout(r, wait));
       continue;
     }
-    
-    // If successful or final attempt, return result
-    if (!response.ok) {
-      console.error(`Resend error for ${adminEmail}:`, result);
-    }
+
+    if (!response.ok) console.error(`Resend error for ${adminEmail}:`, result);
     return result;
   }
 }
 
 Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  if (req.method !== "POST") {
-    return new Response("Method not allowed", { status: 405, headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
   try {
     const body = await req.json();
-    console.log("Received body:", JSON.stringify(body));
-    
     const orderId = body.orderId || body.order_id;
-    console.log("Extracted orderId:", orderId);
-    
+
     if (!orderId) {
-      console.error("Missing orderId in request body:", body);
-      return new Response(
-        JSON.stringify({ error: "Missing orderId" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Missing orderId" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    console.log("Fetching order with ID:", orderId);
-    // Fetch the order details
     const { data: order, error: orderError } = await supabase
-      .from("orders")
-      .select("*")
-      .eq("id", orderId)
-      .single();
+      .from("orders").select("*").eq("id", orderId).single();
 
-    console.log("Order fetch result - error:", orderError, "order:", order);
     if (orderError || !order) {
-      console.error("Order not found:", orderId, orderError);
-      return new Response(
-        JSON.stringify({ error: "Order not found", details: orderError?.message }),
-        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "Order not found" }), {
+        status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    console.log("Order found:", order.id);
-    const order_id = order.id;
     const { customer_email, customer_name, total_amount, currency, items, payment_method, created_at } = order;
 
-    if (!order_id || !customer_email || !items) {
-      console.error("Missing required fields - order_id:", order_id, "email:", customer_email, "items:", items);
-      return new Response(
-        JSON.stringify({ error: "Missing required fields in order" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    // Get all active admin user_ids
-    const { data: admins, error: adminError } = await supabase
-      .from("admin_users")
-      .select("user_id")
-      .eq("active", true);
-
-    if (adminError) {
-      console.error("Error fetching admins:", adminError);
-      return new Response(
-        JSON.stringify({ error: "Failed to fetch admins" }),
-        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
+    const { data: admins } = await supabase.from("admin_users").select("user_id").eq("active", true);
 
     if (!admins || admins.length === 0) {
-      console.warn("No active admins found");
-      return new Response(
-        JSON.stringify({ success: true, message: "No admins to notify" }),
-        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ success: true, message: "No admins to notify" }), {
+        status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
     }
 
-    // Get emails for each admin user from auth.users
-    const emailPromises = admins.map(async (admin, index) => {
-      // Add staggered delay between each email to avoid Resend rate limits (2 per second)
-      // 1000ms delay per admin ensures smooth spacing
-      await new Promise(resolve => setTimeout(resolve, index * 1000));
-      
-      const { data: userData, error: userError } = await supabase.auth.admin.getUserById(admin.user_id);
-      
-      if (userError || !userData?.user?.email) {
-        console.warn(`Could not get email for admin user ${admin.user_id}`);
-        return null;
-      }
-
-      return sendAdminEmail(userData.user.email, {
-        order_id,
-        customer_email,
-        customer_name,
-        total_amount,
-        currency,
-        items,
-        payment_method,
-        created_at
-      }).catch(err => {
-        console.error(`Failed to email ${userData.user.email}:`, err);
-        return null;
-      });
-    });
-
-    const results = await Promise.all(emailPromises);
-    const successCount = results.filter(r => r).length;
-
-    return new Response(
-      JSON.stringify({ 
-        success: true, 
-        message: `Admin notifications sent to ${successCount} admin(s)`,
-        admins_notified: successCount
-      }),
-      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    const results = await Promise.all(
+      admins.map(async (admin, index) => {
+        await new Promise(r => setTimeout(r, index * 1000));
+        const { data: userData } = await supabase.auth.admin.getUserById(admin.user_id);
+        if (!userData?.user?.email) return null;
+        return sendAdminEmail(userData.user.email, {
+          order_id: orderId, customer_email, customer_name,
+          total_amount, currency, items, payment_method, created_at,
+        }).catch(err => { console.error(`Failed to email ${userData.user.email}:`, err); return null; });
+      })
     );
+
+    const successCount = results.filter(Boolean).length;
+    console.log(`✅ Admin notifications sent to ${successCount} admin(s) for order ${String(orderId).slice(0, 8)}`);
+
+    return new Response(JSON.stringify({ success: true, admins_notified: successCount }), {
+      status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   } catch (err) {
     console.error("notify-order-admins error:", err);
-    return new Response(
-      JSON.stringify({ error: "Server error", details: String(err) }),
-      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
+    return new Response(JSON.stringify({ error: "Server error" }), {
+      status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" },
+    });
   }
 });
