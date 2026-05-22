@@ -377,7 +377,7 @@ function OrdersTab({ sellers, callApi, setGlobalError }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/orders/me/seller',
+        endpoint: '/api/orders/me/search',
         params: statusFilter !== 'all' ? { status: statusFilter } : {},
       })
       console.log('RAW ORDERS:', data)
