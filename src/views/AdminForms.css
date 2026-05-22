@@ -2,11 +2,12 @@
 
 .admin-content {
   display: grid;
-  grid-template-columns: 1fr 2fr;
+  grid-template-columns: 5fr 7fr;
   gap: 2rem;
   margin-top: 2rem;
   width: 100%;
   max-width: 100%;
+  align-items: start;
 }
 
 .admin-form-section,
@@ -18,7 +19,8 @@
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: visible;
 }
 
 .admin-form-section h2,
@@ -766,8 +768,23 @@
 
 .cf-number-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 0.75rem;
+}
+
+.cf-number-grid .form-group {
+  min-width: 0;
+}
+
+.cf-number-grid .form-group input {
+  min-width: 0;
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.cf-number-grid .form-group label {
+  font-size: 0.8rem;
 }
 
 @media (max-width: 768px) {
@@ -778,7 +795,7 @@
 }
 
 @media (max-width: 480px) {
-  .cf-number-grid { grid-template-columns: 1fr 1fr; }
+  .cf-number-grid { grid-template-columns: 1fr; }
   .cf-section { padding: 1rem; }
   .cf-card { padding: 0.9rem; }
 }
