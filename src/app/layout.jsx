@@ -8,6 +8,7 @@ import CartDrawer from '@/components/CartDrawer'
 import CookieBanner from '@/components/CookieBanner'
 import ToastRenderer from '@/components/ToastRenderer'
 import StatusBanner from '@/components/StatusBanner'
+import ScrollToTop from '@/components/ScrollToTop'
 import '@/index.css'
 import '@/App.css'
 
@@ -138,6 +139,7 @@ export default function RootLayout({ children }) {
               <FooterClient />
               <CookieBanner />
               <ToastRenderer />
+              <ScrollToTop />
             </div>
           </CartProvider>
         </AuthProvider>
