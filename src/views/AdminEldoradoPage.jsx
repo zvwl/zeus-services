@@ -374,16 +374,28 @@ function OrdersTab({ sellers, callApi, setGlobalError }) {
     setOrders([])
     try {
       const data = await callApi({
-        action: 'call_api',
-        sellerId: sid,
-        method: 'GET',
-        endpoint: '/api/orders/me/search',
-        params: statusFilter !== 'all' ? { status: statusFilter } : {},
-      })
-      console.log('RAW ORDERS:', data)
+  action: 'call_api',
+  sellerId: sid,
+  method: 'GET',
+  endpoint: '/api/orders/me',
+  params: statusFilter !== 'all'
+    ? { status: statusFilter }
+    : {},
+})
 
-      if (data?.ok === false) {
+console.log('RAW ORDERS:', data)
+
+if (data?.ok === false) {
   setLocalError(JSON.stringify(data.data, null, 2))
+  return
+}
+
+// Eldorado returns account summary object here
+if (data?.data && !Array.isArray(data.data)) {
+  setLocalError(
+    `Connected successfully. Eldorado returned account summary instead of an order list:\n\n${JSON.stringify(data.data, null, 2)}`
+  )
+  setOrders([])
   return
 }
 
@@ -396,7 +408,7 @@ const list =
   []
 
 setOrders(list)
-    } catch (err) {
+  } catch (err) {
       setLocalError(err.message)
     } finally {
       setLoading(false)
@@ -527,11 +539,16 @@ function OffersTab({ sellers, callApi, setGlobalError, setGlobalSuccess }) {
     setOffers([])
     try {
       const data = await callApi({
-        action: 'call_api',
-        sellerId: sid,
-        method: 'GET',
-        endpoint: '/api/flexibleOffers/me',
-      })
+  action: 'call_api',
+  sellerId: sid,
+  method: 'GET',
+  endpoint: '/api/flexibleOffers',
+  params: {
+    offerType: 'Account',
+    itemTreeId: '16-1-0',
+    isInstantDelivery: 'true',
+  },
+})
       console.log('RAW OFFERS:', data)
 
 const list =
