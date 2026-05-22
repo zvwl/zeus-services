@@ -230,7 +230,13 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
       {showAddForm && (
         <div className="add-seller-card">
           <p className="add-seller-title">Add New Seller</p>
-          <div className="add-seller-form">
+          <form
+  className="add-seller-form"
+  onSubmit={(e) => {
+    e.preventDefault()
+    handleAdd()
+  }}
+>
             <div className="form-field">
               <label>Display Name</label>
               <input
@@ -268,15 +274,15 @@ function SellersTab({ sellers, loadingSellers, callApi, onRefresh, setGlobalErro
               </div>
             </div>
             <div className="add-seller-actions">
-              <button className="btn btn-primary" onClick={handleAdd} disabled={addingLoading}>
-                {addingLoading ? 'Verifying & Adding...' : 'Add Seller'}
+<button className="btn btn-primary" type="submit" disabled={addingLoading}>
+                  {addingLoading ? 'Verifying & Adding...' : 'Add Seller'}
               </button>
               <button className="btn btn-secondary" onClick={() => { setShowAddForm(false); setAddForm({ display_name: '', eldorado_email: '', password: '' }) }}>
                 Cancel
               </button>
               <span style={{ color: '#475569', fontSize: '0.8rem' }}>Credentials will be verified immediately</span>
             </div>
-          </div>
+          </form>
         </div>
       )}
 
