@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { CheckCircle, XCircle, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { supabase } from '@/lib/supabase/client'
+import ConfirmModal from '@/components/ConfirmModal'
 import './AuthPages.css'
 import './SettingsPage.css'
 
@@ -26,6 +27,7 @@ export default function SettingsPage() {
   const router = useRouter()
   const { user, emailVerified, resendVerificationEmail, updateProfile, changePassword } = useAuth()
   const [activeTab, setActiveTab] = useState('profile')
+  const [showDiscordConfirm, setShowDiscordConfirm] = useState(false)
   
   // Profile state
   const [name, setName] = useState('')
@@ -440,10 +442,7 @@ export default function SettingsPage() {
   }
 
   const handleDisconnectDiscord = async () => {
-    if (!confirm('Are you sure you want to disconnect your Discord account? You will lose your Customer role on the Discord server.')) {
-      return
-    }
-    
+    setShowDiscordConfirm(false)
     setDiscordLoading(true)
     setDiscordMessage('')
     
@@ -585,6 +584,7 @@ export default function SettingsPage() {
   }
 
   return (
+    <>
     <section className="section settings-section">
       <div className="settings-container">
         <h1 className="settings-title">Account Settings</h1>
@@ -764,9 +764,9 @@ export default function SettingsPage() {
                     <div className="message" style={{ marginBottom: '1rem' }}>{discordMessage}</div>
                   )}
                   
-                  <button 
+                  <button
                     type="button"
-                    onClick={handleDisconnectDiscord}
+                    onClick={() => setShowDiscordConfirm(true)}
                     disabled={discordLoading}
                     style={{
                       padding: '0.75rem 1.5rem',
@@ -1117,5 +1117,16 @@ export default function SettingsPage() {
         )}
       </div>
     </section>
+
+    <ConfirmModal
+      isOpen={showDiscordConfirm}
+      title="Disconnect Discord"
+      message="Are you sure you want to disconnect your Discord account? You will lose your Customer role on the Discord server."
+      confirmText="Disconnect"
+      cancelText="Keep Connected"
+      onConfirm={handleDisconnectDiscord}
+      onCancel={() => setShowDiscordConfirm(false)}
+    />
+    </>
   )
 }
