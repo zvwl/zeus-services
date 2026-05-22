@@ -468,9 +468,21 @@
   transform: scale(0.95);
 }
 
+/* Cloudflare Turnstile — ensure widget fills its container and is never clipped */
+.cf-turnstile {
+  display: block;
+  width: 100% !important;
+  max-width: 100%;
+}
+
+.cf-turnstile iframe {
+  display: block !important;
+  max-width: 100%;
+}
+
 @media (max-width: 600px) {
   .auth-card {
-    padding: 2rem 1.5rem;
+    padding: 2rem 1.25rem;
   }
 
   .auth-header h2 {

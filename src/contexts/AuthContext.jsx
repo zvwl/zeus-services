@@ -283,17 +283,8 @@ export const AuthProvider = ({ children }) => {
             checkDiscordRoleAssignment(session.user.id).catch(err => {
               console.warn('Discord role check failed:', err)
             })
-
-            // After OAuth (Google/Discord) the browser returns to the origin root.
-            // LoginPage stores the intended destination in localStorage before the
-            // OAuth redirect so we can pick it up here and navigate to it.
-            try {
-              const dest = localStorage.getItem('oauthRedirect')
-              if (dest && dest.startsWith('/') && !dest.startsWith('//')) {
-                localStorage.removeItem('oauthRedirect')
-                window.location.assign(dest)
-              }
-            } catch (_) {}
+            // Post-OAuth redirect is handled by LoginPage's useEffect which reads
+            // the ?redirect= query param encoded in the OAuth redirectTo URL.
           }
         } catch (err) {
           console.error('Error processing auth session:', err)
@@ -443,40 +434,34 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const loginWithGoogle = async () => {
+  const loginWithGoogle = async (redirectPath = '/boosting') => {
     try {
+      const base = process.env.NEXT_PUBLIC_FRONTEND_URL ||
+        (typeof window !== 'undefined' ? window.location.origin : 'https://zeuservices.com')
+      // Encode the destination directly in the OAuth redirectTo URL so it
+      // survives the OAuth round-trip on all mobile browsers (no localStorage needed).
+      const redirectTo = `${base}/login?redirect=${encodeURIComponent(redirectPath)}`
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
-        options: {
-          redirectTo: process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin
-        }
+        options: { redirectTo }
       })
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
-      // Supabase will redirect; return URL for completeness in case caller wants to use it
+      if (error) return { success: false, error: error.message }
       return { success: true, url: data?.url }
     } catch (_err) {
       return { success: false, error: 'Could not start Google sign-in' }
     }
   }
 
-  const loginWithDiscord = async () => {
+  const loginWithDiscord = async (redirectPath = '/boosting') => {
     try {
+      const base = process.env.NEXT_PUBLIC_FRONTEND_URL ||
+        (typeof window !== 'undefined' ? window.location.origin : 'https://zeuservices.com')
+      const redirectTo = `${base}/login?redirect=${encodeURIComponent(redirectPath)}`
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'discord',
-        options: {
-          redirectTo: process.env.NEXT_PUBLIC_FRONTEND_URL || window.location.origin,
-          scopes: 'identify email'
-        }
+        options: { redirectTo, scopes: 'identify email' }
       })
-
-      if (error) {
-        return { success: false, error: error.message }
-      }
-
+      if (error) return { success: false, error: error.message }
       return { success: true, url: data?.url }
     } catch (_err) {
       return { success: false, error: 'Could not start Discord sign-in' }

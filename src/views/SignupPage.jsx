@@ -330,6 +330,7 @@ export default function SignupPage() {
                   onError={resetCaptcha}
                   options={{
                     theme: 'dark',
+                    size: 'flexible',
                     retry: 'auto',
                     retryInterval: 2000,
                     refreshExpired: 'auto',

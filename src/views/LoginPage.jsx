@@ -129,40 +129,22 @@ export default function LoginPage() {
   const handleGoogleSignIn = async () => {
     setError('')
     try {
-      // Store the redirect destination before OAuth redirect
-      localStorage.setItem('oauthRedirect', redirectTo)
-      
-      const result = await loginWithGoogle()
-      if (result.success) {
-        // If Google OAuth redirects, the stored redirect will be used in AuthContext
-        router.push(redirectTo)
-      } else if (result.error) {
-        setError(result.error)
-        localStorage.removeItem('oauthRedirect')
-      }
+      // redirectTo is encoded in the OAuth redirectTo URL — works on all mobile browsers
+      const result = await loginWithGoogle(redirectTo)
+      if (result.error) setError(result.error)
+      // On success: signInWithOAuth navigates the browser away; this code doesn't continue
     } catch (_err) {
       setError('Could not start Google sign-in')
-      localStorage.removeItem('oauthRedirect')
     }
   }
 
   const handleDiscordSignIn = async () => {
     setError('')
     try {
-      // Store the redirect destination before OAuth redirect
-      localStorage.setItem('oauthRedirect', redirectTo)
-      
-      const result = await loginWithDiscord()
-      if (result.success) {
-        // If Discord OAuth redirects, the stored redirect will be used in AuthContext
-        router.push(redirectTo)
-      } else if (result.error) {
-        setError(result.error)
-        localStorage.removeItem('oauthRedirect')
-      }
+      const result = await loginWithDiscord(redirectTo)
+      if (result.error) setError(result.error)
     } catch (_err) {
       setError('Could not start Discord sign-in')
-      localStorage.removeItem('oauthRedirect')
     }
   }
 
@@ -287,6 +269,7 @@ export default function LoginPage() {
                   onError={resetCaptcha}
                   options={{
                     theme: 'dark',
+                    size: 'flexible',
                     retry: 'auto',
                     retryInterval: 2000,
                     refreshExpired: 'auto',
