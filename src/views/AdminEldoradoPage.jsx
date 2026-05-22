@@ -377,7 +377,7 @@ function OrdersTab({ sellers, callApi, setGlobalError }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/v1/orders/me/seller/orders',
+        endpoint: '/api/orders/me',
         params: statusFilter !== 'all' ? { status: statusFilter } : {},
       })
       setOrders(data?.data || data?.orders || data || [])
@@ -658,7 +658,7 @@ function NotificationsTab({ sellers, callApi, setGlobalError }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/v1/notifications/me',
+        endpoint: '/api/notifications/me',
         params: { unread: 'true' },
       })
       const list = data?.data || data?.notifications || data || []
