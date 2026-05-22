@@ -576,7 +576,7 @@ export default function SettingsPage() {
   // Redirect to login if not authenticated
   useEffect(() => {
     if (!user) {
-      router.push('/login', { state: { from: '/settings' } })
+      router.push('/login?redirect=/settings')
     }
   }, [user, router])
 

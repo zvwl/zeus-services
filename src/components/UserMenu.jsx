@@ -481,7 +481,7 @@ export default function UserMenu({ isOpen, onClose, onCloseCart, user: propUser 
               <div className="menu-section-title">Account</div>
               <button
                 className="menu-item"
-                onClick={() => handleNavigation('/login')}
+                onClick={() => handleNavigation(pathname && pathname !== '/login' ? `/login?redirect=${encodeURIComponent(pathname)}` : '/login')}
                 onMouseEnter={() => loginIconRef.current?.startAnimation()}
                 onMouseLeave={() => loginIconRef.current?.stopAnimation()}
               >

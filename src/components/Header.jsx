@@ -261,7 +261,7 @@ export default function Header() {
             <button
               type="button"
               className="header-action header-action-link action-account"
-              onClick={() => handleNav(user ? '/settings' : '/login')}
+              onClick={() => handleNav(user ? '/settings' : (pathname && pathname !== '/login' ? `/login?redirect=${encodeURIComponent(pathname)}` : '/login'))}
             >
               <UserRound size={18} aria-hidden="true" />
               <span className="header-action-label">{user ? 'Account' : 'Sign in'}</span>

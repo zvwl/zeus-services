@@ -27,8 +27,8 @@ export default function LoginPage() {
 
   const searchParams = useSearchParams()
   // Validate redirect parameter to prevent open redirect attacks
-  const rawRedirect = searchParams.get('redirect') || '/boosting'
-  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/boosting'
+  const rawRedirect = searchParams.get('redirect') || '/'
+  const redirectTo = rawRedirect.startsWith('/') && !rawRedirect.startsWith('//') ? rawRedirect : '/'
   const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
   const [bypassTurnstile, setBypassTurnstile] = useState(false)
   const [email, setEmail] = useState('')
@@ -93,24 +93,6 @@ export default function LoginPage() {
     resetCaptcha()
 
     if (result.success) {
-      // If there is an explicit redirect destination, always honour it.
-      if (redirectTo !== '/boosting') {
-        router.push(redirectTo)
-        return
-      }
-      // Default: check for a pending cart item added before login.
-      const pendingItem = localStorage.getItem('pendingCartItem')
-      if (pendingItem) {
-        try {
-          const { itemSlug, gameSlug, categorySlug } = JSON.parse(pendingItem)
-          if (itemSlug && gameSlug && categorySlug) {
-            router.push(`/${categorySlug}/${gameSlug}/${itemSlug}`)
-            return
-          }
-        } catch {
-          localStorage.removeItem('pendingCartItem')
-        }
-      }
       router.push(redirectTo)
       return
     }
@@ -179,10 +161,6 @@ export default function LoginPage() {
         setMfaCode('')
         resetCaptcha()
         isLoggingInRef.current = true
-        if (redirectTo !== '/boosting') {
-          router.push(redirectTo)
-          return
-        }
         router.push(redirectTo)
       } else {
         setMfaError(result.error || 'Verification failed')

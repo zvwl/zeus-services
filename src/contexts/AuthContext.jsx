@@ -434,7 +434,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const loginWithGoogle = async (redirectPath = '/boosting') => {
+  const loginWithGoogle = async (redirectPath = '/') => {
     try {
       const base = process.env.NEXT_PUBLIC_FRONTEND_URL ||
         (typeof window !== 'undefined' ? window.location.origin : 'https://zeuservices.com')
@@ -452,7 +452,7 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
-  const loginWithDiscord = async (redirectPath = '/boosting') => {
+  const loginWithDiscord = async (redirectPath = '/') => {
     try {
       const base = process.env.NEXT_PUBLIC_FRONTEND_URL ||
         (typeof window !== 'undefined' ? window.location.origin : 'https://zeuservices.com')
