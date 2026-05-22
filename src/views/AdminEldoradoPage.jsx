@@ -137,8 +137,8 @@ export default function AdminEldoradoPage() {
 
 // ── Raw response debug panel ──────────────────────────────────────────────────
 
-function RawDebug({ raw }) {
-  const [open, setOpen] = useState(false)
+function RawDebug({ raw, defaultOpen = false }) {
+  const [open, setOpen] = useState(defaultOpen)
   if (!raw) return null
   return (
     <div style={{ marginTop: '1rem', border: '1px solid #1e293b', borderRadius: '8px', overflow: 'hidden' }}>
@@ -388,38 +388,48 @@ function OrdersTab({ sellers, callApi }) {
   const [orders, setOrders] = useState([])
   const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
   const [statusFilter, setStatusFilter] = useState('all')
+  const [page, setPage] = useState(1)
+  const [hasMore, setHasMore] = useState(false)
   const [actionLoading, setActionLoading] = useState(null)
   const [error, setError] = useState('')
 
-  const fetchOrders = async (sid) => {
+  const PAGE_SIZE = 20
+
+  const fetchOrders = async (sid, pageNum = 1, append = false) => {
     if (!sid) return
-    setLoading(true)
+    if (append) setLoadingMore(true)
+    else { setLoading(true); setOrders([]); setHasLoaded(false) }
     setError('')
-    setOrders([])
     setRawResponse(null)
-    setHasLoaded(false)
     try {
+      const params = { page: String(pageNum), pageSize: String(PAGE_SIZE) }
+      if (statusFilter !== 'all') params.status = statusFilter
       const result = await callApi({
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
         endpoint: '/api/v1/orders/me/seller/orders',
-        params: statusFilter !== 'all' ? { status: statusFilter } : {},
+        params,
       })
-      // result = { status, ok, data: <eldorado_response> }
       setRawResponse(result)
       if (!result.ok) {
         setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
         return
       }
-      setOrders(extractList(result.data))
+      const list = extractList(result.data)
+      if (append) setOrders(prev => [...prev, ...list])
+      else setOrders(list)
+      setPage(pageNum)
+      setHasMore(list.length === PAGE_SIZE)
       setHasLoaded(true)
     } catch (err) {
       setError(err.message)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
@@ -463,7 +473,7 @@ function OrdersTab({ sellers, callApi }) {
           <option value="Completed">Completed</option>
           <option value="Cancelled">Cancelled</option>
         </select>
-        <button className="btn btn-primary btn-sm" onClick={() => fetchOrders(sellerId)} disabled={!sellerId || loading}>
+        <button className="btn btn-primary btn-sm" onClick={() => fetchOrders(sellerId, 1, false)} disabled={!sellerId || loading}>
           <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Orders'}
         </button>
       </div>
@@ -483,6 +493,9 @@ function OrdersTab({ sellers, callApi }) {
         </>
       ) : (
         <>
+          <div style={{ color: '#475569', fontSize: '0.85rem', marginBottom: '0.75rem' }}>
+            Showing {orders.length} orders
+          </div>
           <div className="eldorado-table-wrapper">
             <table className="eldorado-table">
               <thead>
@@ -533,6 +546,17 @@ function OrdersTab({ sellers, callApi }) {
               </tbody>
             </table>
           </div>
+          {hasMore && (
+            <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+              <button
+                className="btn btn-secondary"
+                onClick={() => fetchOrders(sellerId, page + 1, true)}
+                disabled={loadingMore}
+              >
+                {loadingMore ? 'Loading more...' : `Load more (page ${page + 1})`}
+              </button>
+            </div>
+          )}
           <RawDebug raw={rawResponse} />
         </>
       )}
@@ -570,7 +594,8 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
         setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
         return
       }
-      setOffers(extractList(result.data))
+      const list = extractList(result.data)
+      setOffers(list)
       setHasLoaded(true)
     } catch (err) {
       setError(err.message)
@@ -652,23 +677,31 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
               <tbody>
                 {offers.map(offer => {
                   const oid = offer.id || offer.offerId
-                  const status = (offer.status || offer.offerStatus || '').toLowerCase()
-                  const isPaused = status === 'paused' || status === 'inactive' || status === 'disabled'
+                  // Try every possible status field Eldorado might use
+                  const rawStatus = offer.status || offer.offerStatus || offer.state || (offer.isActive === false ? 'paused' : offer.isActive === true ? 'active' : '')
+                  const status = String(rawStatus).toLowerCase()
+                  const isPaused = status === 'paused' || status === 'inactive' || status === 'disabled' || status === 'false'
+                  // Try every possible name/price/game field
+                  const offerName = offer.name || offer.title || offer.categoryTitle || offer.offerTitle || offer.header || '—'
+                  const gameName = offer.game?.name || offer.gameName || offer.gameTitle || offer.game?.title || offer.category || offer.itemCategory || '—'
+                  const price = offer.price ?? offer.unitPrice ?? offer.pricePerUnit ?? offer.sellerPrice ?? null
+                  const minQ = offer.minAmount ?? offer.minQuantity ?? offer.min ?? null
+                  const maxQ = offer.maxAmount ?? offer.maxQuantity ?? offer.max ?? null
                   return (
                     <tr key={oid}>
-                      <td>{offer.name || offer.title || '—'}</td>
-                      <td>{offer.game?.name || offer.gameName || offer.gameTitle || '—'}</td>
+                      <td>{offerName}</td>
+                      <td>{gameName}</td>
                       <td className="price-tag">
-                        {offer.price != null ? `$${Number(offer.price).toFixed(2)}` : '—'}
+                        {price != null ? `$${Number(price).toFixed(2)}` : '—'}
                       </td>
                       <td>
                         <span className={`status-badge ${isPaused ? 'status-paused' : 'status-active'}`}>
-                          {status || '—'}
+                          {String(rawStatus) || 'active'}
                         </span>
                       </td>
                       <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                        {offer.minAmount != null ? offer.minAmount : '—'}
-                        {offer.maxAmount != null ? ` / ${offer.maxAmount}` : ''}
+                        {minQ != null ? minQ : '—'}
+                        {maxQ != null ? ` / ${maxQ}` : ''}
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
@@ -694,7 +727,7 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
               </tbody>
             </table>
           </div>
-          <RawDebug raw={rawResponse} />
+          <RawDebug raw={rawResponse} defaultOpen={true} />
         </>
       )}
     </div>
@@ -724,7 +757,6 @@ function NotificationsTab({ sellers, callApi }) {
         sellerId: sid,
         method: 'GET',
         endpoint: '/api/notifications/me',
-        params: { unread: 'true' },
       })
       setRawResponse(result)
       if (!result.ok) {
@@ -768,8 +800,8 @@ function NotificationsTab({ sellers, callApi }) {
         <div className="eldorado-empty">Click Load Notifications to fetch for this seller.</div>
       ) : notifications.length === 0 ? (
         <>
-          <div className="eldorado-empty">No unread notifications.</div>
-          <RawDebug raw={rawResponse} />
+          <div className="eldorado-empty">No notifications found.</div>
+          <RawDebug raw={rawResponse} defaultOpen={true} />
         </>
       ) : (
         <>
@@ -793,7 +825,7 @@ function NotificationsTab({ sellers, callApi }) {
               </div>
             ))}
           </div>
-          <RawDebug raw={rawResponse} />
+          <RawDebug raw={rawResponse} defaultOpen={true} />
         </>
       )}
     </div>
