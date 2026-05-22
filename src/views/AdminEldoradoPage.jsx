@@ -391,18 +391,12 @@ if (data?.ok === false) {
 }
 
 // Eldorado returns account summary object here
-if (data?.data && !Array.isArray(data.data)) {
-  setLocalError(
-    `Connected successfully. Eldorado returned account summary instead of an order list:\n\n${JSON.stringify(data.data, null, 2)}`
-  )
-  setOrders([])
-  return
-}
+
 
 const list =
-  Array.isArray(data?.data) ? data.data :
   Array.isArray(data?.data?.results) ? data.data.results :
   Array.isArray(data?.data?.orders) ? data.data.orders :
+  Array.isArray(data?.data) ? data.data :
   Array.isArray(data?.orders) ? data.orders :
   Array.isArray(data) ? data :
   []
@@ -483,26 +477,34 @@ setOrders(list)
             </thead>
             <tbody>
               {orderList.map(order => {
-                const oid = order.id || order.orderId || order.order_id
-                const status = (order.status || order.orderStatus || '').toLowerCase()
+                const oid = order.id
+const status = order.state?.state || ''
+const statusClass = status.toLowerCase()
                 return (
                   <tr key={oid}>
                     <td className="order-id-cell">{String(oid).substring(0, 12)}…</td>
-                    <td>{order.offer?.name || order.itemName || order.title || '—'}</td>
-                    <td>{order.buyer?.username || order.buyerName || '—'}</td>
-                    <td className="price-tag">
-                      {order.price != null ? `$${Number(order.price).toFixed(2)}` : '—'}
+                    <td>{order.orderOfferDetails?.gameCategoryTitle || order.orderOfferDetails?.category || '—'}</td>
+<td>{order.buyerUsername || '—'}</td>
+<td className="price-tag">
+  {order.totalPrice?.amount != null
+    ? `${order.totalPrice.amount} ${order.totalPrice.currency}`
+    : '—'}
+</td>
+                    <td>
+                      <span className={`status-badge status-${statusClass}`}>{status || '—'}</span>
                     </td>
                     <td>
-                      <span className={`status-badge status-${status}`}>{status || '—'}</span>
+                      {order.createdDate
+  ? new Date(order.createdDate).toLocaleString('en-GB', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit',
+    })
+  : '—'}
                     </td>
                     <td>
-                      {order.createdAt || order.created_at
-                        ? new Date(order.createdAt || order.created_at).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-                        : '—'}
-                    </td>
-                    <td>
-                      {(status === 'pending' || status === 'processing') && (
+                      {(status === 'Paid' || status === 'Initialized') && (
                         <button
                           className="btn btn-primary btn-sm"
                           onClick={() => handleDeliver(oid)}
