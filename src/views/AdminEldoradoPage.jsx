@@ -377,10 +377,20 @@ function OrdersTab({ sellers, callApi, setGlobalError }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/orders/me',
+        endpoint: '/api/orders/me/sales',
         params: statusFilter !== 'all' ? { status: statusFilter } : {},
       })
-      setOrders(data?.data || data?.orders || data || [])
+      console.log('RAW ORDERS:', data)
+
+const list =
+  Array.isArray(data?.data) ? data.data :
+  Array.isArray(data?.data?.results) ? data.data.results :
+  Array.isArray(data?.data?.orders) ? data.data.orders :
+  Array.isArray(data?.orders) ? data.orders :
+  Array.isArray(data) ? data :
+  []
+
+setOrders(list)
     } catch (err) {
       setLocalError(err.message)
     } finally {
@@ -515,10 +525,20 @@ function OffersTab({ sellers, callApi, setGlobalError, setGlobalSuccess }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/flexibleOffers/me/search',
+        endpoint: '/api/flexibleOffers/me',
       })
-      const list = data?.data || data?.offers || data?.items || data || []
-      setOffers(Array.isArray(list) ? list : [])
+      console.log('RAW OFFERS:', data)
+
+const list =
+  Array.isArray(data?.data) ? data.data :
+  Array.isArray(data?.data?.results) ? data.data.results :
+  Array.isArray(data?.data?.offers) ? data.data.offers :
+  Array.isArray(data?.offers) ? data.offers :
+  Array.isArray(data?.items) ? data.items :
+  Array.isArray(data) ? data :
+  []
+
+setOffers(list)
     } catch (err) {
       setLocalError(err.message)
     } finally {
@@ -661,8 +681,17 @@ function NotificationsTab({ sellers, callApi, setGlobalError }) {
         endpoint: '/api/notifications/me',
         params: { unread: 'true' },
       })
-      const list = data?.data || data?.notifications || data || []
-      setNotifications(Array.isArray(list) ? list : [])
+      console.log('RAW NOTIFICATIONS:', data)
+
+const list =
+  Array.isArray(data?.data) ? data.data :
+  Array.isArray(data?.data?.results) ? data.data.results :
+  Array.isArray(data?.data?.notifications) ? data.data.notifications :
+  Array.isArray(data?.notifications) ? data.notifications :
+  Array.isArray(data) ? data :
+  []
+
+setNotifications(list)
     } catch (err) {
       setLocalError(err.message)
     } finally {
