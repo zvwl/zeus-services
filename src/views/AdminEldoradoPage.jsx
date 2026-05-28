@@ -412,7 +412,6 @@ const STATUS_COLORS = {
 
 function OrdersTab({ sellers, callApi }) {
   const [sellerId, setSellerId] = useState('')
-  const [orderView, setOrderView] = useState('sold')
   const [orders, setOrders] = useState([])
   const [nextCursor, setNextCursor] = useState(null)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -423,9 +422,7 @@ function OrdersTab({ sellers, callApi }) {
   const [actionLoading, setActionLoading] = useState(null)
   const [error, setError] = useState('')
 
-  const orderEndpoint = orderView === 'sold'
-    ? '/api/v1/orders/me/seller/orders'
-    : '/api/v1/orders/me/buyer/orders'
+  const orderEndpoint = '/api/v1/orders/me/seller/orders'
 
   const doFetch = async (sid, cursor, append) => {
     const params = { pageSize: '20' }
@@ -538,11 +535,6 @@ function OrdersTab({ sellers, callApi }) {
         <select value={sellerId} onChange={e => { setSellerId(e.target.value); setOrders([]); setHasLoaded(false); setNextCursor(null); setRawResponse(null) }}>
           <option value="">— Select seller —</option>
           {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
-        </select>
-        <label>View:</label>
-        <select value={orderView} onChange={e => { setOrderView(e.target.value); setOrders([]); setHasLoaded(false); setNextCursor(null); setRawResponse(null) }}>
-          <option value="sold">Sold Orders</option>
-          <option value="purchased">Purchased Orders</option>
         </select>
         <label>Status:</label>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
@@ -667,12 +659,11 @@ function OrdersTab({ sellers, callApi }) {
 
 // ── Offers Tab ────────────────────────────────────────────────────────────────
 
+// Pause/resume methods differ per offer type — items use POST, others use PUT
 const OFFER_TYPES = [
-  { id: 'accounts',   label: 'Accounts',   fetchEp: '/api/flexibleOffers/me/search',          pauseEp: id => `/api/flexibleOffersUser/me/${id}/pause`,  resumeEp: id => `/api/flexibleOffersUser/me/${id}/resume`,  deleteEp: id => `/api/flexibleOffersUser/me/${id}`,  pauseAll: '/api/flexibleOffersUser/me/pauseAllActive' },
-  { id: 'currency',   label: 'Currency',   fetchEp: '/api/currencyOffers/me/search',          pauseEp: id => `/api/currencyOffersUser/me/${id}/pause`,  resumeEp: id => `/api/currencyOffersUser/me/${id}/resume`,  deleteEp: id => `/api/currencyOffersUser/me/${id}`,  pauseAll: '/api/currencyOffersUser/me/pauseAllActive' },
-  { id: 'topup',      label: 'Topup',      fetchEp: '/api/topupOffers/me/search',             pauseEp: id => `/api/topupOffersUser/me/${id}/pause`,     resumeEp: id => `/api/topupOffersUser/me/${id}/resume`,     deleteEp: id => `/api/topupOffersUser/me/${id}`,     pauseAll: '/api/topupOffersUser/me/pauseAllActive' },
-  { id: 'items',      label: 'Items',      fetchEp: '/api/itemOffers/me/search',              pauseEp: id => `/api/itemOffersUser/me/${id}/pause`,      resumeEp: id => `/api/itemOffersUser/me/${id}/resume`,      deleteEp: id => `/api/itemOffersUser/me/${id}`,      pauseAll: '/api/itemOffersUser/me/pauseAllActive' },
-  { id: 'predefined', label: 'Predefined', fetchEp: '/api/predefinedOffers/me',               pauseEp: id => `/api/predefinedOffersUser/me/${id}/pause`, resumeEp: id => `/api/predefinedOffersUser/me/${id}/resume`, deleteEp: id => `/api/predefinedOffersUser/me/${id}`, pauseAll: '/api/predefinedOffersUser/me/pauseAllActive' },
+  { id: 'accounts',   label: 'Accounts',            fetchEp: '/api/flexibleOffers/me/search',               pauseEp: id => `/api/flexibleOffersUser/me/${id}/pause`,          resumeEp: id => `/api/flexibleOffersUser/me/${id}/resume`,          deleteEp: id => `/api/flexibleOffersUser/me/${id}`,          pauseAll: '/api/flexibleOffersUser/me/pauseAllActive',        pauseMethod: 'PUT',  resumeMethod: 'PUT'  },
+  { id: 'items',      label: 'Items',               fetchEp: '/api/v1/item-management/me/offers/me/search', pauseEp: id => `/api/v1/item-management/me/offers/${id}/pause`,   resumeEp: id => `/api/v1/item-management/me/offers/${id}/resume`,   deleteEp: id => `/api/v1/item-management/me/offers/${id}`,   pauseAll: '/api/v1/item-management/me/offers/pause',          pauseMethod: 'POST', resumeMethod: 'POST' },
+  { id: 'predefined', label: 'Predefined / Currency / Topup', fetchEp: '/api/predefinedOffers/me',          pauseEp: id => `/api/predefinedOffersUser/me/${id}/pause`,        resumeEp: id => `/api/predefinedOffersUser/me/${id}/resume`,        deleteEp: id => `/api/predefinedOffersUser/me/${id}`,        pauseAll: '/api/predefinedOffersUser/me/pauseAllActive',      pauseMethod: 'PUT',  resumeMethod: 'PUT'  },
 ]
 
 function parseOfferFields(offer) {
@@ -748,10 +739,15 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
     setActionLoading(`${offerId}-${action}`)
     setError('')
     try {
+      const method = action === 'delete'
+        ? 'DELETE'
+        : action === 'pause'
+        ? offerType.pauseMethod
+        : offerType.resumeMethod
       const result = await callApi({
         action: 'call_api',
         sellerId,
-        method: action === 'delete' ? 'DELETE' : 'PUT',
+        method,
         endpoint: ep,
       })
       if (!result.ok) {
@@ -1049,8 +1045,8 @@ function NotificationsTab({ sellers, callApi }) {
 // ── Boosting Tab ──────────────────────────────────────────────────────────────
 
 const BOOSTING_VIEWS = [
-  { id: 'received', label: 'Received Requests', endpoint: '/api/v1/boosting/me/received' },
-  { id: 'sent',     label: 'My Requests',        endpoint: '/api/v1/boosting/me/sent' },
+  { id: 'received',      label: 'Received Requests', endpoint: '/api/boostingOffers/me/boostingRequests/received' },
+  { id: 'subscriptions', label: 'My Boosting Offers', endpoint: '/api/boostingOffers/me/boostingSubscriptions' },
 ]
 
 function BoostingTab({ sellers, callApi }) {
