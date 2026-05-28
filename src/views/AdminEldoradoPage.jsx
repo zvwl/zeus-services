@@ -468,7 +468,7 @@ function OrdersTab({ sellers, callApi }) {
   }
 
   const handleDeliver = async (orderId) => {
-    setActionLoading(orderId)
+    setActionLoading(`${orderId}-deliver`)
     setError('')
     try {
       const result = await callApi({
@@ -479,6 +479,29 @@ function OrdersTab({ sellers, callApi }) {
       })
       if (!result.ok) {
         setError(`Deliver failed (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
+      fetchOrders(sellerId)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handleCancel = async (orderId) => {
+    if (!window.confirm('Cancel this order? This cannot be undone.')) return
+    setActionLoading(`${orderId}-cancel`)
+    setError('')
+    try {
+      const result = await callApi({
+        action: 'call_api',
+        sellerId,
+        method: 'POST',
+        endpoint: `/api/v1/orders/me/${orderId}/cancel`,
+      })
+      if (!result.ok) {
+        setError(`Cancel failed (${result.status}): ${JSON.stringify(result.data)}`)
         return
       }
       fetchOrders(sellerId)
@@ -582,13 +605,22 @@ function OrdersTab({ sellers, callApi }) {
                       </td>
                       <td>
                         {status === 'Paid' && (
-                          <button
-                            className="btn btn-primary btn-sm"
-                            onClick={() => handleDeliver(oid)}
-                            disabled={actionLoading === oid}
-                          >
-                            {actionLoading === oid ? '...' : 'Deliver'}
-                          </button>
+                          <div style={{ display: 'flex', gap: '0.4rem' }}>
+                            <button
+                              className="btn btn-primary btn-sm"
+                              onClick={() => handleDeliver(oid)}
+                              disabled={!!actionLoading}
+                            >
+                              {actionLoading === `${oid}-deliver` ? '...' : 'Deliver'}
+                            </button>
+                            <button
+                              className="btn btn-danger btn-sm"
+                              onClick={() => handleCancel(oid)}
+                              disabled={!!actionLoading}
+                            >
+                              {actionLoading === `${oid}-cancel` ? '...' : 'Cancel'}
+                            </button>
+                          </div>
                         )}
                       </td>
                     </tr>
@@ -613,8 +645,35 @@ function OrdersTab({ sellers, callApi }) {
 
 // ── Offers Tab ────────────────────────────────────────────────────────────────
 
+const OFFER_TYPES = [
+  { id: 'flexible',   label: 'Flexible',   fetchEp: '/api/flexibleOffers/me/search',          pauseEp: id => `/api/flexibleOffersUser/me/${id}/pause`,  resumeEp: id => `/api/flexibleOffersUser/me/${id}/resume`,  deleteEp: id => `/api/flexibleOffersUser/me/${id}`,  pauseAll: '/api/flexibleOffersUser/me/pauseAllActive' },
+  { id: 'predefined', label: 'Predefined', fetchEp: '/api/predefinedOffers/me',               pauseEp: id => `/api/predefinedOffersUser/me/${id}/pause`, resumeEp: id => `/api/predefinedOffersUser/me/${id}/resume`, deleteEp: id => `/api/predefinedOffersUser/me/${id}`, pauseAll: '/api/predefinedOffersUser/me/pauseAllActive' },
+]
+
+function parseOfferFields(offer) {
+  const oid = offer.id || offer.offerId
+  // State / status
+  const rawStatus = offer.offerState || offer.status || offer.offerStatus || offer.state
+    || (offer.isActive === false ? 'Paused' : offer.isActive === true ? 'Active' : '')
+  const status = String(rawStatus).toLowerCase()
+  const isPaused = ['paused', 'inactive', 'disabled', 'false'].includes(status)
+  // Name
+  const offerName = offer.header || offer.name || offer.title || offer.categoryTitle || offer.offerTitle || '—'
+  // Game
+  const gameName = offer.game?.name || offer.game?.title || offer.gameName || offer.gameTitle || offer.category || '—'
+  // Price — flexible offers nest under pricing.unitPrice, predefined under price
+  const priceObj = offer.pricing?.unitPrice || offer.price || null
+  const priceAmt = priceObj?.amount ?? offer.unitPrice ?? offer.pricePerUnit ?? offer.sellerPrice ?? null
+  const priceCur = priceObj?.currency ?? offer.currency ?? 'USD'
+  // Quantity
+  const minQ = offer.minAmount ?? offer.minQuantity ?? offer.min ?? null
+  const maxQ = offer.maxAmount ?? offer.maxQuantity ?? offer.max ?? offer.stockAmount ?? null
+  return { oid, rawStatus, isPaused, offerName, gameName, priceAmt, priceCur, minQ, maxQ }
+}
+
 function OffersTab({ sellers, callApi, setGlobalSuccess }) {
   const [sellerId, setSellerId] = useState('')
+  const [offerTypeId, setOfferTypeId] = useState('flexible')
   const [offers, setOffers] = useState([])
   const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
@@ -622,8 +681,11 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
   const [actionLoading, setActionLoading] = useState(null)
   const [error, setError] = useState('')
 
-  const fetchOffers = async (sid) => {
-    if (!sid) return
+  const offerType = OFFER_TYPES.find(t => t.id === offerTypeId)
+
+  const fetchOffers = async (sid, typeId) => {
+    const ot = OFFER_TYPES.find(t => t.id === (typeId ?? offerTypeId))
+    if (!sid || !ot) return
     setLoading(true)
     setError('')
     setOffers([])
@@ -634,15 +696,15 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/flexibleOffers/me/search',
+        endpoint: ot.fetchEp,
+        params: { pageSize: '50' },
       })
       setRawResponse(result)
       if (!result.ok) {
         setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
         return
       }
-      const list = extractList(result.data)
-      setOffers(list)
+      setOffers(extractList(result.data))
       setHasLoaded(true)
     } catch (err) {
       setError(err.message)
@@ -652,11 +714,11 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
   }
 
   const handleOfferAction = async (offerId, action) => {
-    const endpointMap = {
-      pause: `/api/flexibleOffers/me/${offerId}/pause`,
-      activate: `/api/flexibleOffers/me/${offerId}/activate`,
-      delete: `/api/flexibleOffers/me/${offerId}`,
-    }
+    const ep = action === 'pause'
+      ? offerType.pauseEp(offerId)
+      : action === 'resume'
+      ? offerType.resumeEp(offerId)
+      : offerType.deleteEp(offerId)
     setActionLoading(`${offerId}-${action}`)
     setError('')
     try {
@@ -664,14 +726,38 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
         action: 'call_api',
         sellerId,
         method: action === 'delete' ? 'DELETE' : 'PUT',
-        endpoint: endpointMap[action],
+        endpoint: ep,
       })
       if (!result.ok) {
         setError(`Action failed (${result.status}): ${JSON.stringify(result.data)}`)
         return
       }
       setGlobalSuccess(`Offer ${action}d successfully`)
-      fetchOffers(sellerId)
+      fetchOffers(sellerId, offerTypeId)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  const handlePauseAll = async () => {
+    if (!offerType.pauseAll || !sellerId) return
+    setActionLoading('pause-all')
+    setError('')
+    try {
+      const result = await callApi({
+        action: 'call_api',
+        sellerId,
+        method: 'PUT',
+        endpoint: offerType.pauseAll,
+      })
+      if (!result.ok) {
+        setError(`Pause all failed (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
+      setGlobalSuccess('All active offers paused')
+      fetchOffers(sellerId, offerTypeId)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -681,7 +767,7 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
 
   return (
     <div>
-      <h2 className="eldorado-section-title">Active Offers</h2>
+      <h2 className="eldorado-section-title">Offers</h2>
 
       <div className="seller-selector-bar">
         <label>Seller:</label>
@@ -689,9 +775,18 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
           <option value="">— Select seller —</option>
           {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
         </select>
-        <button className="btn btn-primary btn-sm" onClick={() => fetchOffers(sellerId)} disabled={!sellerId || loading}>
+        <label>Type:</label>
+        <select value={offerTypeId} onChange={e => { setOfferTypeId(e.target.value); setOffers([]); setHasLoaded(false); setRawResponse(null) }}>
+          {OFFER_TYPES.map(t => <option key={t.id} value={t.id}>{t.label}</option>)}
+        </select>
+        <button className="btn btn-primary btn-sm" onClick={() => fetchOffers(sellerId, offerTypeId)} disabled={!sellerId || loading}>
           <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Offers'}
         </button>
+        {hasLoaded && offers.length > 0 && (
+          <button className="btn btn-secondary btn-sm" onClick={handlePauseAll} disabled={actionLoading === 'pause-all'}>
+            {actionLoading === 'pause-all' ? '...' : 'Pause All'}
+          </button>
+        )}
       </div>
 
       {error && <div className="eldorado-error">{error}</div>}
@@ -704,11 +799,12 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
         <div className="eldorado-empty">Click Load Offers to fetch offers for this seller.</div>
       ) : offers.length === 0 ? (
         <>
-          <div className="eldorado-empty">No offers found for this seller.</div>
-          <RawDebug raw={rawResponse} />
+          <div className="eldorado-empty">No {offerType.label.toLowerCase()} offers found.</div>
+          <RawDebug raw={rawResponse} defaultOpen />
         </>
       ) : (
         <>
+          <div style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '0.6rem' }}>{offers.length} offers</div>
           <div className="eldorado-table-wrapper">
             <table className="eldorado-table">
               <thead>
@@ -717,29 +813,20 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
                   <th>Game</th>
                   <th>Price</th>
                   <th>Status</th>
-                  <th>Min / Max</th>
+                  <th>Min / Max Qty</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {offers.map(offer => {
-                  const oid = offer.id || offer.offerId
-                  // Try every possible status field Eldorado might use
-                  const rawStatus = offer.status || offer.offerStatus || offer.state || (offer.isActive === false ? 'paused' : offer.isActive === true ? 'active' : '')
-                  const status = String(rawStatus).toLowerCase()
-                  const isPaused = status === 'paused' || status === 'inactive' || status === 'disabled' || status === 'false'
-                  // Try every possible name/price/game field
-                  const offerName = offer.name || offer.title || offer.categoryTitle || offer.offerTitle || offer.header || '—'
-                  const gameName = offer.game?.name || offer.gameName || offer.gameTitle || offer.game?.title || offer.category || offer.itemCategory || '—'
-                  const price = offer.price ?? offer.unitPrice ?? offer.pricePerUnit ?? offer.sellerPrice ?? null
-                  const minQ = offer.minAmount ?? offer.minQuantity ?? offer.min ?? null
-                  const maxQ = offer.maxAmount ?? offer.maxQuantity ?? offer.max ?? null
+                  const { oid, rawStatus, isPaused, offerName, gameName, priceAmt, priceCur, minQ, maxQ } = parseOfferFields(offer)
+                  const fmtQ = q => q == null ? '—' : q >= 1_000_000 ? `${(q / 1_000_000).toFixed(1)}M` : q >= 1_000 ? `${(q / 1_000).toFixed(0)}K` : q
                   return (
                     <tr key={oid}>
                       <td>{offerName}</td>
                       <td>{gameName}</td>
                       <td className="price-tag">
-                        {price != null ? `$${Number(price).toFixed(2)}` : '—'}
+                        {priceAmt != null ? `${Number(priceAmt).toFixed(2)} ${priceCur}` : '—'}
                       </td>
                       <td>
                         <span className={`status-badge ${isPaused ? 'status-paused' : 'status-active'}`}>
@@ -747,22 +834,21 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
                         </span>
                       </td>
                       <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                        {minQ != null ? minQ : '—'}
-                        {maxQ != null ? ` / ${maxQ}` : ''}
+                        {fmtQ(minQ)}{maxQ != null ? ` / ${fmtQ(maxQ)}` : ''}
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
                           <button
                             className="btn btn-secondary btn-sm"
-                            onClick={() => handleOfferAction(oid, isPaused ? 'activate' : 'pause')}
-                            disabled={actionLoading === `${oid}-${isPaused ? 'activate' : 'pause'}`}
+                            onClick={() => handleOfferAction(oid, isPaused ? 'resume' : 'pause')}
+                            disabled={!!actionLoading}
                           >
-                            {isPaused ? 'Activate' : 'Pause'}
+                            {isPaused ? 'Resume' : 'Pause'}
                           </button>
                           <button
                             className="btn btn-danger btn-sm"
                             onClick={() => handleOfferAction(oid, 'delete')}
-                            disabled={actionLoading === `${oid}-delete`}
+                            disabled={!!actionLoading}
                           >
                             <Trash2 size={11} /> Delete
                           </button>
@@ -774,7 +860,7 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
               </tbody>
             </table>
           </div>
-          <RawDebug raw={rawResponse} defaultOpen={true} />
+          <RawDebug raw={rawResponse} defaultOpen />
         </>
       )}
     </div>
@@ -789,12 +875,15 @@ function NotificationsTab({ sellers, callApi }) {
   const [rawResponse, setRawResponse] = useState(null)
   const [loading, setLoading] = useState(false)
   const [hasLoaded, setHasLoaded] = useState(false)
+  const [markingRead, setMarkingRead] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const fetchNotifications = async (sid) => {
     if (!sid) return
     setLoading(true)
     setError('')
+    setSuccess('')
     setNotifications([])
     setRawResponse(null)
     setHasLoaded(false)
@@ -803,7 +892,8 @@ function NotificationsTab({ sellers, callApi }) {
         action: 'call_api',
         sellerId: sid,
         method: 'GET',
-        endpoint: '/api/v1/notifications/me',
+        endpoint: '/api/notifications/me',
+        params: { pageSize: '50' },
       })
       setRawResponse(result)
       if (!result.ok) {
@@ -819,8 +909,43 @@ function NotificationsTab({ sellers, callApi }) {
     }
   }
 
+  const handleMarkAllRead = async () => {
+    if (!sellerId) return
+    setMarkingRead(true)
+    setError('')
+    try {
+      const result = await callApi({
+        action: 'call_api',
+        sellerId,
+        method: 'PUT',
+        endpoint: '/api/notifications/me/markAllAsRead',
+      })
+      if (!result.ok) {
+        setError(`Mark read failed (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
+      setSuccess('All notifications marked as read')
+      fetchNotifications(sellerId)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setMarkingRead(false)
+    }
+  }
+
   const fmtType = (type) =>
     (type || '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+
+  const getNotifMessage = (n) => {
+    if (n.notificationDetails?.customData?.message) return n.notificationDetails.customData.message
+    if (n.details?.message) return n.details.message
+    return n.message || n.body || n.text || n.content || JSON.stringify(n)
+  }
+
+  const getNotifTime = (n) =>
+    n.createdAt || n.created_at || n.createdDate || n.date || null
+
+  const isUnread = (n) => n.readStatus === 'Unread' || n.isRead === false || n.read === false
 
   return (
     <div>
@@ -835,9 +960,15 @@ function NotificationsTab({ sellers, callApi }) {
         <button className="btn btn-primary btn-sm" onClick={() => fetchNotifications(sellerId)} disabled={!sellerId || loading}>
           <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load Notifications'}
         </button>
+        {hasLoaded && notifications.length > 0 && (
+          <button className="btn btn-secondary btn-sm" onClick={handleMarkAllRead} disabled={markingRead}>
+            {markingRead ? '...' : 'Mark All Read'}
+          </button>
+        )}
       </div>
 
       {error && <div className="eldorado-error">{error}</div>}
+      {success && <div className="eldorado-success">{success}</div>}
 
       {loading ? (
         <div className="eldorado-spinner">Fetching notifications...</div>
@@ -848,31 +979,39 @@ function NotificationsTab({ sellers, callApi }) {
       ) : notifications.length === 0 ? (
         <>
           <div className="eldorado-empty">No notifications found.</div>
-          <RawDebug raw={rawResponse} defaultOpen={true} />
+          <RawDebug raw={rawResponse} defaultOpen />
         </>
       ) : (
         <>
-          <div className="notif-list">
-            {notifications.map((n, i) => (
-              <div key={n.id || i} className="notif-card">
-                <div className="notif-dot" />
-                <div className="notif-content">
-                  <div className="notif-type">{fmtType(n.type || n.notificationType)}</div>
-                  <div className="notif-message">
-                    {n.message || n.body || n.text || n.content || JSON.stringify(n)}
-                  </div>
-                  {(n.createdAt || n.created_at || n.createdDate) && (
-                    <div className="notif-time">
-                      {new Date(n.createdAt || n.created_at || n.createdDate).toLocaleString('en-GB', {
-                        day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit',
-                      })}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+          <div style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '0.75rem' }}>
+            {notifications.length} notifications
+            {notifications.filter(isUnread).length > 0 && (
+              <span style={{ marginLeft: '0.5rem', color: '#fbbf24', fontWeight: 700 }}>
+                · {notifications.filter(isUnread).length} unread
+              </span>
+            )}
           </div>
-          <RawDebug raw={rawResponse} defaultOpen={true} />
+          <div className="notif-list">
+            {notifications.map((n, i) => {
+              const unread = isUnread(n)
+              const ts = getNotifTime(n)
+              return (
+                <div key={n.id || i} className="notif-card" style={unread ? { borderColor: '#fbbf2440' } : {}}>
+                  <div className="notif-dot" style={unread ? {} : { background: '#334155' }} />
+                  <div className="notif-content">
+                    <div className="notif-type">{fmtType(n.notificationType || n.type)}</div>
+                    <div className="notif-message">{getNotifMessage(n)}</div>
+                    {ts && (
+                      <div className="notif-time">
+                        {new Date(ts).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+          <RawDebug raw={rawResponse} />
         </>
       )}
     </div>
