@@ -17,7 +17,6 @@ import {
 import Banner from '@/components/Banner'
 import AnimatedLucideIcon from '@/components/AnimatedLucideIcon'
 import { Accordion, AccordionItem, AccordionButton, AccordionPanel } from '@/components/Accordion'
-import SEO, { SEO_CONFIGS, HOME_FAQ_SCHEMA } from '@/components/SEO'
 import '../App.css'
 import './Home.css'
 
@@ -47,7 +46,6 @@ export default function Home({ onGetStarted }) {
 
   return (
     <>
-      <SEO {...SEO_CONFIGS.home} structuredData={HOME_FAQ_SCHEMA} />
       <Banner onGetStarted={onGetStarted} onScrollAbout={handleScrollAbout} />
 
       <section className="home-intro-section">
