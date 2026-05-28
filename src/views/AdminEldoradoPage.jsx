@@ -434,7 +434,9 @@ function OrdersTab({ sellers, callApi }) {
     const list = result.data?.results || []
     if (append) setOrders(prev => [...prev, ...list])
     else setOrders(list)
-    setNextCursor(result.data?.nextPageCursor || null)
+    // Eldorado signals "last page" by echoing the same cursor back, not by returning null
+    const returnedCursor = result.data?.nextPageCursor || null
+    setNextCursor(returnedCursor && returnedCursor !== cursor ? returnedCursor : null)
   }
 
   const fetchOrders = async (sid) => {
@@ -657,18 +659,19 @@ function parseOfferFields(offer) {
     || (offer.isActive === false ? 'Paused' : offer.isActive === true ? 'Active' : '')
   const status = String(rawStatus).toLowerCase()
   const isPaused = ['paused', 'inactive', 'disabled', 'false'].includes(status)
-  // Name
-  const offerName = offer.header || offer.name || offer.title || offer.categoryTitle || offer.offerTitle || '—'
-  // Game
-  const gameName = offer.game?.name || offer.game?.title || offer.gameName || offer.gameTitle || offer.category || '—'
-  // Price — flexible offers nest under pricing.unitPrice, predefined under price
-  const priceObj = offer.pricing?.unitPrice || offer.price || null
-  const priceAmt = priceObj?.amount ?? offer.unitPrice ?? offer.pricePerUnit ?? offer.sellerPrice ?? null
-  const priceCur = priceObj?.currency ?? offer.currency ?? 'USD'
-  // Quantity
-  const minQ = offer.minAmount ?? offer.minQuantity ?? offer.min ?? null
-  const maxQ = offer.maxAmount ?? offer.maxQuantity ?? offer.max ?? offer.stockAmount ?? null
-  return { oid, rawStatus, isPaused, offerName, gameName, priceAmt, priceCur, minQ, maxQ }
+  // Name — offerTitle is the actual field in Eldorado API responses
+  const offerName = offer.offerTitle || offer.header || offer.name || offer.title || offer.categoryTitle || '—'
+  // Game category
+  const gameName = offer.gameCategoryTitle || offer.game?.name || offer.game?.title || offer.gameName || offer.gameTitle || offer.category || '—'
+  // Platform — tradeEnvironmentValues[0].value for flexible offers
+  const platform = offer.tradeEnvironmentValues?.[0]?.value || offer.tradeEnvironment || '—'
+  // Price — pricePerUnit is an object {amount, currency} in actual API responses
+  const priceAmt = offer.pricePerUnit?.amount ?? offer.pricing?.unitPrice?.amount ?? offer.price?.amount ?? null
+  const priceCur = offer.pricePerUnit?.currency ?? offer.pricing?.unitPrice?.currency ?? offer.price?.currency ?? offer.currency ?? 'USD'
+  // Quantity — quantity is the stock count, minQuantity is the minimum order size
+  const stock = offer.quantity ?? offer.stockAmount ?? null
+  const minQ = offer.minQuantity ?? offer.minAmount ?? offer.min ?? null
+  return { oid, rawStatus, isPaused, offerName, gameName, platform, priceAmt, priceCur, stock, minQ }
 }
 
 function OffersTab({ sellers, callApi, setGlobalSuccess }) {
@@ -810,31 +813,33 @@ function OffersTab({ sellers, callApi, setGlobalSuccess }) {
               <thead>
                 <tr>
                   <th>Offer Name</th>
-                  <th>Game</th>
+                  <th>Category</th>
+                  <th>Platform</th>
                   <th>Price</th>
+                  <th>Stock</th>
                   <th>Status</th>
-                  <th>Min / Max Qty</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {offers.map(offer => {
-                  const { oid, rawStatus, isPaused, offerName, gameName, priceAmt, priceCur, minQ, maxQ } = parseOfferFields(offer)
+                  const { oid, rawStatus, isPaused, offerName, gameName, platform, priceAmt, priceCur, stock, minQ } = parseOfferFields(offer)
                   const fmtQ = q => q == null ? '—' : q >= 1_000_000 ? `${(q / 1_000_000).toFixed(1)}M` : q >= 1_000 ? `${(q / 1_000).toFixed(0)}K` : q
                   return (
                     <tr key={oid}>
                       <td>{offerName}</td>
                       <td>{gameName}</td>
+                      <td style={{ fontSize: '0.8rem' }}>{platform}</td>
                       <td className="price-tag">
                         {priceAmt != null ? `${Number(priceAmt).toFixed(2)} ${priceCur}` : '—'}
+                      </td>
+                      <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
+                        {fmtQ(stock)}{minQ != null ? ` (min ${fmtQ(minQ)})` : ''}
                       </td>
                       <td>
                         <span className={`status-badge ${isPaused ? 'status-paused' : 'status-active'}`}>
                           {String(rawStatus) || 'active'}
                         </span>
-                      </td>
-                      <td style={{ fontSize: '0.8rem', color: '#94a3b8' }}>
-                        {fmtQ(minQ)}{maxQ != null ? ` / ${fmtQ(maxQ)}` : ''}
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>

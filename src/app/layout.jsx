@@ -12,6 +12,12 @@ import ScrollToTop from '@/components/ScrollToTop'
 import '@/index.css'
 import '@/App.css'
 
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+}
+
 export const metadata = {
   metadataBase: new URL('https://zeuservices.com'),
   title: {
