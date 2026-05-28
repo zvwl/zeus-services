@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useRouter } from 'next/navigation'
 import { supabase } from '@/lib/supabase/client'
-import { RefreshCw, Plus, Trash2, Eye, EyeOff, Package, Tag, Bell, Users, ChevronDown, ChevronUp } from 'lucide-react'
+import { RefreshCw, Plus, Trash2, Eye, EyeOff, Package, Tag, Bell, Users, ChevronDown, ChevronUp, Zap } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './AdminEldoradoPage.css'
 
@@ -80,6 +80,7 @@ export default function AdminEldoradoPage() {
     { id: 'sellers', label: 'Sellers', Icon: Users },
     { id: 'orders', label: 'Orders', Icon: Package },
     { id: 'offers', label: 'Offers', Icon: Tag },
+    { id: 'boosting', label: 'Boosting', Icon: Zap },
     { id: 'notifications', label: 'Notifications', Icon: Bell },
   ]
 
@@ -127,6 +128,9 @@ export default function AdminEldoradoPage() {
       )}
       {activeTab === 'offers' && (
         <OffersTab sellers={sellers} callApi={callApi} setGlobalSuccess={setGlobalSuccess} />
+      )}
+      {activeTab === 'boosting' && (
+        <BoostingTab sellers={sellers} callApi={callApi} />
       )}
       {activeTab === 'notifications' && (
         <NotificationsTab sellers={sellers} callApi={callApi} />
@@ -408,6 +412,7 @@ const STATUS_COLORS = {
 
 function OrdersTab({ sellers, callApi }) {
   const [sellerId, setSellerId] = useState('')
+  const [orderView, setOrderView] = useState('sold')
   const [orders, setOrders] = useState([])
   const [nextCursor, setNextCursor] = useState(null)
   const [loadingMore, setLoadingMore] = useState(false)
@@ -418,6 +423,10 @@ function OrdersTab({ sellers, callApi }) {
   const [actionLoading, setActionLoading] = useState(null)
   const [error, setError] = useState('')
 
+  const orderEndpoint = orderView === 'sold'
+    ? '/api/v1/orders/me/seller/orders'
+    : '/api/v1/orders/me/buyer/orders'
+
   const doFetch = async (sid, cursor, append) => {
     const params = { pageSize: '20' }
     if (cursor) params.cursor = cursor
@@ -426,14 +435,20 @@ function OrdersTab({ sellers, callApi }) {
       action: 'call_api',
       sellerId: sid,
       method: 'GET',
-      endpoint: '/api/v1/orders/me/seller/orders',
+      endpoint: orderEndpoint,
       params,
     })
     setRawResponse(result)
     if (!result.ok) throw new Error(`Eldorado error (${result.status}): ${JSON.stringify(result.data)}`)
     const list = result.data?.results || []
-    if (append) setOrders(prev => [...prev, ...list])
-    else setOrders(list)
+    if (append) {
+      setOrders(prev => {
+        const seen = new Set(prev.map(o => o.id))
+        return [...prev, ...list.filter(o => !seen.has(o.id))]
+      })
+    } else {
+      setOrders(list)
+    }
     // Eldorado signals "last page" by echoing the same cursor back, not by returning null
     const returnedCursor = result.data?.nextPageCursor || null
     setNextCursor(returnedCursor && returnedCursor !== cursor ? returnedCursor : null)
@@ -523,6 +538,11 @@ function OrdersTab({ sellers, callApi }) {
         <select value={sellerId} onChange={e => { setSellerId(e.target.value); setOrders([]); setHasLoaded(false); setNextCursor(null); setRawResponse(null) }}>
           <option value="">— Select seller —</option>
           {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
+        </select>
+        <label>View:</label>
+        <select value={orderView} onChange={e => { setOrderView(e.target.value); setOrders([]); setHasLoaded(false); setNextCursor(null); setRawResponse(null) }}>
+          <option value="sold">Sold Orders</option>
+          <option value="purchased">Purchased Orders</option>
         </select>
         <label>Status:</label>
         <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)}>
@@ -648,7 +668,10 @@ function OrdersTab({ sellers, callApi }) {
 // ── Offers Tab ────────────────────────────────────────────────────────────────
 
 const OFFER_TYPES = [
-  { id: 'flexible',   label: 'Flexible',   fetchEp: '/api/flexibleOffers/me/search',          pauseEp: id => `/api/flexibleOffersUser/me/${id}/pause`,  resumeEp: id => `/api/flexibleOffersUser/me/${id}/resume`,  deleteEp: id => `/api/flexibleOffersUser/me/${id}`,  pauseAll: '/api/flexibleOffersUser/me/pauseAllActive' },
+  { id: 'accounts',   label: 'Accounts',   fetchEp: '/api/flexibleOffers/me/search',          pauseEp: id => `/api/flexibleOffersUser/me/${id}/pause`,  resumeEp: id => `/api/flexibleOffersUser/me/${id}/resume`,  deleteEp: id => `/api/flexibleOffersUser/me/${id}`,  pauseAll: '/api/flexibleOffersUser/me/pauseAllActive' },
+  { id: 'currency',   label: 'Currency',   fetchEp: '/api/currencyOffers/me/search',          pauseEp: id => `/api/currencyOffersUser/me/${id}/pause`,  resumeEp: id => `/api/currencyOffersUser/me/${id}/resume`,  deleteEp: id => `/api/currencyOffersUser/me/${id}`,  pauseAll: '/api/currencyOffersUser/me/pauseAllActive' },
+  { id: 'topup',      label: 'Topup',      fetchEp: '/api/topupOffers/me/search',             pauseEp: id => `/api/topupOffersUser/me/${id}/pause`,     resumeEp: id => `/api/topupOffersUser/me/${id}/resume`,     deleteEp: id => `/api/topupOffersUser/me/${id}`,     pauseAll: '/api/topupOffersUser/me/pauseAllActive' },
+  { id: 'items',      label: 'Items',      fetchEp: '/api/itemOffers/me/search',              pauseEp: id => `/api/itemOffersUser/me/${id}/pause`,      resumeEp: id => `/api/itemOffersUser/me/${id}/resume`,      deleteEp: id => `/api/itemOffersUser/me/${id}`,      pauseAll: '/api/itemOffersUser/me/pauseAllActive' },
   { id: 'predefined', label: 'Predefined', fetchEp: '/api/predefinedOffers/me',               pauseEp: id => `/api/predefinedOffersUser/me/${id}/pause`, resumeEp: id => `/api/predefinedOffersUser/me/${id}/resume`, deleteEp: id => `/api/predefinedOffersUser/me/${id}`, pauseAll: '/api/predefinedOffersUser/me/pauseAllActive' },
 ]
 
@@ -1015,6 +1038,143 @@ function NotificationsTab({ sellers, callApi }) {
                 </div>
               )
             })}
+          </div>
+          <RawDebug raw={rawResponse} />
+        </>
+      )}
+    </div>
+  )
+}
+
+// ── Boosting Tab ──────────────────────────────────────────────────────────────
+
+const BOOSTING_VIEWS = [
+  { id: 'received', label: 'Received Requests', endpoint: '/api/v1/boosting/me/received' },
+  { id: 'sent',     label: 'My Requests',        endpoint: '/api/v1/boosting/me/sent' },
+]
+
+function BoostingTab({ sellers, callApi }) {
+  const [sellerId, setSellerId] = useState('')
+  const [viewId, setViewId] = useState('received')
+  const [items, setItems] = useState([])
+  const [rawResponse, setRawResponse] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [hasLoaded, setHasLoaded] = useState(false)
+  const [error, setError] = useState('')
+
+  const view = BOOSTING_VIEWS.find(v => v.id === viewId)
+
+  const fetchBoosting = async (sid) => {
+    if (!sid || !view) return
+    setLoading(true)
+    setError('')
+    setItems([])
+    setRawResponse(null)
+    setHasLoaded(false)
+    try {
+      const result = await callApi({
+        action: 'call_api',
+        sellerId: sid,
+        method: 'GET',
+        endpoint: view.endpoint,
+        params: { pageSize: '50' },
+      })
+      setRawResponse(result)
+      if (!result.ok) {
+        setError(`Eldorado API error (${result.status}): ${JSON.stringify(result.data)}`)
+        return
+      }
+      setItems(extractList(result.data))
+      setHasLoaded(true)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <div>
+      <h2 className="eldorado-section-title">Boosting</h2>
+
+      <div className="seller-selector-bar">
+        <label>Seller:</label>
+        <select value={sellerId} onChange={e => { setSellerId(e.target.value); setItems([]); setHasLoaded(false); setRawResponse(null) }}>
+          <option value="">— Select seller —</option>
+          {sellers.map(s => <option key={s.id} value={s.id}>{s.display_name}</option>)}
+        </select>
+        <label>View:</label>
+        <select value={viewId} onChange={e => { setViewId(e.target.value); setItems([]); setHasLoaded(false); setRawResponse(null) }}>
+          {BOOSTING_VIEWS.map(v => <option key={v.id} value={v.id}>{v.label}</option>)}
+        </select>
+        <button className="btn btn-primary btn-sm" onClick={() => fetchBoosting(sellerId)} disabled={!sellerId || loading}>
+          <RefreshCw size={13} /> {loading ? 'Loading...' : 'Load'}
+        </button>
+      </div>
+
+      {error && <div className="eldorado-error">{error}</div>}
+
+      {loading ? (
+        <div className="eldorado-spinner">Fetching boosting requests...</div>
+      ) : !sellerId ? (
+        <div className="eldorado-empty">Select a seller and click Load.</div>
+      ) : !hasLoaded ? (
+        <div className="eldorado-empty">Click Load to fetch boosting requests.</div>
+      ) : items.length === 0 ? (
+        <>
+          <div className="eldorado-empty">No boosting requests found.</div>
+          <RawDebug raw={rawResponse} defaultOpen />
+        </>
+      ) : (
+        <>
+          <div style={{ color: '#475569', fontSize: '0.82rem', marginBottom: '0.6rem' }}>{items.length} requests</div>
+          <div className="eldorado-table-wrapper">
+            <table className="eldorado-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Game / Service</th>
+                  <th>Status</th>
+                  <th>Price</th>
+                  <th>User</th>
+                  <th>Created</th>
+                </tr>
+              </thead>
+              <tbody>
+                {items.map((item, i) => {
+                  const id = item.id || item.requestId
+                  const status = item.state?.state || item.status || item.state || '—'
+                  const statusKey = String(status).toLowerCase()
+                  const color = STATUS_COLORS[statusKey] || '#94a3b8'
+                  const game = item.gameName || item.game?.name || item.serviceTitle || item.title || '—'
+                  const price = item.totalPrice?.amount != null
+                    ? `${item.totalPrice.amount} ${item.totalPrice.currency}`
+                    : item.price?.amount != null
+                    ? `${item.price.amount} ${item.price.currency}`
+                    : '—'
+                  const user = item.buyerUsername || item.sellerUsername || item.requesterUsername || item.username || '—'
+                  const created = item.createdDate || item.createdAt || item.created_at || null
+                  return (
+                    <tr key={id || i}>
+                      <td className="order-id-cell" title={String(id)}>{String(id || '—').substring(0, 8)}…</td>
+                      <td>{game}</td>
+                      <td>
+                        <span className="status-badge" style={{ background: `${color}22`, color }}>
+                          {status}
+                        </span>
+                      </td>
+                      <td className="price-tag">{price}</td>
+                      <td>{user}</td>
+                      <td style={{ fontSize: '0.8rem' }}>
+                        {created
+                          ? new Date(created).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+                          : '—'}
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            </table>
           </div>
           <RawDebug raw={rawResponse} />
         </>
