@@ -5,7 +5,10 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase/client'
 
+const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_ADMIN_BYPASS === 'true'
+
 export default function ProtectedAdminRoute({ children }) {
+  if (DEV_BYPASS) return children
   const { user, isAdmin, loading: authLoading } = useAuth()
   const router = useRouter()
   const [hasChecked, setHasChecked] = useState(false)

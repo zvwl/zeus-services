@@ -14,12 +14,16 @@ export const useAuth = () => {
   return context
 }
 
+const DEV_BYPASS = process.env.NEXT_PUBLIC_DEV_ADMIN_BYPASS === 'true'
+
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [emailVerified, setEmailVerified] = useState(false)
+  const [user, setUser] = useState(DEV_BYPASS
+    ? { id: 'dev-admin-bypass', email: 'dev@zeuservices.local', name: 'Dev Admin', created_at: new Date().toISOString() }
+    : null)
+  const [loading, setLoading] = useState(!DEV_BYPASS)
+  const [emailVerified, setEmailVerified] = useState(DEV_BYPASS)
   const [isRecoveringFromRedirect] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(DEV_BYPASS)
 
   // Function to check admin status with timeout
   const checkAdminStatus = async (userId) => {
@@ -135,6 +139,9 @@ export const AuthProvider = ({ children }) => {
   }
 
   useEffect(() => {
+    // Dev bypass: mock admin session without touching Supabase auth
+    if (DEV_BYPASS) return
+
     // Check for existing Supabase session
     // Supabase with persistSession: true will automatically restore from localStorage
     const checkSession = async () => {
