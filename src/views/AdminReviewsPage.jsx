@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/contexts/AuthContext'
-import { supabase } from '@/lib/supabase/client'
+import { supabase, isDevBypassActive } from '@/lib/supabase/client'
 import { Star, Check, X, RotateCcw, Trash2 } from 'lucide-react'
 import LoadingSpinner from '@/components/LoadingSpinner'
 import './AdminReviewsPage.css'
@@ -23,6 +23,12 @@ export default function AdminReviewsPage() {
   }, [user])
 
   const checkAdminStatus = async () => {
+    if (isDevBypassActive) {
+      setIsAdmin(true)
+      fetchReviews()
+      return
+    }
+
     if (!user?.id) {
       setError('Please log in')
       setLoading(false)

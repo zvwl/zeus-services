@@ -536,11 +536,12 @@
   transform: scale(0.95);
 }
 
-/* Cloudflare Turnstile — ensure widget fills its container and is never clipped */
+/* Cloudflare Turnstile — reserve height before widget loads to prevent CLS */
 .cf-turnstile {
   display: block;
   width: 100% !important;
   max-width: 100%;
+  min-height: 65px;
 }
 
 .cf-turnstile iframe {

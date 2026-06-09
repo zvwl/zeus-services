@@ -93,6 +93,7 @@ export default function RootLayout({ children }) {
       <head>
         <meta name="theme-color" content="#0a0e1a" />
         <link rel="preconnect" href={process.env.NEXT_PUBLIC_SUPABASE_URL} crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://challenges.cloudflare.com" crossOrigin="anonymous" />
         {/* GTM consent-aware loader */}
         <script
           dangerouslySetInnerHTML={{

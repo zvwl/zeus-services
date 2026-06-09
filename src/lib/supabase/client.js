@@ -17,3 +17,13 @@ export const supabase = createBrowserClient(supabaseUrl, activeKey, {
     autoRefreshToken: !isDevBypass,
   },
 })
+
+export const isDevBypassActive = isDevBypass
+
+// Returns the best available auth token for edge function calls.
+// In dev bypass mode returns the service role key so edge functions accept the request.
+export const getAuthToken = async () => {
+  if (isDevBypass && devServiceKey) return devServiceKey
+  const { data: { session } } = await supabase.auth.getSession()
+  return session?.access_token || null
+}
