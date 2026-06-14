@@ -1,9 +1,42 @@
 import type Stripe from "stripe";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { notifyDiscord } from "@/lib/discord";
+import { assignDiscordRole, discordBotConfigured, notifyDiscord } from "@/lib/discord";
 import { orderConfirmationEmail, sendEmail } from "@/lib/email";
 import { formatMoney } from "@/lib/currency";
 import type { OrderItem } from "@/lib/types";
+
+/**
+ * Resolves a user's Discord ID: prefers the cached profiles.discord_id,
+ * otherwise reads it from the user's linked Discord identity and backfills
+ * it for next time. Returns null if they've never connected Discord.
+ */
+async function resolveDiscordId(
+  db: ReturnType<typeof createAdminClient>,
+  userId: string
+): Promise<string | null> {
+  const { data: profile } = await db
+    .from("profiles")
+    .select("discord_id")
+    .eq("id", userId)
+    .maybeSingle();
+  if (profile?.discord_id) return profile.discord_id;
+
+  try {
+    const { data } = await db.auth.admin.getUserById(userId);
+    const identity = data.user?.identities?.find((i) => i.provider === "discord");
+    const discordId =
+      identity?.id ||
+      (identity?.identity_data?.provider_id as string | undefined) ||
+      (identity?.identity_data?.sub as string | undefined) ||
+      null;
+    if (discordId) {
+      await db.from("profiles").update({ discord_id: discordId }).eq("id", userId);
+    }
+    return discordId;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Marks an order/donation paid after Stripe confirms payment. Idempotent:
@@ -181,5 +214,21 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
         manual: !allInstant,
       }),
     });
+  }
+
+  // Auto-assign the Discord "customer" role if the buyer has connected
+  // Discord and the bot is configured — best effort.
+  if (order.user_id && discordBotConfigured()) {
+    const discordId = await resolveDiscordId(db, order.user_id);
+    if (discordId) {
+      const result = await assignDiscordRole(discordId);
+      await db.from("audit_logs").insert({
+        actor_id: null,
+        action: result.ok ? "discord.role_granted" : "discord.role_skipped",
+        entity: "order",
+        entity_id: orderId,
+        meta: { discord_id: discordId, reason: result.reason ?? null },
+      });
+    }
   }
 }
