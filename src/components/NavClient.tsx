@@ -36,11 +36,13 @@ interface NavUser {
 
 export function NavClient({
   siteName,
+  logoUrl,
   categories,
   discordInvite,
   user,
 }: {
   siteName: string;
+  logoUrl?: string;
   categories: { name: string; slug: string }[];
   discordInvite: string;
   user: NavUser | null;
@@ -87,15 +89,26 @@ export function NavClient({
     <header className="sticky top-0 z-50 border-b border-edge/80 bg-bg/80 backdrop-blur-lg">
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-600 shadow-glow-sm">
-            <Zap className="h-5 w-5 text-white" fill="currentColor" />
-          </span>
-          <span className="text-lg font-bold tracking-tight text-white">
-            {siteName.split(" ")[0]}
-            <span className="text-gradient">
-              {siteName.includes(" ") ? ` ${siteName.split(" ").slice(1).join(" ")}` : ""}
-            </span>
-          </span>
+          {logoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={logoUrl}
+              alt={siteName}
+              className="h-9 w-auto max-w-[190px] object-contain"
+            />
+          ) : (
+            <>
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-600 shadow-glow-sm">
+                <Zap className="h-5 w-5 text-white" fill="currentColor" />
+              </span>
+              <span className="text-lg font-bold tracking-tight text-white">
+                {siteName.split(" ")[0]}
+                <span className="text-gradient">
+                  {siteName.includes(" ") ? ` ${siteName.split(" ").slice(1).join(" ")}` : ""}
+                </span>
+              </span>
+            </>
+          )}
         </Link>
 
         {/* Desktop links */}

@@ -9,6 +9,7 @@ export async function Footer() {
   ]);
   const siteName = setting(settings, "site_name", "Zeus Services");
   const discord = setting(settings, "discord_invite");
+  const logoUrl = setting(settings, "logo_url");
 
   const columns: { title: string; links: { label: string; href: string; external?: boolean }[] }[] = [
     {
@@ -58,10 +59,21 @@ export async function Footer() {
         <div className="grid gap-10 md:grid-cols-6">
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-600">
-                <Zap className="h-5 w-5 text-white" fill="currentColor" />
-              </span>
-              <span className="text-lg font-bold text-white">{siteName}</span>
+              {logoUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={logoUrl}
+                  alt={siteName}
+                  className="h-10 w-auto max-w-[200px] object-contain"
+                />
+              ) : (
+                <>
+                  <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-600">
+                    <Zap className="h-5 w-5 text-white" fill="currentColor" />
+                  </span>
+                  <span className="text-lg font-bold text-white">{siteName}</span>
+                </>
+              )}
             </Link>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-zinc-500">
               {setting(

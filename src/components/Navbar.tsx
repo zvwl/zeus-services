@@ -21,6 +21,7 @@ export async function Navbar() {
       )}
       <NavClient
         siteName={setting(settings, "site_name", "Zeus Services")}
+        logoUrl={setting(settings, "logo_url") || undefined}
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         discordInvite={setting(settings, "discord_invite")}
         user={

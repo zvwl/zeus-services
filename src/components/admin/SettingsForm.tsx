@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { saveRates, saveSettings } from "@/app/admin/actions";
 import { Button, Card } from "@/components/ui";
+import { ImageUpload } from "@/components/ImageUpload";
 import type { ExchangeRate } from "@/lib/types";
 
 const GENERAL_FIELDS: { key: string; label: string; placeholder: string; textarea?: boolean }[] = [
@@ -63,6 +64,7 @@ export function SettingsForm({
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [ratesMsg, setRatesMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(settings["logo_url"] || null);
 
   return (
     <div className="space-y-6">
@@ -77,6 +79,13 @@ export function SettingsForm({
       >
         <Card className="space-y-4">
           <h2 className="font-bold text-white">General</h2>
+          <ImageUpload
+            folder="branding"
+            value={logoUrl}
+            onChange={setLogoUrl}
+            label="Site logo — shown in the navbar & footer (PNG or SVG, transparent background works best). Leave empty to use the default ⚡ mark."
+          />
+          <input type="hidden" name="setting_logo_url" value={logoUrl ?? ""} />
           {GENERAL_FIELDS.map((f) => (
             <div key={f.key}>
               <label className="label">{f.label}</label>
