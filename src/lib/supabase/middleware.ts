@@ -37,6 +37,16 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
+  // getUser() may have rotated the auth tokens and written the new ones onto
+  // supabaseResponse. Any redirect we return instead MUST carry those cookies
+  // over, otherwise the browser keeps the now-invalidated refresh token and
+  // the user is logged out on their next request.
+  const redirect = (url: URL) => {
+    const res = NextResponse.redirect(url);
+    supabaseResponse.cookies.getAll().forEach((cookie) => res.cookies.set(cookie));
+    return res;
+  };
+
   const path = request.nextUrl.pathname;
   const needsAuth = path.startsWith("/account") || path.startsWith("/admin");
 
@@ -44,7 +54,7 @@ export async function updateSession(request: NextRequest) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.searchParams.set("next", path);
-    return NextResponse.redirect(url);
+    return redirect(url);
   }
 
   if (user && path.startsWith("/admin")) {
@@ -57,7 +67,7 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/";
       url.search = "";
-      return NextResponse.redirect(url);
+      return redirect(url);
     }
   }
 

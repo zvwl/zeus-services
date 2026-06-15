@@ -1,11 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MailCheck } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell, OAuthButtons } from "@/components/AuthShell";
+import {
+  Turnstile,
+  captchaEnabled,
+  type TurnstileHandle,
+} from "@/components/Turnstile";
 import { Button } from "@/components/ui";
 
 export default function SignupPage() {
@@ -17,6 +22,8 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [verifySent, setVerifySent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
   async function handleSignup(e: React.FormEvent) {
     e.preventDefault();
@@ -41,11 +48,15 @@ export default function SignupPage() {
       options: {
         data: { username },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
+        captchaToken,
       },
     });
     if (error) {
       setError(error.message);
       setLoading(false);
+      // Turnstile tokens are single-use — get a fresh one for the retry.
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
       return;
     }
     if (!data.session) {
@@ -142,7 +153,16 @@ export default function SignupPage() {
             {error}
           </p>
         )}
-        <Button className="w-full" disabled={loading}>
+        <Turnstile
+          ref={turnstileRef}
+          onVerify={setCaptchaToken}
+          onExpire={() => setCaptchaToken("")}
+          className="flex justify-center"
+        />
+        <Button
+          className="w-full"
+          disabled={loading || (captchaEnabled && !captchaToken)}
+        >
           {loading ? "Creating account…" : "Create account"}
         </Button>
         <p className="text-center text-xs text-zinc-600">

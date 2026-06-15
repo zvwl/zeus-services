@@ -1,9 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell } from "@/components/AuthShell";
+import {
+  Turnstile,
+  captchaEnabled,
+  type TurnstileHandle,
+} from "@/components/Turnstile";
 import { Button } from "@/components/ui";
 
 export default function ForgotPasswordPage() {
@@ -11,6 +16,8 @@ export default function ForgotPasswordPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -19,9 +26,16 @@ export default function ForgotPasswordPage() {
     const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+      captchaToken,
     });
-    if (error) setError(error.message);
-    else setSent(true);
+    if (error) {
+      setError(error.message);
+      // Turnstile tokens are single-use — get a fresh one for the retry.
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
+    } else {
+      setSent(true);
+    }
     setLoading(false);
   }
 
@@ -58,7 +72,16 @@ export default function ForgotPasswordPage() {
             />
           </div>
           {error && <p className="text-sm text-red-400">{error}</p>}
-          <Button className="w-full" disabled={loading}>
+          <Turnstile
+            ref={turnstileRef}
+            onVerify={setCaptchaToken}
+            onExpire={() => setCaptchaToken("")}
+            className="flex justify-center"
+          />
+          <Button
+            className="w-full"
+            disabled={loading || (captchaEnabled && !captchaToken)}
+          >
             {loading ? "Sending…" : "Send reset link"}
           </Button>
         </form>

@@ -1,10 +1,15 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useState } from "react";
+import { Suspense, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell, OAuthButtons } from "@/components/AuthShell";
+import {
+  Turnstile,
+  captchaEnabled,
+  type TurnstileHandle,
+} from "@/components/Turnstile";
 import { Button } from "@/components/ui";
 import { ShieldCheck } from "lucide-react";
 
@@ -22,6 +27,8 @@ function LoginForm() {
   const [loading, setLoading] = useState(false);
   const [mfaStep, setMfaStep] = useState(false);
   const [code, setCode] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const turnstileRef = useRef<TurnstileHandle>(null);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -31,10 +38,14 @@ function LoginForm() {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
+      options: { captchaToken },
     });
     if (error) {
       setError(error.message);
       setLoading(false);
+      // Turnstile tokens are single-use — get a fresh one for the retry.
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
       return;
     }
     // If the account has 2FA enrolled we must step up to AAL2.
@@ -151,7 +162,16 @@ function LoginForm() {
             {error}
           </p>
         )}
-        <Button className="w-full" disabled={loading}>
+        <Turnstile
+          ref={turnstileRef}
+          onVerify={setCaptchaToken}
+          onExpire={() => setCaptchaToken("")}
+          className="flex justify-center"
+        />
+        <Button
+          className="w-full"
+          disabled={loading || (captchaEnabled && !captchaToken)}
+        >
           {loading ? "Signing in…" : "Sign in"}
         </Button>
       </form>
