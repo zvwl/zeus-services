@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Mail, ShieldAlert } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getProfile } from "@/lib/auth";
+import { getProfile, isAdmin } from "@/lib/auth";
 import { Badge, Card, statusBadgeVariant } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
 import { toggleBan } from "@/app/admin/actions";
@@ -75,7 +75,7 @@ export default async function AdminCustomerDetailPage({
           <Badge variant={customer.role === "customer" ? "default" : "gold"}>
             {customer.role.replace("_", " ")}
           </Badge>
-          {me?.id !== customer.id && (
+          {isAdmin(me) && me?.id !== customer.id && (
             <ActionButton
               action={toggleBan}
               fields={{ user_id: customer.id }}

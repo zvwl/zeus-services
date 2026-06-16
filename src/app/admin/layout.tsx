@@ -18,23 +18,32 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { getProfile, isStaff } from "@/lib/auth";
+import { getProfile, isStaff, roleAtLeast } from "@/lib/auth";
+import type { Role } from "@/lib/types";
 
-const nav = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/admin/orders", label: "Orders", icon: Package },
-  { href: "/admin/products", label: "Products", icon: ShoppingBag },
-  { href: "/admin/games", label: "Games", icon: Gamepad2 },
-  { href: "/admin/categories", label: "Categories", icon: FolderTree },
-  { href: "/admin/customers", label: "Customers", icon: Users },
-  { href: "/admin/reviews", label: "Reviews", icon: Star },
-  { href: "/admin/support", label: "Support", icon: LifeBuoy },
-  { href: "/admin/blog", label: "Blog", icon: Newspaper },
-  { href: "/admin/giveaways", label: "Giveaways", icon: Gift },
-  { href: "/admin/faqs", label: "FAQs", icon: MessageSquareQuote },
-  { href: "/admin/donations", label: "Donations", icon: Coffee },
-  { href: "/admin/sections", label: "Layout", icon: LayoutPanelTop },
-  { href: "/admin/settings", label: "Settings", icon: Settings },
+// minRole = lowest role allowed to see/use each section. Mirrors the server
+// action guards: support handles orders/customers/support; admins manage the
+// rest; super admins also get Team.
+const nav: {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  minRole: Role;
+}[] = [
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, minRole: "support" },
+  { href: "/admin/orders", label: "Orders", icon: Package, minRole: "support" },
+  { href: "/admin/customers", label: "Customers", icon: Users, minRole: "support" },
+  { href: "/admin/support", label: "Support", icon: LifeBuoy, minRole: "support" },
+  { href: "/admin/products", label: "Products", icon: ShoppingBag, minRole: "admin" },
+  { href: "/admin/games", label: "Games", icon: Gamepad2, minRole: "admin" },
+  { href: "/admin/categories", label: "Categories", icon: FolderTree, minRole: "admin" },
+  { href: "/admin/reviews", label: "Reviews", icon: Star, minRole: "admin" },
+  { href: "/admin/blog", label: "Blog", icon: Newspaper, minRole: "admin" },
+  { href: "/admin/giveaways", label: "Giveaways", icon: Gift, minRole: "admin" },
+  { href: "/admin/faqs", label: "FAQs", icon: MessageSquareQuote, minRole: "admin" },
+  { href: "/admin/donations", label: "Donations", icon: Coffee, minRole: "admin" },
+  { href: "/admin/sections", label: "Layout", icon: LayoutPanelTop, minRole: "admin" },
+  { href: "/admin/settings", label: "Settings", icon: Settings, minRole: "admin" },
 ];
 
 export default async function AdminLayout({
@@ -44,6 +53,8 @@ export default async function AdminLayout({
 }) {
   const profile = await getProfile();
   if (!profile || !isStaff(profile)) redirect("/");
+
+  const visibleNav = nav.filter((item) => roleAtLeast(profile, item.minRole));
 
   return (
     <div className="mx-auto flex max-w-[1600px]">
@@ -58,7 +69,7 @@ export default async function AdminLayout({
           </div>
         </div>
         <nav className="flex flex-col gap-0.5">
-          {nav.map((item) => (
+          {visibleNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -89,7 +100,7 @@ export default async function AdminLayout({
       <div className="min-w-0 flex-1">
         {/* Mobile nav */}
         <div className="flex gap-1 overflow-x-auto border-b border-edge p-2 lg:hidden">
-          {nav.map((item) => (
+          {visibleNav.map((item) => (
             <Link
               key={item.href}
               href={item.href}

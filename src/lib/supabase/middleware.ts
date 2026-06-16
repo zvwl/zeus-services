@@ -5,6 +5,22 @@ import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/config";
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
 const STAFF_ROLES = ["support", "admin", "super_admin"];
+const ADMIN_ROLES = ["admin", "super_admin"];
+
+// Sections only admins+ may open. Everything else under /admin (dashboard,
+// orders, customers, support) is available to all staff incl. support.
+const ADMIN_ONLY_PATHS = [
+  "/admin/products",
+  "/admin/games",
+  "/admin/categories",
+  "/admin/reviews",
+  "/admin/blog",
+  "/admin/giveaways",
+  "/admin/faqs",
+  "/admin/donations",
+  "/admin/sections",
+  "/admin/settings",
+];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -63,11 +79,32 @@ export async function updateSession(request: NextRequest) {
       .select("role")
       .eq("id", user.id)
       .maybeSingle();
-    if (!profile || !STAFF_ROLES.includes(profile.role)) {
+    const role = profile?.role;
+
+    const backToAdmin = () => {
+      const url = request.nextUrl.clone();
+      url.pathname = "/admin";
+      url.search = "";
+      return redirect(url);
+    };
+
+    if (!role || !STAFF_ROLES.includes(role)) {
+      // Not staff at all → off to the storefront.
       const url = request.nextUrl.clone();
       url.pathname = "/";
       url.search = "";
       return redirect(url);
+    }
+    // Team & roles: super admins only.
+    if (path.startsWith("/admin/team") && role !== "super_admin") {
+      return backToAdmin();
+    }
+    // Catalog / content / settings: admins and super admins only.
+    if (
+      ADMIN_ONLY_PATHS.some((p) => path.startsWith(p)) &&
+      !ADMIN_ROLES.includes(role)
+    ) {
+      return backToAdmin();
     }
   }
 

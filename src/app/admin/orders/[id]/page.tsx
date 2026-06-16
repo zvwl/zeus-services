@@ -5,6 +5,7 @@ import { Badge, Card, statusBadgeVariant } from "@/components/ui";
 import { ActionButton, ActionSelect } from "@/components/admin/ActionControls";
 import { DeliverItemForm } from "@/components/admin/DeliverItemForm";
 import { refundOrder, updateOrderStatus } from "@/app/admin/actions";
+import { getProfile, isAdmin } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime } from "@/lib/utils";
 import type { Order, OrderItem, Profile } from "@/lib/types";
@@ -18,6 +19,7 @@ export default async function AdminOrderDetail({
 }) {
   const { id } = await params;
   const supabase = await createClient();
+  const me = await getProfile();
   const { data } = await supabase
     .from("orders")
     .select("*, items:order_items(*), profile:profiles(username, email)")
@@ -58,7 +60,7 @@ export default async function AdminOrderDetail({
               "refunded",
             ].map((s) => ({ value: s, label: `Set: ${s}` }))}
           />
-          {order.stripe_payment_intent && order.status !== "refunded" && (
+          {isAdmin(me) && order.stripe_payment_intent && order.status !== "refunded" && (
             <ActionButton
               action={refundOrder}
               fields={{ id: order.id }}

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getProfile } from "@/lib/auth";
+import { getProfile, isAdmin } from "@/lib/auth";
 import { Badge } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
 import { toggleBan } from "@/app/admin/actions";
@@ -144,7 +144,7 @@ export default async function AdminCustomersPage({
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {p.id !== me?.id && (
+                    {isAdmin(me) && p.id !== me?.id && (
                       <ActionButton
                         action={toggleBan}
                         fields={{ user_id: p.id }}
