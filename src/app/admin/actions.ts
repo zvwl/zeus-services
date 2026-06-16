@@ -16,6 +16,7 @@ import {
   orderStatusEmail,
   orderStatusSubject,
   sendEmail,
+  type SendResult,
 } from "@/lib/email";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { formatMoney } from "@/lib/currency";
@@ -353,12 +354,12 @@ export async function updateOrderStatus(formData: FormData): Promise<AdminResult
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", id);
   if (error) return fail(error.message);
-  await audit("order.status", "order", id, { status });
 
   // Email the customer about the change (best effort, only on a real change).
+  let emailResult: SendResult | null = null;
   if (existing.email && existing.status !== status) {
     const ref = existing.reference ?? `#${existing.order_number}`;
-    await sendEmail({
+    emailResult = await sendEmail({
       to: existing.email,
       subject: orderStatusSubject(ref, status),
       html: orderStatusEmail({
@@ -369,10 +370,13 @@ export async function updateOrderStatus(formData: FormData): Promise<AdminResult
       }),
     });
   }
+  await audit("order.status", "order", id, { status, email: emailResult });
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
-  return ok(`Order marked ${status}.`);
+  const note =
+    emailResult && !emailResult.ok ? ` (email not sent: ${emailResult.error})` : "";
+  return ok(`Order marked ${status}.${note}`);
 }
 
 export async function refundOrder(formData: FormData): Promise<AdminResult> {
@@ -408,14 +412,11 @@ export async function refundOrder(formData: FormData): Promise<AdminResult> {
     .from("orders")
     .update({ status: "refunded", updated_at: new Date().toISOString() })
     .eq("id", id);
-  await audit("order.refund", "order", id, {
-    amount: order.total,
-    currency: order.currency,
-  });
 
   const ref = order.reference ?? `#${order.order_number}`;
+  let emailResult: SendResult | null = null;
   if (order.email) {
-    await sendEmail({
+    emailResult = await sendEmail({
       to: order.email,
       subject: orderStatusSubject(ref, "refunded"),
       html: orderStatusEmail({
@@ -426,6 +427,11 @@ export async function refundOrder(formData: FormData): Promise<AdminResult> {
       }),
     });
   }
+  await audit("order.refund", "order", id, {
+    amount: order.total,
+    currency: order.currency,
+    email: emailResult,
+  });
   await notifyDiscord({
     title: `↩️ Order ${ref} refunded`,
     fields: [
@@ -440,7 +446,12 @@ export async function refundOrder(formData: FormData): Promise<AdminResult> {
 
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
-  return ok("Refund issued and the customer was notified.");
+  const note = emailResult?.ok
+    ? " Customer was emailed."
+    : emailResult
+      ? ` (email not sent: ${emailResult.error})`
+      : "";
+  return ok(`Refund issued.${note}`);
 }
 
 export async function deliverOrderItem(formData: FormData): Promise<AdminResult> {

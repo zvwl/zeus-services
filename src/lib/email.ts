@@ -14,9 +14,23 @@ export function emailConfigured() {
   return Boolean(process.env.RESEND_API_KEY);
 }
 
-export async function sendEmail({ to, subject, html, replyTo }: SendArgs) {
+export interface SendResult {
+  ok: boolean;
+  skipped?: boolean;
+  error?: string;
+}
+
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  replyTo,
+}: SendArgs): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
-  if (!key || !to) return;
+  if (!key) {
+    return { ok: false, skipped: true, error: "RESEND_API_KEY not set in this deployment" };
+  }
+  if (!to) return { ok: false, skipped: true, error: "no recipient" };
   const from =
     process.env.EMAIL_FROM || "Zeus Services <onboarding@resend.dev>";
   try {
@@ -35,10 +49,14 @@ export async function sendEmail({ to, subject, html, replyTo }: SendArgs) {
       }),
     });
     if (!res.ok) {
-      console.error("Resend email failed:", res.status, await res.text());
+      const body = await res.text();
+      console.error("Resend email failed:", res.status, body);
+      return { ok: false, error: `Resend ${res.status}: ${body.slice(0, 200)}` };
     }
+    return { ok: true };
   } catch (err) {
     console.error("Resend email error:", err);
+    return { ok: false, error: err instanceof Error ? err.message : "network error" };
   }
 }
 
