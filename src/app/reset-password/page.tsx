@@ -38,8 +38,8 @@ export default function ResetPasswordPage() {
 
   return (
     <AuthShell
-      title="Choose a new password"
-      subtitle="You're signed in via your reset link — set a new password below."
+      title="Set your password"
+      subtitle="You're signed in — choose a password for your account below to finish up."
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>

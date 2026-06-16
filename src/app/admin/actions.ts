@@ -985,7 +985,8 @@ export async function inviteUser(formData: FormData): Promise<AdminResult> {
 
   const db = createAdminClient();
   const { error } = await db.auth.admin.inviteUserByEmail(email, {
-    redirectTo: siteUrl("/auth/callback?next=/account"),
+    // Land invitees on the set-password page (they have no password yet).
+    redirectTo: siteUrl("/auth/callback?next=/reset-password"),
   });
   if (error) {
     return fail(
