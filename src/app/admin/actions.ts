@@ -11,7 +11,14 @@ import {
 } from "@/lib/auth";
 import { siteUrl, slugify } from "@/lib/utils";
 import { notifyDiscord } from "@/lib/discord";
-import { orderDeliveredEmail, sendEmail } from "@/lib/email";
+import {
+  orderDeliveredEmail,
+  orderStatusEmail,
+  orderStatusSubject,
+  sendEmail,
+} from "@/lib/email";
+import { getStripe, stripeConfigured } from "@/lib/stripe";
+import { formatMoney } from "@/lib/currency";
 import type { Role } from "@/lib/types";
 
 export interface AdminResult {
@@ -335,15 +342,105 @@ export async function updateOrderStatus(formData: FormData): Promise<AdminResult
   const status = String(formData.get("status") ?? "");
   if (!ORDER_STATUSES.includes(status)) return fail("Invalid status.");
   const supabase = await createClient();
+  const { data: existing } = await supabase
+    .from("orders")
+    .select("status, email, reference, order_number, total, currency")
+    .eq("id", id)
+    .maybeSingle();
+  if (!existing) return fail("Order not found.");
   const { error } = await supabase
     .from("orders")
     .update({ status, updated_at: new Date().toISOString() })
     .eq("id", id);
   if (error) return fail(error.message);
   await audit("order.status", "order", id, { status });
+
+  // Email the customer about the change (best effort, only on a real change).
+  if (existing.email && existing.status !== status) {
+    const ref = existing.reference ?? `#${existing.order_number}`;
+    await sendEmail({
+      to: existing.email,
+      subject: orderStatusSubject(ref, status),
+      html: orderStatusEmail({
+        orderNumber: ref,
+        status,
+        total: Number(existing.total),
+        currency: existing.currency,
+      }),
+    });
+  }
+
   revalidatePath("/admin/orders");
   revalidatePath(`/admin/orders/${id}`);
   return ok(`Order marked ${status}.`);
+}
+
+export async function refundOrder(formData: FormData): Promise<AdminResult> {
+  try {
+    await requireAdmin();
+  } catch {
+    return fail("Only admins can issue refunds.");
+  }
+  if (!stripeConfigured()) return fail("Stripe is not configured.");
+  const id = String(formData.get("id") ?? "");
+  const supabase = await createClient();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("status, stripe_payment_intent, email, reference, order_number, total, currency")
+    .eq("id", id)
+    .maybeSingle();
+  if (!order) return fail("Order not found.");
+  if (order.status === "refunded") return fail("This order is already refunded.");
+  if (!order.stripe_payment_intent) {
+    return fail("No Stripe payment found to refund.");
+  }
+
+  try {
+    await getStripe().refunds.create({
+      payment_intent: order.stripe_payment_intent,
+    });
+  } catch (e) {
+    console.error("Stripe refund failed:", e);
+    return fail(e instanceof Error ? e.message : "Refund failed at Stripe.");
+  }
+
+  await supabase
+    .from("orders")
+    .update({ status: "refunded", updated_at: new Date().toISOString() })
+    .eq("id", id);
+  await audit("order.refund", "order", id, {
+    amount: order.total,
+    currency: order.currency,
+  });
+
+  const ref = order.reference ?? `#${order.order_number}`;
+  if (order.email) {
+    await sendEmail({
+      to: order.email,
+      subject: orderStatusSubject(ref, "refunded"),
+      html: orderStatusEmail({
+        orderNumber: ref,
+        status: "refunded",
+        total: Number(order.total),
+        currency: order.currency,
+      }),
+    });
+  }
+  await notifyDiscord({
+    title: `↩️ Order ${ref} refunded`,
+    fields: [
+      {
+        name: "Amount",
+        value: formatMoney(Number(order.total), order.currency),
+        inline: true,
+      },
+    ],
+    color: 0xfbbf24,
+  });
+
+  revalidatePath("/admin/orders");
+  revalidatePath(`/admin/orders/${id}`);
+  return ok("Refund issued and the customer was notified.");
 }
 
 export async function deliverOrderItem(formData: FormData): Promise<AdminResult> {

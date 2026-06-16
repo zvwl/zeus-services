@@ -97,6 +97,80 @@ export function orderConfirmationEmail(opts: {
   return layout(`Order ${opts.orderNumber} confirmed ⚡`, body);
 }
 
+const STATUS_COPY: Record<
+  string,
+  { heading: string; body: string; accent: string }
+> = {
+  pending: {
+    heading: "We've received your order",
+    body: "Your order has been created and is awaiting payment. Complete checkout to get it moving.",
+    accent: "#a1a1aa",
+  },
+  paid: {
+    heading: "Payment confirmed ✅",
+    body: "Thanks! We've received your payment and your order is now being prepared.",
+    accent: "#22c55e",
+  },
+  processing: {
+    heading: "Your order is being processed",
+    body: "Our team is working on your order right now — we'll email you the moment it's delivered.",
+    accent: "#38bdf8",
+  },
+  completed: {
+    heading: "Your order is complete 🎉",
+    body: "Your order has been fully delivered. Thanks for choosing Zeus Services — we hope to see you again!",
+    accent: "#22c55e",
+  },
+  cancelled: {
+    heading: "Your order was cancelled",
+    body: "This order has been cancelled. If you were charged, a refund will follow shortly. Reply to this email if you have any questions.",
+    accent: "#ef4444",
+  },
+  refunded: {
+    heading: "Your order was refunded",
+    body: "We've issued a refund for this order. It usually lands back on your original payment method within 5–10 business days.",
+    accent: "#fbbf24",
+  },
+};
+
+export function orderStatusSubject(
+  orderNumber: number | string,
+  status: string
+) {
+  const map: Record<string, string> = {
+    pending: `Order ${orderNumber} received`,
+    paid: `Payment confirmed — order ${orderNumber}`,
+    processing: `Your order ${orderNumber} is being processed`,
+    completed: `Your order ${orderNumber} is complete 🎉`,
+    cancelled: `Your order ${orderNumber} was cancelled`,
+    refunded: `Your order ${orderNumber} was refunded`,
+  };
+  return map[status] ?? `Update on your order ${orderNumber}`;
+}
+
+export function orderStatusEmail(opts: {
+  orderNumber: number | string;
+  status: string;
+  total: number;
+  currency: string;
+}) {
+  const copy =
+    STATUS_COPY[opts.status] ?? {
+      heading: `Order update`,
+      body: `Your order status is now "${opts.status}".`,
+      accent: "#a78bfa",
+    };
+  const body = `
+    <p style="margin:0 0 16px;color:#a1a1aa;line-height:1.6">${copy.body}</p>
+    <p style="margin:0 0 6px;color:#71717a;font-size:13px">Order</p>
+    <p style="margin:0 0 14px;font-size:18px;font-weight:700;color:#fff">${opts.orderNumber}</p>
+    <p style="margin:0 0 18px"><span style="display:inline-block;padding:6px 14px;border-radius:999px;background:#07070e;border:1px solid ${copy.accent};color:${copy.accent};font-size:13px;font-weight:700;text-transform:capitalize">${opts.status}</span></p>
+    <p style="margin:0 0 4px;color:#71717a;font-size:13px">Order total</p>
+    <p style="margin:0 0 20px;font-size:16px;color:#fff">${formatMoney(opts.total, opts.currency)}</p>
+    <p style="margin:20px 0 0"><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://zeuservices.com"}/account/orders" style="color:#a78bfa">View your order →</a></p>`;
+  return layout(copy.heading, body);
+}
+
 export function orderDeliveredEmail(opts: {
   orderNumber: number | string;
   productName: string;
