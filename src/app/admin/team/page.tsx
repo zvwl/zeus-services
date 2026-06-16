@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { Badge, Card } from "@/components/ui";
 import { ActionSelect } from "@/components/admin/ActionControls";
+import { InviteForm } from "@/components/admin/InviteForm";
 import { setUserRole } from "@/app/admin/actions";
 import { formatDate } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
@@ -94,6 +95,15 @@ export default async function AdminTeamPage({
             <Row key={p.id} p={p} />
           ))}
         </div>
+      </Card>
+
+      <Card className="mt-6">
+        <h2 className="mb-1 font-bold text-white">Invite a new user</h2>
+        <p className="mb-4 text-xs text-zinc-500">
+          Sends an email invite. They&apos;ll set a password and join as a
+          customer — promote them to staff below once they&apos;ve accepted.
+        </p>
+        <InviteForm />
       </Card>
 
       <Card className="mt-6">

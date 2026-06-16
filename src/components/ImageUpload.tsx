@@ -3,7 +3,6 @@
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { ImagePlus, Trash2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { Button, Spinner } from "@/components/ui";
 
 export function ImageUpload({
@@ -25,21 +24,22 @@ export function ImageUpload({
 
   async function handleFile(file: File) {
     setError(null);
-    if (file.size > 5 * 1024 * 1024) {
-      setError("Max file size is 5 MB.");
+    if (file.size > 4 * 1024 * 1024) {
+      setError("Max file size is 4 MB.");
       return;
     }
     setUploading(true);
     try {
-      const supabase = createClient();
-      const ext = file.name.split(".").pop()?.toLowerCase() || "png";
-      const path = `${folder}/${crypto.randomUUID()}.${ext}`;
-      const { error } = await supabase.storage
-        .from(bucket)
-        .upload(path, file, { upsert: true, cacheControl: "3600" });
-      if (error) throw error;
-      const { data } = supabase.storage.from(bucket).getPublicUrl(path);
-      onChange(data.publicUrl);
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("bucket", bucket);
+      fd.append("folder", folder);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const json = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok || !json.url) {
+        throw new Error(json.error ?? "Upload failed");
+      }
+      onChange(json.url);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed");
     } finally {

@@ -2,13 +2,14 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import {
   getProfile,
   requireAdmin,
   requireStaff,
   requireSuperAdmin,
 } from "@/lib/auth";
-import { slugify } from "@/lib/utils";
+import { siteUrl, slugify } from "@/lib/utils";
 import { notifyDiscord } from "@/lib/discord";
 import { orderDeliveredEmail, sendEmail } from "@/lib/email";
 import type { Role } from "@/lib/types";
@@ -859,6 +860,34 @@ export async function setUserRole(formData: FormData): Promise<AdminResult> {
   revalidatePath("/admin/team");
   revalidatePath("/admin/customers");
   return ok(`Role updated to ${role}.`);
+}
+
+export async function inviteUser(formData: FormData): Promise<AdminResult> {
+  try {
+    await requireSuperAdmin();
+  } catch {
+    return fail("Only super admins can invite users.");
+  }
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  if (!/^\S+@\S+\.\S+$/.test(email)) return fail("Enter a valid email address.");
+  if (!hasAdminClient()) {
+    return fail("Invites aren't configured (missing service role key).");
+  }
+
+  const db = createAdminClient();
+  const { error } = await db.auth.admin.inviteUserByEmail(email, {
+    redirectTo: siteUrl("/auth/callback?next=/account"),
+  });
+  if (error) {
+    return fail(
+      error.message.toLowerCase().includes("already")
+        ? "That email already has an account."
+        : error.message
+    );
+  }
+  await audit("user.invite", "profile", null, { email });
+  revalidatePath("/admin/team");
+  return ok(`Invite sent to ${email}.`);
 }
 
 export async function toggleBan(formData: FormData): Promise<AdminResult> {

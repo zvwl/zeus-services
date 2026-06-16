@@ -1,21 +1,25 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { Badge } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
 import { toggleBan } from "@/app/admin/actions";
 import { formatMoney } from "@/lib/currency";
-import { formatDate } from "@/lib/utils";
+import { cn, formatDate } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 export const revalidate = 0;
 
+const CUSTOMER_FILTERS = ["all", "customers", "staff", "banned"];
+
 export default async function AdminCustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; filter?: string }>;
 }) {
-  const { q } = await searchParams;
+  const { q, filter: filterRaw } = await searchParams;
   const query = (q ?? "").trim();
+  const filter = CUSTOMER_FILTERS.includes(filterRaw ?? "") ? filterRaw! : "all";
   const supabase = await createClient();
   const me = await getProfile();
 
@@ -24,6 +28,11 @@ export default async function AdminCustomersPage({
     .select("*")
     .order("created_at", { ascending: false })
     .limit(200);
+  if (filter === "customers") profileQuery = profileQuery.eq("role", "customer");
+  else if (filter === "staff")
+    profileQuery = profileQuery.in("role", ["support", "admin", "super_admin"]);
+  else if (filter === "banned")
+    profileQuery = profileQuery.eq("is_banned", true);
   if (query) {
     profileQuery = profileQuery.or(
       `email.ilike.%${query}%,username.ilike.%${query}%`
@@ -53,6 +62,9 @@ export default async function AdminCustomersPage({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h1 className="text-2xl font-extrabold text-white">Customers</h1>
         <form action="/admin/customers" className="w-72">
+          {filter !== "all" && (
+            <input type="hidden" name="filter" value={filter} />
+          )}
           <input
             type="search"
             name="q"
@@ -61,6 +73,29 @@ export default async function AdminCustomersPage({
             className="input"
           />
         </form>
+      </div>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {CUSTOMER_FILTERS.map((f) => {
+          const params = new URLSearchParams();
+          if (f !== "all") params.set("filter", f);
+          if (query) params.set("q", query);
+          const qs = params.toString();
+          return (
+            <Link
+              key={f}
+              href={qs ? `/admin/customers?${qs}` : "/admin/customers"}
+              className={cn(
+                "rounded-full border px-3.5 py-1.5 text-xs font-medium capitalize transition",
+                filter === f
+                  ? "border-primary/50 bg-primary/15 text-primary-light"
+                  : "border-edge bg-raised/50 text-zinc-400 hover:text-white"
+              )}
+            >
+              {f}
+            </Link>
+          );
+        })}
       </div>
 
       <div className="glass mt-6 overflow-x-auto p-0">
@@ -82,8 +117,12 @@ export default async function AdminCustomersPage({
               return (
                 <tr key={p.id} className="transition hover:bg-raised/40">
                   <td className="px-4 py-3">
-                    <p className="font-medium text-white">{p.username ?? "—"}</p>
-                    <p className="text-xs text-zinc-500">{p.email}</p>
+                    <Link href={`/admin/customers/${p.id}`} className="group">
+                      <p className="font-medium text-white group-hover:text-primary-light">
+                        {p.username ?? "—"}
+                      </p>
+                      <p className="text-xs text-zinc-500">{p.email}</p>
+                    </Link>
                   </td>
                   <td className="px-4 py-3">
                     <Badge variant={p.role === "customer" ? "default" : "gold"}>

@@ -20,10 +20,12 @@ const FILTERS = [
 export default async function AdminOrdersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; q?: string }>;
 }) {
-  const { status } = await searchParams;
+  const { status, q } = await searchParams;
   const filter = FILTERS.includes(status ?? "") ? status! : "all";
+  const search = (q ?? "").trim();
+  const isOrderNumber = /^#?\d+$/.test(search);
 
   const supabase = await createClient();
   let query = supabase
@@ -32,17 +34,46 @@ export default async function AdminOrdersPage({
     .order("created_at", { ascending: false })
     .limit(100);
   if (filter !== "all") query = query.eq("status", filter);
+  if (search) {
+    if (isOrderNumber) {
+      query = query.eq("order_number", Number(search.replace(/^#/, "")));
+    } else {
+      query = query.ilike("email", `%${search}%`);
+    }
+  }
   const { data } = await query;
   const orders = (data as (Order & { items: OrderItem[] })[]) ?? [];
 
+  const filterHref = (f: string) => {
+    const params = new URLSearchParams();
+    if (f !== "all") params.set("status", f);
+    if (search) params.set("q", search);
+    const qs = params.toString();
+    return qs ? `/admin/orders?${qs}` : "/admin/orders";
+  };
+
   return (
     <div>
-      <h1 className="text-2xl font-extrabold text-white">Orders</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-extrabold text-white">Orders</h1>
+        <form action="/admin/orders" className="w-72">
+          {filter !== "all" && (
+            <input type="hidden" name="status" value={filter} />
+          )}
+          <input
+            type="search"
+            name="q"
+            defaultValue={search}
+            placeholder="Order # or email…"
+            className="input"
+          />
+        </form>
+      </div>
       <div className="mt-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <Link
             key={f}
-            href={f === "all" ? "/admin/orders" : `/admin/orders?status=${f}`}
+            href={filterHref(f)}
             className={cn(
               "rounded-full border px-3.5 py-1.5 text-xs font-medium capitalize transition",
               filter === f

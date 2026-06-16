@@ -1,7 +1,35 @@
 import { XCircle } from "lucide-react";
 import { ButtonLink } from "@/components/ui";
+import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 
-export default function CheckoutCancelledPage() {
+export const revalidate = 0;
+
+// When the buyer backs out of Stripe Checkout they land here. Release the
+// still-pending order so it doesn't linger in the admin as a fake "pending"
+// sale. Guarded by status='pending' so it can never touch a paid order.
+async function cancelPendingOrder(orderNumber: string) {
+  const n = Number(orderNumber);
+  if (!Number.isInteger(n) || n <= 0 || !hasAdminClient()) return;
+  try {
+    const db = createAdminClient();
+    await db
+      .from("orders")
+      .update({ status: "cancelled", updated_at: new Date().toISOString() })
+      .eq("order_number", n)
+      .eq("status", "pending");
+  } catch {
+    // best effort — the session-expired webhook is the backstop
+  }
+}
+
+export default async function CheckoutCancelledPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ order?: string }>;
+}) {
+  const { order } = await searchParams;
+  if (order) await cancelPendingOrder(order);
+
   return (
     <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-32 text-center">
       <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15">

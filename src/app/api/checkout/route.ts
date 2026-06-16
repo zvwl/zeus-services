@@ -175,6 +175,9 @@ export async function POST(req: Request) {
       ],
       metadata: { type: "order", order_id: order.id },
       customer_email: user?.email ?? undefined,
+      // Abandoned sessions expire in 30 min (Stripe minimum); the
+      // checkout.session.expired webhook then cancels the pending order.
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
       success_url: siteUrl("/checkout/success?session_id={CHECKOUT_SESSION_ID}"),
       cancel_url: siteUrl(`/checkout/cancelled?order=${order.order_number}`),
     });

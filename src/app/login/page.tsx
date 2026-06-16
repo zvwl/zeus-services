@@ -28,6 +28,7 @@ function LoginForm() {
   const [mfaStep, setMfaStep] = useState(false);
   const [code, setCode] = useState("");
   const [captchaToken, setCaptchaToken] = useState("");
+  const [magicSent, setMagicSent] = useState(false);
   const turnstileRef = useRef<TurnstileHandle>(null);
 
   async function handleLogin(e: React.FormEvent) {
@@ -83,6 +84,54 @@ function LoginForm() {
     }
     router.push(next);
     router.refresh();
+  }
+
+  // Passwordless login — emails a one-click link (works for admins too).
+  async function handleMagicLink() {
+    setError(null);
+    if (!/^\S+@\S+\.\S+$/.test(email)) {
+      setError("Enter your email above first, then request a link.");
+      return;
+    }
+    setLoading(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithOtp({
+      email,
+      options: {
+        shouldCreateUser: false,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        captchaToken,
+      },
+    });
+    setLoading(false);
+    if (error) {
+      setError(error.message);
+      turnstileRef.current?.reset();
+      setCaptchaToken("");
+      return;
+    }
+    setMagicSent(true);
+  }
+
+  if (magicSent) {
+    return (
+      <AuthShell
+        title="Check your email"
+        subtitle="We sent a one-click login link."
+      >
+        <p className="text-center text-sm leading-relaxed text-zinc-400">
+          A login link is on its way to{" "}
+          <span className="font-semibold text-white">{email}</span>. Open it on
+          this device to sign in. The link expires shortly.
+        </p>
+        <button
+          onClick={() => setMagicSent(false)}
+          className="mt-5 block w-full text-center text-sm text-primary-light hover:underline"
+        >
+          Back to login
+        </button>
+      </AuthShell>
+    );
   }
 
   if (mfaStep) {
@@ -174,6 +223,14 @@ function LoginForm() {
         >
           {loading ? "Signing in…" : "Sign in"}
         </Button>
+        <button
+          type="button"
+          onClick={handleMagicLink}
+          disabled={loading || (captchaEnabled && !captchaToken)}
+          className="w-full text-center text-sm text-zinc-400 transition hover:text-primary-light disabled:opacity-50"
+        >
+          Email me a login link instead
+        </button>
       </form>
     </AuthShell>
   );
