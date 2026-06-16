@@ -8,6 +8,16 @@ import type { Product, ProductField, ProductVariant } from "@/lib/types";
 
 export const runtime = "nodejs";
 
+// Random, non-sequential public order code (unambiguous alphabet — no 0/O/1/I/L).
+function generateReference() {
+  const alphabet = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 7; i++) {
+    code += alphabet[Math.floor(Math.random() * alphabet.length)];
+  }
+  return `ZS-${code}`;
+}
+
 export async function POST(req: Request) {
   try {
     if (!stripeConfigured()) {
@@ -123,20 +133,32 @@ export async function POST(req: Request) {
     const unitConverted = convertFromUSD(unitUsd, rate);
     const total = Math.round(unitConverted * quantity * 100) / 100;
 
-    const { data: order, error: orderError } = await db
-      .from("orders")
-      .insert({
-        user_id: user?.id ?? null,
-        email: user?.email ?? null,
-        status: "pending",
-        currency,
-        exchange_rate: rate,
-        subtotal_usd: Math.round(unitUsd * quantity * 100) / 100,
-        total,
-      })
-      .select("*")
-      .single();
-    if (orderError || !order) {
+    const orderRow = {
+      user_id: user?.id ?? null,
+      email: user?.email ?? null,
+      status: "pending",
+      currency,
+      exchange_rate: rate,
+      subtotal_usd: Math.round(unitUsd * quantity * 100) / 100,
+      total,
+    };
+    // Insert with a unique reference, retrying on the rare code collision.
+    let order: { id: string; order_number: number } | null = null;
+    let orderError: { code?: string; message?: string } | null = null;
+    for (let attempt = 0; attempt < 5; attempt++) {
+      const { data, error } = await db
+        .from("orders")
+        .insert({ ...orderRow, reference: generateReference() })
+        .select("*")
+        .single();
+      if (!error && data) {
+        order = data;
+        break;
+      }
+      orderError = error;
+      if (error?.code !== "23505") break; // not a reference collision
+    }
+    if (!order) {
       console.error("Order insert failed:", orderError);
       return NextResponse.json(
         { error: "Could not create order." },

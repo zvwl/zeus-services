@@ -101,8 +101,10 @@ export default async function AdminCustomerDetailPage({
             {detail("Preferred currency", customer.preferred_currency)}
             {detail(
               "Discord",
-              customer.discord_username ? (
-                <span>{customer.discord_username}</span>
+              customer.discord_id ? (
+                <span className="text-emerald-300">
+                  ✓ {customer.discord_username ?? "linked"}
+                </span>
               ) : (
                 <span className="text-zinc-600">not linked</span>
               )
@@ -131,7 +133,9 @@ export default async function AdminCustomerDetailPage({
                   className="glass block p-4 transition hover:border-primary/40"
                 >
                   <div className="flex flex-wrap items-center justify-between gap-2">
-                    <p className="font-semibold text-white">#{o.order_number}</p>
+                    <p className="font-semibold text-white">
+                      {o.reference ?? `#${o.order_number}`}
+                    </p>
                     <div className="flex items-center gap-3">
                       <span className="font-semibold text-white">
                         {formatMoney(Number(o.total), o.currency)}

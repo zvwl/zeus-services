@@ -160,7 +160,7 @@ export default async function AdminDashboard() {
                 >
                   <div className="min-w-0">
                     <p className="truncate text-sm font-medium text-white">
-                      #{o.order_number} · {o.email ?? "guest"}
+                      {o.reference ?? `#${o.order_number}`} · {o.email ?? "guest"}
                     </p>
                     <p className="truncate text-xs text-zinc-500">
                       {o.items?.map((i) => `${i.quantity}× ${i.product_name}`).join(", ")}

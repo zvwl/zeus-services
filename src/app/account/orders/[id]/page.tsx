@@ -41,7 +41,7 @@ export default async function OrderDetailPage({
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
           <div>
             <h1 className="text-xl font-extrabold text-white">
-              Order #{order.order_number}
+              Order {order.reference ?? `#${order.order_number}`}
             </h1>
             <p className="text-xs text-zinc-500">
               Placed {formatDateTime(order.created_at)}
@@ -116,7 +116,7 @@ export default async function OrderDetailPage({
         <Link href="/support" className="text-primary-light underline">
           Open a support ticket
         </Link>{" "}
-        and quote order #{order.order_number}.
+        and quote order {order.reference ?? `#${order.order_number}`}.
       </p>
     </div>
   );

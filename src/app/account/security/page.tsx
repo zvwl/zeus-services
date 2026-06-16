@@ -27,6 +27,11 @@ export default function SecurityPage() {
   const [code, setCode] = useState("");
   const [verifying, setVerifying] = useState(false);
 
+  // disabling 2FA (requires stepping up to AAL2 first)
+  const [disablingId, setDisablingId] = useState<string | null>(null);
+  const [disableCode, setDisableCode] = useState("");
+  const [disabling, setDisabling] = useState(false);
+
   const load = useCallback(async () => {
     const supabase = createClient();
     const {
@@ -105,15 +110,33 @@ export default function SecurityPage() {
     setVerifying(false);
   }
 
-  async function removeFactor(id: string) {
+  async function confirmDisable(e: React.FormEvent) {
+    e.preventDefault();
+    if (!disablingId) return;
+    setDisabling(true);
     setMsg(null);
     const supabase = createClient();
-    const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
-    if (error) setMsg({ ok: false, text: error.message });
-    else {
+    // Unenrolling a verified factor requires an AAL2 session. Step up by
+    // verifying a current code first, then remove the factor.
+    const { error: challengeError } = await supabase.auth.mfa.challengeAndVerify({
+      factorId: disablingId,
+      code: disableCode.trim(),
+    });
+    if (challengeError) {
+      setMsg({ ok: false, text: "Invalid code — try again." });
+      setDisabling(false);
+      return;
+    }
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: disablingId });
+    if (error) {
+      setMsg({ ok: false, text: error.message });
+    } else {
       setMsg({ ok: true, text: "Two-factor authentication disabled." });
+      setDisablingId(null);
+      setDisableCode("");
       await load();
     }
+    setDisabling(false);
   }
 
   async function resendVerification() {
@@ -210,12 +233,52 @@ export default function SecurityPage() {
                 <Button
                   size="sm"
                   variant="danger"
-                  onClick={() => removeFactor(f.id)}
+                  onClick={() => {
+                    setDisablingId(f.id);
+                    setDisableCode("");
+                    setMsg(null);
+                  }}
                 >
                   <ShieldOff className="h-4 w-4" /> Disable
                 </Button>
               </div>
             ))}
+            {disablingId && (
+              <form
+                onSubmit={confirmDisable}
+                className="space-y-3 rounded-xl border border-edge bg-raised/40 p-4"
+              >
+                <p className="text-sm text-zinc-300">
+                  Enter your current 6-digit authenticator code to turn off 2FA.
+                </p>
+                <input
+                  className="input text-center text-lg tracking-[0.4em]"
+                  inputMode="numeric"
+                  maxLength={6}
+                  placeholder="000000"
+                  value={disableCode}
+                  onChange={(e) =>
+                    setDisableCode(e.target.value.replace(/\D/g, ""))
+                  }
+                  autoFocus
+                />
+                <div className="flex gap-2">
+                  <Button
+                    variant="danger"
+                    disabled={disabling || disableCode.length !== 6}
+                  >
+                    {disabling ? "Disabling…" : "Confirm disable"}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={() => setDisablingId(null)}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </form>
+            )}
           </div>
         )}
 

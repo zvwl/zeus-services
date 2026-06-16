@@ -43,7 +43,9 @@ export default async function OrdersPage() {
         >
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="font-bold text-white">Order #{o.order_number}</p>
+              <p className="font-bold text-white">
+                Order {o.reference ?? `#${o.order_number}`}
+              </p>
               <p className="text-xs text-zinc-500">{formatDateTime(o.created_at)}</p>
             </div>
             <div className="flex items-center gap-4">

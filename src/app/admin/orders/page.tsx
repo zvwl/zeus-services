@@ -38,7 +38,9 @@ export default async function AdminOrdersPage({
     if (isOrderNumber) {
       query = query.eq("order_number", Number(search.replace(/^#/, "")));
     } else {
-      query = query.ilike("email", `%${search}%`);
+      query = query.or(
+        `email.ilike.%${search}%,reference.ilike.%${search}%`
+      );
     }
   }
   const { data } = await query;
@@ -64,7 +66,7 @@ export default async function AdminOrdersPage({
             type="search"
             name="q"
             defaultValue={search}
-            placeholder="Order # or email…"
+            placeholder="Order ref, # or email…"
             className="input"
           />
         </form>
@@ -106,7 +108,7 @@ export default async function AdminOrdersPage({
                     href={`/admin/orders/${o.id}`}
                     className="font-semibold text-primary-light hover:underline"
                   >
-                    #{o.order_number}
+                    {o.reference ?? `#${o.order_number}`}
                   </Link>
                 </td>
                 <td className="px-4 py-3 text-zinc-300">{o.email ?? "guest"}</td>

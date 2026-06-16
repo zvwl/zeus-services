@@ -102,6 +102,7 @@ export type OrderStatus =
 export interface Order {
   id: string;
   order_number: number;
+  reference: string | null;
   user_id: string | null;
   email: string | null;
   status: OrderStatus;

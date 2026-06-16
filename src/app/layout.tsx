@@ -4,6 +4,7 @@ import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { CookieConsent } from "@/components/CookieConsent";
 import { getRates, getSettings, setting } from "@/lib/data";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -47,6 +48,7 @@ export default async function RootLayout({
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
+          <CookieConsent />
         </CurrencyProvider>
       </body>
     </html>

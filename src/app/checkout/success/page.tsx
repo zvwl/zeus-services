@@ -5,6 +5,7 @@ import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { fulfillCheckoutSession } from "@/lib/fulfill";
 import { formatMoney } from "@/lib/currency";
 import { Badge, ButtonLink, Card, statusBadgeVariant } from "@/components/ui";
+import { AnalyticsEvent } from "@/components/AnalyticsEvent";
 import type { Order, OrderItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -57,13 +58,24 @@ export default async function CheckoutSuccessPage({
         </p>
       </div>
 
+      {order && (
+        <AnalyticsEvent
+          name="purchase"
+          params={{
+            transaction_id: order.reference ?? String(order.order_number),
+            value: Number(order.total),
+            currency: order.currency,
+          }}
+        />
+      )}
+
       {order ? (
         <Card className="mt-10">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-edge pb-4">
             <div>
               <p className="text-sm text-zinc-500">Order</p>
               <p className="text-lg font-bold text-white">
-                #{order.order_number}
+                {order.reference ?? `#${order.order_number}`}
               </p>
             </div>
             <Badge variant={statusBadgeVariant(order.status)}>

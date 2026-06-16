@@ -60,16 +60,19 @@ export function discordBotConfigured() {
  */
 export async function assignDiscordRole(
   discordUserId: string
-): Promise<{ ok: boolean; reason?: string }> {
-  const token = process.env.DISCORD_BOT_TOKEN;
-  const guildId = process.env.DISCORD_GUILD_ID;
-  const roleId = process.env.DISCORD_CUSTOMER_ROLE_ID;
+): Promise<{ ok: boolean; reason?: string; detail?: string }> {
+  // Trim to defend against trailing spaces/newlines pasted into env vars —
+  // those make the URL or Authorization header invalid and fetch throws.
+  const token = process.env.DISCORD_BOT_TOKEN?.trim();
+  const guildId = process.env.DISCORD_GUILD_ID?.trim();
+  const roleId = process.env.DISCORD_CUSTOMER_ROLE_ID?.trim();
   if (!token || !guildId || !roleId) return { ok: false, reason: "not_configured" };
-  if (!discordUserId) return { ok: false, reason: "no_discord_id" };
+  const userId = discordUserId.trim();
+  if (!userId) return { ok: false, reason: "no_discord_id" };
 
   try {
     const res = await fetch(
-      `https://discord.com/api/v10/guilds/${guildId}/members/${discordUserId}/roles/${roleId}`,
+      `https://discord.com/api/v10/guilds/${guildId}/members/${userId}/roles/${roleId}`,
       {
         method: "PUT",
         headers: {
@@ -84,10 +87,14 @@ export async function assignDiscordRole(
     if (res.status === 404) return { ok: false, reason: "not_in_guild" };
     const body = await res.text();
     console.error("Discord role assign failed:", res.status, body);
-    return { ok: false, reason: `http_${res.status}` };
+    return { ok: false, reason: `http_${res.status}`, detail: body.slice(0, 300) };
   } catch (err) {
     console.error("Discord role assign error:", err);
-    return { ok: false, reason: "error" };
+    return {
+      ok: false,
+      reason: "error",
+      detail: err instanceof Error ? err.message : String(err),
+    };
   }
 }
 
@@ -110,13 +117,26 @@ export async function resolveDiscordId(
   try {
     const { data } = await db.auth.admin.getUserById(userId);
     const identity = data.user?.identities?.find((i) => i.provider === "discord");
+    const meta = identity?.identity_data ?? {};
     const discordId =
       identity?.id ||
-      (identity?.identity_data?.provider_id as string | undefined) ||
-      (identity?.identity_data?.sub as string | undefined) ||
+      (meta.provider_id as string | undefined) ||
+      (meta.sub as string | undefined) ||
+      null;
+    const discordUsername =
+      (meta.global_name as string | undefined) ||
+      (meta.full_name as string | undefined) ||
+      (meta.user_name as string | undefined) ||
+      (meta.name as string | undefined) ||
       null;
     if (discordId) {
-      await db.from("profiles").update({ discord_id: discordId }).eq("id", userId);
+      await db
+        .from("profiles")
+        .update({
+          discord_id: discordId,
+          ...(discordUsername ? { discord_username: discordUsername } : {}),
+        })
+        .eq("id", userId);
     }
     return discordId;
   } catch {
@@ -163,7 +183,12 @@ export async function syncCustomerDiscordRole(
       action: result.ok ? "discord.role_granted" : "discord.role_skipped",
       entity: "profile",
       entity_id: userId,
-      meta: { discord_id: discordId, reason: result.reason ?? null, ...opts.meta },
+      meta: {
+        discord_id: discordId,
+        reason: result.reason ?? null,
+        detail: result.detail ?? null,
+        ...opts.meta,
+      },
     });
     return result;
   } catch (err) {

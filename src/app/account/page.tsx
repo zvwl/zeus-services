@@ -117,7 +117,9 @@ export default async function AccountPage() {
                 className="flex items-center justify-between gap-4 py-3 transition hover:bg-raised/40"
               >
                 <div>
-                  <p className="font-medium text-white">#{o.order_number}</p>
+                  <p className="font-medium text-white">
+                    {o.reference ?? `#${o.order_number}`}
+                  </p>
                   <p className="text-xs text-zinc-500">{formatDate(o.created_at)}</p>
                 </div>
                 <div className="flex items-center gap-4">

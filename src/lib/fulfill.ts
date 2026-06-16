@@ -138,8 +138,9 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
     meta: { order_number: order.order_number, total: order.total },
   });
 
+  const orderRef = order.reference ?? `#${order.order_number}`;
   await notifyDiscord({
-    title: `🛒 Order #${order.order_number} paid`,
+    title: `🛒 Order ${orderRef} paid`,
     fields: [
       {
         name: "Total",
@@ -168,9 +169,9 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
   if (email) {
     await sendEmail({
       to: email,
-      subject: `Order #${order.order_number} confirmed ⚡`,
+      subject: `Order ${orderRef} confirmed ⚡`,
       html: orderConfirmationEmail({
-        orderNumber: order.order_number,
+        orderNumber: orderRef,
         total: Number(order.total),
         currency: order.currency,
         items: orderItems.map((i) => ({

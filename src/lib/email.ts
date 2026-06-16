@@ -85,7 +85,7 @@ export function orderConfirmationEmail(opts: {
   const body = `
     <p style="margin:0 0 16px;color:#a1a1aa;line-height:1.6">Thanks for your purchase! Your payment was successful and your order is confirmed.</p>
     <p style="margin:0 0 6px;color:#71717a;font-size:13px">Order</p>
-    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#fff">#${opts.orderNumber}</p>
+    <p style="margin:0 0 16px;font-size:18px;font-weight:700;color:#fff">${opts.orderNumber}</p>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px">${itemRows(opts.items)}</table>
     <p style="margin:0 0 20px;font-size:16px;color:#fff"><strong>Total paid:</strong> ${formatMoney(opts.total, opts.currency)}</p>
     ${
@@ -94,7 +94,7 @@ export function orderConfirmationEmail(opts: {
         : `<p style="margin:0;padding:12px 14px;background:rgba(34,197,94,.1);border-radius:10px;color:#bbf7d0;font-size:14px">✅ Your delivery details are available in your account now.</p>`
     }
     <p style="margin:20px 0 0"><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://zeus-services.gg"}/account/orders" style="color:#a78bfa">View your order →</a></p>`;
-  return layout(`Order #${opts.orderNumber} confirmed ⚡`, body);
+  return layout(`Order ${opts.orderNumber} confirmed ⚡`, body);
 }
 
 export function orderDeliveredEmail(opts: {
@@ -104,7 +104,7 @@ export function orderDeliveredEmail(opts: {
 }) {
   const body = `
     <p style="margin:0 0 16px;color:#a1a1aa;line-height:1.6">Good news — your order has been delivered.</p>
-    <p style="margin:0 0 6px;color:#71717a;font-size:13px">Order #${opts.orderNumber}</p>
+    <p style="margin:0 0 6px;color:#71717a;font-size:13px">Order ${opts.orderNumber}</p>
     <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#fff">${opts.productName}</p>
     <pre style="margin:0 0 16px;padding:14px;background:#07070e;border:1px solid #1e1e30;border-radius:10px;color:#bbf7d0;font-size:13px;white-space:pre-wrap;word-break:break-word">${opts.payload}</pre>
     <p style="margin:0"><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://zeus-services.gg"}/account/orders" style="color:#a78bfa">Open in your account →</a></p>`;

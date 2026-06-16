@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Lock, Minus, Plus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useCurrency } from "@/components/CurrencyProvider";
+import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
 interface BuyVariant {
@@ -86,6 +87,18 @@ export function BuyBox({
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Checkout failed");
+      // Funnel: visitor started a Stripe checkout.
+      trackEvent("begin_checkout", {
+        currency: "USD",
+        value: Math.round(unitUsd * qty * 100) / 100,
+        items: [
+          {
+            item_id: product.id,
+            item_name: `${product.name}${selected ? ` — ${selected.name}` : ""}`,
+            quantity: qty,
+          },
+        ],
+      });
       window.location.href = json.url;
     } catch (e) {
       setError(e instanceof Error ? e.message : "Checkout failed");

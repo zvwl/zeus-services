@@ -380,15 +380,16 @@ export async function deliverOrderItem(formData: FormData): Promise<AdminResult>
   // Notify the customer their item is ready (Resend) — best effort.
   const { data: order } = await supabase
     .from("orders")
-    .select("order_number, email")
+    .select("order_number, reference, email")
     .eq("id", item.order_id)
     .maybeSingle();
   if (order?.email) {
+    const orderRef = order.reference ?? `#${order.order_number}`;
     await sendEmail({
       to: order.email,
-      subject: `Your Zeus Services order #${order.order_number} is ready 🎉`,
+      subject: `Your Zeus Services order ${orderRef} is ready 🎉`,
       html: orderDeliveredEmail({
-        orderNumber: order.order_number,
+        orderNumber: orderRef,
         productName: item.product_name,
         payload,
       }),

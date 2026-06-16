@@ -35,7 +35,7 @@ export default async function AdminOrderDetail({
       <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-extrabold text-white">
-            Order #{order.order_number}
+            Order {order.reference ?? `#${order.order_number}`}
           </h1>
           <p className="mt-1 text-sm text-zinc-500">
             {formatDateTime(order.created_at)} · {order.email ?? "guest"}
