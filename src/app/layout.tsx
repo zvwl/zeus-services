@@ -28,6 +28,9 @@ export default async function RootLayout({
 }) {
   const [rates, cookieStore] = await Promise.all([getRates(), cookies()]);
   const initialCurrency = cookieStore.get("currency")?.value ?? "USD";
+  // Show a warning bar on any non-production (preview/dev) deployment.
+  const isPreview =
+    Boolean(process.env.VERCEL_ENV) && process.env.VERCEL_ENV !== "production";
 
   return (
     <html lang="en" className="dark">
@@ -45,6 +48,12 @@ export default async function RootLayout({
       </head>
       <body className="flex min-h-screen flex-col font-sans">
         <CurrencyProvider initial={initialCurrency} rates={rates}>
+          {isPreview && (
+            <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-black">
+              ⚠️ STAGING / DEV PREVIEW — not the live site. Changes here are for
+              testing only.
+            </div>
+          )}
           <Navbar />
           <main className="flex-1">{children}</main>
           <Footer />
