@@ -3,11 +3,12 @@ import { notFound } from "next/navigation";
 import { ShieldCheck, Timer, Truck, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
-import { CoverImage, ProductCard, ReviewCard } from "@/components/cards";
+import { CoverImage, ProductCard } from "@/components/cards";
 import { Badge, SectionHeading, Stars } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
 import { BuyBox } from "@/components/BuyBox";
 import { ReviewForm } from "@/components/ReviewForm";
+import { ProductReviews } from "@/components/ProductReviews";
 import type { Product, Review } from "@/lib/types";
 
 export const revalidate = 0;
@@ -30,26 +31,33 @@ export default async function ProductPage({
   if (!data) notFound();
   const product = data as Product;
 
-  const [{ data: reviews }, { data: related }, user] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select("*, profile:profiles(username, avatar_url)")
-      .eq("product_id", product.id)
-      .eq("is_approved", true)
-      .order("created_at", { ascending: false })
-      .limit(9),
-    supabase
-      .from("products")
-      .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
-      .eq("game_id", product.game_id)
-      .eq("is_active", true)
-      .neq("id", product.id)
-      .order("sort_order")
-      .limit(4),
-    getUser(),
-  ]);
+  const [{ data: reviews }, { count: reviewCount }, { data: related }, user] =
+    await Promise.all([
+      supabase
+        .from("reviews")
+        .select("*, profile:profiles(username, avatar_url)")
+        .eq("product_id", product.id)
+        .eq("is_approved", true)
+        .order("created_at", { ascending: false })
+        .limit(30),
+      supabase
+        .from("reviews")
+        .select("id", { count: "exact", head: true })
+        .eq("product_id", product.id)
+        .eq("is_approved", true),
+      supabase
+        .from("products")
+        .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
+        .eq("game_id", product.game_id)
+        .eq("is_active", true)
+        .neq("id", product.id)
+        .order("sort_order")
+        .limit(4),
+      getUser(),
+    ]);
 
   const productReviews = (reviews as Review[]) ?? [];
+  const totalReviews = reviewCount ?? productReviews.length;
   const avg =
     productReviews.length > 0
       ? Math.round(
@@ -195,20 +203,10 @@ export default async function ProductPage({
       )}
 
       <div className="mt-16">
-        <div className="flex flex-wrap items-end justify-between gap-4">
-          <h2 className="text-2xl font-bold text-white">Customer reviews</h2>
-        </div>
-        {productReviews.length > 0 ? (
-          <div className="mt-6 grid gap-5 md:grid-cols-2 lg:grid-cols-3">
-            {productReviews.map((r) => (
-              <ReviewCard key={r.id} review={r} />
-            ))}
-          </div>
-        ) : (
-          <p className="mt-4 text-sm text-zinc-500">
-            No reviews for this product yet — be the first!
-          </p>
-        )}
+        <h2 className="text-2xl font-bold text-white">
+          Customer reviews{totalReviews > 0 ? ` (${totalReviews})` : ""}
+        </h2>
+        <ProductReviews reviews={productReviews} total={totalReviews} />
         <div className="mt-8 max-w-xl">
           <ReviewForm productId={product.id} signedIn={Boolean(user)} />
         </div>
