@@ -6,6 +6,14 @@ import { createAdminClient } from "@/lib/supabase/admin";
 // Orders that count as a completed purchase for role eligibility.
 const QUALIFYING_ORDER_STATUSES = ["paid", "processing", "completed"];
 
+// Discord roles granted by lifetime spend (USD). Roles are additive, so a big
+// spender receives every tier they qualify for. A tier is skipped when its env
+// var isn't set, so the VIP role is optional. Adjust thresholds here.
+const DISCORD_ROLE_TIERS: { minSpendUsd: number; env: string; label: string }[] = [
+  { minSpendUsd: 3, env: "DISCORD_CUSTOMER_ROLE_ID", label: "customer" },
+  { minSpendUsd: 20, env: "DISCORD_VIP_ROLE_ID", label: "vip" },
+];
+
 interface DiscordEmbedField {
   name: string;
   value: string;
@@ -59,20 +67,21 @@ export function discordBotConfigured() {
  * Returns a result object; never throws into the caller.
  */
 export async function assignDiscordRole(
-  discordUserId: string
+  discordUserId: string,
+  roleId: string
 ): Promise<{ ok: boolean; reason?: string; detail?: string }> {
   // Trim to defend against trailing spaces/newlines pasted into env vars —
   // those make the URL or Authorization header invalid and fetch throws.
   const token = process.env.DISCORD_BOT_TOKEN?.trim();
   const guildId = process.env.DISCORD_GUILD_ID?.trim();
-  const roleId = process.env.DISCORD_CUSTOMER_ROLE_ID?.trim();
-  if (!token || !guildId || !roleId) return { ok: false, reason: "not_configured" };
+  const role = roleId?.trim();
+  if (!token || !guildId || !role) return { ok: false, reason: "not_configured" };
   const userId = discordUserId.trim();
   if (!userId) return { ok: false, reason: "no_discord_id" };
 
   try {
     const res = await fetch(
-      `https://discord.com/api/v10/guilds/${guildId}/members/${userId}/roles/${roleId}`,
+      `https://discord.com/api/v10/guilds/${guildId}/members/${userId}/roles/${role}`,
       {
         method: "PUT",
         headers: {
@@ -166,31 +175,47 @@ export async function syncCustomerDiscordRole(
   try {
     const db = opts.db ?? createAdminClient();
 
-    // Only verified buyers get the role.
-    const { count } = await db
+    // Lifetime spend (USD) across paid orders decides which role tiers apply.
+    const { data: paidOrders } = await db
       .from("orders")
-      .select("id", { count: "exact", head: true })
+      .select("subtotal_usd")
       .eq("user_id", userId)
       .in("status", QUALIFYING_ORDER_STATUSES);
-    if (!count) return { ok: false, reason: "no_paid_order" };
+    const totalSpend = (paidOrders ?? []).reduce(
+      (sum, o) => sum + Number(o.subtotal_usd ?? 0),
+      0
+    );
+    if (totalSpend <= 0) return { ok: false, reason: "no_paid_order" };
 
     const discordId = await resolveDiscordId(db, userId);
     if (!discordId) return { ok: false, reason: "no_discord_id" };
 
-    const result = await assignDiscordRole(discordId);
+    // Assign every tier the customer qualifies for (Discord roles are additive).
+    const roles: Record<string, string> = {};
+    let anyGranted = false;
+    for (const tier of DISCORD_ROLE_TIERS) {
+      const roleId = process.env[tier.env]?.trim();
+      if (!roleId || totalSpend < tier.minSpendUsd) continue;
+      const r = await assignDiscordRole(discordId, roleId);
+      roles[tier.label] = r.ok
+        ? "granted"
+        : `${r.reason ?? "skipped"}${r.detail ? ` (${r.detail})` : ""}`;
+      if (r.ok) anyGranted = true;
+    }
+
     await db.from("audit_logs").insert({
       actor_id: null,
-      action: result.ok ? "discord.role_granted" : "discord.role_skipped",
+      action: anyGranted ? "discord.role_granted" : "discord.role_skipped",
       entity: "profile",
       entity_id: userId,
       meta: {
         discord_id: discordId,
-        reason: result.reason ?? null,
-        detail: result.detail ?? null,
+        spend_usd: Math.round(totalSpend * 100) / 100,
+        roles,
         ...opts.meta,
       },
     });
-    return result;
+    return { ok: anyGranted, reason: anyGranted ? undefined : "no_role_assigned" };
   } catch (err) {
     console.error("syncCustomerDiscordRole error:", err);
     return { ok: false, reason: "error" };
