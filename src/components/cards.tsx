@@ -156,6 +156,7 @@ export function GameCard({
 
 export function ReviewCard({ review }: { review: Review }) {
   const name = review.profile?.username ?? review.author_name ?? "Customer";
+  const avatar = review.author_avatar ?? review.profile?.avatar_url ?? null;
   return (
     <div className="glass flex h-full flex-col p-5">
       <div className="flex items-center justify-between">
@@ -169,9 +170,18 @@ export function ReviewCard({ review }: { review: Review }) {
         “{review.content}”
       </p>
       <div className="mt-4 flex items-center gap-2 border-t border-edge pt-3">
-        <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary-light">
-          {name[0]?.toUpperCase()}
-        </span>
+        {avatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={avatar}
+            alt=""
+            className="h-7 w-7 rounded-full object-cover"
+          />
+        ) : (
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 text-xs font-bold text-primary-light">
+            {name[0]?.toUpperCase()}
+          </span>
+        )}
         <span className="text-sm font-medium text-zinc-300">{name}</span>
         <Badge variant="success" className="ml-auto">
           ✓ Verified

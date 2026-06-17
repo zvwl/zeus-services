@@ -44,13 +44,14 @@ export async function submitReview(formData: FormData): Promise<ActionResult> {
   // exposing the profiles table.
   const { data: profile } = await supabase
     .from("profiles")
-    .select("username")
+    .select("username, avatar_url")
     .eq("id", user.id)
     .maybeSingle();
 
   const { error } = await supabase.from("reviews").insert({
     user_id: user.id,
     author_name: profile?.username ?? null,
+    author_avatar: profile?.avatar_url ?? null,
     product_id: productId,
     rating,
     title: title || null,

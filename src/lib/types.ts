@@ -136,6 +136,7 @@ export interface Review {
   id: string;
   user_id: string | null;
   author_name: string | null;
+  author_avatar: string | null;
   product_id: string | null;
   rating: number;
   title: string | null;
