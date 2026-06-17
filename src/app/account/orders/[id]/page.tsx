@@ -4,6 +4,7 @@ import { PackageCheck } from "lucide-react";
 import { getUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, Card, statusBadgeVariant } from "@/components/ui";
+import { OrderItemReview } from "@/components/OrderItemReview";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime } from "@/lib/utils";
 import type { Order, OrderItem } from "@/lib/types";
@@ -96,6 +97,13 @@ export default async function OrderDetailPage({
                   ⏳ In progress — our team is working on this item.
                 </p>
               ) : null}
+
+              {order.status === "completed" && item.product_id && (
+                <OrderItemReview
+                  productId={item.product_id}
+                  productName={item.product_name}
+                />
+              )}
             </li>
           ))}
         </ul>
