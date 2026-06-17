@@ -53,6 +53,13 @@ export async function POST(req: Request) {
             .eq("id", session.metadata.order_id)
             .eq("status", "pending");
         }
+        if (session.metadata?.donation_id) {
+          await db
+            .from("donations")
+            .delete()
+            .eq("id", session.metadata.donation_id)
+            .eq("status", "pending");
+        }
         break;
       }
       default:

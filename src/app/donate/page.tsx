@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Coffee } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { getStripe, stripeConfigured } from "@/lib/stripe";
+import { fulfillCheckoutSession } from "@/lib/fulfill";
 import { SectionHeading } from "@/components/ui";
 import { DonateForm } from "@/components/DonateForm";
 import { formatMoney } from "@/lib/currency";
@@ -13,9 +16,37 @@ export const revalidate = 0;
 export default async function DonatePage({
   searchParams,
 }: {
-  searchParams: Promise<{ thanks?: string }>;
+  searchParams: Promise<{ thanks?: string; session_id?: string; cancelled?: string }>;
 }) {
-  const { thanks } = await searchParams;
+  const { thanks, session_id: sessionId, cancelled } = await searchParams;
+
+  // Fallback fulfillment: mark a just-paid donation completed even if the
+  // Stripe webhook didn't fire (idempotent, guarded by status='pending').
+  if (sessionId && hasAdminClient() && stripeConfigured()) {
+    try {
+      const session = await getStripe().checkout.sessions.retrieve(sessionId);
+      if (session.payment_status === "paid") {
+        await fulfillCheckoutSession(session);
+      }
+    } catch {
+      // ignore — show whatever state the donor wall is in
+    }
+  }
+
+  // Back-out cleanup: drop the still-pending (unpaid) donation row.
+  if (cancelled && hasAdminClient()) {
+    try {
+      const db = createAdminClient();
+      await db
+        .from("donations")
+        .delete()
+        .eq("id", cancelled)
+        .eq("status", "pending");
+    } catch {
+      // best effort
+    }
+  }
+
   const supabase = await createClient();
   const { data } = await supabase
     .from("donations")

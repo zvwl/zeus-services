@@ -79,8 +79,9 @@ export async function POST(req: Request) {
       ],
       metadata: { type: "donation", donation_id: donation.id },
       customer_email: user?.email ?? undefined,
-      success_url: `${origin}/donate?thanks=1`,
-      cancel_url: `${origin}/donate`,
+      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+      success_url: `${origin}/donate?thanks=1&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/donate?cancelled=${donation.id}`,
     });
 
     await db
