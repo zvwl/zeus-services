@@ -77,7 +77,7 @@ export async function assignDiscordRole(
         method: "PUT",
         headers: {
           Authorization: `Bot ${token}`,
-          "X-Audit-Log-Reason": "Verified customer — paid order on Zeus Services",
+          "X-Audit-Log-Reason": "Verified customer - paid order on Zeus Services",
         },
       }
     );

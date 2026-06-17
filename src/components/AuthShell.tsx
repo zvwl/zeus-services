@@ -1,8 +1,9 @@
 "use client";
 
+/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { Zap } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui";
 
@@ -15,12 +16,34 @@ export function AuthShell({
   subtitle?: ReactNode;
   children: ReactNode;
 }) {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      const supabase = createClient();
+      const { data } = await supabase
+        .from("site_settings")
+        .select("value")
+        .eq("key", "logo_url")
+        .maybeSingle();
+      if (typeof data?.value === "string" && data.value) setLogoUrl(data.value);
+    })();
+  }, []);
+
   return (
     <div className="mx-auto flex max-w-md flex-col px-4 py-16 sm:py-24">
       <Link href="/" className="mx-auto mb-6 flex items-center gap-2">
-        <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-fuchsia-600 shadow-glow-sm">
-          <Zap className="h-6 w-6 text-white" fill="currentColor" />
-        </span>
+        {logoUrl ? (
+          <img
+            src={logoUrl}
+            alt="Logo"
+            className="h-11 w-auto max-w-[200px] object-contain"
+          />
+        ) : (
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-fuchsia-600 shadow-glow-sm">
+            <Zap className="h-6 w-6 text-white" fill="currentColor" />
+          </span>
+        )}
       </Link>
       <h1 className="text-center text-2xl font-extrabold text-white">{title}</h1>
       {subtitle && (

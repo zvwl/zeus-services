@@ -15,9 +15,12 @@ export async function generateMetadata(): Promise<Metadata> {
     "tagline",
     "Premium game top-ups, boosting and accounts."
   );
+  const logoUrl = setting(settings, "logo_url");
   return {
     title: { default: `${siteName} — Game Top-Ups, Boosting & Accounts`, template: `%s — ${siteName}` },
     description: tagline,
+    // Use the admin-uploaded logo as the browser-tab favicon when set.
+    ...(logoUrl ? { icons: { icon: logoUrl } } : {}),
   };
 }
 
