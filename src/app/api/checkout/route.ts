@@ -3,7 +3,7 @@ import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { convertFromUSD } from "@/lib/currency";
-import { siteUrl } from "@/lib/utils";
+import { originFromRequest } from "@/lib/utils";
 import type { Product, ProductField, ProductVariant } from "@/lib/types";
 
 export const runtime = "nodejs";
@@ -178,6 +178,7 @@ export async function POST(req: Request) {
       custom_fields: customFields,
     });
 
+    const origin = originFromRequest(req);
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -200,8 +201,9 @@ export async function POST(req: Request) {
       // Abandoned sessions expire in 30 min (Stripe minimum); the
       // checkout.session.expired webhook then cancels the pending order.
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-      success_url: siteUrl("/checkout/success?session_id={CHECKOUT_SESSION_ID}"),
-      cancel_url: siteUrl(`/checkout/cancelled?order=${order.order_number}`),
+      // Return the buyer to the exact domain they're on so their session sticks.
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${origin}/checkout/cancelled?order=${order.order_number}`,
     });
 
     await db

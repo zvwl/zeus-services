@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { siteUrl } from "@/lib/utils";
+import { originFromRequest } from "@/lib/utils";
 
 export const runtime = "nodejs";
 
@@ -61,6 +61,7 @@ export async function POST(req: Request) {
       );
     }
 
+    const origin = originFromRequest(req);
     const session = await getStripe().checkout.sessions.create({
       mode: "payment",
       line_items: [
@@ -78,8 +79,8 @@ export async function POST(req: Request) {
       ],
       metadata: { type: "donation", donation_id: donation.id },
       customer_email: user?.email ?? undefined,
-      success_url: siteUrl("/donate?thanks=1"),
-      cancel_url: siteUrl("/donate"),
+      success_url: `${origin}/donate?thanks=1`,
+      cancel_url: `${origin}/donate`,
     });
 
     await db

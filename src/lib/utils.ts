@@ -42,6 +42,33 @@ export function siteUrl(path = "") {
   return `${base}${path}`;
 }
 
+/**
+ * Origin to use for Stripe redirect URLs. Prefers the request's own origin so
+ * the buyer is returned to the exact domain they're on (production, a Vercel
+ * preview, etc.) — keeping their session cookies intact. Only trusts the
+ * configured site host or *.vercel.app; otherwise falls back to siteUrl().
+ */
+export function originFromRequest(req: Request): string {
+  const origin = req.headers.get("origin");
+  if (origin) {
+    try {
+      const host = new URL(origin).host;
+      let configuredHost = "";
+      try {
+        configuredHost = new URL(siteUrl()).host;
+      } catch {
+        // ignore
+      }
+      if (host === configuredHost || host.endsWith(".vercel.app")) {
+        return origin.replace(/\/$/, "");
+      }
+    } catch {
+      // ignore malformed origin
+    }
+  }
+  return siteUrl();
+}
+
 export function truncate(text: string, length: number) {
   return text.length > length ? `${text.slice(0, length).trimEnd()}…` : text;
 }
