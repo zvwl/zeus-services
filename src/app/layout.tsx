@@ -19,8 +19,9 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: { default: `${siteName} — Game Top-Ups, Boosting & Accounts`, template: `%s — ${siteName}` },
     description: tagline,
-    // Use the admin-uploaded logo as the browser-tab favicon when set.
-    ...(logoUrl ? { icons: { icon: logoUrl } } : {}),
+    // Tab favicon: the admin logo when set, otherwise the default mark. Always
+    // providing one stops the browser from requesting (and 404-ing) /favicon.ico.
+    icons: { icon: logoUrl || "/favicon.svg" },
   };
 }
 
