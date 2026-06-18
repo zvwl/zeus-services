@@ -50,6 +50,7 @@ export default function ResetPasswordPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Min. 8 characters"
+            autoComplete="new-password"
             required
           />
         </div>
@@ -61,6 +62,7 @@ export default function ResetPasswordPage() {
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="Repeat password"
+            autoComplete="new-password"
             required
           />
         </div>

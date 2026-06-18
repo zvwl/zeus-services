@@ -151,6 +151,7 @@ function LoginForm() {
             placeholder="000000"
             value={code}
             onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            autoComplete="one-time-code"
             autoFocus
           />
           {error && <p className="text-sm text-red-400">{error}</p>}
@@ -184,6 +185,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
+            autoComplete="email"
             required
           />
         </div>
@@ -203,6 +205,7 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
+            autoComplete="current-password"
             required
           />
         </div>
