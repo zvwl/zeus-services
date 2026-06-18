@@ -47,6 +47,17 @@ export default function SecurityPage() {
     load();
   }, [load]);
 
+  // Auto-submit the 6-digit codes once fully entered.
+  useEffect(() => {
+    if (enrolling && code.length === 6 && !verifying) verifyEnroll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, enrolling]);
+
+  useEffect(() => {
+    if (disablingId && disableCode.length === 6 && !disabling) confirmDisable();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [disableCode, disablingId]);
+
   async function changePassword(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
@@ -89,9 +100,9 @@ export default function SecurityPage() {
     });
   }
 
-  async function verifyEnroll(e: React.FormEvent) {
-    e.preventDefault();
-    if (!enrolling) return;
+  async function verifyEnroll(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!enrolling || verifying) return;
     setVerifying(true);
     setMsg(null);
     const supabase = createClient();
@@ -101,6 +112,7 @@ export default function SecurityPage() {
     });
     if (error) {
       setMsg({ ok: false, text: "Invalid code — scan the QR and try again." });
+      setCode("");
     } else {
       setMsg({ ok: true, text: "Two-factor authentication enabled 🔒" });
       setEnrolling(null);
@@ -110,9 +122,9 @@ export default function SecurityPage() {
     setVerifying(false);
   }
 
-  async function confirmDisable(e: React.FormEvent) {
-    e.preventDefault();
-    if (!disablingId) return;
+  async function confirmDisable(e?: React.FormEvent) {
+    e?.preventDefault();
+    if (!disablingId || disabling) return;
     setDisabling(true);
     setMsg(null);
     const supabase = createClient();
@@ -124,6 +136,7 @@ export default function SecurityPage() {
     });
     if (challengeError) {
       setMsg({ ok: false, text: "Invalid code — try again." });
+      setDisableCode("");
       setDisabling(false);
       return;
     }

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Suspense, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell, OAuthButtons } from "@/components/AuthShell";
@@ -61,8 +61,8 @@ function LoginForm() {
     router.refresh();
   }
 
-  async function handleMfa(e: React.FormEvent) {
-    e.preventDefault();
+  async function verifyMfa() {
+    if (loading) return;
     setError(null);
     setLoading(true);
     const supabase = createClient();
@@ -79,12 +79,26 @@ function LoginForm() {
     });
     if (error) {
       setError("Invalid code — try again.");
+      setCode("");
       setLoading(false);
       return;
     }
     router.push(next);
     router.refresh();
   }
+
+  async function handleMfa(e: React.FormEvent) {
+    e.preventDefault();
+    await verifyMfa();
+  }
+
+  // Auto-submit as soon as all 6 digits are entered.
+  useEffect(() => {
+    if (mfaStep && code.length === 6 && !loading) {
+      verifyMfa();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [code, mfaStep]);
 
   // Passwordless login — emails a one-click link (works for admins too).
   async function handleMagicLink() {
