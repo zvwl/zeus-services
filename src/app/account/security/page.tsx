@@ -85,9 +85,20 @@ export default function SecurityPage() {
   async function startEnroll() {
     setMsg(null);
     const supabase = createClient();
+    // Remove any leftover unverified factors from a previously cancelled
+    // attempt, otherwise enrolling again collides on the friendly name.
+    const { data: existing } = await supabase.auth.mfa.listFactors();
+    for (const f of existing?.all ?? []) {
+      if (f.status === "unverified") {
+        await supabase.auth.mfa.unenroll({ factorId: f.id });
+      }
+    }
     const { data, error } = await supabase.auth.mfa.enroll({
       factorType: "totp",
-      friendlyName: `Authenticator ${new Date().toISOString().slice(0, 10)}`,
+      friendlyName: `Authenticator ${new Date()
+        .toISOString()
+        .slice(0, 19)
+        .replace("T", " ")}`,
     });
     if (error || !data) {
       setMsg({ ok: false, text: error?.message ?? "Could not start enrollment." });
@@ -98,6 +109,21 @@ export default function SecurityPage() {
       qr: data.totp.qr_code,
       secret: data.totp.secret,
     });
+  }
+
+  // Drop the pending unverified factor when the user cancels enrollment.
+  async function cancelEnroll() {
+    if (enrolling) {
+      const supabase = createClient();
+      try {
+        await supabase.auth.mfa.unenroll({ factorId: enrolling.factorId });
+      } catch {
+        // best effort
+      }
+    }
+    setEnrolling(null);
+    setCode("");
+    setMsg(null);
   }
 
   async function verifyEnroll(e?: React.FormEvent) {
@@ -325,11 +351,7 @@ export default function SecurityPage() {
               <Button disabled={verifying || code.length !== 6}>
                 {verifying ? "Verifying…" : "Verify & enable"}
               </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => setEnrolling(null)}
-              >
+              <Button type="button" variant="ghost" onClick={cancelEnroll}>
                 Cancel
               </Button>
             </div>
