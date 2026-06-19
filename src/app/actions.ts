@@ -2,8 +2,30 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { getProfile, getUser } from "@/lib/auth";
 import { notifyDiscord } from "@/lib/discord";
+
+/**
+ * Removes the signed-in user's leftover UNVERIFIED 2FA factors (from a cancelled
+ * enrollment). Done with the admin API so it doesn't fire the user-facing
+ * "MFA factor removed" email that a normal unenroll would.
+ */
+export async function cleanupUnverifiedMfa(): Promise<void> {
+  const user = await getUser();
+  if (!user || !hasAdminClient()) return;
+  try {
+    const db = createAdminClient();
+    const { data } = await db.auth.admin.mfa.listFactors({ userId: user.id });
+    for (const factor of data?.factors ?? []) {
+      if (factor.status === "unverified") {
+        await db.auth.admin.mfa.deleteFactor({ id: factor.id, userId: user.id });
+      }
+    }
+  } catch {
+    // best effort
+  }
+}
 
 export interface ActionResult {
   ok: boolean;

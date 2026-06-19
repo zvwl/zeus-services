@@ -4,6 +4,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { KeyRound, ShieldCheck, ShieldOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { cleanupUnverifiedMfa } from "@/app/actions";
 import { Badge, Button, Card, Spinner } from "@/components/ui";
 import type { Factor, User } from "@supabase/supabase-js";
 
@@ -85,14 +86,9 @@ export default function SecurityPage() {
   async function startEnroll() {
     setMsg(null);
     const supabase = createClient();
-    // Remove any leftover unverified factors from a previously cancelled
-    // attempt, otherwise enrolling again collides on the friendly name.
-    const { data: existing } = await supabase.auth.mfa.listFactors();
-    for (const f of existing?.all ?? []) {
-      if (f.status === "unverified") {
-        await supabase.auth.mfa.unenroll({ factorId: f.id });
-      }
-    }
+    // Clear any leftover unverified factor from a cancelled attempt — server
+    // side, so it doesn't send a "2FA disabled" email.
+    await cleanupUnverifiedMfa();
     const { data, error } = await supabase.auth.mfa.enroll({
       factorType: "totp",
       friendlyName: `Authenticator ${new Date()
@@ -112,18 +108,12 @@ export default function SecurityPage() {
   }
 
   // Drop the pending unverified factor when the user cancels enrollment.
+  // Cleanup runs server-side (admin API) so no "2FA disabled" email is sent.
   async function cancelEnroll() {
-    if (enrolling) {
-      const supabase = createClient();
-      try {
-        await supabase.auth.mfa.unenroll({ factorId: enrolling.factorId });
-      } catch {
-        // best effort
-      }
-    }
     setEnrolling(null);
     setCode("");
     setMsg(null);
+    await cleanupUnverifiedMfa();
   }
 
   async function verifyEnroll(e?: React.FormEvent) {
