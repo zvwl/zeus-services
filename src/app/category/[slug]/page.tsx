@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
@@ -7,6 +8,39 @@ import { cn } from "@/lib/utils";
 import type { Game, Product } from "@/lib/types";
 
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("categories")
+    .select("name, slug, description")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!data) return { title: "Category not found" };
+  const description = (
+    data.description || `Browse ${data.name} at Zeus Services.`
+  )
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  return {
+    title: data.name,
+    description,
+    alternates: { canonical: `/category/${data.slug}` },
+    openGraph: {
+      type: "website",
+      title: data.name,
+      description,
+      url: `/category/${data.slug}`,
+    },
+  };
+}
 
 export default async function CategoryPage({
   params,

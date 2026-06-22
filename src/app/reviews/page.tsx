@@ -6,7 +6,12 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { SectionHeading, Stars } from "@/components/ui";
 import type { Review } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Reviews" };
+export const metadata: Metadata = {
+  title: "Reviews",
+  description:
+    "Real reviews from verified Zeus Services customers across top-ups, boosting and accounts.",
+  alternates: { canonical: "/reviews" },
+};
 export const revalidate = 0;
 
 export default async function ReviewsPage() {

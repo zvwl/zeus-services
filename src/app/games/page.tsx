@@ -5,7 +5,12 @@ import { EmptyState, SectionHeading } from "@/components/ui";
 import { Gamepad2 } from "lucide-react";
 import type { Game } from "@/lib/types";
 
-export const metadata: Metadata = { title: "All Games" };
+export const metadata: Metadata = {
+  title: "All Games",
+  description:
+    "Browse every supported game — cheap top-ups, professional boosting and premium accounts with fast, secure delivery.",
+  alternates: { canonical: "/games" },
+};
 export const revalidate = 0;
 
 export default async function GamesPage() {

@@ -7,7 +7,12 @@ import { Badge, EmptyState, SectionHeading } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 import type { BlogPost } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Blog" };
+export const metadata: Metadata = {
+  title: "Blog",
+  description:
+    "Guides, tips and news on game top-ups, boosting and accounts from the Zeus Services team.",
+  alternates: { canonical: "/blog" },
+};
 export const revalidate = 0;
 
 export default async function BlogPage() {

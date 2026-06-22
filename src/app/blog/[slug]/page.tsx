@@ -1,13 +1,49 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CoverImage } from "@/components/cards";
 import { Badge } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
-import { formatDate } from "@/lib/utils";
+import { JsonLd } from "@/components/JsonLd";
+import { formatDate, siteUrl } from "@/lib/utils";
 import type { BlogPost } from "@/lib/types";
 
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("blog_posts")
+    .select("title, slug, excerpt, content, image_url, published_at")
+    .eq("slug", slug)
+    .eq("is_published", true)
+    .maybeSingle();
+  if (!data) return { title: "Post not found" };
+  const description = (data.excerpt || data.content || "")
+    .replace(/[#*_~>`[\]()]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  return {
+    title: data.title,
+    description,
+    alternates: { canonical: `/blog/${data.slug}` },
+    openGraph: {
+      type: "article",
+      title: data.title,
+      description,
+      url: `/blog/${data.slug}`,
+      ...(data.published_at ? { publishedTime: data.published_at } : {}),
+      images: data.image_url ? [{ url: data.image_url }] : undefined,
+    },
+  };
+}
 
 export default async function BlogPostPage({
   params,
@@ -25,8 +61,21 @@ export default async function BlogPostPage({
   if (!data) notFound();
   const post = data as BlogPost;
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: post.title,
+    ...(post.image_url ? { image: post.image_url } : {}),
+    datePublished: post.published_at ?? post.created_at,
+    dateModified: post.published_at ?? post.created_at,
+    author: { "@type": "Person", name: post.author?.username ?? "Zeus Team" },
+    ...(post.excerpt ? { description: post.excerpt } : {}),
+    mainEntityOfPage: `${siteUrl()}/blog/${post.slug}`,
+  };
+
   return (
     <article className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+      <JsonLd data={articleJsonLd} />
       <Link href="/blog" className="text-sm text-zinc-500 hover:text-primary-light">
         ← All posts
       </Link>

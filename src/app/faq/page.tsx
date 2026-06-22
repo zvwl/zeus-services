@@ -1,9 +1,15 @@
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { ButtonLink, SectionHeading } from "@/components/ui";
+import { JsonLd } from "@/components/JsonLd";
 import type { Faq } from "@/lib/types";
 
-export const metadata: Metadata = { title: "FAQ" };
+export const metadata: Metadata = {
+  title: "FAQ",
+  description:
+    "Answers to common questions about delivery times, payments, boosting safety and account warranties.",
+  alternates: { canonical: "/faq" },
+};
 export const revalidate = 0;
 
 export default async function FaqPage() {
@@ -22,8 +28,19 @@ export default async function FaqPage() {
     groups.set(f.category, list);
   }
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.question,
+      acceptedAnswer: { "@type": "Answer", text: f.answer },
+    })),
+  };
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
+      {faqs.length > 0 && <JsonLd data={faqJsonLd} />}
       <SectionHeading
         eyebrow="Help center"
         title="Frequently asked questions"

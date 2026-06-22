@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CoverImage, ProductCard } from "@/components/cards";
@@ -5,6 +6,43 @@ import { EmptyState } from "@/components/ui";
 import type { Category, Game, Product } from "@/lib/types";
 
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("games")
+    .select("name, slug, description, image_url, banner_url")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!data) return { title: "Game not found" };
+  const title = `${data.name} Top-Ups, Boosting & Accounts`;
+  const description = (
+    data.description ||
+    `Cheap ${data.name} top-ups, boosting and accounts — fast, secure delivery.`
+  )
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  const image = data.banner_url || data.image_url;
+  return {
+    title,
+    description,
+    alternates: { canonical: `/games/${data.slug}` },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `/games/${data.slug}`,
+      images: image ? [{ url: image }] : undefined,
+    },
+  };
+}
 
 export default async function GamePage({
   params,

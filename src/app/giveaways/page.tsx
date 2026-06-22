@@ -7,7 +7,12 @@ import { Badge, EmptyState, SectionHeading } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
 import type { Giveaway } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Giveaways" };
+export const metadata: Metadata = {
+  title: "Giveaways",
+  description:
+    "Enter free giveaways for game top-ups, premium accounts and more. No purchase necessary.",
+  alternates: { canonical: "/giveaways" },
+};
 export const revalidate = 0;
 
 export default async function GiveawaysPage() {

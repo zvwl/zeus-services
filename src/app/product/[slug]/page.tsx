@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShieldCheck, Timer, Truck, Zap } from "lucide-react";
@@ -9,9 +10,54 @@ import { Markdown } from "@/components/Markdown";
 import { BuyBox } from "@/components/BuyBox";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ProductReviews } from "@/components/ProductReviews";
+import { JsonLd } from "@/components/JsonLd";
+import { siteUrl } from "@/lib/utils";
 import type { Product, Review } from "@/lib/types";
 
 export const revalidate = 0;
+
+const stripMd = (s: string) =>
+  s.replace(/[#*_~>`[\]()]/g, "").replace(/\s+/g, " ").trim();
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("products")
+    .select("name, slug, description, image_url, game:games(name)")
+    .eq("slug", slug)
+    .eq("is_active", true)
+    .maybeSingle();
+  if (!data) return { title: "Product not found" };
+  const p = data as unknown as {
+    name: string;
+    slug: string;
+    description: string | null;
+    image_url: string | null;
+    game: { name: string } | { name: string }[] | null;
+  };
+  const gameName = Array.isArray(p.game) ? p.game[0]?.name : p.game?.name;
+  const title = `${gameName ? `${gameName} ` : ""}${p.name}`;
+  const description = stripMd(
+    p.description || `Buy ${p.name} fast and securely at Zeus Services.`
+  ).slice(0, 160);
+  return {
+    title,
+    description,
+    alternates: { canonical: `/product/${p.slug}` },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `/product/${p.slug}`,
+      images: p.image_url ? [{ url: p.image_url }] : undefined,
+    },
+  };
+}
 
 export default async function ProductPage({
   params,
@@ -74,8 +120,74 @@ export default async function ProductPage({
     (a, b) => a.sort_order - b.sort_order
   );
 
+  const base = siteUrl();
+  const activePrices = variants.map((v) => Number(v.price));
+  const price = activePrices.length
+    ? Math.min(...activePrices)
+    : Number(product.base_price);
+  const inStock = variants.length
+    ? variants.some((v) => v.stock === null || v.stock > 0)
+    : product.stock === null || product.stock > 0;
+
+  const productJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: product.name,
+    ...(product.image_url ? { image: product.image_url } : {}),
+    ...(product.description
+      ? { description: stripMd(product.description).slice(0, 500) }
+      : {}),
+    ...(product.game?.name
+      ? { brand: { "@type": "Brand", name: product.game.name } }
+      : {}),
+    offers: {
+      "@type": "Offer",
+      priceCurrency: "USD",
+      price: price.toFixed(2),
+      availability: inStock
+        ? "https://schema.org/InStock"
+        : "https://schema.org/OutOfStock",
+      url: `${base}/product/${product.slug}`,
+    },
+    ...(totalReviews > 0 && avg
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: avg,
+            reviewCount: totalReviews,
+          },
+        }
+      : {}),
+  };
+
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: base },
+      ...(product.category
+        ? [
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: product.category.name,
+              item: `${base}/category/${product.category.slug}`,
+            },
+          ]
+        : []),
+      {
+        "@type": "ListItem",
+        position: product.category ? 3 : 2,
+        name: product.name,
+        item: `${base}/product/${product.slug}`,
+      },
+    ],
+  };
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+      <JsonLd data={productJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       {/* Breadcrumbs */}
       <nav className="mb-8 flex flex-wrap items-center gap-2 text-sm text-zinc-500">
         <Link href="/" className="hover:text-primary-light">Home</Link>
