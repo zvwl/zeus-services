@@ -1,26 +1,11 @@
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/config";
+import { pathCapability, resolveCapabilities } from "@/lib/types";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
 const STAFF_ROLES = ["support", "admin", "super_admin"];
-const ADMIN_ROLES = ["admin", "super_admin"];
-
-// Sections only admins+ may open. Everything else under /admin (dashboard,
-// orders, customers, support) is available to all staff incl. support.
-const ADMIN_ONLY_PATHS = [
-  "/admin/products",
-  "/admin/games",
-  "/admin/categories",
-  "/admin/reviews",
-  "/admin/blog",
-  "/admin/giveaways",
-  "/admin/faqs",
-  "/admin/donations",
-  "/admin/sections",
-  "/admin/settings",
-];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
@@ -76,7 +61,7 @@ export async function updateSession(request: NextRequest) {
   if (user && path.startsWith("/admin")) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role")
+      .select("role, capabilities")
       .eq("id", user.id)
       .maybeSingle();
     const role = profile?.role;
@@ -95,14 +80,12 @@ export async function updateSession(request: NextRequest) {
       url.search = "";
       return redirect(url);
     }
-    // Team & roles: super admins only.
-    if (path.startsWith("/admin/team") && role !== "super_admin") {
-      return backToAdmin();
-    }
-    // Catalog / content / settings: admins and super admins only.
+    // Section access is governed by capabilities (the role's defaults, or a
+    // per-staff override). The dashboard (/admin) requires no capability.
+    const required = pathCapability(path);
     if (
-      ADMIN_ONLY_PATHS.some((p) => path.startsWith(p)) &&
-      !ADMIN_ROLES.includes(role)
+      required &&
+      !resolveCapabilities(role, profile?.capabilities).includes(required)
     ) {
       return backToAdmin();
     }

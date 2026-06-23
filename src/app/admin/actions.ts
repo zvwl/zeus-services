@@ -3,12 +3,7 @@
 import { revalidatePath, revalidateTag } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
-import {
-  getProfile,
-  requireAdmin,
-  requireStaff,
-  requireSuperAdmin,
-} from "@/lib/auth";
+import { getProfile, requireCapability } from "@/lib/auth";
 import { siteUrl, slugify } from "@/lib/utils";
 import { notifyDiscord } from "@/lib/discord";
 import {
@@ -20,7 +15,12 @@ import {
 } from "@/lib/email";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { formatMoney } from "@/lib/currency";
-import type { Role } from "@/lib/types";
+import {
+  ALL_CAPABILITIES,
+  CAPABILITIES_DEFAULT,
+  type Capability,
+  type Role,
+} from "@/lib/types";
 
 export interface AdminResult {
   ok: boolean;
@@ -62,7 +62,7 @@ function refreshStore() {
 
 export async function upsertGame(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_games");
   } catch {
     return fail("Unauthorized");
   }
@@ -94,7 +94,7 @@ export async function upsertGame(formData: FormData): Promise<AdminResult> {
 
 export async function deleteGame(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_games");
   } catch {
     return fail("Unauthorized");
   }
@@ -111,7 +111,7 @@ export async function deleteGame(formData: FormData): Promise<AdminResult> {
 
 export async function upsertCategory(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_categories");
   } catch {
     return fail("Unauthorized");
   }
@@ -141,7 +141,7 @@ export async function upsertCategory(formData: FormData): Promise<AdminResult> {
 
 export async function deleteCategory(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_categories");
   } catch {
     return fail("Unauthorized");
   }
@@ -194,7 +194,7 @@ export interface ProductPayload {
 
 export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_products");
   } catch {
     return fail("Unauthorized");
   }
@@ -311,7 +311,7 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
 
 export async function deleteProduct(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_products");
   } catch {
     return fail("Unauthorized");
   }
@@ -337,7 +337,7 @@ const ORDER_STATUSES = [
 
 export async function updateOrderStatus(formData: FormData): Promise<AdminResult> {
   try {
-    await requireStaff();
+    await requireCapability("manage_orders");
   } catch {
     return fail("Unauthorized");
   }
@@ -383,9 +383,9 @@ export async function updateOrderStatus(formData: FormData): Promise<AdminResult
 
 export async function refundOrder(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("issue_refunds");
   } catch {
-    return fail("Only admins can issue refunds.");
+    return fail("You don't have permission to issue refunds.");
   }
   if (!stripeConfigured()) return fail("Stripe is not configured.");
   const id = String(formData.get("id") ?? "");
@@ -458,7 +458,7 @@ export async function refundOrder(formData: FormData): Promise<AdminResult> {
 
 export async function deliverOrderItem(formData: FormData): Promise<AdminResult> {
   try {
-    await requireStaff();
+    await requireCapability("manage_orders");
   } catch {
     return fail("Unauthorized");
   }
@@ -516,7 +516,7 @@ export async function deliverOrderItem(formData: FormData): Promise<AdminResult>
 
 export async function moderateReview(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_reviews");
   } catch {
     return fail("Unauthorized");
   }
@@ -562,7 +562,7 @@ export async function moderateReview(formData: FormData): Promise<AdminResult> {
 export async function upsertPost(formData: FormData): Promise<AdminResult> {
   let profile;
   try {
-    profile = await requireAdmin();
+    profile = await requireCapability("manage_blog");
   } catch {
     return fail("Unauthorized");
   }
@@ -602,7 +602,7 @@ export async function upsertPost(formData: FormData): Promise<AdminResult> {
 
 export async function deletePost(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_blog");
   } catch {
     return fail("Unauthorized");
   }
@@ -620,7 +620,7 @@ export async function deletePost(formData: FormData): Promise<AdminResult> {
 
 export async function upsertFaq(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_faqs");
   } catch {
     return fail("Unauthorized");
   }
@@ -649,7 +649,7 @@ export async function upsertFaq(formData: FormData): Promise<AdminResult> {
 
 export async function deleteFaq(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_faqs");
   } catch {
     return fail("Unauthorized");
   }
@@ -666,7 +666,7 @@ export async function deleteFaq(formData: FormData): Promise<AdminResult> {
 
 export async function upsertGiveaway(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_giveaways");
   } catch {
     return fail("Unauthorized");
   }
@@ -704,7 +704,7 @@ export async function upsertGiveaway(formData: FormData): Promise<AdminResult> {
 
 export async function deleteGiveaway(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_giveaways");
   } catch {
     return fail("Unauthorized");
   }
@@ -719,7 +719,7 @@ export async function deleteGiveaway(formData: FormData): Promise<AdminResult> {
 
 export async function pickGiveawayWinner(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_giveaways");
   } catch {
     return fail("Unauthorized");
   }
@@ -753,7 +753,7 @@ export async function pickGiveawayWinner(formData: FormData): Promise<AdminResul
 
 export async function updateTicketMeta(formData: FormData): Promise<AdminResult> {
   try {
-    await requireStaff();
+    await requireCapability("manage_support");
   } catch {
     return fail("Unauthorized");
   }
@@ -789,7 +789,7 @@ const SECTION_KINDS = [
 
 export async function upsertSection(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_layout");
   } catch {
     return fail("Unauthorized");
   }
@@ -842,7 +842,7 @@ export async function upsertSection(formData: FormData): Promise<AdminResult> {
 
 export async function moveSection(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_layout");
   } catch {
     return fail("Unauthorized");
   }
@@ -869,7 +869,7 @@ export async function moveSection(formData: FormData): Promise<AdminResult> {
 
 export async function toggleSection(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_layout");
   } catch {
     return fail("Unauthorized");
   }
@@ -891,7 +891,7 @@ export async function toggleSection(formData: FormData): Promise<AdminResult> {
 
 export async function deleteSection(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_layout");
   } catch {
     return fail("Unauthorized");
   }
@@ -907,7 +907,7 @@ export async function deleteSection(formData: FormData): Promise<AdminResult> {
 
 export async function saveSettings(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_settings");
   } catch {
     return fail("Unauthorized");
   }
@@ -927,7 +927,7 @@ export async function saveSettings(formData: FormData): Promise<AdminResult> {
 
 export async function saveRates(formData: FormData): Promise<AdminResult> {
   try {
-    await requireAdmin();
+    await requireCapability("manage_settings");
   } catch {
     return fail("Unauthorized");
   }
@@ -955,7 +955,7 @@ const ASSIGNABLE_ROLES: Role[] = ["customer", "support", "admin", "super_admin"]
 export async function setUserRole(formData: FormData): Promise<AdminResult> {
   let actor;
   try {
-    actor = await requireSuperAdmin();
+    actor = await requireCapability("manage_team");
   } catch {
     return fail("Only super admins can manage roles.");
   }
@@ -975,7 +975,7 @@ export async function setUserRole(formData: FormData): Promise<AdminResult> {
 
 export async function inviteUser(formData: FormData): Promise<AdminResult> {
   try {
-    await requireSuperAdmin();
+    await requireCapability("manage_team");
   } catch {
     return fail("Only super admins can invite users.");
   }
@@ -1005,7 +1005,7 @@ export async function inviteUser(formData: FormData): Promise<AdminResult> {
 export async function toggleBan(formData: FormData): Promise<AdminResult> {
   let actor;
   try {
-    actor = await requireAdmin();
+    actor = await requireCapability("manage_customers");
   } catch {
     return fail("Unauthorized");
   }
@@ -1029,4 +1029,59 @@ export async function toggleBan(formData: FormData): Promise<AdminResult> {
   await audit(target.is_banned ? "user.unban" : "user.ban", "profile", userId);
   revalidatePath("/admin/customers");
   return ok(target.is_banned ? "User unbanned." : "User banned.");
+}
+
+export async function setUserCapabilities(
+  formData: FormData
+): Promise<AdminResult> {
+  let actor;
+  try {
+    actor = await requireCapability("manage_team");
+  } catch {
+    return fail("Only super admins can manage permissions.");
+  }
+  const userId = String(formData.get("user_id") ?? "");
+  if (userId === actor.id) {
+    return fail("You can't change your own permissions.");
+  }
+
+  const raw = String(formData.get("capabilities") ?? "");
+  // The sentinel resets to role defaults (null); otherwise an explicit set,
+  // sanitised against the known list. manage_team is never grantable here.
+  let capabilities: Capability[] | null;
+  if (raw === CAPABILITIES_DEFAULT) {
+    capabilities = null;
+  } else {
+    capabilities = raw
+      .split(",")
+      .map((c) => c.trim())
+      .filter(
+        (c): c is Capability =>
+          (ALL_CAPABILITIES as string[]).includes(c) && c !== "manage_team"
+      );
+  }
+
+  const supabase = await createClient();
+  const { data: target } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .maybeSingle();
+  if (!target) return fail("User not found.");
+  if (target.role === "super_admin") {
+    return fail("Super admins already have full access.");
+  }
+  if (!["support", "admin"].includes(target.role)) {
+    return fail("Promote the user to staff before setting permissions.");
+  }
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({ capabilities })
+    .eq("id", userId);
+  if (error) return fail(error.message);
+
+  await audit("user.capabilities", "profile", userId, { capabilities });
+  revalidatePath("/admin/team");
+  return ok(capabilities === null ? "Reset to role defaults." : "Permissions updated.");
 }

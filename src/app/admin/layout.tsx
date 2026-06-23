@@ -18,32 +18,32 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { getProfile, isStaff, roleAtLeast } from "@/lib/auth";
-import type { Role } from "@/lib/types";
+import { can, getProfile, isStaff } from "@/lib/auth";
+import type { Capability } from "@/lib/types";
 
-// minRole = lowest role allowed to see/use each section. Mirrors the server
-// action guards: support handles orders/customers/support; admins manage the
-// rest; super admins also get Team.
+// Each section is shown only to staff who hold its capability (from their role
+// default or a per-staff override). The dashboard needs none. Mirrors the
+// server-action and middleware capability guards.
 const nav: {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
-  minRole: Role;
+  capability: Capability | null;
 }[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, minRole: "support" },
-  { href: "/admin/orders", label: "Orders", icon: Package, minRole: "support" },
-  { href: "/admin/customers", label: "Customers", icon: Users, minRole: "support" },
-  { href: "/admin/support", label: "Support", icon: LifeBuoy, minRole: "support" },
-  { href: "/admin/products", label: "Products", icon: ShoppingBag, minRole: "admin" },
-  { href: "/admin/games", label: "Games", icon: Gamepad2, minRole: "admin" },
-  { href: "/admin/categories", label: "Categories", icon: FolderTree, minRole: "admin" },
-  { href: "/admin/reviews", label: "Reviews", icon: Star, minRole: "admin" },
-  { href: "/admin/blog", label: "Blog", icon: Newspaper, minRole: "admin" },
-  { href: "/admin/giveaways", label: "Giveaways", icon: Gift, minRole: "admin" },
-  { href: "/admin/faqs", label: "FAQs", icon: MessageSquareQuote, minRole: "admin" },
-  { href: "/admin/donations", label: "Donations", icon: Coffee, minRole: "admin" },
-  { href: "/admin/sections", label: "Layout", icon: LayoutPanelTop, minRole: "admin" },
-  { href: "/admin/settings", label: "Settings", icon: Settings, minRole: "admin" },
+  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, capability: null },
+  { href: "/admin/orders", label: "Orders", icon: Package, capability: "manage_orders" },
+  { href: "/admin/customers", label: "Customers", icon: Users, capability: "manage_customers" },
+  { href: "/admin/support", label: "Support", icon: LifeBuoy, capability: "manage_support" },
+  { href: "/admin/products", label: "Products", icon: ShoppingBag, capability: "manage_products" },
+  { href: "/admin/games", label: "Games", icon: Gamepad2, capability: "manage_games" },
+  { href: "/admin/categories", label: "Categories", icon: FolderTree, capability: "manage_categories" },
+  { href: "/admin/reviews", label: "Reviews", icon: Star, capability: "manage_reviews" },
+  { href: "/admin/blog", label: "Blog", icon: Newspaper, capability: "manage_blog" },
+  { href: "/admin/giveaways", label: "Giveaways", icon: Gift, capability: "manage_giveaways" },
+  { href: "/admin/faqs", label: "FAQs", icon: MessageSquareQuote, capability: "manage_faqs" },
+  { href: "/admin/donations", label: "Donations", icon: Coffee, capability: "manage_donations" },
+  { href: "/admin/sections", label: "Layout", icon: LayoutPanelTop, capability: "manage_layout" },
+  { href: "/admin/settings", label: "Settings", icon: Settings, capability: "manage_settings" },
 ];
 
 export default async function AdminLayout({
@@ -54,7 +54,9 @@ export default async function AdminLayout({
   const profile = await getProfile();
   if (!profile || !isStaff(profile)) redirect("/");
 
-  const visibleNav = nav.filter((item) => roleAtLeast(profile, item.minRole));
+  const visibleNav = nav.filter(
+    (item) => item.capability === null || can(profile, item.capability)
+  );
 
   return (
     <div className="mx-auto flex max-w-[1600px]">
@@ -79,7 +81,7 @@ export default async function AdminLayout({
               {item.label}
             </Link>
           ))}
-          {profile.role === "super_admin" && (
+          {can(profile, "manage_team") && (
             <Link
               href="/admin/team"
               className="mt-2 flex items-center gap-2.5 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-sm text-amber-300 transition hover:bg-amber-400/10"
@@ -109,7 +111,7 @@ export default async function AdminLayout({
               {item.label}
             </Link>
           ))}
-          {profile.role === "super_admin" && (
+          {can(profile, "manage_team") && (
             <Link
               href="/admin/team"
               className="shrink-0 rounded-lg px-3 py-1.5 text-xs font-medium text-amber-300"

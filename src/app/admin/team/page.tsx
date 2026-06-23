@@ -5,6 +5,7 @@ import { getProfile } from "@/lib/auth";
 import { Badge, Card } from "@/components/ui";
 import { ActionSelect } from "@/components/admin/ActionControls";
 import { InviteForm } from "@/components/admin/InviteForm";
+import { StaffPermissions } from "@/components/admin/StaffPermissions";
 import { setUserRole } from "@/app/admin/actions";
 import { formatDate } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
@@ -47,30 +48,41 @@ export default async function AdminTeamPage({
   ];
 
   function Row({ p }: { p: Profile }) {
+    const canEditPerms =
+      p.id !== me!.id && (p.role === "support" || p.role === "admin");
     return (
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-edge bg-raised/40 px-4 py-3">
-        <div className="min-w-0">
-          <p className="truncate font-medium text-white">{p.username ?? "—"}</p>
-          <p className="truncate text-xs text-zinc-500">
-            {p.email} · joined {formatDate(p.created_at)}
-          </p>
+      <div className="rounded-xl border border-edge bg-raised/40 px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="truncate font-medium text-white">{p.username ?? "—"}</p>
+            <p className="truncate text-xs text-zinc-500">
+              {p.email} · joined {formatDate(p.created_at)}
+            </p>
+          </div>
+          <div className="flex items-center gap-2">
+            <Badge variant={p.role === "customer" ? "default" : "gold"}>
+              {p.role.replace("_", " ")}
+            </Badge>
+            {p.id === me!.id ? (
+              <span className="text-xs text-zinc-600">(you)</span>
+            ) : (
+              <ActionSelect
+                action={setUserRole}
+                fields={{ user_id: p.id }}
+                name="role"
+                value={p.role}
+                options={roleOptions}
+              />
+            )}
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Badge variant={p.role === "customer" ? "default" : "gold"}>
-            {p.role.replace("_", " ")}
-          </Badge>
-          {p.id === me!.id ? (
-            <span className="text-xs text-zinc-600">(you)</span>
-          ) : (
-            <ActionSelect
-              action={setUserRole}
-              fields={{ user_id: p.id }}
-              name="role"
-              value={p.role}
-              options={roleOptions}
-            />
-          )}
-        </div>
+        {canEditPerms && (
+          <StaffPermissions
+            userId={p.id}
+            role={p.role}
+            capabilities={p.capabilities}
+          />
+        )}
       </div>
     );
   }
@@ -81,11 +93,12 @@ export default async function AdminTeamPage({
         <ShieldCheck className="h-6 w-6 text-gold" /> Team & roles
       </h1>
       <p className="mt-1 text-sm text-zinc-500">
-        Super-admin only. Roles: <strong className="text-zinc-300">support</strong>{" "}
-        (orders & tickets), <strong className="text-zinc-300">admin</strong> (full
-        store management), <strong className="text-zinc-300">super admin</strong>{" "}
-        (everything + this page). Role changes are protected at the database
-        level — only super admins can perform them.
+        Super-admin only. Roles set sensible <strong className="text-zinc-300">defaults</strong>{" "}
+        (support → orders/tickets/customers, admin → full store, super admin →
+        everything), and you can fine-tune each staff member&apos;s access with the{" "}
+        <strong className="text-zinc-300">Permissions</strong> toggles below. Role
+        and permission changes are protected at the database level — only super
+        admins can perform them.
       </p>
 
       <Card className="mt-6">

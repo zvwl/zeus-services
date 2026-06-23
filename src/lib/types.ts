@@ -6,6 +6,12 @@ export interface Profile {
   username: string | null;
   avatar_url: string | null;
   role: Role;
+  /**
+   * Per-staff capability override. `null` = use the role's default capabilities
+   * (see ROLE_DEFAULT_CAPABILITIES); a set array = exactly these capabilities.
+   * Only meaningful for support/admin — super_admin always has everything.
+   */
+  capabilities: Capability[] | null;
   preferred_currency: string;
   discord_id: string | null;
   discord_username: string | null;
@@ -281,3 +287,79 @@ export interface AuditLog {
 
 export const STAFF_ROLES: Role[] = ["support", "admin", "super_admin"];
 export const ADMIN_ROLES: Role[] = ["admin", "super_admin"];
+
+/* ─────────────────── Staff capabilities (granular permissions) ───────────────────
+ * Each capability maps to one admin section / set of actions. A super_admin can
+ * grant any subset to an individual staff member, overriding their role default.
+ * `manage_team` is special: it controls roles + permissions themselves, so it is
+ * always super-admin-only and can never be granted to a lower role. */
+export const CAPABILITIES = [
+  { key: "manage_orders", label: "Orders", group: "Operations" },
+  { key: "issue_refunds", label: "Issue refunds", group: "Operations" },
+  { key: "manage_support", label: "Support tickets", group: "Operations" },
+  { key: "manage_customers", label: "Customers & bans", group: "Operations" },
+  { key: "manage_products", label: "Products", group: "Catalog" },
+  { key: "manage_games", label: "Games", group: "Catalog" },
+  { key: "manage_categories", label: "Categories", group: "Catalog" },
+  { key: "manage_reviews", label: "Reviews", group: "Content" },
+  { key: "manage_blog", label: "Blog", group: "Content" },
+  { key: "manage_giveaways", label: "Giveaways", group: "Content" },
+  { key: "manage_faqs", label: "FAQs", group: "Content" },
+  { key: "manage_donations", label: "Donations", group: "Content" },
+  { key: "manage_layout", label: "Homepage layout", group: "Site" },
+  { key: "manage_settings", label: "Settings & rates", group: "Site" },
+  { key: "manage_team", label: "Team & permissions", group: "Site" },
+] as const;
+
+export type Capability = (typeof CAPABILITIES)[number]["key"];
+export const ALL_CAPABILITIES: Capability[] = CAPABILITIES.map((c) => c.key);
+
+/** Sentinel for setUserCapabilities: reset a staff member to role defaults (capabilities = null). */
+export const CAPABILITIES_DEFAULT = "__default__";
+
+export const ROLE_DEFAULT_CAPABILITIES: Record<Role, Capability[]> = {
+  customer: [],
+  support: ["manage_orders", "manage_support", "manage_customers"],
+  admin: ALL_CAPABILITIES.filter((c) => c !== "manage_team"),
+  super_admin: [...ALL_CAPABILITIES],
+};
+
+/** Effective capabilities for a (role, capabilities-override) pair. Pure — safe
+ *  to use in middleware and on the client. */
+export function resolveCapabilities(
+  role: Role | null | undefined,
+  capabilities: Capability[] | string[] | null | undefined
+): Capability[] {
+  if (!role || !STAFF_ROLES.includes(role)) return [];
+  if (role === "super_admin") return [...ALL_CAPABILITIES];
+  const base = (capabilities ?? ROLE_DEFAULT_CAPABILITIES[role]) as string[];
+  return ALL_CAPABILITIES.filter(
+    (c) => c !== "manage_team" && base.includes(c)
+  );
+}
+
+const PATH_CAPABILITY: [string, Capability][] = [
+  ["/admin/orders", "manage_orders"],
+  ["/admin/customers", "manage_customers"],
+  ["/admin/support", "manage_support"],
+  ["/admin/products", "manage_products"],
+  ["/admin/games", "manage_games"],
+  ["/admin/categories", "manage_categories"],
+  ["/admin/reviews", "manage_reviews"],
+  ["/admin/blog", "manage_blog"],
+  ["/admin/giveaways", "manage_giveaways"],
+  ["/admin/faqs", "manage_faqs"],
+  ["/admin/donations", "manage_donations"],
+  ["/admin/sections", "manage_layout"],
+  ["/admin/settings", "manage_settings"],
+  ["/admin/team", "manage_team"],
+];
+
+/** The capability required to open an /admin path, or null for the dashboard
+ *  (any staff member may see it). */
+export function pathCapability(path: string): Capability | null {
+  for (const [prefix, cap] of PATH_CAPABILITY) {
+    if (path === prefix || path.startsWith(prefix + "/")) return cap;
+  }
+  return null;
+}

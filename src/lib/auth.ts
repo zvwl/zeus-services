@@ -1,7 +1,14 @@
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { ADMIN_ROLES, STAFF_ROLES, type Profile, type Role } from "@/lib/types";
+import {
+  ADMIN_ROLES,
+  STAFF_ROLES,
+  resolveCapabilities,
+  type Capability,
+  type Profile,
+  type Role,
+} from "@/lib/types";
 
 // Ordered privilege tiers. Higher number = more access. Add new roles here
 // (and to the DB check constraint) to slot them into the hierarchy.
@@ -91,4 +98,30 @@ export async function requireSuperAdminPage() {
   const profile = await getProfile();
   if (!profile || profile.role !== "super_admin") redirect("/admin");
   return profile;
+}
+
+// ── Capabilities (granular per-staff permissions) ──────────────────────────
+// A capability is the unit of access for a single admin section/action. The
+// effective set comes from the staff member's `capabilities` override, or their
+// role's defaults — see resolveCapabilities in lib/types.
+
+/** True if the profile is allowed the given capability. */
+export function can(profile: Profile | null, capability: Capability) {
+  return resolveCapabilities(profile?.role, profile?.capabilities).includes(
+    capability
+  );
+}
+
+/** Server-action guard: throws (→ "Unauthorized") if the actor lacks `capability`. */
+export async function requireCapability(capability: Capability) {
+  const profile = await getProfile();
+  if (!can(profile, capability)) throw new Error("Unauthorized");
+  return profile as Profile;
+}
+
+/** Page guard: redirects to /admin if the staff member lacks `capability`. */
+export async function requireCapabilityPage(capability: Capability) {
+  const profile = await getProfile();
+  if (!can(profile, capability)) redirect("/admin");
+  return profile as Profile;
 }
