@@ -43,7 +43,7 @@ export async function generateMetadata({
   const gameName = Array.isArray(p.game) ? p.game[0]?.name : p.game?.name;
   const title = `${gameName ? `${gameName} ` : ""}${p.name}`;
   const description = stripMd(
-    p.description || `Buy ${p.name} fast and securely at Zeus Services.`
+    p.description || `Buy ${p.name} fast and securely at Zeuservices.`
   ).slice(0, 160);
   return {
     title,
@@ -278,6 +278,9 @@ export default async function ProductPage({
               product={{
                 id: product.id,
                 name: product.name,
+                slug: product.slug,
+                imageUrl: product.image_url,
+                gameName: product.game?.name ?? null,
                 basePrice: Number(product.base_price),
                 compareAtPrice: product.compare_at_price
                   ? Number(product.compare_at_price)

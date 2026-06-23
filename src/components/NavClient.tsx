@@ -25,6 +25,7 @@ import {
   Zap,
 } from "lucide-react";
 import { useCurrency } from "@/components/CurrencyProvider";
+import { CartButton } from "@/components/CartButton";
 import { cn } from "@/lib/utils";
 
 interface NavUser {
@@ -157,8 +158,10 @@ export function NavClient({
             aria-label="Search"
             className="rounded-lg p-2 text-zinc-400 transition hover:bg-raised hover:text-white"
           >
-            <Search className="h-4.5 w-4.5 h-5 w-5" />
+            <Search className="h-5 w-5" />
           </Link>
+
+          <CartButton />
 
           <CurrencySwitcher />
 

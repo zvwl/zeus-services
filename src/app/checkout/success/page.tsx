@@ -6,6 +6,7 @@ import { fulfillCheckoutSession } from "@/lib/fulfill";
 import { formatMoney } from "@/lib/currency";
 import { Badge, ButtonLink, Card, statusBadgeVariant } from "@/components/ui";
 import { AnalyticsEvent } from "@/components/AnalyticsEvent";
+import { ClearCart } from "@/components/ClearCart";
 import type { Order, OrderItem } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -13,9 +14,9 @@ export const dynamic = "force-dynamic";
 export default async function CheckoutSuccessPage({
   searchParams,
 }: {
-  searchParams: Promise<{ session_id?: string }>;
+  searchParams: Promise<{ session_id?: string; cart?: string }>;
 }) {
-  const { session_id: sessionId } = await searchParams;
+  const { session_id: sessionId, cart } = await searchParams;
 
   let order: (Order & { items: OrderItem[] }) | null = null;
 
@@ -45,6 +46,7 @@ export default async function CheckoutSuccessPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-20 sm:px-6">
+      {cart === "1" && <ClearCart />}
       <div className="text-center">
         <span className="mx-auto inline-flex h-16 w-16 items-center justify-center rounded-full bg-emerald-500/15">
           <CheckCircle2 className="h-9 w-9 text-emerald-400" />

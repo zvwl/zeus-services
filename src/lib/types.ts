@@ -91,6 +91,27 @@ export interface ExchangeRate {
   label: string;
 }
 
+/**
+ * A single line in the shopping cart. Carries a display snapshot (name, image,
+ * USD unit price) so the cart renders instantly without re-fetching — the
+ * checkout API always re-validates price/stock server-side, so the snapshot is
+ * never trusted for charging. `key` is a stable id derived from
+ * product+variant+customFields (see lib/cart `cartLineKey`).
+ */
+export interface CartLine {
+  key: string;
+  productId: string;
+  slug: string;
+  name: string;
+  imageUrl: string | null;
+  variantId: string | null;
+  variantName: string | null;
+  unitPriceUsd: number;
+  quantity: number;
+  deliveryType: DeliveryType;
+  customFields: Record<string, string>;
+}
+
 export type OrderStatus =
   | "pending"
   | "paid"

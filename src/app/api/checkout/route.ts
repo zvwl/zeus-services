@@ -5,8 +5,11 @@ import { createClient } from "@/lib/supabase/server";
 import { convertFromUSD } from "@/lib/currency";
 import { originFromRequest } from "@/lib/utils";
 import type { Product, ProductField, ProductVariant } from "@/lib/types";
+import type Stripe from "stripe";
 
 export const runtime = "nodejs";
+
+const MAX_LINES = 50;
 
 // Random, non-sequential public order code (unambiguous alphabet — no 0/O/1/I/L).
 function generateReference() {
@@ -16,6 +19,33 @@ function generateReference() {
     code += alphabet[Math.floor(Math.random() * alphabet.length)];
   }
   return `ZS-${code}`;
+}
+
+function sanitizeFields(raw: unknown): Record<string, string> {
+  if (!raw || typeof raw !== "object") return {};
+  return Object.fromEntries(
+    Object.entries(raw as Record<string, unknown>).map(([k, v]) => [
+      String(k).slice(0, 100),
+      String(v).slice(0, 500),
+    ])
+  );
+}
+
+interface RawItem {
+  productId: string;
+  variantId: string | null;
+  quantity: number;
+  customFields: Record<string, string>;
+}
+
+// A line that has passed validation and pricing.
+interface PricedLine {
+  product: Product & { game: { name: string } | null };
+  variant: ProductVariant | null;
+  quantity: number;
+  customFields: Record<string, string>;
+  unitUsd: number;
+  unitConverted: number;
 }
 
 export async function POST(req: Request) {
@@ -34,22 +64,40 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const productId = String(body.productId ?? "");
-    const variantId = body.variantId ? String(body.variantId) : null;
-    const quantity = Math.floor(Number(body.quantity ?? 1));
     const currency = String(body.currency ?? "USD").toUpperCase();
-    const customFields: Record<string, string> =
-      body.customFields && typeof body.customFields === "object"
-        ? Object.fromEntries(
-            Object.entries(body.customFields).map(([k, v]) => [
-              String(k).slice(0, 100),
-              String(v).slice(0, 500),
-            ])
-          )
-        : {};
+    const fromCart = Boolean(body.fromCart);
 
-    if (!productId || !Number.isFinite(quantity) || quantity < 1 || quantity > 99) {
+    // Accept either a multi-item cart (`items: [...]`) or a single product
+    // (legacy "Buy now" shape). Normalise to one array.
+    const rawList: unknown[] = Array.isArray(body.items)
+      ? body.items
+      : [
+          {
+            productId: body.productId,
+            variantId: body.variantId,
+            quantity: body.quantity,
+            customFields: body.customFields,
+          },
+        ];
+
+    if (rawList.length === 0 || rawList.length > MAX_LINES) {
       return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+    }
+
+    const items: RawItem[] = [];
+    for (const r of rawList) {
+      const o = (r ?? {}) as Record<string, unknown>;
+      const productId = String(o.productId ?? "");
+      const quantity = Math.floor(Number(o.quantity ?? 1));
+      if (!productId || !Number.isFinite(quantity) || quantity < 1 || quantity > 99) {
+        return NextResponse.json({ error: "Invalid request." }, { status: 400 });
+      }
+      items.push({
+        productId,
+        variantId: o.variantId ? String(o.variantId) : null,
+        quantity,
+        customFields: sanitizeFields(o.customFields),
+      });
     }
 
     // Signed-in user (optional — guest checkout is allowed).
@@ -74,52 +122,7 @@ export async function POST(req: Request) {
       }
     }
 
-    const { data: productData } = await db
-      .from("products")
-      .select("*, fields:product_fields(*), game:games(name)")
-      .eq("id", productId)
-      .eq("is_active", true)
-      .maybeSingle();
-    if (!productData) {
-      return NextResponse.json({ error: "Product not found." }, { status: 404 });
-    }
-    const product = productData as Product & { game: { name: string } | null };
-
-    let variant: ProductVariant | null = null;
-    if (variantId) {
-      const { data: v } = await db
-        .from("product_variants")
-        .select("*")
-        .eq("id", variantId)
-        .eq("product_id", productId)
-        .eq("is_active", true)
-        .maybeSingle();
-      if (!v) {
-        return NextResponse.json({ error: "Option not found." }, { status: 404 });
-      }
-      variant = v as ProductVariant;
-    }
-
-    // Stock validation
-    const stock = variant ? variant.stock : product.stock;
-    if (stock !== null && stock < quantity) {
-      return NextResponse.json(
-        { error: stock <= 0 ? "Sold out." : `Only ${stock} left in stock.` },
-        { status: 400 }
-      );
-    }
-
-    // Required custom fields
-    for (const field of (product.fields ?? []) as ProductField[]) {
-      if (field.required && !(customFields[field.label] ?? "").trim()) {
-        return NextResponse.json(
-          { error: `"${field.label}" is required.` },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Server-side pricing — never trust the client.
+    // Server-side pricing — never trust the client. One rate lookup for all lines.
     const { data: rateRow } = await db
       .from("exchange_rates")
       .select("rate")
@@ -129,9 +132,86 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unsupported currency." }, { status: 400 });
     }
     const rate = Number(rateRow.rate);
-    const unitUsd = Number(variant ? variant.price : product.base_price);
-    const unitConverted = convertFromUSD(unitUsd, rate);
-    const total = Math.round(unitConverted * quantity * 100) / 100;
+
+    // Validate + price every line.
+    const priced: PricedLine[] = [];
+    for (const item of items) {
+      const { data: productData } = await db
+        .from("products")
+        .select("*, fields:product_fields(*), game:games(name)")
+        .eq("id", item.productId)
+        .eq("is_active", true)
+        .maybeSingle();
+      if (!productData) {
+        return NextResponse.json(
+          { error: "A product in your cart is no longer available." },
+          { status: 404 }
+        );
+      }
+      const product = productData as Product & { game: { name: string } | null };
+
+      let variant: ProductVariant | null = null;
+      if (item.variantId) {
+        const { data: v } = await db
+          .from("product_variants")
+          .select("*")
+          .eq("id", item.variantId)
+          .eq("product_id", item.productId)
+          .eq("is_active", true)
+          .maybeSingle();
+        if (!v) {
+          return NextResponse.json(
+            { error: `An option for "${product.name}" is no longer available.` },
+            { status: 404 }
+          );
+        }
+        variant = v as ProductVariant;
+      }
+
+      // Stock
+      const stock = variant ? variant.stock : product.stock;
+      if (stock !== null && stock < item.quantity) {
+        return NextResponse.json(
+          {
+            error:
+              stock <= 0
+                ? `"${product.name}" is sold out.`
+                : `Only ${stock} of "${product.name}" left in stock.`,
+          },
+          { status: 400 }
+        );
+      }
+
+      // Required custom fields
+      for (const field of (product.fields ?? []) as ProductField[]) {
+        if (field.required && !(item.customFields[field.label] ?? "").trim()) {
+          return NextResponse.json(
+            { error: `"${field.label}" is required for "${product.name}".` },
+            { status: 400 }
+          );
+        }
+      }
+
+      const unitUsd = Number(variant ? variant.price : product.base_price);
+      const unitConverted = convertFromUSD(unitUsd, rate);
+      priced.push({
+        product,
+        variant,
+        quantity: item.quantity,
+        customFields: item.customFields,
+        unitUsd,
+        unitConverted,
+      });
+    }
+
+    const subtotalUsd =
+      Math.round(
+        priced.reduce((s, l) => s + l.unitUsd * l.quantity, 0) * 100
+      ) / 100;
+    const total =
+      Math.round(
+        priced.reduce((s, l) => s + l.unitConverted * l.quantity, 0) * 100
+      ) / 100;
 
     const orderRow = {
       user_id: user?.id ?? null,
@@ -139,7 +219,7 @@ export async function POST(req: Request) {
       status: "pending",
       currency,
       exchange_rate: rate,
-      subtotal_usd: Math.round(unitUsd * quantity * 100) / 100,
+      subtotal_usd: subtotalUsd,
       total,
     };
     // Insert with a unique reference, retrying on the rare code collision.
@@ -166,43 +246,60 @@ export async function POST(req: Request) {
       );
     }
 
-    await db.from("order_items").insert({
-      order_id: order.id,
-      product_id: product.id,
-      variant_id: variant?.id ?? null,
-      product_name: `${product.game?.name ? `${product.game.name} — ` : ""}${product.name}`,
-      variant_name: variant?.name ?? null,
-      quantity,
-      unit_price: unitConverted,
-      unit_price_usd: unitUsd,
-      custom_fields: customFields,
-    });
+    const orderItemRows = priced.map((l) => ({
+      order_id: order!.id,
+      product_id: l.product.id,
+      variant_id: l.variant?.id ?? null,
+      product_name: `${l.product.game?.name ? `${l.product.game.name} — ` : ""}${l.product.name}`,
+      variant_name: l.variant?.name ?? null,
+      quantity: l.quantity,
+      unit_price: l.unitConverted,
+      unit_price_usd: l.unitUsd,
+      custom_fields: l.customFields,
+    }));
+    const { error: itemsError } = await db
+      .from("order_items")
+      .insert(orderItemRows);
+    if (itemsError) {
+      console.error("Order items insert failed:", itemsError);
+      // Roll back the now-orphaned pending order so it doesn't linger.
+      await db.from("orders").delete().eq("id", order.id);
+      return NextResponse.json(
+        { error: "Could not create order." },
+        { status: 500 }
+      );
+    }
+
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priced.map(
+      (l) => ({
+        quantity: l.quantity,
+        price_data: {
+          currency: currency.toLowerCase(),
+          unit_amount: Math.round(l.unitConverted * 100),
+          product_data: {
+            name: `${l.product.name}${l.variant ? ` — ${l.variant.name}` : ""}`,
+            ...(l.product.image_url ? { images: [l.product.image_url] } : {}),
+            metadata: { product_id: l.product.id },
+          },
+        },
+      })
+    );
 
     const origin = originFromRequest(req);
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
-      line_items: [
-        {
-          quantity,
-          price_data: {
-            currency: currency.toLowerCase(),
-            unit_amount: Math.round(unitConverted * 100),
-            product_data: {
-              name: `${product.name}${variant ? ` — ${variant.name}` : ""}`,
-              ...(product.image_url ? { images: [product.image_url] } : {}),
-              metadata: { product_id: product.id },
-            },
-          },
-        },
-      ],
+      line_items: lineItems,
       metadata: { type: "order", order_id: order.id },
       customer_email: user?.email ?? undefined,
       // Abandoned sessions expire in 30 min (Stripe minimum); the
       // checkout.session.expired webhook then cancels the pending order.
       expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
       // Return the buyer to the exact domain they're on so their session sticks.
-      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
+      // `cart=1` tells the success page to clear the cart after a cart checkout.
+      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}${
+        fromCart ? "&cart=1" : ""
+      }`,
       cancel_url: `${origin}/checkout/cancelled?order=${order.order_number}`,
     });
 

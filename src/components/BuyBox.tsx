@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { Lock, Minus, Plus, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useCurrency } from "@/components/CurrencyProvider";
+import { useCart } from "@/components/CartProvider";
 import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 
@@ -32,6 +33,9 @@ export function BuyBox({
   product: {
     id: string;
     name: string;
+    slug: string;
+    imageUrl: string | null;
+    gameName: string | null;
     basePrice: number;
     compareAtPrice: number | null;
     stock: number | null;
@@ -41,6 +45,7 @@ export function BuyBox({
   fields: BuyField[];
 }) {
   const { currency, format } = useCurrency();
+  const { addLine, open } = useCart();
   const [variantId, setVariantId] = useState<string | null>(
     variants.find((v) => v.stock === null || v.stock > 0)?.id ??
       variants[0]?.id ??
@@ -66,12 +71,48 @@ export function BuyBox({
     [fields, values]
   );
 
-  async function buy() {
-    setError(null);
+  function validate() {
     if (missingRequired.length > 0) {
       setError(`Please fill in: ${missingRequired.map((f) => f.label).join(", ")}`);
-      return;
+      return false;
     }
+    return true;
+  }
+
+  function addToCart() {
+    setError(null);
+    if (!validate()) return;
+    addLine({
+      productId: product.id,
+      slug: product.slug,
+      name: product.gameName
+        ? `${product.gameName} — ${product.name}`
+        : product.name,
+      imageUrl: product.imageUrl,
+      variantId,
+      variantName: selected?.name ?? null,
+      unitPriceUsd: unitUsd,
+      quantity: qty,
+      deliveryType: product.deliveryType,
+      customFields: values,
+    });
+    trackEvent("add_to_cart", {
+      currency: "USD",
+      value: Math.round(unitUsd * qty * 100) / 100,
+      items: [
+        {
+          item_id: product.id,
+          item_name: `${product.name}${selected ? ` — ${selected.name}` : ""}`,
+          quantity: qty,
+        },
+      ],
+    });
+    open();
+  }
+
+  async function buy() {
+    setError(null);
+    if (!validate()) return;
     setLoading(true);
     try {
       const res = await fetch("/api/checkout", {
@@ -244,15 +285,26 @@ export function BuyBox({
         </p>
       )}
 
-      <Button
-        size="lg"
-        className="w-full"
-        disabled={loading || soldOut}
-        onClick={buy}
-      >
-        <ShoppingCart className="h-5 w-5" />
-        {soldOut ? "Sold out" : loading ? "Redirecting to checkout…" : "Buy now"}
-      </Button>
+      <div className="space-y-2">
+        <Button
+          size="lg"
+          className="w-full"
+          disabled={loading || soldOut}
+          onClick={addToCart}
+        >
+          <ShoppingCart className="h-5 w-5" />
+          {soldOut ? "Sold out" : "Add to cart"}
+        </Button>
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full"
+          disabled={loading || soldOut}
+          onClick={buy}
+        >
+          {loading ? "Redirecting to checkout…" : "Buy now"}
+        </Button>
+      </div>
       <p className="mt-3 text-center text-xs text-zinc-500">
         Secure payment via Stripe · Apple Pay & Google Pay supported
       </p>

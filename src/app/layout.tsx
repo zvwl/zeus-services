@@ -2,48 +2,72 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
+import { CartProvider } from "@/components/CartProvider";
+import { CartDrawer } from "@/components/CartDrawer";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CookieConsent } from "@/components/CookieConsent";
 import { JsonLd } from "@/components/JsonLd";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getRates, getSettings, setting } from "@/lib/data";
+import { getUser } from "@/lib/auth";
 import { siteUrl } from "@/lib/utils";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
-  const siteName = setting(settings, "site_name", "Zeus Services");
+  const siteName = setting(settings, "site_name", "Zeuservices");
   const tagline = setting(
     settings,
     "tagline",
-    "Premium game top-ups, boosting and accounts."
+    "Buy cheap game top-ups, boosting and accounts with instant delivery."
   );
   const logoUrl = setting(settings, "logo_url");
   const title = `${siteName} — Game Top-Ups, Boosting & Accounts`;
-  const ogImage = logoUrl || "/favicon.svg";
+  // Google Search Console verification token (Settings → URL prefix → HTML tag).
+  const googleVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION;
   return {
     metadataBase: new URL(siteUrl()),
     title: { default: title, template: `%s — ${siteName}` },
     description: tagline,
     applicationName: siteName,
+    keywords: [
+      "game top-ups",
+      "cheap game top-ups",
+      "buy V-Bucks",
+      "cheap V-Bucks",
+      "buy Robux",
+      "Riot Points",
+      "game boosting",
+      "rank boosting service",
+      "buy game accounts",
+      "in-game currency",
+      "instant delivery",
+      "gaming marketplace",
+      siteName,
+    ],
     // Tab favicon: the admin logo when set, otherwise the default mark. Always
     // providing one stops the browser from requesting (and 404-ing) /favicon.ico.
     icons: { icon: logoUrl || "/favicon.svg" },
     alternates: { canonical: "/" },
     robots: { index: true, follow: true },
+    // OpenGraph/Twitter images come from the dynamic opengraph-image.tsx route
+    // (a real 1200×630 branded card) — far better than the old 32px favicon.
     openGraph: {
       type: "website",
       siteName,
       title,
       description: tagline,
       url: "/",
-      images: [{ url: ogImage }],
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: tagline,
-      images: [ogImage],
     },
+    ...(googleVerification
+      ? { verification: { google: googleVerification } }
+      : {}),
   };
 }
 
@@ -52,17 +76,18 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [rates, settings, cookieStore] = await Promise.all([
+  const [rates, settings, cookieStore, user] = await Promise.all([
     getRates(),
     getSettings(),
     cookies(),
+    getUser(),
   ]);
   const initialCurrency = cookieStore.get("currency")?.value ?? "USD";
   // Show a warning bar on any non-production (preview/dev) deployment.
   const isPreview =
     Boolean(process.env.VERCEL_ENV) && process.env.VERCEL_ENV !== "production";
 
-  const siteName = setting(settings, "site_name", "Zeus Services");
+  const siteName = setting(settings, "site_name", "Zeuservices");
   const logoUrl = setting(settings, "logo_url");
   const organizationJsonLd = {
     "@context": "https://schema.org",
@@ -110,17 +135,22 @@ export default async function RootLayout({
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />
         <CurrencyProvider initial={initialCurrency} rates={rates}>
-          {isPreview && (
-            <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-black">
-              ⚠️ STAGING / DEV PREVIEW — not the live site. Changes here are for
-              testing only.
-            </div>
-          )}
-          <Navbar />
-          <main className="flex-1">{children}</main>
-          <Footer />
-          <CookieConsent />
+          <CartProvider authed={Boolean(user)}>
+            {isPreview && (
+              <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-black">
+                ⚠️ STAGING / DEV PREVIEW — not the live site. Changes here are for
+                testing only.
+              </div>
+            )}
+            <Navbar />
+            <main className="flex-1">{children}</main>
+            <Footer />
+            <CookieConsent />
+            <CartDrawer />
+          </CartProvider>
         </CurrencyProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
