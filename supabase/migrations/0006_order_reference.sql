@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- Zeus Services — public order reference
+-- Zeuservices — public order reference
 -- A random, non-sequential code (e.g. ZS-7K3F9A) shown to customers instead
 -- of the internal sequential order_number, so it can't be guessed or used to
 -- estimate sales volume. order_number is kept for sorting/internal use.

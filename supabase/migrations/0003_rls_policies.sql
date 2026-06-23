@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- Zeus Services — Row Level Security
+-- Zeuservices — Row Level Security
 -- Everything is locked down by default; service_role bypasses RLS.
 -- ─────────────────────────────────────────────────────────────────────────
 

@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- Zeus Services — snapshot the reviewer's avatar onto the review
+-- Zeuservices — snapshot the reviewer's avatar onto the review
 -- profiles RLS only lets a user read their OWN profile, so the avatar can't be
 -- joined in on public pages. Snapshot it on the review (like author_name) so it
 -- renders for everyone.

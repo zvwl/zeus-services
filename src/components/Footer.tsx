@@ -7,7 +7,7 @@ export async function Footer() {
     getCategories(),
     getSettings(),
   ]);
-  const siteName = setting(settings, "site_name", "Zeus Services");
+  const siteName = setting(settings, "site_name", "Zeuservices");
   const discord = setting(settings, "discord_invite");
   const logoUrl = setting(settings, "logo_url");
 

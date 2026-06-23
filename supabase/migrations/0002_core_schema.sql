@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- Zeus Services — core tables, helper functions and triggers
+-- Zeuservices — core tables, helper functions and triggers
 -- ─────────────────────────────────────────────────────────────────────────
 
 create extension if not exists pgcrypto with schema extensions;

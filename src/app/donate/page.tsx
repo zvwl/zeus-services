@@ -60,7 +60,7 @@ export default async function DonatePage({
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <SectionHeading
         eyebrow="Buy us a coffee"
-        title="Support Zeus Services"
+        title="Support Zeuservices"
         subtitle="Love what we do? Tips keep the giveaways flowing and the support team caffeinated. ☕"
         center
       />

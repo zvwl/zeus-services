@@ -77,7 +77,7 @@ async function HeroSection({ section }: { section: SiteSection }) {
         <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl">
           {section.title ?? "Level up for less with"}{" "}
           <span className="text-gradient">
-            {str(c, "highlight", "Zeus Services")}
+            {str(c, "highlight", "Zeuservices")}
           </span>
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">

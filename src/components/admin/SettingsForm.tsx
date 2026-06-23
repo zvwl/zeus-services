@@ -8,7 +8,7 @@ import { ImageUpload } from "@/components/ImageUpload";
 import type { ExchangeRate } from "@/lib/types";
 
 const GENERAL_FIELDS: { key: string; label: string; placeholder: string; textarea?: boolean }[] = [
-  { key: "site_name", label: "Site name", placeholder: "Zeus Services" },
+  { key: "site_name", label: "Site name", placeholder: "Zeuservices" },
   {
     key: "tagline",
     label: "Tagline (footer + SEO description)",

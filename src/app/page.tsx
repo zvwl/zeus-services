@@ -11,7 +11,7 @@ export default async function HomePage() {
     return (
       <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-32 text-center">
         <h1 className="text-4xl font-extrabold text-white">
-          Welcome to <span className="text-gradient">Zeus Services</span>
+          Welcome to <span className="text-gradient">Zeuservices</span>
         </h1>
         <p className="mt-4 text-zinc-400">
           The homepage has no sections yet. Sign in as an admin and add some

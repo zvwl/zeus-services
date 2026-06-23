@@ -10,7 +10,7 @@ import type { BlogPost } from "@/lib/types";
 export const metadata: Metadata = {
   title: "Blog",
   description:
-    "Guides, tips and news on game top-ups, boosting and accounts from the Zeus Services team.",
+    "Guides, tips and news on game top-ups, boosting and accounts from the Zeuservices team.",
   alternates: { canonical: "/blog" },
 };
 export const revalidate = 0;

@@ -39,7 +39,7 @@ export async function notifyDiscord(opts: {
             description: opts.description ?? "",
             color: opts.color ?? 0x8b5cf6,
             fields: opts.fields ?? [],
-            footer: { text: "Zeus Services" },
+            footer: { text: "Zeuservices" },
             timestamp: new Date().toISOString(),
           },
         ],
@@ -86,7 +86,7 @@ export async function assignDiscordRole(
         method: "PUT",
         headers: {
           Authorization: `Bot ${token}`,
-          "X-Audit-Log-Reason": "Verified customer - paid order on Zeus Services",
+          "X-Audit-Log-Reason": "Verified customer - paid order on Zeuservices",
         },
       }
     );

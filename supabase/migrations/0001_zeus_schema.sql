@@ -1,4 +1,4 @@
--- Zeus Services lives in its own `zeus` schema, isolated from any other
+-- Zeuservices lives in its own `zeus` schema, isolated from any other
 -- tables in the project. Applied to the linked Supabase project via MCP;
 -- kept here for version control.
 

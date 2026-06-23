@@ -189,7 +189,7 @@ export function ReviewCard({ review }: { review: Review }) {
       </div>
       {review.admin_reply && (
         <div className="mt-3 rounded-xl bg-primary/10 p-3 text-xs text-zinc-400">
-          <span className="font-semibold text-primary-light">Zeus Services replied: </span>
+          <span className="font-semibold text-primary-light">Zeuservices replied: </span>
           {review.admin_reply}
         </div>
       )}

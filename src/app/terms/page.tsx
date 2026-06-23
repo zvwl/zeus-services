@@ -8,7 +8,7 @@ Last updated: June 2026
 
 ## 1. Introduction
 
-Welcome to Zeus Services ("we", "us", "our"). By accessing our website and purchasing our services — including game currency top-ups, account boosting and game accounts (the "Services") — you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the site.
+Welcome to Zeuservices ("we", "us", "our"). By accessing our website and purchasing our services — including game currency top-ups, account boosting and game accounts (the "Services") — you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the site.
 
 ## 2. Eligibility
 
@@ -24,7 +24,7 @@ Delivery times shown on product pages are estimates. "Instant" products are typi
 
 ## 4. Game publisher disclaimer
 
-Zeus Services is **not affiliated with, endorsed by, or sponsored by** any game publisher (including Epic Games, Riot Games, Roblox Corporation, Supercell, Rockstar Games or any other rights holder). All trademarks belong to their respective owners. You acknowledge that the use of third-party services may be against certain games' Terms of Service and carries inherent risk; you accept that risk when ordering.
+Zeuservices is **not affiliated with, endorsed by, or sponsored by** any game publisher (including Epic Games, Riot Games, Roblox Corporation, Supercell, Rockstar Games or any other rights holder). All trademarks belong to their respective owners. You acknowledge that the use of third-party services may be against certain games' Terms of Service and carries inherent risk; you accept that risk when ordering.
 
 ## 5. Payments
 
@@ -36,7 +36,7 @@ See our [Refund Policy](/refunds). In short: refunds are available before delive
 
 ## 7. Account & conduct
 
-You are responsible for keeping your Zeus Services account secure (we recommend enabling 2FA). We may suspend accounts involved in fraud, chargebacks, harassment of staff, or abuse of promotions/giveaways.
+You are responsible for keeping your Zeuservices account secure (we recommend enabling 2FA). We may suspend accounts involved in fraud, chargebacks, harassment of staff, or abuse of promotions/giveaways.
 
 ## 8. Giveaways
 

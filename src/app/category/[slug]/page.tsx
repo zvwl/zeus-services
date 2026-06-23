@@ -24,7 +24,7 @@ export async function generateMetadata({
     .maybeSingle();
   if (!data) return { title: "Category not found" };
   const description = (
-    data.description || `Browse ${data.name} at Zeus Services.`
+    data.description || `Browse ${data.name} at Zeuservices.`
   )
     .replace(/\s+/g, " ")
     .trim()

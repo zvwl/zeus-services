@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- Zeus Services — storage buckets
+-- Zeuservices — storage buckets
 --   zeus-assets  : product/game/blog/giveaway images (admin write)
 --   zeus-avatars : user avatars (each user writes to their own folder)
 -- ─────────────────────────────────────────────────────────────────────────

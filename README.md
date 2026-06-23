@@ -1,4 +1,4 @@
-# ⚡ Zeus Services — Gaming Marketplace
+# ⚡ Zeuservices — Gaming Marketplace
 
 A full-stack gaming storefront: **game top-ups, boosting services and accounts**, with Stripe payments, Supabase auth/database, Discord & Google login, multi-currency pricing, giveaways, donations, a support center and a complete admin CMS.
 

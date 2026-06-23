@@ -1,5 +1,5 @@
 -- ─────────────────────────────────────────────────────────────────────────
--- Zeus Services — essential seed (config only, no demo catalog)
+-- Zeuservices — essential seed (config only, no demo catalog)
 -- Seeds currencies, site settings, the three core categories, the homepage
 -- layout and a starter FAQ. Real games/products/reviews are added by admins
 -- through the dashboard. Idempotent: guarded by unique keys / "not exists".
@@ -17,7 +17,7 @@ on conflict (code) do nothing;
 -- Site settings. First signup whose email is in bootstrap_admin_emails
 -- automatically becomes super_admin.
 insert into zeus.site_settings (key, value) values
-  ('site_name',              '"Zeus Services"'),
+  ('site_name',              '"Zeuservices"'),
   ('tagline',                '"Premium game top-ups, boosting and accounts — fast, safe and trusted by thousands of gamers."'),
   ('announcement',           '""'),
   ('support_email',          '"support@zeus-services.gg"'),
@@ -40,7 +40,7 @@ on conflict (slug) do nothing;
 insert into zeus.site_sections (kind, title, subtitle, content, sort_order)
 select * from (values
   ('hero', 'Level up for less with', null,
-    '{"highlight":"Zeus Services","badge":"Trusted by thousands of gamers worldwide","cta_text":"Browse games","cta_href":"/games","cta2_text":"Cheap top-ups","cta2_href":"/category/topups"}'::jsonb, 0),
+    '{"highlight":"Zeuservices","badge":"Trusted by thousands of gamers worldwide","cta_text":"Browse games","cta_href":"/games","cta2_text":"Cheap top-ups","cta2_href":"/category/topups"}'::jsonb, 0),
   ('stats', null, null, '{}'::jsonb, 1),
   ('categories', 'Shop by category', 'Top-ups, boosting and accounts for every major title.', '{}'::jsonb, 2),
   ('featured_products', 'Featured offers', 'Best sellers, hand-picked by the team.', '{"limit": 8}'::jsonb, 3),

@@ -497,7 +497,7 @@ export async function deliverOrderItem(formData: FormData): Promise<AdminResult>
     const orderRef = order.reference ?? `#${order.order_number}`;
     await sendEmail({
       to: order.email,
-      subject: `Your Zeus Services order ${orderRef} is ready 🎉`,
+      subject: `Your Zeuservices order ${orderRef} is ready 🎉`,
       html: orderDeliveredEmail({
         orderNumber: orderRef,
         productName: item.product_name,

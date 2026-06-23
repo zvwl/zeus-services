@@ -2,6 +2,7 @@
 // No-op when RESEND_API_KEY is unset, and never throws into the request
 // path — mirrors the Discord notifier.
 import { formatMoney } from "@/lib/currency";
+import { siteUrl } from "@/lib/utils";
 
 interface SendArgs {
   to: string;
@@ -32,7 +33,7 @@ export async function sendEmail({
   }
   if (!to) return { ok: false, skipped: true, error: "no recipient" };
   const from =
-    process.env.EMAIL_FROM || "Zeus Services <onboarding@resend.dev>";
+    process.env.EMAIL_FROM || "Zeuservices <onboarding@resend.dev>";
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
@@ -66,14 +67,14 @@ function layout(title: string, body: string) {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" style="max-width:520px" cellpadding="0" cellspacing="0">
       <tr><td style="padding:0 24px 20px">
-        <span style="font-size:22px;font-weight:800;color:#fff">⚡ Zeus <span style="color:#a78bfa">Services</span></span>
+        <span style="font-size:22px;font-weight:800;color:#fff">⚡ Zeu<span style="color:#a78bfa">services</span></span>
       </td></tr>
       <tr><td style="background:#12121f;border:1px solid #1e1e30;border-radius:16px;padding:28px 24px">
         <h1 style="margin:0 0 16px;font-size:20px;color:#fff">${title}</h1>
         ${body}
       </td></tr>
       <tr><td style="padding:18px 24px;color:#52525b;font-size:12px">
-        You're receiving this because you placed an order or have an account at Zeus Services.
+        You're receiving this because you placed an order or have an account at Zeuservices.
       </td></tr>
     </table>
   </td></tr></table>
@@ -111,7 +112,7 @@ export function orderConfirmationEmail(opts: {
         ? `<p style="margin:0;padding:12px 14px;background:rgba(56,189,248,.1);border-radius:10px;color:#bae6fd;font-size:14px">⏳ This order is being processed by our team and will be delivered shortly — we'll email you the moment it's done.</p>`
         : `<p style="margin:0;padding:12px 14px;background:rgba(34,197,94,.1);border-radius:10px;color:#bbf7d0;font-size:14px">✅ Your delivery details are available in your account now.</p>`
     }
-    <p style="margin:20px 0 0"><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://zeus-services.gg"}/account/orders" style="color:#a78bfa">View your order →</a></p>`;
+    <p style="margin:20px 0 0"><a href="${siteUrl()}/account/orders" style="color:#a78bfa">View your order →</a></p>`;
   return layout(`Order ${opts.orderNumber} confirmed ⚡`, body);
 }
 
@@ -136,7 +137,7 @@ const STATUS_COPY: Record<
   },
   completed: {
     heading: "Your order is complete 🎉",
-    body: "Your order has been fully delivered. Thanks for choosing Zeus Services — we hope to see you again!",
+    body: "Your order has been fully delivered. Thanks for choosing Zeuservices — we hope to see you again!",
     accent: "#22c55e",
   },
   cancelled: {
@@ -185,7 +186,7 @@ export function orderStatusEmail(opts: {
     <p style="margin:0 0 18px"><span style="display:inline-block;padding:6px 14px;border-radius:999px;background:#07070e;border:1px solid ${copy.accent};color:${copy.accent};font-size:13px;font-weight:700;text-transform:capitalize">${opts.status}</span></p>
     <p style="margin:0 0 4px;color:#71717a;font-size:13px">Order total</p>
     <p style="margin:0 0 20px;font-size:16px;color:#fff">${formatMoney(opts.total, opts.currency)}</p>
-    <p style="margin:20px 0 0"><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://zeuservices.com"}/account/orders" style="color:#a78bfa">View your order →</a></p>`;
+    <p style="margin:20px 0 0"><a href="${siteUrl()}/account/orders" style="color:#a78bfa">View your order →</a></p>`;
   return layout(copy.heading, body);
 }
 
@@ -199,6 +200,6 @@ export function orderDeliveredEmail(opts: {
     <p style="margin:0 0 6px;color:#71717a;font-size:13px">Order ${opts.orderNumber}</p>
     <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#fff">${opts.productName}</p>
     <pre style="margin:0 0 16px;padding:14px;background:#07070e;border:1px solid #1e1e30;border-radius:10px;color:#bbf7d0;font-size:13px;white-space:pre-wrap;word-break:break-word">${opts.payload}</pre>
-    <p style="margin:0"><a href="${process.env.NEXT_PUBLIC_SITE_URL || "https://zeus-services.gg"}/account/orders" style="color:#a78bfa">Open in your account →</a></p>`;
+    <p style="margin:0"><a href="${siteUrl()}/account/orders" style="color:#a78bfa">Open in your account →</a></p>`;
   return layout("Your order has been delivered 🎉", body);
 }

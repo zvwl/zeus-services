@@ -9,7 +9,7 @@ import type { Review } from "@/lib/types";
 export const metadata: Metadata = {
   title: "Reviews",
   description:
-    "Real reviews from verified Zeus Services customers across top-ups, boosting and accounts.",
+    "Real reviews from verified Zeuservices customers across top-ups, boosting and accounts.",
   alternates: { canonical: "/reviews" },
 };
 export const revalidate = 0;
