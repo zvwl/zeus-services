@@ -69,7 +69,7 @@ export default async function ProductPage({
   const { data } = await supabase
     .from("products")
     .select(
-      "*, game:games(*), category:categories(*), variants:product_variants(*), fields:product_fields(*)"
+      "*, game:games(*), category:categories(*), variants:product_variants(*), fields:product_fields(*), addons:product_addons(*)"
     )
     .eq("slug", slug)
     .eq("is_active", true)
@@ -119,6 +119,9 @@ export default async function ProductPage({
   const fields = (product.fields ?? []).sort(
     (a, b) => a.sort_order - b.sort_order
   );
+  const addons = (product.addons ?? [])
+    .filter((a) => a.is_active)
+    .sort((a, b) => a.sort_order - b.sort_order);
 
   const base = siteUrl();
   const activePrices = variants.map((v) => Number(v.price));
@@ -287,6 +290,18 @@ export default async function ProductPage({
                   : null,
                 stock: product.stock,
                 deliveryType: product.delivery_type,
+                pricingMode: product.pricing_mode === "custom" ? "custom" : "fixed",
+                customUnitLabel: product.custom_unit_label,
+                customPricePerUnit:
+                  product.custom_price_per_unit != null
+                    ? Number(product.custom_price_per_unit)
+                    : null,
+                customMin:
+                  product.custom_min != null ? Number(product.custom_min) : null,
+                customMax:
+                  product.custom_max != null ? Number(product.custom_max) : null,
+                customStep:
+                  product.custom_step != null ? Number(product.custom_step) : null,
               }}
               variants={variants.map((v) => ({
                 id: v.id,
@@ -304,6 +319,12 @@ export default async function ProductPage({
                 placeholder: f.placeholder,
                 options: f.options ?? [],
                 required: f.required,
+              }))}
+              addons={addons.map((a) => ({
+                id: a.id,
+                name: a.name,
+                description: a.description,
+                price: Number(a.price),
               }))}
             />
           </div>

@@ -116,7 +116,10 @@ export function CartProvider({
 
   const addLine = useCallback(
     (line: Omit<CartLine, "key">) => {
-      const key = cartLineKey(line.productId, line.variantId, line.customFields);
+      const key = cartLineKey(line.productId, line.variantId, line.customFields, {
+        customAmount: line.customAmount,
+        addonIds: line.addons?.map((a) => a.id),
+      });
       commit((prev) => {
         const idx = prev.findIndex((l) => l.key === key);
         if (idx >= 0) {

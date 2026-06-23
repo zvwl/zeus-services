@@ -3,7 +3,7 @@ import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, ButtonLink } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
-import { deleteProduct } from "@/app/admin/actions";
+import { deleteProduct, duplicateProduct } from "@/app/admin/actions";
 import { formatMoney } from "@/lib/currency";
 import type { Product } from "@/lib/types";
 
@@ -70,14 +70,23 @@ export default async function AdminProductsPage() {
                   </div>
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <ActionButton
-                    action={deleteProduct}
-                    fields={{ id: p.id }}
-                    variant="danger"
-                    confirmText={`Delete "${p.name}"? This cannot be undone.`}
-                  >
-                    Delete
-                  </ActionButton>
+                  <div className="flex justify-end gap-1.5">
+                    <ActionButton
+                      action={duplicateProduct}
+                      fields={{ id: p.id }}
+                      variant="outline"
+                    >
+                      Duplicate
+                    </ActionButton>
+                    <ActionButton
+                      action={deleteProduct}
+                      fields={{ id: p.id }}
+                      variant="danger"
+                      confirmText={`Delete "${p.name}"? This cannot be undone.`}
+                    >
+                      Delete
+                    </ActionButton>
+                  </div>
                 </td>
               </tr>
             ))}

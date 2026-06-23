@@ -5,12 +5,20 @@ import { getUser } from "@/lib/auth";
 import { cartLineKey } from "@/lib/cart";
 import type { CartLine, DeliveryType } from "@/lib/types";
 
+interface CartExtra {
+  unitPriceUsd?: number;
+  customAmount?: number | null;
+  customLabel?: string | null;
+  addons?: { id: string; name: string; price: number }[];
+}
+
 // Supabase has no generated types here, so the join comes back loosely typed.
 interface CartRow {
   product_id: string;
   variant_id: string | null;
   quantity: number;
   custom_fields: Record<string, string> | null;
+  extra: CartExtra | null;
   product:
     | {
         name: string;
@@ -50,7 +58,7 @@ export async function loadServerCart(): Promise<CartLine[]> {
   const { data, error } = await supabase
     .from("cart_items")
     .select(
-      "product_id, variant_id, quantity, custom_fields, product:products(name, slug, image_url, delivery_type, base_price, game:games(name)), variant:product_variants(name, price)"
+      "product_id, variant_id, quantity, custom_fields, extra, product:products(name, slug, image_url, delivery_type, base_price, game:games(name)), variant:product_variants(name, price)"
     )
     .eq("user_id", user.id);
   if (error || !data) return [];
@@ -62,18 +70,30 @@ export async function loadServerCart(): Promise<CartLine[]> {
       const v = one(row.variant);
       const game = one(p.game);
       const customFields = row.custom_fields ?? {};
+      const extra = row.extra ?? {};
+      const addons = extra.addons ?? [];
+      const unitPriceUsd =
+        typeof extra.unitPriceUsd === "number"
+          ? extra.unitPriceUsd
+          : Number(v?.price ?? p.base_price);
       return {
-        key: cartLineKey(row.product_id, row.variant_id, customFields),
+        key: cartLineKey(row.product_id, row.variant_id, customFields, {
+          customAmount: extra.customAmount ?? null,
+          addonIds: addons.map((a) => a.id),
+        }),
         productId: row.product_id,
         slug: p.slug,
         name: game?.name ? `${game.name} — ${p.name}` : p.name,
         imageUrl: p.image_url,
         variantId: row.variant_id,
         variantName: v?.name ?? null,
-        unitPriceUsd: Number(v?.price ?? p.base_price),
+        unitPriceUsd,
         quantity: row.quantity,
         deliveryType: p.delivery_type,
         customFields,
+        customAmount: extra.customAmount ?? null,
+        customLabel: extra.customLabel ?? null,
+        addons,
       };
     })
     .filter((l): l is CartLine => l !== null);
@@ -98,6 +118,12 @@ export async function saveServerCart(lines: CartLine[]): Promise<void> {
           variant_id: l.variantId,
           quantity: Math.min(99, Math.max(1, l.quantity)),
           custom_fields: l.customFields ?? {},
+          extra: {
+            unitPriceUsd: l.unitPriceUsd,
+            customAmount: l.customAmount ?? null,
+            customLabel: l.customLabel ?? null,
+            addons: l.addons ?? [],
+          },
         }))
       );
     }

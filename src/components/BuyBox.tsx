@@ -25,10 +25,18 @@ interface BuyField {
   required: boolean;
 }
 
+interface BuyAddon {
+  id: string;
+  name: string;
+  description: string | null;
+  price: number;
+}
+
 export function BuyBox({
   product,
   variants,
   fields,
+  addons,
 }: {
   product: {
     id: string;
@@ -40,43 +48,90 @@ export function BuyBox({
     compareAtPrice: number | null;
     stock: number | null;
     deliveryType: "instant" | "manual";
+    pricingMode: "fixed" | "custom";
+    customUnitLabel: string | null;
+    customPricePerUnit: number | null;
+    customMin: number | null;
+    customMax: number | null;
+    customStep: number | null;
   };
   variants: BuyVariant[];
   fields: BuyField[];
+  addons: BuyAddon[];
 }) {
   const { currency, format } = useCurrency();
   const { addLine, open } = useCart();
+
+  const isCustom =
+    product.pricingMode === "custom" && product.customPricePerUnit != null;
+  const min = Math.max(0, product.customMin ?? 1);
+  const max = Math.max(min, product.customMax ?? Math.max(min, 1000));
+  const step =
+    product.customStep && product.customStep > 0 ? product.customStep : 1;
+  const perUnit = product.customPricePerUnit ?? 0;
+  const clamp = (n: number) =>
+    Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : min;
+
   const [variantId, setVariantId] = useState<string | null>(
     variants.find((v) => v.stock === null || v.stock > 0)?.id ??
       variants[0]?.id ??
       null
   );
+  const [amount, setAmount] = useState<number>(min);
   const [qty, setQty] = useState(1);
+  const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const selected = variants.find((v) => v.id === variantId) ?? null;
-  const unitUsd = selected ? selected.price : product.basePrice;
-  const compareUsd = selected ? selected.compareAtPrice : product.compareAtPrice;
-  const stock = selected ? selected.stock : product.stock;
+  const unitUsd = isCustom
+    ? amount * perUnit
+    : selected
+      ? selected.price
+      : product.basePrice;
+  const compareUsd = isCustom
+    ? null
+    : selected
+      ? selected.compareAtPrice
+      : product.compareAtPrice;
+  const stock = isCustom ? null : selected ? selected.stock : product.stock;
   const soldOut = stock !== null && stock <= 0;
   const maxQty = stock === null ? 99 : Math.min(99, stock);
+  const effectiveQty = isCustom ? 1 : qty;
+
+  const chosenAddons = useMemo(
+    () => addons.filter((a) => selectedAddons.has(a.id)),
+    [addons, selectedAddons]
+  );
+  const addonTotal = chosenAddons.reduce((s, a) => s + a.price, 0);
+  const lineTotal = unitUsd * effectiveQty + addonTotal;
+  const customLabel = `${amount.toLocaleString()} ${
+    product.customUnitLabel || "units"
+  }`;
 
   const missingRequired = useMemo(
-    () =>
-      fields.filter(
-        (f) => f.required && !(values[f.label] ?? "").trim()
-      ),
+    () => fields.filter((f) => f.required && !(values[f.label] ?? "").trim()),
     [fields, values]
   );
 
   function validate() {
     if (missingRequired.length > 0) {
-      setError(`Please fill in: ${missingRequired.map((f) => f.label).join(", ")}`);
+      setError(
+        `Please fill in: ${missingRequired.map((f) => f.label).join(", ")}`
+      );
       return false;
     }
     return true;
+  }
+
+  function toggleAddon(id: string) {
+    setSelectedAddons((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
   }
 
   function addToCart() {
@@ -89,23 +144,24 @@ export function BuyBox({
         ? `${product.gameName} — ${product.name}`
         : product.name,
       imageUrl: product.imageUrl,
-      variantId,
-      variantName: selected?.name ?? null,
+      variantId: isCustom ? null : variantId,
+      variantName: isCustom ? null : (selected?.name ?? null),
       unitPriceUsd: unitUsd,
-      quantity: qty,
+      quantity: effectiveQty,
       deliveryType: product.deliveryType,
       customFields: values,
+      customAmount: isCustom ? amount : null,
+      customLabel: isCustom ? customLabel : null,
+      addons: chosenAddons.map((a) => ({
+        id: a.id,
+        name: a.name,
+        price: a.price,
+      })),
     });
     trackEvent("add_to_cart", {
       currency: "USD",
-      value: Math.round(unitUsd * qty * 100) / 100,
-      items: [
-        {
-          item_id: product.id,
-          item_name: `${product.name}${selected ? ` — ${selected.name}` : ""}`,
-          quantity: qty,
-        },
-      ],
+      value: Math.round(lineTotal * 100) / 100,
+      items: [{ item_id: product.id, item_name: product.name, quantity: effectiveQty }],
     });
     open();
   }
@@ -120,25 +176,20 @@ export function BuyBox({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           productId: product.id,
-          variantId,
-          quantity: qty,
+          variantId: isCustom ? null : variantId,
+          quantity: effectiveQty,
           currency,
           customFields: values,
+          customAmount: isCustom ? amount : undefined,
+          addonIds: chosenAddons.map((a) => a.id),
         }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error ?? "Checkout failed");
-      // Funnel: visitor started a Stripe checkout.
       trackEvent("begin_checkout", {
         currency: "USD",
-        value: Math.round(unitUsd * qty * 100) / 100,
-        items: [
-          {
-            item_id: product.id,
-            item_name: `${product.name}${selected ? ` — ${selected.name}` : ""}`,
-            quantity: qty,
-          },
-        ],
+        value: Math.round(lineTotal * 100) / 100,
+        items: [{ item_id: product.id, item_name: product.name, quantity: effectiveQty }],
       });
       window.location.href = json.url;
     } catch (e) {
@@ -149,7 +200,42 @@ export function BuyBox({
 
   return (
     <div className="glass p-6">
-      {variants.length > 0 && (
+      {/* Custom-amount slider */}
+      {isCustom && (
+        <div className="mb-5">
+          <p className="label">
+            Choose amount
+            {product.customUnitLabel ? ` (${product.customUnitLabel})` : ""}
+          </p>
+          <input
+            type="range"
+            min={min}
+            max={max}
+            step={step}
+            value={amount}
+            onChange={(e) => setAmount(clamp(Number(e.target.value)))}
+            className="w-full accent-violet-500"
+            aria-label="Amount"
+          />
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <input
+              type="number"
+              min={min}
+              max={max}
+              step={step}
+              value={amount}
+              onChange={(e) => setAmount(clamp(Number(e.target.value)))}
+              className="input w-36"
+            />
+            <span className="text-sm text-zinc-500">
+              {min.toLocaleString()}–{max.toLocaleString()}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Fixed variants */}
+      {!isCustom && variants.length > 0 && (
         <div className="mb-5">
           <p className="label">Choose an option</p>
           <div className="grid grid-cols-2 gap-2">
@@ -187,6 +273,47 @@ export function BuyBox({
         </div>
       )}
 
+      {/* Add-ons */}
+      {addons.length > 0 && (
+        <div className="mb-5">
+          <p className="label">Add to your order</p>
+          <div className="space-y-2">
+            {addons.map((a) => (
+              <label
+                key={a.id}
+                className={cn(
+                  "flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5 transition",
+                  selectedAddons.has(a.id)
+                    ? "border-primary bg-primary/10"
+                    : "border-edge bg-raised/40 hover:border-primary/40"
+                )}
+              >
+                <input
+                  type="checkbox"
+                  checked={selectedAddons.has(a.id)}
+                  onChange={() => toggleAddon(a.id)}
+                  className="mt-0.5 h-4 w-4 accent-violet-500"
+                />
+                <span className="min-w-0 flex-1">
+                  <span className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-medium text-white">{a.name}</span>
+                    <span className="shrink-0 text-sm font-semibold text-primary-light">
+                      +{format(a.price)}
+                    </span>
+                  </span>
+                  {a.description && (
+                    <span className="mt-0.5 block text-xs text-zinc-500">
+                      {a.description}
+                    </span>
+                  )}
+                </span>
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Custom checkout questions */}
       {fields.length > 0 && (
         <div className="mb-5 space-y-3">
           {fields.map((f) => (
@@ -240,33 +367,37 @@ export function BuyBox({
       )}
 
       <div className="mb-5 flex items-center justify-between">
-        <div className="flex items-center gap-1 rounded-xl border border-edge bg-raised p-1">
-          <button
-            onClick={() => setQty((q) => Math.max(1, q - 1))}
-            className="rounded-lg p-2 text-zinc-400 hover:bg-surface hover:text-white"
-            aria-label="Decrease quantity"
-          >
-            <Minus className="h-4 w-4" />
-          </button>
-          <span className="w-10 text-center font-semibold tabular-nums text-white">
-            {qty}
-          </span>
-          <button
-            onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
-            className="rounded-lg p-2 text-zinc-400 hover:bg-surface hover:text-white"
-            aria-label="Increase quantity"
-          >
-            <Plus className="h-4 w-4" />
-          </button>
-        </div>
+        {isCustom ? (
+          <span className="text-sm text-zinc-500">{customLabel}</span>
+        ) : (
+          <div className="flex items-center gap-1 rounded-xl border border-edge bg-raised p-1">
+            <button
+              onClick={() => setQty((q) => Math.max(1, q - 1))}
+              className="rounded-lg p-2 text-zinc-400 hover:bg-surface hover:text-white"
+              aria-label="Decrease quantity"
+            >
+              <Minus className="h-4 w-4" />
+            </button>
+            <span className="w-10 text-center font-semibold tabular-nums text-white">
+              {qty}
+            </span>
+            <button
+              onClick={() => setQty((q) => Math.min(maxQty, q + 1))}
+              className="rounded-lg p-2 text-zinc-400 hover:bg-surface hover:text-white"
+              aria-label="Increase quantity"
+            >
+              <Plus className="h-4 w-4" />
+            </button>
+          </div>
+        )}
         <div className="text-right">
           {compareUsd != null && compareUsd > unitUsd && (
             <span className="mr-2 text-sm text-zinc-500 line-through">
-              {format(compareUsd * qty)}
+              {format(compareUsd * effectiveQty + addonTotal)}
             </span>
           )}
           <span className="text-2xl font-extrabold text-white">
-            {format(unitUsd * qty)}
+            {format(lineTotal)}
           </span>
           <p className="text-xs text-zinc-500">
             incl. all fees · paying in {currency}

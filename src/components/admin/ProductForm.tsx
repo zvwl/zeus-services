@@ -26,6 +26,13 @@ interface FieldDraft {
   required: boolean;
 }
 
+interface AddonDraft {
+  id?: string;
+  name: string;
+  description: string;
+  price: string;
+}
+
 export function ProductForm({
   product,
   games,
@@ -87,6 +94,37 @@ export function ProductForm({
       }))
   );
 
+  const [pricingMode, setPricingMode] = useState<"fixed" | "custom">(
+    product?.pricing_mode === "custom" ? "custom" : "fixed"
+  );
+  const [customUnitLabel, setCustomUnitLabel] = useState(
+    product?.custom_unit_label ?? ""
+  );
+  const [customPricePerUnit, setCustomPricePerUnit] = useState(
+    product?.custom_price_per_unit != null
+      ? String(product.custom_price_per_unit)
+      : ""
+  );
+  const [customMin, setCustomMin] = useState(
+    product?.custom_min != null ? String(product.custom_min) : ""
+  );
+  const [customMax, setCustomMax] = useState(
+    product?.custom_max != null ? String(product.custom_max) : ""
+  );
+  const [customStep, setCustomStep] = useState(
+    product?.custom_step != null ? String(product.custom_step) : ""
+  );
+  const [addons, setAddons] = useState<AddonDraft[]>(
+    (product?.addons ?? [])
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .map((a) => ({
+        id: a.id,
+        name: a.name,
+        description: a.description ?? "",
+        price: String(a.price),
+      }))
+  );
+
   function submit() {
     setMsg(null);
     const payload: ProductPayload = {
@@ -122,6 +160,19 @@ export function ProductForm({
           .filter(Boolean),
         required: f.required,
       })),
+      addons: addons.map((a) => ({
+        id: a.id,
+        name: a.name,
+        description: a.description,
+        price: Number(a.price),
+      })),
+      pricing_mode: pricingMode,
+      custom_unit_label: customUnitLabel || null,
+      custom_price_per_unit:
+        customPricePerUnit !== "" ? Number(customPricePerUnit) : null,
+      custom_min: customMin !== "" ? Number(customMin) : null,
+      custom_max: customMax !== "" ? Number(customMax) : null,
+      custom_step: customStep !== "" ? Number(customStep) : null,
     };
     startTransition(async () => {
       const res = await upsertProduct(JSON.stringify(payload));
@@ -205,45 +256,125 @@ export function ProductForm({
 
       <Card className="space-y-4">
         <h2 className="font-bold text-white">Pricing & stock</h2>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <div>
-            <label className="label">Base price (USD) *</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              className="input"
-              value={basePrice}
-              onChange={(e) => setBasePrice(e.target.value)}
-            />
-            <p className="mt-1 text-xs text-zinc-600">
-              Ignored when options below are used.
-            </p>
-          </div>
-          <div>
-            <label className="label">Compare-at price (USD)</label>
-            <input
-              type="number"
-              step="0.01"
-              min="0"
-              className="input"
-              value={compareAt}
-              onChange={(e) => setCompareAt(e.target.value)}
-              placeholder="Strikethrough price"
-            />
-          </div>
-          <div>
-            <label className="label">Stock</label>
-            <input
-              type="number"
-              min="0"
-              className="input"
-              value={stock}
-              onChange={(e) => setStock(e.target.value)}
-              placeholder="Empty = unlimited"
-            />
-          </div>
+        <div>
+          <label className="label">Pricing mode</label>
+          <select
+            className="input"
+            value={pricingMode}
+            onChange={(e) =>
+              setPricingMode(e.target.value as "fixed" | "custom")
+            }
+          >
+            <option value="fixed">Fixed — base price or options</option>
+            <option value="custom">
+              Custom amount — buyer picks an amount with a slider
+            </option>
+          </select>
         </div>
+        {pricingMode === "fixed" ? (
+          <div className="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label className="label">Base price (USD) *</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="input"
+                value={basePrice}
+                onChange={(e) => setBasePrice(e.target.value)}
+              />
+              <p className="mt-1 text-xs text-zinc-600">
+                Ignored when options below are used.
+              </p>
+            </div>
+            <div>
+              <label className="label">Compare-at price (USD)</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                className="input"
+                value={compareAt}
+                onChange={(e) => setCompareAt(e.target.value)}
+                placeholder="Strikethrough price"
+              />
+            </div>
+            <div>
+              <label className="label">Stock</label>
+              <input
+                type="number"
+                min="0"
+                className="input"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                placeholder="Empty = unlimited"
+              />
+            </div>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label className="label">Unit label</label>
+              <input
+                className="input"
+                value={customUnitLabel}
+                onChange={(e) => setCustomUnitLabel(e.target.value)}
+                placeholder="e.g. gold, 1,000 V-Bucks"
+              />
+              <p className="mt-1 text-xs text-zinc-600">
+                What one unit of the amount is called.
+              </p>
+            </div>
+            <div>
+              <label className="label">Price per unit (USD) *</label>
+              <input
+                type="number"
+                step="0.0001"
+                min="0"
+                className="input"
+                value={customPricePerUnit}
+                onChange={(e) => setCustomPricePerUnit(e.target.value)}
+                placeholder="0.01"
+              />
+            </div>
+            <div>
+              <label className="label">Minimum amount</label>
+              <input
+                type="number"
+                min="0"
+                className="input"
+                value={customMin}
+                onChange={(e) => setCustomMin(e.target.value)}
+                placeholder="100"
+              />
+            </div>
+            <div>
+              <label className="label">Maximum amount</label>
+              <input
+                type="number"
+                min="0"
+                className="input"
+                value={customMax}
+                onChange={(e) => setCustomMax(e.target.value)}
+                placeholder="100000"
+              />
+            </div>
+            <div>
+              <label className="label">Step</label>
+              <input
+                type="number"
+                min="1"
+                className="input"
+                value={customStep}
+                onChange={(e) => setCustomStep(e.target.value)}
+                placeholder="100"
+              />
+              <p className="mt-1 text-xs text-zinc-600">
+                Slider increment. Price = amount × price per unit.
+              </p>
+            </div>
+          </div>
+        )}
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label">Delivery type</label>
@@ -298,6 +429,7 @@ export function ProductForm({
         </div>
       </Card>
 
+      {pricingMode === "fixed" && (
       <Card className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
@@ -385,6 +517,7 @@ export function ProductForm({
           </div>
         ))}
       </Card>
+      )}
 
       <Card className="space-y-4">
         <div className="flex items-center justify-between">
@@ -502,6 +635,77 @@ export function ProductForm({
                 />
               )}
             </div>
+          </div>
+        ))}
+      </Card>
+
+      <Card className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-bold text-white">Add-ons / bundles</h2>
+            <p className="text-xs text-zinc-500">
+              Optional extras a buyer can tick at checkout — e.g. “+1,000 bonus
+              gold”, “Express delivery”, a second item.
+            </p>
+          </div>
+          <Button
+            type="button"
+            size="sm"
+            variant="outline"
+            onClick={() =>
+              setAddons((a) => [...a, { name: "", description: "", price: "" }])
+            }
+          >
+            <Plus className="h-4 w-4" /> Add bundle
+          </Button>
+        </div>
+        {addons.map((a, i) => (
+          <div
+            key={a.id ?? `new-${i}`}
+            className="flex flex-wrap items-center gap-2 rounded-xl border border-edge bg-raised/40 p-3"
+          >
+            <input
+              className="input min-w-[150px] flex-1"
+              placeholder="Name (e.g. +1,000 bonus gold)"
+              value={a.name}
+              onChange={(e) =>
+                setAddons((arr) =>
+                  arr.map((x, j) => (j === i ? { ...x, name: e.target.value } : x))
+                )
+              }
+            />
+            <input
+              className="input min-w-[150px] flex-1"
+              placeholder="Short description (optional)"
+              value={a.description}
+              onChange={(e) =>
+                setAddons((arr) =>
+                  arr.map((x, j) =>
+                    j === i ? { ...x, description: e.target.value } : x
+                  )
+                )
+              }
+            />
+            <input
+              type="number"
+              step="0.01"
+              className="input w-28"
+              placeholder="Price $"
+              value={a.price}
+              onChange={(e) =>
+                setAddons((arr) =>
+                  arr.map((x, j) => (j === i ? { ...x, price: e.target.value } : x))
+                )
+              }
+            />
+            <button
+              type="button"
+              onClick={() => setAddons((arr) => arr.filter((_, j) => j !== i))}
+              className="rounded-lg p-2 text-red-400 hover:bg-red-500/10"
+              aria-label="Remove add-on"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
         ))}
       </Card>

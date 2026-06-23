@@ -172,6 +172,12 @@ export interface ProductPayload {
   is_active: boolean;
   is_featured: boolean;
   sort_order?: number;
+  pricing_mode?: "fixed" | "custom";
+  custom_unit_label?: string | null;
+  custom_price_per_unit?: number | null;
+  custom_min?: number | null;
+  custom_max?: number | null;
+  custom_step?: number | null;
   variants: {
     id?: string;
     name: string;
@@ -189,6 +195,12 @@ export interface ProductPayload {
     options?: string[];
     required?: boolean;
     sort_order?: number;
+  }[];
+  addons?: {
+    id?: string;
+    name: string;
+    description?: string | null;
+    price: number;
   }[];
 }
 
@@ -233,6 +245,25 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     is_active: Boolean(payload.is_active),
     is_featured: Boolean(payload.is_featured),
     sort_order: Number(payload.sort_order ?? 0) || 0,
+    pricing_mode: payload.pricing_mode === "custom" ? "custom" : "fixed",
+    custom_unit_label: payload.custom_unit_label?.trim() || null,
+    custom_price_per_unit:
+      payload.custom_price_per_unit != null &&
+      `${payload.custom_price_per_unit}` !== ""
+        ? Number(payload.custom_price_per_unit)
+        : null,
+    custom_min:
+      payload.custom_min != null && `${payload.custom_min}` !== ""
+        ? Number(payload.custom_min)
+        : null,
+    custom_max:
+      payload.custom_max != null && `${payload.custom_max}` !== ""
+        ? Number(payload.custom_max)
+        : null,
+    custom_step:
+      payload.custom_step != null && `${payload.custom_step}` !== ""
+        ? Number(payload.custom_step)
+        : null,
   };
 
   const query = payload.id
@@ -302,11 +333,132 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     }
   }
 
+  // Sync add-ons (delete removed, upsert the rest) — same pattern as variants.
+  const keepAddonIds = (payload.addons ?? []).filter((a) => a.id).map((a) => a.id!);
+  if (payload.id) {
+    let del = supabase.from("product_addons").delete().eq("product_id", product.id);
+    if (keepAddonIds.length > 0) {
+      del = del.not("id", "in", `(${keepAddonIds.join(",")})`);
+    }
+    await del;
+  }
+  for (const [i, a] of (payload.addons ?? []).entries()) {
+    if (!a.name?.trim()) continue;
+    const aRow = {
+      product_id: product.id,
+      name: a.name.trim(),
+      description: a.description?.trim() || null,
+      price: Number.isFinite(Number(a.price)) ? Number(a.price) : 0,
+      sort_order: i,
+      is_active: true,
+    };
+    if (a.id) {
+      await supabase.from("product_addons").update(aRow).eq("id", a.id);
+    } else {
+      await supabase.from("product_addons").insert(aRow);
+    }
+  }
+
   await audit(payload.id ? "product.update" : "product.create", "product", product.id, {
     name: row.name,
   });
   refreshStore();
   return ok("Product saved.", product.id);
+}
+
+export async function duplicateProduct(formData: FormData): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_products");
+  } catch {
+    return fail("Unauthorized");
+  }
+  const id = String(formData.get("id") ?? "");
+  const supabase = await createClient();
+  const { data: src } = await supabase
+    .from("products")
+    .select("*, variants:product_variants(*), fields:product_fields(*), addons:product_addons(*)")
+    .eq("id", id)
+    .maybeSingle();
+  if (!src) return fail("Product not found.");
+
+  const baseRow = {
+    game_id: src.game_id,
+    category_id: src.category_id,
+    name: `${src.name} (copy)`,
+    description: src.description,
+    image_url: src.image_url,
+    base_price: src.base_price,
+    compare_at_price: src.compare_at_price,
+    delivery_type: src.delivery_type,
+    delivery_instructions: src.delivery_instructions,
+    stock: src.stock,
+    is_active: false, // saved as a hidden draft
+    is_featured: false,
+    sort_order: src.sort_order,
+    pricing_mode: src.pricing_mode,
+    custom_unit_label: src.custom_unit_label,
+    custom_price_per_unit: src.custom_price_per_unit,
+    custom_min: src.custom_min,
+    custom_max: src.custom_max,
+    custom_step: src.custom_step,
+  };
+
+  let created: { id: string } | null = null;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const slug = slugify(`${src.slug}-copy${attempt > 0 ? `-${attempt + 1}` : ""}`);
+    const { data, error } = await supabase
+      .from("products")
+      .insert({ ...baseRow, slug })
+      .select("id")
+      .single();
+    if (!error && data) {
+      created = data;
+      break;
+    }
+    if (error?.code !== "23505") {
+      return fail(error?.message ?? "Could not duplicate.");
+    }
+  }
+  if (!created) return fail("Could not generate a unique slug.");
+
+  for (const [i, v] of (src.variants ?? []).entries()) {
+    await supabase.from("product_variants").insert({
+      product_id: created.id,
+      name: v.name,
+      price: v.price,
+      compare_at_price: v.compare_at_price,
+      stock: v.stock,
+      sort_order: i,
+      is_active: v.is_active,
+    });
+  }
+  for (const [i, f] of (src.fields ?? []).entries()) {
+    await supabase.from("product_fields").insert({
+      product_id: created.id,
+      label: f.label,
+      field_type: f.field_type,
+      placeholder: f.placeholder,
+      options: f.options ?? [],
+      required: f.required,
+      sort_order: i,
+    });
+  }
+  for (const [i, a] of (src.addons ?? []).entries()) {
+    await supabase.from("product_addons").insert({
+      product_id: created.id,
+      name: a.name,
+      description: a.description,
+      price: a.price,
+      image_url: a.image_url,
+      sort_order: i,
+      is_active: a.is_active,
+    });
+  }
+
+  await audit("product.duplicate", "product", created.id, { from: id });
+  refreshStore();
+  revalidatePath("/admin/products");
+  return ok("Product duplicated — saved as a hidden draft.", created.id);
 }
 
 export async function deleteProduct(formData: FormData): Promise<AdminResult> {

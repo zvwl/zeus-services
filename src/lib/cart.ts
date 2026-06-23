@@ -8,21 +8,33 @@ import type { CartLine } from "@/lib/types";
 export function cartLineKey(
   productId: string,
   variantId: string | null,
-  customFields: Record<string, string>
+  customFields: Record<string, string>,
+  extra?: { customAmount?: number | null; addonIds?: string[] }
 ) {
   const cf =
     customFields && Object.keys(customFields).length
       ? JSON.stringify(customFields)
       : "";
-  return `${productId}::${variantId ?? ""}::${cf}`;
+  const amt = extra?.customAmount != null ? `#${extra.customAmount}` : "";
+  const ad =
+    extra?.addonIds && extra.addonIds.length
+      ? `+${[...extra.addonIds].sort().join("+")}`
+      : "";
+  return `${productId}::${variantId ?? ""}::${cf}${amt}${ad}`;
 }
 
 export function cartCount(lines: CartLine[]) {
   return lines.reduce((sum, l) => sum + l.quantity, 0);
 }
 
+/** USD total for one line: base × quantity, plus any add-ons (once per line). */
+export function lineTotalUsd(line: CartLine) {
+  const addons = (line.addons ?? []).reduce((s, a) => s + a.price, 0);
+  return line.unitPriceUsd * line.quantity + addons;
+}
+
 export function cartSubtotalUsd(lines: CartLine[]) {
-  return lines.reduce((sum, l) => sum + l.unitPriceUsd * l.quantity, 0);
+  return lines.reduce((sum, l) => sum + lineTotalUsd(l), 0);
 }
 
 /**

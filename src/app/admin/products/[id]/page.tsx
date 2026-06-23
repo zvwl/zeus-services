@@ -23,7 +23,7 @@ export default async function AdminProductEditPage({
   if (id !== "new") {
     const { data } = await supabase
       .from("products")
-      .select("*, variants:product_variants(*), fields:product_fields(*)")
+      .select("*, variants:product_variants(*), fields:product_fields(*), addons:product_addons(*)")
       .eq("id", id)
       .maybeSingle();
     if (!data) notFound();

@@ -36,6 +36,14 @@ interface RawItem {
   variantId: string | null;
   quantity: number;
   customFields: Record<string, string>;
+  customAmount: number | null;
+  addonIds: string[];
+}
+
+interface PricedAddon {
+  name: string;
+  unitUsd: number;
+  unitConverted: number;
 }
 
 // A line that has passed validation and pricing.
@@ -46,6 +54,8 @@ interface PricedLine {
   customFields: Record<string, string>;
   unitUsd: number;
   unitConverted: number;
+  customLabel: string | null;
+  addons: PricedAddon[];
 }
 
 export async function POST(req: Request) {
@@ -97,6 +107,13 @@ export async function POST(req: Request) {
         variantId: o.variantId ? String(o.variantId) : null,
         quantity,
         customFields: sanitizeFields(o.customFields),
+        customAmount:
+          o.customAmount != null && o.customAmount !== ""
+            ? Number(o.customAmount)
+            : null,
+        addonIds: Array.isArray(o.addonIds)
+          ? o.addonIds.map((x) => String(x)).slice(0, 20)
+          : [],
       });
     }
 
@@ -138,7 +155,7 @@ export async function POST(req: Request) {
     for (const item of items) {
       const { data: productData } = await db
         .from("products")
-        .select("*, fields:product_fields(*), game:games(name)")
+        .select("*, fields:product_fields(*), game:games(name), addons:product_addons(*)")
         .eq("id", item.productId)
         .eq("is_active", true)
         .maybeSingle();
@@ -149,40 +166,69 @@ export async function POST(req: Request) {
         );
       }
       const product = productData as Product & { game: { name: string } | null };
+      const isCustom =
+        product.pricing_mode === "custom" &&
+        product.custom_price_per_unit != null;
 
       let variant: ProductVariant | null = null;
-      if (item.variantId) {
-        const { data: v } = await db
-          .from("product_variants")
-          .select("*")
-          .eq("id", item.variantId)
-          .eq("product_id", item.productId)
-          .eq("is_active", true)
-          .maybeSingle();
-        if (!v) {
+      let unitUsd: number;
+      let quantity = item.quantity;
+      let customLabel: string | null = null;
+
+      if (isCustom) {
+        // Custom-amount pricing: price = amount × unit price, server-validated.
+        const amount = Number(item.customAmount);
+        const min = product.custom_min != null ? Number(product.custom_min) : 0;
+        const max = product.custom_max != null ? Number(product.custom_max) : null;
+        if (
+          !Number.isFinite(amount) ||
+          amount <= 0 ||
+          amount < min ||
+          (max != null && amount > max)
+        ) {
           return NextResponse.json(
-            { error: `An option for "${product.name}" is no longer available.` },
-            { status: 404 }
+            { error: `Choose a valid amount for "${product.name}".` },
+            { status: 400 }
           );
         }
-        variant = v as ProductVariant;
+        unitUsd = Number(product.custom_price_per_unit) * amount;
+        quantity = 1;
+        customLabel = `${amount.toLocaleString()} ${
+          product.custom_unit_label || "units"
+        }`;
+      } else {
+        if (item.variantId) {
+          const { data: v } = await db
+            .from("product_variants")
+            .select("*")
+            .eq("id", item.variantId)
+            .eq("product_id", item.productId)
+            .eq("is_active", true)
+            .maybeSingle();
+          if (!v) {
+            return NextResponse.json(
+              { error: `An option for "${product.name}" is no longer available.` },
+              { status: 404 }
+            );
+          }
+          variant = v as ProductVariant;
+        }
+        const stock = variant ? variant.stock : product.stock;
+        if (stock !== null && stock < item.quantity) {
+          return NextResponse.json(
+            {
+              error:
+                stock <= 0
+                  ? `"${product.name}" is sold out.`
+                  : `Only ${stock} of "${product.name}" left in stock.`,
+            },
+            { status: 400 }
+          );
+        }
+        unitUsd = Number(variant ? variant.price : product.base_price);
       }
 
-      // Stock
-      const stock = variant ? variant.stock : product.stock;
-      if (stock !== null && stock < item.quantity) {
-        return NextResponse.json(
-          {
-            error:
-              stock <= 0
-                ? `"${product.name}" is sold out.`
-                : `Only ${stock} of "${product.name}" left in stock.`,
-          },
-          { status: 400 }
-        );
-      }
-
-      // Required custom fields
+      // Required custom fields (apply to both pricing modes)
       for (const field of (product.fields ?? []) as ProductField[]) {
         if (field.required && !(item.customFields[field.label] ?? "").trim()) {
           return NextResponse.json(
@@ -192,25 +238,53 @@ export async function POST(req: Request) {
         }
       }
 
-      const unitUsd = Number(variant ? variant.price : product.base_price);
-      const unitConverted = convertFromUSD(unitUsd, rate);
+      // Validate + price selected add-ons against the product's own list.
+      const addons: PricedAddon[] = [];
+      if (item.addonIds.length > 0) {
+        const productAddons = (product.addons ?? []).filter(
+          (a) => a.is_active && item.addonIds.includes(a.id)
+        );
+        for (const a of productAddons) {
+          const aUsd = Number(a.price);
+          addons.push({
+            name: a.name,
+            unitUsd: aUsd,
+            unitConverted: convertFromUSD(aUsd, rate),
+          });
+        }
+      }
+
       priced.push({
         product,
         variant,
-        quantity: item.quantity,
+        quantity,
         customFields: item.customFields,
         unitUsd,
-        unitConverted,
+        unitConverted: convertFromUSD(unitUsd, rate),
+        customLabel,
+        addons,
       });
     }
 
     const subtotalUsd =
       Math.round(
-        priced.reduce((s, l) => s + l.unitUsd * l.quantity, 0) * 100
+        priced.reduce(
+          (s, l) =>
+            s +
+            l.unitUsd * l.quantity +
+            l.addons.reduce((a, x) => a + x.unitUsd, 0),
+          0
+        ) * 100
       ) / 100;
     const total =
       Math.round(
-        priced.reduce((s, l) => s + l.unitConverted * l.quantity, 0) * 100
+        priced.reduce(
+          (s, l) =>
+            s +
+            l.unitConverted * l.quantity +
+            l.addons.reduce((a, x) => a + x.unitConverted, 0),
+          0
+        ) * 100
       ) / 100;
 
     const orderRow = {
@@ -246,17 +320,32 @@ export async function POST(req: Request) {
       );
     }
 
-    const orderItemRows = priced.map((l) => ({
-      order_id: order!.id,
-      product_id: l.product.id,
-      variant_id: l.variant?.id ?? null,
-      product_name: `${l.product.game?.name ? `${l.product.game.name} — ` : ""}${l.product.name}`,
-      variant_name: l.variant?.name ?? null,
-      quantity: l.quantity,
-      unit_price: l.unitConverted,
-      unit_price_usd: l.unitUsd,
-      custom_fields: l.customFields,
-    }));
+    const orderItemRows = priced.flatMap((l) => {
+      const base = {
+        order_id: order!.id,
+        product_id: l.product.id,
+        variant_id: l.variant?.id ?? null,
+        product_name: `${l.product.game?.name ? `${l.product.game.name} — ` : ""}${l.product.name}`,
+        variant_name: l.customLabel ?? l.variant?.name ?? null,
+        quantity: l.quantity,
+        unit_price: l.unitConverted,
+        unit_price_usd: l.unitUsd,
+        custom_fields: l.customFields,
+      };
+      // Each add-on becomes its own order line (no product reference).
+      const addonRows = l.addons.map((a) => ({
+        order_id: order!.id,
+        product_id: null,
+        variant_id: null,
+        product_name: `${l.product.name} — add-on: ${a.name}`,
+        variant_name: null,
+        quantity: 1,
+        unit_price: a.unitConverted,
+        unit_price_usd: a.unitUsd,
+        custom_fields: {},
+      }));
+      return [base, ...addonRows];
+    });
     const { error: itemsError } = await db
       .from("order_items")
       .insert(orderItemRows);
@@ -270,20 +359,41 @@ export async function POST(req: Request) {
       );
     }
 
-    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = priced.map(
-      (l) => ({
-        quantity: l.quantity,
-        price_data: {
-          currency: currency.toLowerCase(),
-          unit_amount: Math.round(l.unitConverted * 100),
-          product_data: {
-            name: `${l.product.name}${l.variant ? ` — ${l.variant.name}` : ""}`,
-            ...(l.product.image_url ? { images: [l.product.image_url] } : {}),
-            metadata: { product_id: l.product.id },
+    const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
+      priced.flatMap((l) => {
+        const main: Stripe.Checkout.SessionCreateParams.LineItem = {
+          quantity: l.quantity,
+          price_data: {
+            currency: currency.toLowerCase(),
+            unit_amount: Math.round(l.unitConverted * 100),
+            product_data: {
+              name: `${l.product.name}${
+                l.customLabel
+                  ? ` — ${l.customLabel}`
+                  : l.variant
+                    ? ` — ${l.variant.name}`
+                    : ""
+              }`,
+              ...(l.product.image_url ? { images: [l.product.image_url] } : {}),
+              metadata: { product_id: l.product.id },
+            },
           },
-        },
-      })
-    );
+        };
+        // Skip free add-ons in Stripe (a $0 line item is rejected) — they still
+        // appear as order lines and get delivered.
+        const addonItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
+          l.addons
+            .filter((a) => a.unitConverted > 0)
+            .map((a) => ({
+              quantity: 1,
+              price_data: {
+                currency: currency.toLowerCase(),
+                unit_amount: Math.round(a.unitConverted * 100),
+                product_data: { name: `${l.product.name} — ${a.name}` },
+              },
+            }));
+        return [main, ...addonItems];
+      });
 
     const origin = originFromRequest(req);
     const stripe = getStripe();

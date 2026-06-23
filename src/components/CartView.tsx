@@ -6,6 +6,7 @@ import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { Button, ButtonLink, Card, EmptyState } from "@/components/ui";
+import { lineTotalUsd } from "@/lib/cart";
 import { createCartCheckout } from "@/lib/checkout-client";
 
 export function CartView() {
@@ -65,11 +66,19 @@ export function CartView() {
                       {l.variantName && (
                         <p className="text-sm text-zinc-500">{l.variantName}</p>
                       )}
+                      {l.customLabel && (
+                        <p className="text-sm text-primary-light">{l.customLabel}</p>
+                      )}
                       <p className="mt-0.5 text-xs text-zinc-600">
                         {l.deliveryType === "instant"
                           ? "Instant delivery"
                           : "Manual delivery"}
                       </p>
+                      {l.addons && l.addons.length > 0 && (
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Add-ons: {l.addons.map((a) => a.name).join(", ")}
+                        </p>
+                      )}
                       {fieldLabels.length > 0 && (
                         <p className="mt-1 text-xs text-zinc-500">
                           Your info: {fieldLabels.join(", ")}
@@ -86,30 +95,34 @@ export function CartView() {
                   </div>
 
                   <div className="mt-3 flex items-center justify-between">
-                    <div className="flex items-center gap-1 rounded-lg border border-edge bg-raised p-0.5">
-                      <button
-                        onClick={() => updateQty(l.key, l.quantity - 1)}
-                        className="rounded p-1.5 text-zinc-400 hover:bg-surface hover:text-white"
-                        aria-label="Decrease quantity"
-                      >
-                        <Minus className="h-3.5 w-3.5" />
-                      </button>
-                      <span className="w-8 text-center text-sm font-semibold tabular-nums text-white">
-                        {l.quantity}
-                      </span>
-                      <button
-                        onClick={() => updateQty(l.key, l.quantity + 1)}
-                        className="rounded p-1.5 text-zinc-400 hover:bg-surface hover:text-white"
-                        aria-label="Increase quantity"
-                      >
-                        <Plus className="h-3.5 w-3.5" />
-                      </button>
-                    </div>
+                    {l.customAmount != null ? (
+                      <span className="text-xs text-zinc-500">Qty 1</span>
+                    ) : (
+                      <div className="flex items-center gap-1 rounded-lg border border-edge bg-raised p-0.5">
+                        <button
+                          onClick={() => updateQty(l.key, l.quantity - 1)}
+                          className="rounded p-1.5 text-zinc-400 hover:bg-surface hover:text-white"
+                          aria-label="Decrease quantity"
+                        >
+                          <Minus className="h-3.5 w-3.5" />
+                        </button>
+                        <span className="w-8 text-center text-sm font-semibold tabular-nums text-white">
+                          {l.quantity}
+                        </span>
+                        <button
+                          onClick={() => updateQty(l.key, l.quantity + 1)}
+                          className="rounded p-1.5 text-zinc-400 hover:bg-surface hover:text-white"
+                          aria-label="Increase quantity"
+                        >
+                          <Plus className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    )}
                     <div className="text-right">
                       <span className="font-semibold text-white">
-                        {format(l.unitPriceUsd * l.quantity)}
+                        {format(lineTotalUsd(l))}
                       </span>
-                      {l.quantity > 1 && (
+                      {l.customAmount == null && l.quantity > 1 && (
                         <p className="text-xs text-zinc-500">
                           {format(l.unitPriceUsd)} each
                         </p>

@@ -60,10 +60,30 @@ export interface Product {
   is_featured: boolean;
   sort_order: number;
   created_at: string;
+  // Pricing mode: "fixed" = base price / variants; "custom" = slider amount × unit price.
+  pricing_mode: "fixed" | "custom";
+  custom_unit_label: string | null;
+  custom_price_per_unit: number | null;
+  custom_min: number | null;
+  custom_max: number | null;
+  custom_step: number | null;
   game?: Game | null;
   category?: Category | null;
   variants?: ProductVariant[];
   fields?: ProductField[];
+  addons?: ProductAddon[];
+}
+
+/** An optional bundle item a buyer can add to a product at checkout. */
+export interface ProductAddon {
+  id: string;
+  product_id: string;
+  name: string;
+  description: string | null;
+  price: number;
+  image_url: string | null;
+  sort_order: number;
+  is_active: boolean;
 }
 
 export interface ProductVariant {
@@ -116,6 +136,11 @@ export interface CartLine {
   quantity: number;
   deliveryType: DeliveryType;
   customFields: Record<string, string>;
+  /** Custom-amount products: the chosen amount + a display label (e.g. "5,000 gold"). */
+  customAmount?: number | null;
+  customLabel?: string | null;
+  /** Selected add-on bundle items (display snapshot; re-validated at checkout). */
+  addons?: { id: string; name: string; price: number }[];
 }
 
 export type OrderStatus =

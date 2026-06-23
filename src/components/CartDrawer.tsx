@@ -6,6 +6,7 @@ import { Minus, Plus, ShoppingCart, Trash2, X } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { Button } from "@/components/ui";
+import { lineTotalUsd } from "@/lib/cart";
 import { createCartCheckout } from "@/lib/checkout-client";
 
 export function CartDrawer() {
@@ -97,29 +98,41 @@ export function CartDrawer() {
                       {l.variantName && (
                         <p className="text-xs text-zinc-500">{l.variantName}</p>
                       )}
+                      {l.customLabel && (
+                        <p className="text-xs text-primary-light">{l.customLabel}</p>
+                      )}
+                      {l.addons && l.addons.length > 0 && (
+                        <p className="text-xs text-zinc-500">
+                          + {l.addons.map((a) => a.name).join(", ")}
+                        </p>
+                      )}
                       <div className="mt-2 flex items-center justify-between">
-                        <div className="flex items-center gap-1 rounded-lg border border-edge bg-raised p-0.5">
-                          <button
-                            onClick={() => updateQty(l.key, l.quantity - 1)}
-                            className="rounded p-1 text-zinc-400 hover:bg-surface hover:text-white"
-                            aria-label="Decrease quantity"
-                          >
-                            <Minus className="h-3.5 w-3.5" />
-                          </button>
-                          <span className="w-7 text-center text-sm font-semibold tabular-nums text-white">
-                            {l.quantity}
-                          </span>
-                          <button
-                            onClick={() => updateQty(l.key, l.quantity + 1)}
-                            className="rounded p-1 text-zinc-400 hover:bg-surface hover:text-white"
-                            aria-label="Increase quantity"
-                          >
-                            <Plus className="h-3.5 w-3.5" />
-                          </button>
-                        </div>
+                        {l.customAmount != null ? (
+                          <span className="text-xs text-zinc-500">Qty 1</span>
+                        ) : (
+                          <div className="flex items-center gap-1 rounded-lg border border-edge bg-raised p-0.5">
+                            <button
+                              onClick={() => updateQty(l.key, l.quantity - 1)}
+                              className="rounded p-1 text-zinc-400 hover:bg-surface hover:text-white"
+                              aria-label="Decrease quantity"
+                            >
+                              <Minus className="h-3.5 w-3.5" />
+                            </button>
+                            <span className="w-7 text-center text-sm font-semibold tabular-nums text-white">
+                              {l.quantity}
+                            </span>
+                            <button
+                              onClick={() => updateQty(l.key, l.quantity + 1)}
+                              className="rounded p-1 text-zinc-400 hover:bg-surface hover:text-white"
+                              aria-label="Increase quantity"
+                            >
+                              <Plus className="h-3.5 w-3.5" />
+                            </button>
+                          </div>
+                        )}
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-white">
-                            {format(l.unitPriceUsd * l.quantity)}
+                            {format(lineTotalUsd(l))}
                           </span>
                           <button
                             onClick={() => removeLine(l.key)}
