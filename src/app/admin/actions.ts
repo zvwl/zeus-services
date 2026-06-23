@@ -782,6 +782,8 @@ const SECTION_KINDS = [
   "stats",
   "reviews",
   "faq",
+  "steps",
+  "cta_banner",
   "discord",
   "giveaway",
   "rich_text",

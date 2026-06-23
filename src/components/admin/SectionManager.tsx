@@ -20,30 +20,170 @@ import {
 import { Badge, Button, Card } from "@/components/ui";
 import type { SiteSection } from "@/lib/types";
 
-const KIND_INFO: Record<string, { label: string; hint: string }> = {
+type FieldType = "text" | "url" | "number" | "textarea";
+
+interface SectionField {
+  key: string;
+  label: string;
+  type: FieldType;
+  placeholder?: string;
+  help?: string;
+}
+
+interface SectionDef {
+  label: string;
+  description: string;
+  /** Help text for the Title field, or undefined if this kind has no title. */
+  title?: string;
+  /** Help text for the Subtitle field, or undefined if no subtitle. */
+  subtitle?: string;
+  fields: SectionField[];
+}
+
+// One friendly form per section kind. Order here = order in the "Add" dropdown.
+const SECTIONS: Record<string, SectionDef> = {
   hero: {
     label: "Hero banner",
-    hint: 'Content keys: "highlight", "badge", "cta_text", "cta_href", "cta2_text", "cta2_href", "pill1-3"',
+    description: "Big headline, call-to-action buttons and trust pills at the top.",
+    title: "First part of the headline, before the highlighted words. Default: “Level up for less with”.",
+    subtitle: "Supporting line under the headline.",
+    fields: [
+      { key: "highlight", label: "Highlighted words", type: "text", placeholder: "Zeuservices", help: "Shown in the gradient colour at the end of the headline." },
+      { key: "badge", label: "Top badge text", type: "text", placeholder: "Trusted by thousands of gamers worldwide" },
+      { key: "cta_text", label: "Primary button label", type: "text", placeholder: "Browse games" },
+      { key: "cta_href", label: "Primary button link", type: "url", placeholder: "/games" },
+      { key: "cta2_text", label: "Secondary button label", type: "text", placeholder: "Cheap top-ups" },
+      { key: "cta2_href", label: "Secondary button link", type: "url", placeholder: "/category/topups" },
+      { key: "pill1", label: "Trust pill 1", type: "text", placeholder: "Instant delivery" },
+      { key: "pill2", label: "Trust pill 2", type: "text", placeholder: "Secure Stripe checkout" },
+      { key: "pill3", label: "Trust pill 3", type: "text", placeholder: "24/7 live support" },
+    ],
   },
-  categories: { label: "Category cards", hint: "Shows all active categories." },
+  categories: {
+    label: "Category cards",
+    description: "A card for each active category (managed under Categories).",
+    title: "Section heading. Default: “Shop by category”.",
+    subtitle: "Optional line under the heading.",
+    fields: [],
+  },
   featured_products: {
     label: "Featured products",
-    hint: 'Shows products marked featured. Content: {"limit": 8}',
+    description: "Grid of products you've marked as Featured.",
+    title: "Default: “Featured offers”.",
+    subtitle: "Optional.",
+    fields: [{ key: "limit", label: "Max products", type: "number", placeholder: "8" }],
   },
-  games: { label: "Games grid", hint: 'Content: {"limit": 12}' },
+  games: {
+    label: "Games grid",
+    description: "Grid of your active games.",
+    title: "Default: “Popular games”.",
+    subtitle: "Optional.",
+    fields: [{ key: "limit", label: "Max games", type: "number", placeholder: "12" }],
+  },
+  steps: {
+    label: "How it works",
+    description: "Three numbered steps explaining your process.",
+    title: "Default: “How it works”.",
+    subtitle: "Optional.",
+    fields: [
+      { key: "step1_title", label: "Step 1 title", type: "text", placeholder: "Choose your item" },
+      { key: "step1_text", label: "Step 1 text", type: "textarea", placeholder: "Pick a top-up, boost or account." },
+      { key: "step2_title", label: "Step 2 title", type: "text", placeholder: "Pay securely" },
+      { key: "step2_text", label: "Step 2 text", type: "textarea", placeholder: "Check out with Stripe in your currency." },
+      { key: "step3_title", label: "Step 3 title", type: "text", placeholder: "Instant delivery" },
+      { key: "step3_text", label: "Step 3 text", type: "textarea", placeholder: "Instant items arrive right away." },
+    ],
+  },
+  reviews: {
+    label: "Reviews",
+    description: "Approved customer reviews with the average rating.",
+    title: "Default: “What gamers say about us”.",
+    fields: [{ key: "limit", label: "Max reviews", type: "number", placeholder: "6" }],
+  },
   stats: {
     label: "Stats bar",
-    hint: "Live order/customer/rating counters.",
+    description: "Live order / customer / rating counters. The numbers below are only a fallback shown if live counts can't be loaded.",
+    fields: [
+      { key: "orders", label: "Fallback orders", type: "number", placeholder: "1200" },
+      { key: "customers", label: "Fallback customers", type: "number", placeholder: "800" },
+    ],
   },
-  reviews: { label: "Reviews", hint: 'Approved reviews. Content: {"limit": 6}' },
-  faq: { label: "FAQ accordion", hint: 'Content: {"limit": 6}' },
-  discord: { label: "Discord CTA", hint: "Uses the invite link from Settings." },
-  giveaway: { label: "Giveaway banner", hint: "Shows the next active giveaway." },
+  faq: {
+    label: "FAQ accordion",
+    description: "Expandable FAQ entries (managed under FAQs).",
+    title: "Default: “Frequently asked questions”.",
+    subtitle: "Optional.",
+    fields: [{ key: "limit", label: "Max questions", type: "number", placeholder: "6" }],
+  },
+  cta_banner: {
+    label: "Call-to-action banner",
+    description: "A bold banner with a heading, text and a button.",
+    title: "Heading shown in the banner. Default: “Ready to level up?”.",
+    subtitle: "Text under the heading.",
+    fields: [
+      { key: "button_text", label: "Button label", type: "text", placeholder: "Get started" },
+      { key: "button_href", label: "Button link", type: "url", placeholder: "/games" },
+    ],
+  },
+  discord: {
+    label: "Discord CTA",
+    description: "Invite banner using your Discord link from Settings.",
+    title: "Default: “Join our Discord community”.",
+    subtitle: "Optional.",
+    fields: [],
+  },
+  giveaway: {
+    label: "Giveaway banner",
+    description: "Automatically shows the next active giveaway with a countdown — no setup needed.",
+    fields: [],
+  },
   rich_text: {
     label: "Rich text",
-    hint: 'Custom Markdown block. Content: {"body": "## Your markdown"}',
+    description: "A free-form Markdown block.",
+    title: "Optional heading.",
+    subtitle: "Optional.",
+    fields: [
+      { key: "body", label: "Body (Markdown)", type: "textarea", placeholder: "## Welcome\nWrite anything in **Markdown**." },
+    ],
   },
 };
+
+function defFor(kind: string): SectionDef {
+  return SECTIONS[kind] ?? { label: kind, description: "", fields: [] };
+}
+
+function Field({
+  field,
+  defaultValue,
+}: {
+  field: SectionField;
+  defaultValue: unknown;
+}) {
+  const dv =
+    defaultValue === undefined || defaultValue === null ? "" : String(defaultValue);
+  return (
+    <div>
+      <label className="label">{field.label}</label>
+      {field.type === "textarea" ? (
+        <textarea
+          name={`content_${field.key}`}
+          className="input min-h-[70px]"
+          defaultValue={dv}
+          placeholder={field.placeholder}
+        />
+      ) : (
+        <input
+          name={`content_${field.key}`}
+          type={field.type === "number" ? "number" : "text"}
+          className="input"
+          defaultValue={dv}
+          placeholder={field.placeholder}
+        />
+      )}
+      {field.help && <p className="mt-1 text-xs text-zinc-600">{field.help}</p>}
+    </div>
+  );
+}
 
 function SectionRow({ section }: { section: SiteSection }) {
   const router = useRouter();
@@ -51,9 +191,13 @@ function SectionRow({ section }: { section: SiteSection }) {
   const [editing, setEditing] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const info = KIND_INFO[section.kind] ?? { label: section.kind, hint: "" };
+  const def = defFor(section.kind);
+  const content = section.content ?? {};
 
-  function run(action: (fd: FormData) => Promise<{ ok: boolean; message: string }>, fields: Record<string, string>) {
+  function run(
+    action: (fd: FormData) => Promise<{ ok: boolean; message: string }>,
+    fields: Record<string, string>
+  ) {
     const formData = new FormData();
     for (const [k, v] of Object.entries(fields)) formData.set(k, v);
     startTransition(async () => {
@@ -86,7 +230,7 @@ function SectionRow({ section }: { section: SiteSection }) {
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="primary">{info.label}</Badge>
+            <Badge variant="primary">{def.label}</Badge>
             {!section.is_active && <Badge variant="danger">hidden</Badge>}
           </div>
           <p className="mt-1 truncate text-sm font-medium text-white">
@@ -131,6 +275,15 @@ function SectionRow({ section }: { section: SiteSection }) {
           action={(formData) => {
             formData.set("id", section.id);
             formData.set("kind", section.kind);
+            // Collect the friendly fields into the JSON content blob.
+            const obj: Record<string, unknown> = {};
+            for (const f of def.fields) {
+              const raw = String(formData.get(`content_${f.key}`) ?? "").trim();
+              formData.delete(`content_${f.key}`);
+              if (raw === "") continue;
+              obj[f.key] = f.type === "number" ? Number(raw) : raw;
+            }
+            formData.set("content", JSON.stringify(obj));
             startTransition(async () => {
               const res = await upsertSection(formData);
               setMsg(res.ok ? null : res.message);
@@ -139,29 +292,45 @@ function SectionRow({ section }: { section: SiteSection }) {
             });
           }}
         >
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div>
-              <label className="label">Title</label>
-              <input name="title" className="input" defaultValue={section.title ?? ""} />
+          <p className="text-xs text-zinc-500">{def.description}</p>
+          {(def.title !== undefined || def.subtitle !== undefined) && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {def.title !== undefined && (
+                <div>
+                  <label className="label">Title</label>
+                  <input name="title" className="input" defaultValue={section.title ?? ""} />
+                  <p className="mt-1 text-xs text-zinc-600">{def.title}</p>
+                </div>
+              )}
+              {def.subtitle !== undefined && (
+                <div>
+                  <label className="label">Subtitle</label>
+                  <input
+                    name="subtitle"
+                    className="input"
+                    defaultValue={section.subtitle ?? ""}
+                  />
+                  <p className="mt-1 text-xs text-zinc-600">{def.subtitle}</p>
+                </div>
+              )}
             </div>
-            <div>
-              <label className="label">Subtitle</label>
-              <input
-                name="subtitle"
-                className="input"
-                defaultValue={section.subtitle ?? ""}
-              />
+          )}
+          {def.fields.length > 0 && (
+            <div className="grid gap-3 sm:grid-cols-2">
+              {def.fields.map((f) => (
+                <div key={f.key} className={f.type === "textarea" ? "sm:col-span-2" : ""}>
+                  <Field field={f} defaultValue={content[f.key]} />
+                </div>
+              ))}
             </div>
-          </div>
-          <div>
-            <label className="label">Content (JSON)</label>
-            <textarea
-              name="content"
-              className="input min-h-[90px] font-mono text-xs"
-              defaultValue={JSON.stringify(section.content ?? {}, null, 2)}
-            />
-            <p className="mt-1 text-xs text-zinc-600">{info.hint}</p>
-          </div>
+          )}
+          {def.fields.length === 0 &&
+            def.title === undefined &&
+            def.subtitle === undefined && (
+              <p className="text-sm text-zinc-500">
+                This section has nothing to configure — it updates automatically.
+              </p>
+            )}
           {msg && <p className="text-xs text-red-400">{msg}</p>}
           <Button size="sm" disabled={pending}>
             {pending ? "Saving…" : "Save section"}
@@ -176,6 +345,7 @@ export function SectionManager({ sections }: { sections: SiteSection[] }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
+  const [kind, setKind] = useState("hero");
 
   return (
     <div className="space-y-3">
@@ -184,7 +354,7 @@ export function SectionManager({ sections }: { sections: SiteSection[] }) {
       ))}
 
       <Card className="border-dashed">
-        <p className="mb-3 text-sm font-semibold text-zinc-400">Add section</p>
+        <p className="mb-3 text-sm font-semibold text-zinc-400">Add a section</p>
         <form
           className="flex flex-wrap items-end gap-3"
           action={(formData) =>
@@ -195,12 +365,17 @@ export function SectionManager({ sections }: { sections: SiteSection[] }) {
             })
           }
         >
-          <div className="min-w-[180px]">
+          <div className="min-w-[200px]">
             <label className="label">Type</label>
-            <select name="kind" className="input">
-              {Object.entries(KIND_INFO).map(([kind, info]) => (
-                <option key={kind} value={kind}>
-                  {info.label}
+            <select
+              name="kind"
+              className="input"
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+            >
+              {Object.entries(SECTIONS).map(([k, def]) => (
+                <option key={k} value={k}>
+                  {def.label}
                 </option>
               ))}
             </select>
@@ -212,8 +387,9 @@ export function SectionManager({ sections }: { sections: SiteSection[] }) {
           <Button disabled={pending}>
             <Plus className="h-4 w-4" /> {pending ? "Adding…" : "Add"}
           </Button>
-          {msg && <p className="w-full text-xs text-red-400">{msg}</p>}
         </form>
+        <p className="mt-2 text-xs text-zinc-600">{defFor(kind).description}</p>
+        {msg && <p className="mt-2 text-xs text-red-400">{msg}</p>}
       </Card>
     </div>
   );

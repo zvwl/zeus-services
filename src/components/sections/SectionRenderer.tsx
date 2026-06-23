@@ -49,6 +49,10 @@ export async function SectionRenderer({ section }: { section: SiteSection }) {
       return <ReviewsSection section={section} />;
     case "faq":
       return <FaqSection section={section} />;
+    case "steps":
+      return <StepsSection section={section} />;
+    case "cta_banner":
+      return <CtaBannerSection section={section} />;
     case "discord":
       return <DiscordSection section={section} />;
     case "giveaway":
@@ -423,6 +427,62 @@ async function GiveawaySection({ section }: { section: SiteSection }) {
               Enter free →
             </ButtonLink>
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StepsSection({ section }: { section: SiteSection }) {
+  const c = section.content ?? {};
+  const defaults: [string, string][] = [
+    ["Choose your item", "Pick a top-up, boost or account for your game."],
+    ["Pay securely", "Check out with Stripe in your own currency — cards, Apple Pay & Google Pay."],
+    ["Instant delivery", "Instant items arrive right away; everything else is handled fast by our team."],
+  ];
+  const steps = [0, 1, 2].map((i) => ({
+    title: str(c, `step${i + 1}_title`, defaults[i][0]),
+    text: str(c, `step${i + 1}_text`, defaults[i][1]),
+  }));
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <SectionHeading
+        eyebrow="Simple & fast"
+        title={section.title ?? "How it works"}
+        subtitle={section.subtitle}
+        center
+      />
+      <div className="grid gap-5 md:grid-cols-3">
+        {steps.map((s, i) => (
+          <div key={i} className="glass p-7 text-center">
+            <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-xl font-bold text-primary-light">
+              {i + 1}
+            </span>
+            <h3 className="text-lg font-bold text-white">{s.title}</h3>
+            <p className="mt-2 text-sm leading-relaxed text-zinc-400">{s.text}</p>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CtaBannerSection({ section }: { section: SiteSection }) {
+  const c = section.content ?? {};
+  return (
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <div className="glass relative overflow-hidden bg-gradient-to-r from-primary/20 via-surface to-surface p-10 text-center sm:p-14">
+        <div className="pointer-events-none absolute -left-10 -top-10 h-48 w-48 rounded-full bg-primary/30 blur-[80px]" />
+        <h2 className="text-3xl font-bold text-white">
+          {section.title ?? "Ready to level up?"}
+        </h2>
+        {section.subtitle && (
+          <p className="mx-auto mt-3 max-w-xl text-zinc-400">{section.subtitle}</p>
+        )}
+        <div className="mt-8">
+          <ButtonLink href={str(c, "button_href", "/games")} size="lg">
+            {str(c, "button_text", "Get started")}
+          </ButtonLink>
         </div>
       </div>
     </section>

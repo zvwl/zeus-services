@@ -258,6 +258,8 @@ export type SectionKind =
   | "stats"
   | "reviews"
   | "faq"
+  | "steps"
+  | "cta_banner"
   | "discord"
   | "giveaway"
   | "rich_text";
