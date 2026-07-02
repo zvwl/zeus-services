@@ -18,7 +18,7 @@ const GENERAL_FIELDS: { key: string; label: string; placeholder: string; textare
   {
     key: "announcement",
     label: "Announcement bar (empty = hidden)",
-    placeholder: "⚡ SUMMER SALE — 20% off all top-ups this week!",
+    placeholder: "SUMMER SALE — 20% off all top-ups this week!",
   },
   {
     key: "support_email",
@@ -83,7 +83,7 @@ export function SettingsForm({
             folder="branding"
             value={logoUrl}
             onChange={setLogoUrl}
-            label="Site logo — shown in the navbar & footer (PNG or SVG, transparent background works best). Leave empty to use the default ⚡ mark."
+            label="Site logo — shown in the navbar & footer (PNG or SVG, transparent background works best). Leave empty to use the default logo mark."
           />
           <input type="hidden" name="setting_logo_url" value={logoUrl ?? ""} />
           {GENERAL_FIELDS.map((f) => (

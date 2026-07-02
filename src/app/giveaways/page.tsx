@@ -58,7 +58,7 @@ export default async function GiveawaysPage() {
                   <CoverImage
                     src={g.image_url}
                     alt={g.title}
-                    fallbackText={`🎁 ${g.title}`}
+                    fallbackText={g.title}
                     className="aspect-[16/9] w-full"
                   />
                   <div className="p-5">
@@ -91,7 +91,7 @@ export default async function GiveawaysPage() {
                       Prize: {g.prize}
                     </p>
                     {g.winner_user_id && (
-                      <p className="mt-2 text-sm text-gold">🏆 Winner drawn</p>
+                      <p className="mt-2 text-sm text-gold">Winner drawn</p>
                     )}
                   </div>
                 ))}

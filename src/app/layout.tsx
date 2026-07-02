@@ -138,7 +138,7 @@ export default async function RootLayout({
           <CartProvider authed={Boolean(user)}>
             {isPreview && (
               <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-black">
-                ⚠️ STAGING / DEV PREVIEW — not the live site. Changes here are for
+                STAGING / DEV PREVIEW — not the live site. Changes here are for
                 testing only.
               </div>
             )}

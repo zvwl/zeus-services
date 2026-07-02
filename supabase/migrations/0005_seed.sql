@@ -30,9 +30,9 @@ on conflict (key) do nothing;
 
 -- The three core categories.
 insert into zeus.categories (name, slug, description, icon, sort_order) values
-  ('Top-Ups',  'topups',   'In-game currency for less — V-Bucks, VP, Robux, Gems and more, delivered fast.', '💎', 0),
-  ('Boosting', 'boosting', 'Pro players rank up your account safely. VPN-protected, progress screenshots included.', '🚀', 1),
-  ('Accounts', 'accounts', 'Hand-levelled and rare accounts with full email access and a 48-hour warranty.', '🛡️', 2)
+  ('Top-Ups',  'topups',   'In-game currency for less — V-Bucks, VP, Robux, Gems and more, delivered fast.', null, 0),
+  ('Boosting', 'boosting', 'Pro players rank up your account safely. VPN-protected, progress screenshots included.', null, 1),
+  ('Accounts', 'accounts', 'Hand-levelled and rare accounts with full email access and a 48-hour warranty.', null, 2)
 on conflict (slug) do nothing;
 
 -- Homepage layout. Data-driven sections (featured products, games, reviews,

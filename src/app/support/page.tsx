@@ -67,7 +67,6 @@ export default async function SupportPage() {
           )}
         </Card>
         <Card className="text-center">
-          <span className="mx-auto block text-xl">🎫</span>
           <h3 className="mt-2 font-semibold text-white">Open a ticket</h3>
           <p className="mt-1 text-xs text-zinc-500">
             For order issues, refunds and account help.

@@ -35,7 +35,7 @@ async function fulfillDonation(session: Stripe.Checkout.Session) {
     .maybeSingle();
   if (data) {
     await notifyDiscord({
-      title: "☕ New donation",
+      title: "New donation",
       description: `**${data.name || "Anonymous"}** donated **${formatMoney(
         Number(data.amount),
         data.currency
@@ -145,7 +145,7 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
 
   const orderRef = order.reference ?? `#${order.order_number}`;
   await notifyDiscord({
-    title: `🛒 Order ${orderRef} paid`,
+    title: `Order ${orderRef} paid`,
     fields: [
       {
         name: "Total",
@@ -174,7 +174,7 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
   if (email) {
     await sendEmail({
       to: email,
-      subject: `Order ${orderRef} confirmed ⚡`,
+      subject: `Order ${orderRef} confirmed`,
       html: orderConfirmationEmail({
         orderNumber: orderRef,
         total: Number(order.total),

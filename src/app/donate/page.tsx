@@ -64,13 +64,13 @@ export default async function DonatePage({
       <SectionHeading
         eyebrow="Buy us a coffee"
         title="Support Zeuservices"
-        subtitle="Love what we do? Tips keep the giveaways flowing and the support team caffeinated. ☕"
+        subtitle="Love what we do? Tips keep the giveaways flowing and the support team caffeinated."
         center
       />
 
       {thanks && (
         <p className="mx-auto mb-8 max-w-md rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-300">
-          💜 Thank you so much for your support! You&apos;re a legend.
+          Thank you so much for your support! You&apos;re a legend.
         </p>
       )}
 

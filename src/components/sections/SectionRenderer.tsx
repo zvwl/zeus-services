@@ -141,9 +141,9 @@ async function CategoriesSection({ section }: { section: SiteSection }) {
             className="group glass relative overflow-hidden p-7 transition duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow-sm"
           >
             <span className="absolute -right-6 -top-6 text-[90px] opacity-[0.07] transition group-hover:opacity-[0.14]">
-              {cat.icon ?? "🎮"}
+              {(cat.name[0] ?? "").toUpperCase()}
             </span>
-            <span className="text-3xl">{cat.icon ?? "🎮"}</span>
+            <span className="text-3xl">{(cat.name[0] ?? "").toUpperCase()}</span>
             <h3 className="mt-4 text-xl font-bold text-white group-hover:text-primary-light">
               {cat.name}
             </h3>
@@ -253,7 +253,7 @@ async function StatsSection({ section }: { section: SiteSection }) {
   const stats = [
     { label: "Orders delivered", value: `${orders.toLocaleString()}+` },
     { label: "Happy customers", value: `${customers.toLocaleString()}+` },
-    { label: "Average rating", value: `${avgRating} ★` },
+    { label: "Average rating", value: `${avgRating} / 5` },
     { label: "Support", value: "24/7" },
   ];
   return (

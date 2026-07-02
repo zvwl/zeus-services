@@ -25,13 +25,6 @@ function CategoryRow({ category }: { category: Category | null }) {
       }}
     >
       <input
-        name="icon"
-        defaultValue={category?.icon ?? ""}
-        placeholder="💎"
-        className="input w-16 text-center"
-        maxLength={4}
-      />
-      <input
         name="name"
         defaultValue={category?.name ?? ""}
         placeholder="Category name"

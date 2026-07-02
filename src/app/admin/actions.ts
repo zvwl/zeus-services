@@ -632,7 +632,7 @@ export async function refundOrder(formData: FormData): Promise<AdminResult> {
     email: emailResult,
   });
   await notifyDiscord({
-    title: `↩️ Order ${ref} refunded`,
+    title: `Order ${ref} refunded`,
     fields: [
       {
         name: "Amount",
@@ -694,7 +694,7 @@ export async function deliverOrderItem(formData: FormData): Promise<AdminResult>
     const orderRef = order.reference ?? `#${order.order_number}`;
     await sendEmail({
       to: order.email,
-      subject: `Your Zeuservices order ${orderRef} is ready 🎉`,
+      subject: `Your Zeuservices order ${orderRef} is ready`,
       html: orderDeliveredEmail({
         orderNumber: orderRef,
         productName: item.product_name,
@@ -965,7 +965,7 @@ export async function pickGiveawayWinner(formData: FormData): Promise<AdminResul
 
   await audit("giveaway.winner", "giveaway", id, { winner: winner.user_id });
   await notifyDiscord({
-    title: "🏆 Giveaway winner drawn",
+    title: "Giveaway winner drawn",
     description: `A winner has been selected from ${count} entries.`,
     color: 0xfbbf24,
   });

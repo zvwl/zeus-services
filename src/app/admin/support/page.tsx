@@ -97,7 +97,7 @@ export default async function AdminSupportPage({
             {tickets.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-10 text-center text-zinc-500">
-                  No tickets here. 🎉
+                  No tickets here.
                 </td>
               </tr>
             )}

@@ -49,7 +49,7 @@ export default async function GiveawayPage({
       <CoverImage
         src={giveaway.image_url}
         alt={giveaway.title}
-        fallbackText={`🎁 ${giveaway.title}`}
+        fallbackText={giveaway.title}
         className="aspect-[16/7] w-full rounded-2xl border border-edge"
       />
       <div className="mt-8 flex flex-wrap items-start justify-between gap-6">
@@ -74,8 +74,10 @@ export default async function GiveawayPage({
 
       {winnerName && (
         <Card className="mt-8 border-gold/40 bg-gold/5 text-center">
-          <p className="text-2xl">🏆</p>
-          <p className="mt-1 font-bold text-gold">Winner: {String(winnerName)}</p>
+          <p className="text-sm font-semibold uppercase tracking-widest text-gold">
+            Winner
+          </p>
+          <p className="mt-1 font-bold text-gold">{String(winnerName)}</p>
           <p className="mt-1 text-sm text-zinc-400">
             Congratulations! Check your account email / Discord DMs to claim.
           </p>

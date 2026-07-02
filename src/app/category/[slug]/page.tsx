@@ -84,7 +84,7 @@ export default async function CategoryPage({
           Category
         </p>
         <h1 className="flex items-center gap-3 text-4xl font-extrabold text-white">
-          <span>{category.icon ?? "🎮"}</span> {category.name}
+          {category.name}
         </h1>
         {category.description && (
           <p className="mt-3 max-w-2xl text-zinc-400">{category.description}</p>

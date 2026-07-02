@@ -71,7 +71,7 @@ export async function POST(req: Request) {
             currency: currency.toLowerCase(),
             unit_amount: Math.round(amount * 100),
             product_data: {
-              name: "☕ Buy Zeuservices a coffee",
+              name: "Buy Zeuservices a coffee",
               description: "Thank you for supporting us!",
             },
           },

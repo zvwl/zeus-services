@@ -53,9 +53,11 @@ export default async function Image() {
               borderRadius: "22px",
               background: "linear-gradient(135deg, #8b5cf6, #7c3aed)",
               fontSize: "54px",
+              fontWeight: 800,
+              color: "#fff",
             }}
           >
-            ⚡
+            Z
           </div>
           <div style={{ display: "flex", fontSize: "46px", fontWeight: 800 }}>
             {siteName}

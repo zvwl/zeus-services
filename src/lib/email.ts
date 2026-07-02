@@ -67,7 +67,7 @@ function layout(title: string, body: string) {
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
     <table role="presentation" width="100%" style="max-width:520px" cellpadding="0" cellspacing="0">
       <tr><td style="padding:0 24px 20px">
-        <span style="font-size:22px;font-weight:800;color:#fff">⚡ Zeu<span style="color:#a78bfa">services</span></span>
+        <span style="font-size:22px;font-weight:800;color:#fff">Zeu<span style="color:#a78bfa">services</span></span>
       </td></tr>
       <tr><td style="background:#12121f;border:1px solid #1e1e30;border-radius:16px;padding:28px 24px">
         <h1 style="margin:0 0 16px;font-size:20px;color:#fff">${title}</h1>
@@ -109,11 +109,11 @@ export function orderConfirmationEmail(opts: {
     <p style="margin:0 0 20px;font-size:16px;color:#fff"><strong>Total paid:</strong> ${formatMoney(opts.total, opts.currency)}</p>
     ${
       opts.manual
-        ? `<p style="margin:0;padding:12px 14px;background:rgba(56,189,248,.1);border-radius:10px;color:#bae6fd;font-size:14px">⏳ This order is being processed by our team and will be delivered shortly — we'll email you the moment it's done.</p>`
-        : `<p style="margin:0;padding:12px 14px;background:rgba(34,197,94,.1);border-radius:10px;color:#bbf7d0;font-size:14px">✅ Your delivery details are available in your account now.</p>`
+        ? `<p style="margin:0;padding:12px 14px;background:rgba(56,189,248,.1);border-radius:10px;color:#bae6fd;font-size:14px">This order is being processed by our team and will be delivered shortly — we'll email you the moment it's done.</p>`
+        : `<p style="margin:0;padding:12px 14px;background:rgba(34,197,94,.1);border-radius:10px;color:#bbf7d0;font-size:14px">Your delivery details are available in your account now.</p>`
     }
     <p style="margin:20px 0 0"><a href="${siteUrl()}/account/orders" style="color:#a78bfa">View your order →</a></p>`;
-  return layout(`Order ${opts.orderNumber} confirmed ⚡`, body);
+  return layout(`Order ${opts.orderNumber} confirmed`, body);
 }
 
 const STATUS_COPY: Record<
@@ -126,7 +126,7 @@ const STATUS_COPY: Record<
     accent: "#a1a1aa",
   },
   paid: {
-    heading: "Payment confirmed ✅",
+    heading: "Payment confirmed",
     body: "Thanks! We've received your payment and your order is now being prepared.",
     accent: "#22c55e",
   },
@@ -136,7 +136,7 @@ const STATUS_COPY: Record<
     accent: "#38bdf8",
   },
   completed: {
-    heading: "Your order is complete 🎉",
+    heading: "Your order is complete",
     body: "Your order has been fully delivered. Thanks for choosing Zeuservices — we hope to see you again!",
     accent: "#22c55e",
   },
@@ -160,7 +160,7 @@ export function orderStatusSubject(
     pending: `Order ${orderNumber} received`,
     paid: `Payment confirmed — order ${orderNumber}`,
     processing: `Your order ${orderNumber} is being processed`,
-    completed: `Your order ${orderNumber} is complete 🎉`,
+    completed: `Your order ${orderNumber} is complete`,
     cancelled: `Your order ${orderNumber} was cancelled`,
     refunded: `Your order ${orderNumber} was refunded`,
   };
@@ -201,5 +201,5 @@ export function orderDeliveredEmail(opts: {
     <p style="margin:0 0 12px;font-size:16px;font-weight:700;color:#fff">${opts.productName}</p>
     <pre style="margin:0 0 16px;padding:14px;background:#07070e;border:1px solid #1e1e30;border-radius:10px;color:#bbf7d0;font-size:13px;white-space:pre-wrap;word-break:break-word">${opts.payload}</pre>
     <p style="margin:0"><a href="${siteUrl()}/account/orders" style="color:#a78bfa">Open in your account →</a></p>`;
-  return layout("Your order has been delivered 🎉", body);
+  return layout("Your order has been delivered", body);
 }

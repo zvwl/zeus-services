@@ -63,7 +63,7 @@ export function GiveawayEntryButton({
           })
         }
       >
-        {pending ? "Entering…" : "⚡ Enter giveaway"}
+        {pending ? "Entering…" : "Enter giveaway"}
       </Button>
       {result && !result.ok && (
         <p className="mt-2 text-center text-xs text-red-400">{result.message}</p>

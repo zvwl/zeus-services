@@ -60,7 +60,7 @@ export default async function AdminGiveawaysPage() {
                       {g.title}
                     </Link>
                     {g.winner?.username && (
-                      <p className="text-xs text-gold">🏆 {g.winner.username}</p>
+                      <p className="text-xs text-gold">Winner: {g.winner.username}</p>
                     )}
                   </td>
                   <td className="px-4 py-3 text-zinc-400">{g.prize}</td>
@@ -96,7 +96,7 @@ export default async function AdminGiveawaysPage() {
                           variant="gold"
                           confirmText="Draw a random winner now? This ends the giveaway."
                         >
-                          🎲 Draw winner
+                          Draw winner
                         </ActionButton>
                       )}
                       <ActionButton

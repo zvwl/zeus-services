@@ -69,6 +69,50 @@ export function CartProvider({
   const authedRef = useRef(authed);
   const prevAuthedRef = useRef(authed);
 
+  // Debounced server persistence. Every quantity +/- updates local state and
+  // localStorage INSTANTLY (optimistic), but the DB sync is a Next.js Server
+  // Action — and each invocation makes Next refetch the whole current route's
+  // server components. Firing that on every click floods the network and makes
+  // the cart feel frozen. Instead we coalesce rapid edits into a single sync a
+  // short moment after the user stops interacting.
+  const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const pendingSave = useRef<CartLine[] | null>(null);
+
+  const flushSave = useCallback(() => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    if (pendingSave.current !== null) {
+      const toSave = pendingSave.current;
+      pendingSave.current = null;
+      void saveServerCart(toSave);
+    }
+  }, []);
+
+  const scheduleSave = useCallback(
+    (next: CartLine[]) => {
+      pendingSave.current = next;
+      if (saveTimer.current) clearTimeout(saveTimer.current);
+      saveTimer.current = setTimeout(flushSave, 700);
+    },
+    [flushSave]
+  );
+
+  // Flush any pending sync when the tab is hidden/closed or the provider
+  // unmounts, so the last edit isn't lost before the debounce fires.
+  useEffect(() => {
+    const onHide = () => flushSave();
+    window.addEventListener("pagehide", onHide);
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "hidden") flushSave();
+    });
+    return () => {
+      window.removeEventListener("pagehide", onHide);
+      flushSave();
+    };
+  }, [flushSave]);
+
   // On mount: load the local cart, and if signed in, merge it with the saved
   // server cart (server display data wins, quantities are max-merged so this is
   // idempotent across reloads).
@@ -105,7 +149,7 @@ export function CartProvider({
         setLines(merged);
         writeLocal(merged);
         // Persist the merge so the server reflects any guest additions.
-        void saveServerCart(merged);
+        scheduleSave(merged);
         setReady(true);
       })
       .catch(() => {
@@ -125,11 +169,11 @@ export function CartProvider({
       setLines((prev) => {
         const next = updater(prev);
         writeLocal(next);
-        if (authedRef.current) void saveServerCart(next);
+        if (authedRef.current) scheduleSave(next);
         return next;
       });
     },
-    []
+    [scheduleSave]
   );
 
   const addLine = useCallback(

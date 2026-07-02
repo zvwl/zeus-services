@@ -46,7 +46,7 @@ export function TicketThread({
             >
               <p className="mb-1 text-xs font-semibold">
                 {m.isStaff ? (
-                  <span className="text-primary-light">⚡ Zeus Support</span>
+                  <span className="text-primary-light">Zeuservices Support</span>
                 ) : (
                   <span className="text-zinc-400">{m.mine ? "You" : "Customer"}</span>
                 )}

@@ -10,11 +10,11 @@ Last updated: June 2026
 
 | Situation | Refund? |
 | --- | --- |
-| Order paid but **not yet delivered / started** | ✅ Full refund |
-| Wrong details provided by you, delivery attempted | ⚠️ Case by case |
-| Instant product already delivered | ❌ Not refundable |
-| Boost partially completed | ⚠️ Pro-rata refund of the incomplete part |
-| Account purchased and credentials revealed | ❌ Not refundable (warranty applies instead) |
+| Order paid but **not yet delivered / started** | Full refund |
+| Wrong details provided by you, delivery attempted | Case by case |
+| Instant product already delivered | Not refundable |
+| Boost partially completed | Pro-rata refund of the incomplete part |
+| Account purchased and credentials revealed | Not refundable (warranty applies instead) |
 
 ## How to request a refund
 

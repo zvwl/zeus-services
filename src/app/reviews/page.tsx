@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
 import { ReviewCard } from "@/components/cards";
 import { ReviewForm } from "@/components/ReviewForm";
+import { Star } from "lucide-react";
 import { SectionHeading, Stars } from "@/components/ui";
 import type { Review } from "@/lib/types";
 
@@ -59,7 +60,10 @@ export default async function ReviewsPage() {
           <div className="mt-6 space-y-2">
             {distribution.map((d) => (
               <div key={d.star} className="flex items-center gap-2 text-xs">
-                <span className="w-8 text-zinc-500">{d.star}★</span>
+                <span className="flex w-8 items-center gap-0.5 text-zinc-500">
+                  {d.star}
+                  <Star className="h-3 w-3 fill-current" />
+                </span>
                 <div className="h-2 flex-1 overflow-hidden rounded-full bg-raised">
                   <div
                     className="h-full rounded-full bg-gradient-to-r from-primary to-fuchsia-500"

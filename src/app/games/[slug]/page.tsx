@@ -112,7 +112,7 @@ export default async function GamePage({
           groups.map(({ category, items }) => (
             <section key={category.id} className="mb-14">
               <h2 className="mb-6 flex items-center gap-2.5 text-2xl font-bold text-white">
-                <span>{category.icon ?? "🎮"}</span> {category.name}
+                {category.name}
               </h2>
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
                 {items.map((p) => (

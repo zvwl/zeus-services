@@ -732,7 +732,7 @@ export function ProductForm({
             target="_blank"
             className="inline-flex items-center rounded-xl border border-edge px-6 py-3 text-base font-medium text-zinc-300 hover:bg-raised"
           >
-            View in store ↗
+            View in store
           </a>
         )}
       </div>

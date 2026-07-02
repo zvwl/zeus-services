@@ -407,7 +407,7 @@ export function BuyBox({
 
       {stock !== null && stock > 0 && stock <= 10 && (
         <p className="mb-3 text-xs font-medium text-amber-300">
-          ⚠ Only {stock} left in stock
+          Only {stock} left in stock
         </p>
       )}
       {error && (

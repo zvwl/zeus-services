@@ -59,7 +59,7 @@ export default async function AdminReviewsPage() {
                 action={moderateReview}
                 fields={{ id: r.id, op: r.is_featured ? "unfeature" : "feature" }}
               >
-                {r.is_featured ? "Unfeature" : "★ Feature"}
+                {r.is_featured ? "Unfeature" : "Feature"}
               </ActionButton>
               <ActionButton
                 action={moderateReview}

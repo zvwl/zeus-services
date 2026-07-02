@@ -94,7 +94,7 @@ export default async function OrderDetailPage({
                 </div>
               ) : ["paid", "processing"].includes(order.status) ? (
                 <p className="mt-3 rounded-xl bg-sky-500/10 p-3 text-sm text-sky-200">
-                  ⏳ In progress — our team is working on this item.
+                  In progress — our team is working on this item.
                 </p>
               ) : null}
 

@@ -172,7 +172,7 @@ export async function createTicket(formData: FormData): Promise<ActionResult> {
   }
 
   await notifyDiscord({
-    title: `🎫 New support ticket #${ticket.ticket_number}`,
+    title: `New support ticket #${ticket.ticket_number}`,
     description: subject,
     fields: [{ name: "Category", value: category, inline: true }],
     color: 0x38bdf8,
@@ -292,5 +292,5 @@ export async function enterGiveaway(formData: FormData): Promise<ActionResult> {
   }
 
   revalidatePath(`/giveaways/${giveaway.slug}`);
-  return { ok: true, message: "You're in! Good luck ⚡" };
+  return { ok: true, message: "You're in! Good luck." };
 }

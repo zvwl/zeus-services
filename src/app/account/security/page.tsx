@@ -130,7 +130,7 @@ export default function SecurityPage() {
       setMsg({ ok: false, text: "Invalid code — scan the QR and try again." });
       setCode("");
     } else {
-      setMsg({ ok: true, text: "Two-factor authentication enabled 🔒" });
+      setMsg({ ok: true, text: "Two-factor authentication enabled" });
       setEnrolling(null);
       setCode("");
       await load();
