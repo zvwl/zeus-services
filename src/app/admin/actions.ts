@@ -873,6 +873,42 @@ export async function deleteFaq(formData: FormData): Promise<AdminResult> {
   return ok("FAQ deleted.");
 }
 
+/* ──────────────────────── Site pages ─────────────────────── */
+
+/** Update an editable site page (terms/privacy/refunds). Pages are a fixed
+ *  set seeded by migration — this edits content/title only, never creates. */
+export async function savePage(formData: FormData): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_pages");
+  } catch {
+    return fail("Unauthorized");
+  }
+  const slug = String(formData.get("slug") ?? "").trim();
+  const title = String(formData.get("title") ?? "").trim();
+  const content = String(formData.get("content") ?? "").trim();
+  if (!slug) return fail("Missing page slug.");
+  if (!title) return fail("Title is required.");
+  if (!content) return fail("Content is required.");
+  const supabase = await actionDb();
+  const { data, error } = await supabase
+    .from("pages")
+    .update({ title, content })
+    .eq("slug", slug)
+    .select("slug")
+    .maybeSingle();
+  if (error) return fail(error.message);
+  if (!data) {
+    return fail(
+      "Page not found — run migration 0013_editable_pages.sql on this database first."
+    );
+  }
+  await audit("page.update", "page", slug, { title });
+  revalidatePath(`/${slug}`);
+  revalidatePath("/admin/pages");
+  refreshStore();
+  return ok("Page saved.");
+}
+
 /* ──────────────────────── Giveaways ─────────────────────── */
 
 export async function upsertGiveaway(formData: FormData): Promise<AdminResult> {

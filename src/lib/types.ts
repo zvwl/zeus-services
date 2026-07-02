@@ -216,6 +216,14 @@ export interface BlogPost {
   author?: Pick<Profile, "username" | "avatar_url"> | null;
 }
 
+/** Admin-editable markdown page (terms, privacy, refunds, …). */
+export interface SitePage {
+  slug: string;
+  title: string;
+  content: string;
+  updated_at: string;
+}
+
 export interface Faq {
   id: string;
   question: string;
@@ -335,6 +343,7 @@ export const CAPABILITIES = [
   { key: "manage_faqs", label: "FAQs", group: "Content" },
   { key: "manage_donations", label: "Donations", group: "Content" },
   { key: "manage_layout", label: "Homepage layout", group: "Site" },
+  { key: "manage_pages", label: "Site pages", group: "Site" },
   { key: "manage_settings", label: "Settings & rates", group: "Site" },
   { key: "manage_team", label: "Team & permissions", group: "Site" },
 ] as const;
@@ -379,6 +388,7 @@ const PATH_CAPABILITY: [string, Capability][] = [
   ["/admin/faqs", "manage_faqs"],
   ["/admin/donations", "manage_donations"],
   ["/admin/sections", "manage_layout"],
+  ["/admin/pages", "manage_pages"],
   ["/admin/settings", "manage_settings"],
   ["/admin/team", "manage_team"],
 ];

@@ -1,19 +1,19 @@
 import type { Metadata } from "next";
 import { Markdown } from "@/components/Markdown";
+import { getPage } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "Terms & Conditions",
-  description:
-    "The terms that apply when you buy game top-ups, boosting or accounts from Zeuservices — eligibility, delivery, refunds and acceptable use.",
-  alternates: { canonical: "/terms" },
-};
+const DEFAULT_TITLE = "Terms & Conditions";
 
+// Fallback copy if the DB row is missing — the live text is editable in
+// Admin → Pages (zeus.pages, slug "terms").
 const TERMS = `
-Last updated: June 2026
+Last updated: July 2026
 
 ## 1. Introduction
 
-Welcome to Zeuservices ("we", "us", "our"). By accessing our website and purchasing our services — including game currency top-ups, account boosting and game accounts (the "Services") — you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the site.
+Welcome to Zeuservices ("we", "us", "our"). Zeuservices is operated by a private individual based in the United Kingdom. By accessing our website and purchasing our services — including game currency top-ups, account boosting and game accounts (the "Services") — you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the site.
+
+We sell worldwide; these terms apply wherever you order from.
 
 ## 2. Eligibility
 
@@ -21,11 +21,11 @@ You must be at least 16 years old (or the age of digital consent in your country
 
 ## 3. Digital products & delivery
 
-- **Top-ups** are delivered to the game account details you provide at checkout. Make sure they are correct — we are not responsible for top-ups sent to incorrectly entered accounts.
-- **Boosting services** require temporary access to your game account. Our boosters use VPNs matched to your region and never touch anything unrelated to the ordered service. You should change your password after the service is complete.
-- **Accounts** are delivered with full credentials. After delivery, you must change the email and password immediately. Warranty is void if you fail to secure the account after handover.
+- **Top-ups and in-game currency** are delivered directly to the game account details you provide at checkout. Make sure they are correct — we are not responsible for deliveries sent to incorrectly entered accounts.
+- **Boosting services** require temporary access to your game account, which you authorise by placing the order. Our staff are experienced in handling customer accounts: we only ever access an account with the owner's explicit permission, we never attempt to access accounts we are not authorised to use, and we never touch anything unrelated to the service you ordered. You should change your password after the service is complete.
+- **Accounts** are delivered with full credentials. After delivery, you must change the email and password immediately. Cover is void if you fail to secure the account after handover.
 
-Delivery times shown on product pages are estimates. "Instant" products are typically delivered within minutes of payment confirmation.
+Delivery typically takes between 10 minutes and 2 hours depending on availability and how busy we are. Delivery times shown on product pages are estimates, not guarantees.
 
 ## 4. Game publisher disclaimer
 
@@ -37,7 +37,7 @@ All payments are processed securely by Stripe. We never see or store your card d
 
 ## 6. Refunds
 
-See our [Refund Policy](/refunds). In short: refunds are available before delivery has started; once a digital product has been delivered or a boost has begun, refunds are assessed case by case.
+See our [Refund Policy](/refunds). In short: you can get a full refund any time before delivery has started. Once a digital product has been delivered, it is not refundable. Boosts cancelled part-way through are generally not refundable; any exception is at our discretion and depends on the game and service. Purchased accounts come with 7 days of cover instead of a refund.
 
 ## 7. Account & conduct
 
@@ -51,21 +51,38 @@ Giveaways are free to enter and not tied to any purchase. Winners are selected r
 
 To the maximum extent permitted by law, our total liability for any claim related to an order is limited to the amount you paid for that order. We are not liable for indirect losses, including in-game penalties imposed by game publishers.
 
-## 10. Changes
+## 10. Governing law
+
+These terms are governed by the laws of England and Wales, and any dispute is subject to the non-exclusive jurisdiction of the courts of England and Wales. Nothing in these terms affects statutory consumer rights that apply in your country of residence.
+
+## 11. Changes
 
 We may update these terms at any time. Continued use of the site after changes constitutes acceptance. Material changes will be announced on the website.
 
-## 11. Contact
+## 12. Contact
 
-Questions? Open a ticket on our [support page](/support) or reach us via the email in the site footer.
+Questions? Open a ticket on our [support page](/support) or reach us on [Discord](https://discord.gg/uGDuujHsBW).
 `;
 
-export default function TermsPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPage("terms");
+  return {
+    title: page?.title ?? DEFAULT_TITLE,
+    description:
+      "The terms that apply when you buy game top-ups, boosting or accounts from Zeuservices — eligibility, delivery, refunds and acceptable use.",
+    alternates: { canonical: "/terms" },
+  };
+}
+
+export default async function TermsPage() {
+  const page = await getPage("terms");
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-      <h1 className="text-4xl font-extrabold text-white">Terms &amp; Conditions</h1>
+      <h1 className="text-4xl font-extrabold text-white">
+        {page?.title ?? DEFAULT_TITLE}
+      </h1>
       <div className="mt-8">
-        <Markdown>{TERMS}</Markdown>
+        <Markdown>{page?.content ?? TERMS}</Markdown>
       </div>
     </div>
   );

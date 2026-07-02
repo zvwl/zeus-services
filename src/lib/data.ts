@@ -4,6 +4,7 @@ import { FALLBACK_RATES } from "@/lib/currency";
 import type {
   Category,
   ExchangeRate,
+  SitePage,
   SiteSection,
   SiteSettings,
 } from "@/lib/types";
@@ -55,6 +56,23 @@ export const getRates = unstable_cache(
   ["exchange-rates"],
   CACHE_OPTS
 );
+
+// All editable pages in one cached fetch (there are only a handful); public
+// routes pick theirs by slug and fall back to built-in defaults if missing.
+export const getPages = unstable_cache(
+  async (): Promise<SitePage[]> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase.from("pages").select("*");
+    return (data as SitePage[]) ?? [];
+  },
+  ["site-pages"],
+  CACHE_OPTS
+);
+
+export async function getPage(slug: string): Promise<SitePage | null> {
+  const pages = await getPages();
+  return pages.find((p) => p.slug === slug) ?? null;
+}
 
 export const getSections = unstable_cache(
   async (): Promise<SiteSection[]> => {

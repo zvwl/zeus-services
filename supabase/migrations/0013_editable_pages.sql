@@ -1,0 +1,164 @@
+-- ─────────────────────────────────────────────────────────────────────────
+-- Editable site pages (Terms, Privacy, Refunds — extensible).
+-- Content is markdown, edited in Admin → Pages, rendered by the public
+-- /terms /privacy /refunds routes (which fall back to built-in defaults if a
+-- row is missing). Public read via RLS; writes go through the service-role
+-- server actions guarded by the manage_pages capability.
+-- Run in BOTH Supabase projects (prod + dev).
+-- ─────────────────────────────────────────────────────────────────────────
+
+create table if not exists zeus.pages (
+  slug text primary key,
+  title text not null,
+  content text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+alter table zeus.pages enable row level security;
+
+drop policy if exists "pages_select" on zeus.pages;
+create policy "pages_select" on zeus.pages for select using (true);
+drop policy if exists "pages_admin" on zeus.pages;
+create policy "pages_admin" on zeus.pages for all to authenticated
+  using (zeus.is_admin()) with check (zeus.is_admin());
+
+drop trigger if exists pages_updated_at on zeus.pages;
+create trigger pages_updated_at before update on zeus.pages
+  for each row execute function zeus.set_updated_at();
+
+-- Seed the three legal pages with the current copy (July 2026). Idempotent:
+-- never overwrites content that admins have already edited.
+insert into zeus.pages (slug, title, content) values
+('terms', 'Terms & Conditions', $md$
+Last updated: July 2026
+
+## 1. Introduction
+
+Welcome to Zeuservices ("we", "us", "our"). Zeuservices is operated by a private individual based in the United Kingdom. By accessing our website and purchasing our services — including game currency top-ups, account boosting and game accounts (the "Services") — you agree to be bound by these Terms & Conditions. If you do not agree, please do not use the site.
+
+We sell worldwide; these terms apply wherever you order from.
+
+## 2. Eligibility
+
+You must be at least 16 years old (or the age of digital consent in your country) to make purchases. By ordering, you confirm the payment method used belongs to you or that you have the owner's permission.
+
+## 3. Digital products & delivery
+
+- **Top-ups and in-game currency** are delivered directly to the game account details you provide at checkout. Make sure they are correct — we are not responsible for deliveries sent to incorrectly entered accounts.
+- **Boosting services** require temporary access to your game account, which you authorise by placing the order. Our staff are experienced in handling customer accounts: we only ever access an account with the owner's explicit permission, we never attempt to access accounts we are not authorised to use, and we never touch anything unrelated to the service you ordered. You should change your password after the service is complete.
+- **Accounts** are delivered with full credentials. After delivery, you must change the email and password immediately. Cover is void if you fail to secure the account after handover.
+
+Delivery typically takes between 10 minutes and 2 hours depending on availability and how busy we are. Delivery times shown on product pages are estimates, not guarantees.
+
+## 4. Game publisher disclaimer
+
+Zeuservices is **not affiliated with, endorsed by, or sponsored by** any game publisher (including Epic Games, Riot Games, Roblox Corporation, Supercell, Rockstar Games or any other rights holder). All trademarks belong to their respective owners. You acknowledge that the use of third-party services may be against certain games' Terms of Service and carries inherent risk; you accept that risk when ordering.
+
+## 5. Payments
+
+All payments are processed securely by Stripe. We never see or store your card details. Prices may be displayed in multiple currencies; the charge is made in the currency selected at checkout. We reserve the right to cancel and refund any order flagged as fraudulent.
+
+## 6. Refunds
+
+See our [Refund Policy](/refunds). In short: you can get a full refund any time before delivery has started. Once a digital product has been delivered, it is not refundable. Boosts cancelled part-way through are generally not refundable; any exception is at our discretion and depends on the game and service. Purchased accounts come with 7 days of cover instead of a refund.
+
+## 7. Account & conduct
+
+You are responsible for keeping your Zeuservices account secure (we recommend enabling 2FA). We may suspend accounts involved in fraud, chargebacks, harassment of staff, or abuse of promotions/giveaways.
+
+## 8. Giveaways
+
+Giveaways are free to enter and not tied to any purchase. Winners are selected randomly from valid entries. We may disqualify entries created with duplicate or bot accounts.
+
+## 9. Limitation of liability
+
+To the maximum extent permitted by law, our total liability for any claim related to an order is limited to the amount you paid for that order. We are not liable for indirect losses, including in-game penalties imposed by game publishers.
+
+## 10. Governing law
+
+These terms are governed by the laws of England and Wales, and any dispute is subject to the non-exclusive jurisdiction of the courts of England and Wales. Nothing in these terms affects statutory consumer rights that apply in your country of residence.
+
+## 11. Changes
+
+We may update these terms at any time. Continued use of the site after changes constitutes acceptance. Material changes will be announced on the website.
+
+## 12. Contact
+
+Questions? Open a ticket on our [support page](/support) or reach us on [Discord](https://discord.gg/uGDuujHsBW).
+$md$),
+('privacy', 'Privacy Policy', $md$
+Last updated: July 2026
+
+## Who we are
+
+Zeuservices is operated by a private individual based in the **United Kingdom**, who acts as the data controller for the personal data described below. We handle your data in line with UK GDPR and the Data Protection Act 2018.
+
+## What we collect
+
+- **Account data** — email address, username, avatar, and (if you sign in with Discord or Google) your public profile ID from that provider.
+- **Order data** — the products you buy, the in-game details you provide for delivery (e.g. game username), order totals and currency.
+- **Payment data** — handled entirely by **Stripe**. We never receive or store your card number.
+- **Support data** — messages you send via tickets.
+- **Technical data** — basic logs (IP, browser) for security and fraud prevention.
+
+## How we use it
+
+- To deliver the products and services you ordered.
+- To secure your account (email verification, optional two-factor authentication).
+- To respond to support requests.
+- To run giveaways you choose to enter.
+- To send transactional emails (order confirmations, password resets). We do not sell your data, ever.
+
+## Sensitive order details
+
+Boosting orders may require game account credentials. These are stored encrypted at rest, visible only to the assigned delivery staff, and we strongly recommend you change your password after completion.
+
+## Where your data lives
+
+Our database and authentication are hosted by **Supabase** (PostgreSQL). Payments are processed by **Stripe**. The site is hosted on **Vercel**. These providers may process data outside the UK; each is bound by its own data-processing agreement and standard contractual clauses.
+
+## Your rights
+
+You can access and update your profile in account settings. You may request a full export or deletion of your data at any time by opening a support ticket — we'll action it within 30 days, except data we must keep for legal/accounting reasons.
+
+## Cookies
+
+We use strictly necessary cookies for login sessions and a single preference cookie for your selected currency. No third-party advertising cookies.
+
+## Contact
+
+Privacy questions? Open a ticket on our [support page](/support) or reach us on [Discord](https://discord.gg/uGDuujHsBW). You also have the right to complain to the UK Information Commissioner's Office (ICO) if you believe your data has been mishandled.
+$md$),
+('refunds', 'Refund Policy', $md$
+Last updated: July 2026
+
+## The short version
+
+| Situation | Refund? |
+| --- | --- |
+| Order paid but **not yet delivered / started** | Full refund |
+| Order already delivered | Not refundable |
+| Wrong details provided by you, delivery attempted | Case by case |
+| Boost cancelled part-way through | Not refundable — exceptions at our discretion, depending on the game and service |
+| Account purchased and credentials revealed | Not refundable (7-day cover applies instead) |
+
+## How to request a refund
+
+1. Reach us with your order number — open a ticket on the [support page](/support), message us on [Discord](https://discord.gg/uGDuujHsBW), or reply to your order email.
+2. Tell us what went wrong — screenshots help.
+3. Requests are typically reviewed and processed within **3–5 working days**. Approved refunds are returned to your original payment method via Stripe, which can take a further 5–10 business days to appear on your statement.
+
+## Account cover
+
+Purchased accounts include **7 days of cover** from the moment of delivery:
+
+- If the account is banned within those 7 days, we'll provide a service on that account **free of charge** to make up for it.
+- If the account is inaccessible due to a fault on our side (wrong credentials, recovered by a previous owner), we replace it.
+
+Cover only applies if you changed the password and email immediately after delivery, as instructed at handover.
+
+## Chargebacks
+
+Please contact us before disputing a charge with your bank. Chargebacks filed without contacting support first will lead to permanent suspension of your store account, and we will contest disputes with delivery evidence.
+$md$)
+on conflict (slug) do nothing;

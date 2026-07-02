@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   Coffee,
+  FileText,
   FolderTree,
   Gamepad2,
   Gift,
@@ -75,6 +76,7 @@ const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
     heading: "Site",
     items: [
       { href: "/admin/sections", label: "Layout", icon: LayoutPanelTop, capability: "manage_layout" },
+      { href: "/admin/pages", label: "Pages", icon: FileText, capability: "manage_pages" },
       { href: "/admin/settings", label: "Settings", icon: Settings, capability: "manage_settings" },
     ],
   },

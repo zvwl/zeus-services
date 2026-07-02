@@ -1,15 +1,17 @@
 import type { Metadata } from "next";
 import { Markdown } from "@/components/Markdown";
+import { getPage } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "Privacy Policy",
-  description:
-    "What data Zeuservices collects, why we collect it, how long we keep it, and the rights you have over it. Payments are handled entirely by Stripe.",
-  alternates: { canonical: "/privacy" },
-};
+const DEFAULT_TITLE = "Privacy Policy";
 
+// Fallback copy if the DB row is missing — the live text is editable in
+// Admin → Pages (zeus.pages, slug "privacy").
 const PRIVACY = `
-Last updated: June 2026
+Last updated: July 2026
+
+## Who we are
+
+Zeuservices is operated by a private individual based in the **United Kingdom**, who acts as the data controller for the personal data described below. We handle your data in line with UK GDPR and the Data Protection Act 2018.
 
 ## What we collect
 
@@ -33,7 +35,7 @@ Boosting orders may require game account credentials. These are stored encrypted
 
 ## Where your data lives
 
-Our database and authentication are hosted by **Supabase** (PostgreSQL, EU region). Payments are processed by **Stripe**. The site is hosted on **Vercel**.
+Our database and authentication are hosted by **Supabase** (PostgreSQL). Payments are processed by **Stripe**. The site is hosted on **Vercel**. These providers may process data outside the UK; each is bound by its own data-processing agreement and standard contractual clauses.
 
 ## Your rights
 
@@ -45,15 +47,28 @@ We use strictly necessary cookies for login sessions and a single preference coo
 
 ## Contact
 
-Privacy questions? Open a ticket on our [support page](/support).
+Privacy questions? Open a ticket on our [support page](/support) or reach us on [Discord](https://discord.gg/uGDuujHsBW). You also have the right to complain to the UK Information Commissioner's Office (ICO) if you believe your data has been mishandled.
 `;
 
-export default function PrivacyPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const page = await getPage("privacy");
+  return {
+    title: page?.title ?? DEFAULT_TITLE,
+    description:
+      "What data Zeuservices collects, why we collect it, how long we keep it, and the rights you have over it. Payments are handled entirely by Stripe.",
+    alternates: { canonical: "/privacy" },
+  };
+}
+
+export default async function PrivacyPage() {
+  const page = await getPage("privacy");
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-      <h1 className="text-4xl font-extrabold text-white">Privacy Policy</h1>
+      <h1 className="text-4xl font-extrabold text-white">
+        {page?.title ?? DEFAULT_TITLE}
+      </h1>
       <div className="mt-8">
-        <Markdown>{PRIVACY}</Markdown>
+        <Markdown>{page?.content ?? PRIVACY}</Markdown>
       </div>
     </div>
   );
