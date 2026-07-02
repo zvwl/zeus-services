@@ -6,16 +6,20 @@ export const revalidate = 0;
 
 // When the buyer backs out of Stripe Checkout they land here. Release the
 // still-pending order so it doesn't linger in the admin as a fake "pending"
-// sale. Guarded by status='pending' so it can never touch a paid order.
-async function cancelPendingOrder(orderNumber: string) {
-  const n = Number(orderNumber);
-  if (!Number.isInteger(n) || n <= 0 || !hasAdminClient()) return;
+// sale. Matched by the order's UUID (unguessable — set only in our own
+// cancel_url) so it can't be used to enumerate + cancel other people's orders,
+// and guarded by status='pending' so it can never touch a paid order.
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+async function cancelPendingOrder(orderId: string) {
+  if (!UUID_RE.test(orderId) || !hasAdminClient()) return;
   try {
     const db = createAdminClient();
     await db
       .from("orders")
       .update({ status: "cancelled", updated_at: new Date().toISOString() })
-      .eq("order_number", n)
+      .eq("id", orderId)
       .eq("status", "pending");
   } catch {
     // best effort — the session-expired webhook is the backstop

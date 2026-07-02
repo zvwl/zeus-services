@@ -75,13 +75,24 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
 
   let allInstant = orderItems.length > 0;
   for (const item of orderItems) {
+    // Add-on lines carry no product_id. They're paid extras bundled with their
+    // parent product, so auto-mark them fulfilled and let them NOT force the
+    // whole order into manual processing.
     if (!item.product_id) {
-      allInstant = false;
+      if (!item.delivered_at) {
+        await db
+          .from("order_items")
+          .update({
+            delivered_payload: "Included with your order.",
+            delivered_at: new Date().toISOString(),
+          })
+          .eq("id", item.id);
+      }
       continue;
     }
     const { data: product } = await db
       .from("products")
-      .select("id, stock, delivery_type, delivery_instructions")
+      .select("id, delivery_type, delivery_instructions")
       .eq("id", item.product_id)
       .maybeSingle();
     if (!product) {
@@ -89,25 +100,19 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
       continue;
     }
 
-    // Decrement stock counters (null = unlimited).
-    if (product.stock !== null) {
-      await db
-        .from("products")
-        .update({ stock: Math.max(0, product.stock - item.quantity) })
-        .eq("id", product.id);
-    }
+    // Decrement stock atomically (the RPC guards stock >= qty), and only the
+    // level that was actually sold: a variant purchase must not also draw down
+    // the parent product's stock (which was never checked at checkout).
     if (item.variant_id) {
-      const { data: variant } = await db
-        .from("product_variants")
-        .select("id, stock")
-        .eq("id", item.variant_id)
-        .maybeSingle();
-      if (variant && variant.stock !== null) {
-        await db
-          .from("product_variants")
-          .update({ stock: Math.max(0, variant.stock - item.quantity) })
-          .eq("id", variant.id);
-      }
+      await db.rpc("decrement_variant_stock", {
+        v_id: item.variant_id,
+        p_qty: item.quantity,
+      });
+    } else {
+      await db.rpc("decrement_stock", {
+        p_id: product.id,
+        p_qty: item.quantity,
+      });
     }
 
     if (product.delivery_type === "instant") {

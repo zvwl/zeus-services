@@ -87,6 +87,9 @@ export async function POST(req: Request) {
             variantId: body.variantId,
             quantity: body.quantity,
             customFields: body.customFields,
+            // "Buy now" for custom-amount products / add-ons carries these too.
+            customAmount: body.customAmount,
+            addonIds: body.addonIds,
           },
         ];
 
@@ -410,7 +413,10 @@ export async function POST(req: Request) {
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}${
         fromCart ? "&cart=1" : ""
       }`,
-      cancel_url: `${origin}/checkout/cancelled?order=${order.order_number}`,
+      // Use the unguessable order UUID (not the sequential order_number) so the
+      // cancel page can't be used to enumerate + cancel other people's pending
+      // orders. Guarded again by status='pending' on the update.
+      cancel_url: `${origin}/checkout/cancelled?order=${order.id}`,
     });
 
     await db

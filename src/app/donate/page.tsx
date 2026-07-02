@@ -48,9 +48,12 @@ export default async function DonatePage({
   }
 
   const supabase = await createClient();
+  // Public donor wall — select only display-safe columns (never user_id /
+  // stripe_session_id). This also matches the column-level grant to the anon
+  // role in migration 0011.
   const { data } = await supabase
     .from("donations")
-    .select("*")
+    .select("id, name, message, amount, currency, status, created_at")
     .eq("status", "completed")
     .order("created_at", { ascending: false })
     .limit(12);

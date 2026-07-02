@@ -7,7 +7,7 @@ import { ActionSelect } from "@/components/admin/ActionControls";
 import { InviteForm } from "@/components/admin/InviteForm";
 import { StaffPermissions } from "@/components/admin/StaffPermissions";
 import { setUserRole } from "@/app/admin/actions";
-import { formatDate } from "@/lib/utils";
+import { formatDate, sanitizeSearchTerm } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 export const revalidate = 0;
@@ -31,11 +31,12 @@ export default async function AdminTeamPage({
     .order("created_at");
 
   let searched: Profile[] = [];
-  if (query) {
+  const safe = sanitizeSearchTerm(query);
+  if (safe) {
     const { data } = await supabase
       .from("profiles")
       .select("*")
-      .or(`email.ilike.%${query}%,username.ilike.%${query}%`)
+      .or(`email.ilike.%${safe}%,username.ilike.%${safe}%`)
       .limit(10);
     searched = (data as Profile[]) ?? [];
   }

@@ -1,8 +1,7 @@
 "use server";
 
 import { revalidatePath, revalidateTag } from "next/cache";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { actionDb, createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { getProfile, requireCapability } from "@/lib/auth";
 import { siteUrl, slugify } from "@/lib/utils";
 import { notifyDiscord } from "@/lib/discord";
@@ -18,6 +17,7 @@ import { formatMoney } from "@/lib/currency";
 import {
   ALL_CAPABILITIES,
   CAPABILITIES_DEFAULT,
+  STAFF_ROLES,
   type Capability,
   type Role,
 } from "@/lib/types";
@@ -31,6 +31,23 @@ export interface AdminResult {
 const ok = (message: string, id?: string): AdminResult => ({ ok: true, message, id });
 const fail = (message: string): AdminResult => ({ ok: false, message });
 
+/**
+ * Resolves the slug for an upsert. A new row derives its slug from an explicit
+ * value or its name. On an UPDATE, the slug is only changed when an explicit
+ * non-empty value is supplied — otherwise `undefined` is returned so the caller
+ * omits the column and the existing slug (and its live URL) is preserved.
+ */
+function resolveSlug(
+  id: string,
+  provided: string,
+  name: string
+): string | undefined {
+  const p = provided.trim();
+  if (p) return slugify(p);
+  if (!id) return slugify(name);
+  return undefined;
+}
+
 async function audit(
   action: string,
   entity: string,
@@ -39,7 +56,7 @@ async function audit(
 ) {
   try {
     const profile = await getProfile();
-    const supabase = await createClient();
+    const supabase = await actionDb();
     await supabase.from("audit_logs").insert({
       actor_id: profile?.id ?? null,
       action,
@@ -69,9 +86,10 @@ export async function upsertGame(formData: FormData): Promise<AdminResult> {
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return fail("Name is required.");
+  const slug = resolveSlug(id, String(formData.get("slug") ?? ""), name);
   const row = {
     name,
-    slug: slugify(String(formData.get("slug") ?? "") || name),
+    ...(slug !== undefined ? { slug } : {}),
     description: String(formData.get("description") ?? "").trim() || null,
     image_url: String(formData.get("image_url") ?? "") || null,
     banner_url: String(formData.get("banner_url") ?? "") || null,
@@ -79,7 +97,7 @@ export async function upsertGame(formData: FormData): Promise<AdminResult> {
     is_featured: formData.get("is_featured") === "on",
     sort_order: Number(formData.get("sort_order") ?? 0) || 0,
   };
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const query = id
     ? supabase.from("games").update(row).eq("id", id).select("id").single()
     : supabase.from("games").insert(row).select("id").single();
@@ -99,7 +117,7 @@ export async function deleteGame(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("games").delete().eq("id", id);
   if (error) return fail("Could not delete — remove its products first.");
   await audit("game.delete", "game", id);
@@ -118,15 +136,16 @@ export async function upsertCategory(formData: FormData): Promise<AdminResult> {
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
   if (!name) return fail("Name is required.");
+  const slug = resolveSlug(id, String(formData.get("slug") ?? ""), name);
   const row = {
     name,
-    slug: slugify(String(formData.get("slug") ?? "") || name),
+    ...(slug !== undefined ? { slug } : {}),
     description: String(formData.get("description") ?? "").trim() || null,
     icon: String(formData.get("icon") ?? "").trim() || null,
     sort_order: Number(formData.get("sort_order") ?? 0) || 0,
     is_active: formData.get("is_active") === "on",
   };
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const query = id
     ? supabase.from("categories").update(row).eq("id", id).select("id").single()
     : supabase.from("categories").insert(row).select("id").single();
@@ -146,7 +165,7 @@ export async function deleteCategory(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("categories").delete().eq("id", id);
   if (error) return fail("Could not delete — remove its products first.");
   await audit("category.delete", "category", id);
@@ -201,6 +220,8 @@ export interface ProductPayload {
     name: string;
     description?: string | null;
     price: number;
+    is_active?: boolean;
+    image_url?: string | null;
   }[];
 }
 
@@ -224,12 +245,13 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     return fail("Base price must be a positive number.");
   }
 
-  const supabase = await createClient();
+  const supabase = await actionDb();
+  const slug = resolveSlug(payload.id ?? "", payload.slug ?? "", payload.name);
   const row = {
     game_id: payload.game_id,
     category_id: payload.category_id,
     name: payload.name.trim(),
-    slug: slugify(payload.slug || payload.name),
+    ...(slug !== undefined ? { slug } : {}),
     description: payload.description?.trim() || null,
     image_url: payload.image_url || null,
     base_price: Number(payload.base_price),
@@ -244,7 +266,13 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
         : Math.max(0, Math.floor(Number(payload.stock))),
     is_active: Boolean(payload.is_active),
     is_featured: Boolean(payload.is_featured),
-    sort_order: Number(payload.sort_order ?? 0) || 0,
+    // Preserve the existing ordering on edit when the form doesn't send one,
+    // rather than silently resetting it to 0.
+    ...(payload.sort_order != null && `${payload.sort_order}` !== ""
+      ? { sort_order: Number(payload.sort_order) || 0 }
+      : payload.id
+        ? {}
+        : { sort_order: 0 }),
     pricing_mode: payload.pricing_mode === "custom" ? "custom" : "fixed",
     custom_unit_label: payload.custom_unit_label?.trim() || null,
     custom_price_per_unit:
@@ -276,6 +304,13 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     );
   }
 
+  // Track any failure while syncing children so we don't report a clean save
+  // over a partial one.
+  let syncFailed = false;
+  const check = (error: { message?: string } | null) => {
+    if (error) syncFailed = true;
+  };
+
   // Sync variants: delete removed, upsert the rest.
   const keepVariantIds = payload.variants.filter((v) => v.id).map((v) => v.id!);
   if (payload.id) {
@@ -283,7 +318,7 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     if (keepVariantIds.length > 0) {
       del = del.not("id", "in", `(${keepVariantIds.join(",")})`);
     }
-    await del;
+    check((await del).error);
   }
   for (const [i, v] of payload.variants.entries()) {
     if (!v.name?.trim() || !Number.isFinite(Number(v.price))) continue;
@@ -299,11 +334,11 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
       sort_order: i,
       is_active: v.is_active !== false,
     };
-    if (v.id) {
-      await supabase.from("product_variants").update(vRow).eq("id", v.id);
-    } else {
-      await supabase.from("product_variants").insert(vRow);
-    }
+    check(
+      v.id
+        ? (await supabase.from("product_variants").update(vRow).eq("id", v.id)).error
+        : (await supabase.from("product_variants").insert(vRow)).error
+    );
   }
 
   // Sync custom fields.
@@ -313,7 +348,7 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     if (keepFieldIds.length > 0) {
       del = del.not("id", "in", `(${keepFieldIds.join(",")})`);
     }
-    await del;
+    check((await del).error);
   }
   for (const [i, f] of payload.fields.entries()) {
     if (!f.label?.trim()) continue;
@@ -326,11 +361,11 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
       required: f.required !== false,
       sort_order: i,
     };
-    if (f.id) {
-      await supabase.from("product_fields").update(fRow).eq("id", f.id);
-    } else {
-      await supabase.from("product_fields").insert(fRow);
-    }
+    check(
+      f.id
+        ? (await supabase.from("product_fields").update(fRow).eq("id", f.id)).error
+        : (await supabase.from("product_fields").insert(fRow)).error
+    );
   }
 
   // Sync add-ons (delete removed, upsert the rest) — same pattern as variants.
@@ -340,7 +375,7 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     if (keepAddonIds.length > 0) {
       del = del.not("id", "in", `(${keepAddonIds.join(",")})`);
     }
-    await del;
+    check((await del).error);
   }
   for (const [i, a] of (payload.addons ?? []).entries()) {
     if (!a.name?.trim()) continue;
@@ -350,19 +385,29 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
       description: a.description?.trim() || null,
       price: Number.isFinite(Number(a.price)) ? Number(a.price) : 0,
       sort_order: i,
-      is_active: true,
+      // Respect an explicit inactive flag instead of forcing every add-on active.
+      is_active: a.is_active !== false,
     };
-    if (a.id) {
-      await supabase.from("product_addons").update(aRow).eq("id", a.id);
-    } else {
-      await supabase.from("product_addons").insert(aRow);
-    }
+    check(
+      a.id
+        ? (await supabase.from("product_addons").update(aRow).eq("id", a.id)).error
+        : (await supabase.from("product_addons").insert(aRow)).error
+    );
   }
 
   await audit(payload.id ? "product.update" : "product.create", "product", product.id, {
     name: row.name,
   });
   refreshStore();
+  revalidatePath("/admin/products");
+  if (syncFailed) {
+    return {
+      ok: true,
+      message:
+        "Product saved, but some options/fields/add-ons didn't save. Re-check them.",
+      id: product.id,
+    };
+  }
   return ok("Product saved.", product.id);
 }
 
@@ -373,7 +418,7 @@ export async function duplicateProduct(formData: FormData): Promise<AdminResult>
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: src } = await supabase
     .from("products")
     .select("*, variants:product_variants(*), fields:product_fields(*), addons:product_addons(*)")
@@ -468,7 +513,7 @@ export async function deleteProduct(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("products").delete().eq("id", id);
   if (error) return fail(error.message);
   await audit("product.delete", "product", id);
@@ -496,7 +541,7 @@ export async function updateOrderStatus(formData: FormData): Promise<AdminResult
   const id = String(formData.get("id") ?? "");
   const status = String(formData.get("status") ?? "");
   if (!ORDER_STATUSES.includes(status)) return fail("Invalid status.");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: existing } = await supabase
     .from("orders")
     .select("status, email, reference, order_number, total, currency")
@@ -541,7 +586,7 @@ export async function refundOrder(formData: FormData): Promise<AdminResult> {
   }
   if (!stripeConfigured()) return fail("Stripe is not configured.");
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: order } = await supabase
     .from("orders")
     .select("status, stripe_payment_intent, email, reference, order_number, total, currency")
@@ -618,7 +663,7 @@ export async function deliverOrderItem(formData: FormData): Promise<AdminResult>
   const payload = String(formData.get("payload") ?? "").trim();
   if (!payload) return fail("Delivery message cannot be empty.");
 
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: item, error } = await supabase
     .from("order_items")
     .update({ delivered_payload: payload, delivered_at: new Date().toISOString() })
@@ -674,7 +719,7 @@ export async function moderateReview(formData: FormData): Promise<AdminResult> {
   }
   const id = String(formData.get("id") ?? "");
   const op = String(formData.get("op") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
 
   if (op === "delete") {
     const { error } = await supabase.from("reviews").delete().eq("id", id);
@@ -735,10 +780,24 @@ export async function upsertPost(formData: FormData): Promise<AdminResult> {
     is_published: isPublished,
     updated_at: new Date().toISOString(),
   };
-  if (isPublished) row.published_at = new Date().toISOString();
   if (!id) row.author_id = profile.id;
 
-  const supabase = await createClient();
+  const supabase = await actionDb();
+
+  // Stamp published_at only on the FIRST transition to published — never
+  // re-stamp on later edits, or the public blog order and SEO dates churn.
+  if (isPublished) {
+    let firstPublish = true;
+    if (id) {
+      const { data: existing } = await supabase
+        .from("blog_posts")
+        .select("published_at")
+        .eq("id", id)
+        .maybeSingle();
+      if (existing?.published_at) firstPublish = false;
+    }
+    if (firstPublish) row.published_at = new Date().toISOString();
+  }
   const query = id
     ? supabase.from("blog_posts").update(row).eq("id", id).select("id").single()
     : supabase.from("blog_posts").insert(row).select("id").single();
@@ -759,7 +818,7 @@ export async function deletePost(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("blog_posts").delete().eq("id", id);
   if (error) return fail(error.message);
   await audit("post.delete", "blog_post", id);
@@ -785,9 +844,9 @@ export async function upsertFaq(formData: FormData): Promise<AdminResult> {
     answer,
     category: String(formData.get("category") ?? "General").trim() || "General",
     sort_order: Number(formData.get("sort_order") ?? 0) || 0,
-    is_active: formData.get("is_active") !== "off",
+    is_active: formData.get("is_active") === "on",
   };
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = id
     ? await supabase.from("faqs").update(row).eq("id", id)
     : await supabase.from("faqs").insert(row);
@@ -806,7 +865,7 @@ export async function deleteFaq(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("faqs").delete().eq("id", id);
   if (error) return fail(error.message);
   revalidatePath("/faq");
@@ -829,17 +888,20 @@ export async function upsertGiveaway(formData: FormData): Promise<AdminResult> {
   if (!title || !prize || !endsAt) {
     return fail("Title, prize and end date are required.");
   }
+  const endsDate = new Date(endsAt);
+  if (Number.isNaN(endsDate.getTime())) return fail("Invalid end date.");
+  const slug = resolveSlug(id, String(formData.get("slug") ?? ""), title);
   const row = {
     title,
-    slug: slugify(String(formData.get("slug") ?? "") || title),
+    ...(slug !== undefined ? { slug } : {}),
     description: String(formData.get("description") ?? "").trim() || null,
     image_url: String(formData.get("image_url") ?? "") || null,
     prize,
-    ends_at: new Date(endsAt).toISOString(),
+    ends_at: endsDate.toISOString(),
     requirement_text: String(formData.get("requirement_text") ?? "").trim() || null,
     is_active: formData.get("is_active") === "on",
   };
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const query = id
     ? supabase.from("giveaways").update(row).eq("id", id).select("id").single()
     : supabase.from("giveaways").insert(row).select("id").single();
@@ -861,7 +923,7 @@ export async function deleteGiveaway(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("giveaways").delete().eq("id", id);
   if (error) return fail(error.message);
   revalidatePath("/giveaways");
@@ -876,14 +938,25 @@ export async function pickGiveawayWinner(formData: FormData): Promise<AdminResul
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
-  const { data: entries } = await supabase
+  const supabase = await actionDb();
+  // Count first, then draw a single random entry by offset — so the draw is
+  // fair across ALL entries, not just the first page PostgREST would return.
+  const { count } = await supabase
+    .from("giveaway_entries")
+    .select("id", { count: "exact", head: true })
+    .eq("giveaway_id", id);
+  if (!count || count === 0) return fail("No entries yet.");
+
+  const offset = Math.floor(Math.random() * count);
+  const { data: winnerRows } = await supabase
     .from("giveaway_entries")
     .select("user_id")
-    .eq("giveaway_id", id);
-  if (!entries || entries.length === 0) return fail("No entries yet.");
+    .eq("giveaway_id", id)
+    .order("id")
+    .range(offset, offset);
+  const winner = winnerRows?.[0];
+  if (!winner) return fail("Could not draw a winner — try again.");
 
-  const winner = entries[Math.floor(Math.random() * entries.length)];
   const { error } = await supabase
     .from("giveaways")
     .update({ winner_user_id: winner.user_id, is_active: false })
@@ -893,12 +966,12 @@ export async function pickGiveawayWinner(formData: FormData): Promise<AdminResul
   await audit("giveaway.winner", "giveaway", id, { winner: winner.user_id });
   await notifyDiscord({
     title: "🏆 Giveaway winner drawn",
-    description: `A winner has been selected from ${entries.length} entries.`,
+    description: `A winner has been selected from ${count} entries.`,
     color: 0xfbbf24,
   });
   revalidatePath("/giveaways");
   revalidatePath("/admin/giveaways");
-  return ok(`Winner drawn from ${entries.length} entries.`);
+  return ok(`Winner drawn from ${count} entries.`);
 }
 
 /* ───────────────────────── Tickets ──────────────────────── */
@@ -916,7 +989,7 @@ export async function updateTicketMeta(formData: FormData): Promise<AdminResult>
   if (["open", "answered", "closed"].includes(status)) updates.status = status;
   if (["low", "normal", "high"].includes(priority)) updates.priority = priority;
 
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("support_tickets").update(updates).eq("id", id);
   if (error) return fail(error.message);
   revalidatePath("/admin/support");
@@ -959,7 +1032,7 @@ export async function upsertSection(formData: FormData): Promise<AdminResult> {
       return fail("Content must be valid JSON.");
     }
   }
-  const supabase = await createClient();
+  const supabase = await actionDb();
 
   if (id) {
     const { error } = await supabase
@@ -1002,7 +1075,7 @@ export async function moveSection(formData: FormData): Promise<AdminResult> {
   }
   const id = String(formData.get("id") ?? "");
   const dir = String(formData.get("dir") ?? "up");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: sections } = await supabase
     .from("site_sections")
     .select("id, sort_order")
@@ -1028,7 +1101,7 @@ export async function toggleSection(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: section } = await supabase
     .from("site_sections")
     .select("is_active")
@@ -1050,7 +1123,7 @@ export async function deleteSection(formData: FormData): Promise<AdminResult> {
     return fail("Unauthorized");
   }
   const id = String(formData.get("id") ?? "");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("site_sections").delete().eq("id", id);
   if (error) return fail(error.message);
   refreshStore();
@@ -1059,16 +1132,24 @@ export async function deleteSection(formData: FormData): Promise<AdminResult> {
 
 /* ──────────────────────── Settings ──────────────────────── */
 
+// Settings keys that must NEVER be writable through the generic settings form.
+// `bootstrap_admin_emails` is read by the signup trigger to auto-grant
+// super_admin — letting a plain `admin` (who holds manage_settings by default)
+// write it would be a privilege-escalation path to super_admin. Privileged
+// settings are managed by super admins only, out of band.
+const RESERVED_SETTING_KEYS = new Set(["bootstrap_admin_emails"]);
+
 export async function saveSettings(formData: FormData): Promise<AdminResult> {
   try {
     await requireCapability("manage_settings");
   } catch {
     return fail("Unauthorized");
   }
-  const supabase = await createClient();
+  const supabase = await actionDb();
   for (const [key, value] of formData.entries()) {
     if (!key.startsWith("setting_")) continue;
     const settingKey = key.slice("setting_".length);
+    if (RESERVED_SETTING_KEYS.has(settingKey)) continue; // never editable here
     const { error } = await supabase
       .from("site_settings")
       .upsert({ key: settingKey, value: String(value), updated_at: new Date().toISOString() });
@@ -1085,7 +1166,7 @@ export async function saveRates(formData: FormData): Promise<AdminResult> {
   } catch {
     return fail("Unauthorized");
   }
-  const supabase = await createClient();
+  const supabase = await actionDb();
   for (const [key, value] of formData.entries()) {
     if (!key.startsWith("rate_")) continue;
     const code = key.slice("rate_".length).toUpperCase();
@@ -1118,7 +1199,7 @@ export async function setUserRole(formData: FormData): Promise<AdminResult> {
   if (!ASSIGNABLE_ROLES.includes(role)) return fail("Invalid role.");
   if (userId === actor.id) return fail("You can't change your own role.");
 
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { error } = await supabase.from("profiles").update({ role }).eq("id", userId);
   if (error) return fail(error.message);
   await audit("user.role", "profile", userId, { role });
@@ -1165,14 +1246,17 @@ export async function toggleBan(formData: FormData): Promise<AdminResult> {
   }
   const userId = String(formData.get("user_id") ?? "");
   if (userId === actor.id) return fail("You can't ban yourself.");
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: target } = await supabase
     .from("profiles")
     .select("is_banned, role")
     .eq("id", userId)
     .maybeSingle();
   if (!target) return fail("User not found.");
-  if (["admin", "super_admin"].includes(target.role) && actor.role !== "super_admin") {
+  // Only super admins may ban ANY staff member (support included). Writes now
+  // run through the service role, so the DB trigger no longer backs this up —
+  // this in-action check is the sole guard, and must cover every staff tier.
+  if (STAFF_ROLES.includes(target.role as Role) && actor.role !== "super_admin") {
     return fail("Only super admins can ban staff.");
   }
   const { error } = await supabase
@@ -1215,7 +1299,7 @@ export async function setUserCapabilities(
       );
   }
 
-  const supabase = await createClient();
+  const supabase = await actionDb();
   const { data: target } = await supabase
     .from("profiles")
     .select("role")

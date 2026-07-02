@@ -21,29 +21,57 @@ import {
 import { can, getProfile, isStaff } from "@/lib/auth";
 import type { Capability } from "@/lib/types";
 
-// Each section is shown only to staff who hold its capability (from their role
-// default or a per-staff override). The dashboard needs none. Mirrors the
-// server-action and middleware capability guards.
-const nav: {
+// Each item is shown only to staff who hold its capability (from their role
+// default or a per-staff override). The dashboard needs none. Grouped to mirror
+// the capability groups in lib/types so a 15-item list reads as a few short,
+// scannable sections. Mirrors the server-action + middleware capability guards.
+type NavItem = {
   href: string;
   label: string;
   icon: typeof LayoutDashboard;
   capability: Capability | null;
-}[] = [
-  { href: "/admin", label: "Dashboard", icon: LayoutDashboard, capability: null },
-  { href: "/admin/orders", label: "Orders", icon: Package, capability: "manage_orders" },
-  { href: "/admin/customers", label: "Customers", icon: Users, capability: "manage_customers" },
-  { href: "/admin/support", label: "Support", icon: LifeBuoy, capability: "manage_support" },
-  { href: "/admin/products", label: "Products", icon: ShoppingBag, capability: "manage_products" },
-  { href: "/admin/games", label: "Games", icon: Gamepad2, capability: "manage_games" },
-  { href: "/admin/categories", label: "Categories", icon: FolderTree, capability: "manage_categories" },
-  { href: "/admin/reviews", label: "Reviews", icon: Star, capability: "manage_reviews" },
-  { href: "/admin/blog", label: "Blog", icon: Newspaper, capability: "manage_blog" },
-  { href: "/admin/giveaways", label: "Giveaways", icon: Gift, capability: "manage_giveaways" },
-  { href: "/admin/faqs", label: "FAQs", icon: MessageSquareQuote, capability: "manage_faqs" },
-  { href: "/admin/donations", label: "Donations", icon: Coffee, capability: "manage_donations" },
-  { href: "/admin/sections", label: "Layout", icon: LayoutPanelTop, capability: "manage_layout" },
-  { href: "/admin/settings", label: "Settings", icon: Settings, capability: "manage_settings" },
+};
+
+const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
+  {
+    heading: null,
+    items: [
+      { href: "/admin", label: "Dashboard", icon: LayoutDashboard, capability: null },
+    ],
+  },
+  {
+    heading: "Operations",
+    items: [
+      { href: "/admin/orders", label: "Orders", icon: Package, capability: "manage_orders" },
+      { href: "/admin/support", label: "Support", icon: LifeBuoy, capability: "manage_support" },
+      { href: "/admin/customers", label: "Customers", icon: Users, capability: "manage_customers" },
+    ],
+  },
+  {
+    heading: "Catalog",
+    items: [
+      { href: "/admin/products", label: "Products", icon: ShoppingBag, capability: "manage_products" },
+      { href: "/admin/games", label: "Games", icon: Gamepad2, capability: "manage_games" },
+      { href: "/admin/categories", label: "Categories", icon: FolderTree, capability: "manage_categories" },
+    ],
+  },
+  {
+    heading: "Content",
+    items: [
+      { href: "/admin/reviews", label: "Reviews", icon: Star, capability: "manage_reviews" },
+      { href: "/admin/blog", label: "Blog", icon: Newspaper, capability: "manage_blog" },
+      { href: "/admin/giveaways", label: "Giveaways", icon: Gift, capability: "manage_giveaways" },
+      { href: "/admin/faqs", label: "FAQs", icon: MessageSquareQuote, capability: "manage_faqs" },
+      { href: "/admin/donations", label: "Donations", icon: Coffee, capability: "manage_donations" },
+    ],
+  },
+  {
+    heading: "Site",
+    items: [
+      { href: "/admin/sections", label: "Layout", icon: LayoutPanelTop, capability: "manage_layout" },
+      { href: "/admin/settings", label: "Settings", icon: Settings, capability: "manage_settings" },
+    ],
+  },
 ];
 
 export default async function AdminLayout({
@@ -54,9 +82,14 @@ export default async function AdminLayout({
   const profile = await getProfile();
   if (!profile || !isStaff(profile)) redirect("/");
 
-  const visibleNav = nav.filter(
-    (item) => item.capability === null || can(profile, item.capability)
-  );
+  const visibleGroups = NAV_GROUPS.map((group) => ({
+    heading: group.heading,
+    items: group.items.filter(
+      (item) => item.capability === null || can(profile, item.capability)
+    ),
+  })).filter((group) => group.items.length > 0);
+
+  const flatMobileItems = visibleGroups.flatMap((g) => g.items);
 
   return (
     <div className="mx-auto flex max-w-[1600px]">
@@ -70,25 +103,39 @@ export default async function AdminLayout({
             </p>
           </div>
         </div>
-        <nav className="flex flex-col gap-0.5">
-          {visibleNav.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-400 transition hover:bg-raised hover:text-white"
-            >
-              <item.icon className="h-4 w-4" />
-              {item.label}
-            </Link>
+        <nav className="flex flex-col gap-3">
+          {visibleGroups.map((group, gi) => (
+            <div key={group.heading ?? `group-${gi}`} className="flex flex-col gap-0.5">
+              {group.heading && (
+                <p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+                  {group.heading}
+                </p>
+              )}
+              {group.items.map((item) => (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-400 transition hover:bg-raised hover:text-white"
+                >
+                  <item.icon className="h-4 w-4" />
+                  {item.label}
+                </Link>
+              ))}
+            </div>
           ))}
           {can(profile, "manage_team") && (
-            <Link
-              href="/admin/team"
-              className="mt-2 flex items-center gap-2.5 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-sm text-amber-300 transition hover:bg-amber-400/10"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              Team & roles
-            </Link>
+            <div className="flex flex-col gap-0.5">
+              <p className="px-3 pb-1 pt-1 text-[10px] font-semibold uppercase tracking-widest text-zinc-600">
+                Administration
+              </p>
+              <Link
+                href="/admin/team"
+                className="flex items-center gap-2.5 rounded-lg border border-amber-400/20 bg-amber-400/5 px-3 py-2 text-sm text-amber-300 transition hover:bg-amber-400/10"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Team & roles
+              </Link>
+            </div>
           )}
         </nav>
         <Link
@@ -102,7 +149,7 @@ export default async function AdminLayout({
       <div className="min-w-0 flex-1">
         {/* Mobile nav */}
         <div className="flex gap-1 overflow-x-auto border-b border-edge p-2 lg:hidden">
-          {visibleNav.map((item) => (
+          {flatMobileItems.map((item) => (
             <Link
               key={item.href}
               href={item.href}

@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
-import { getProfile, isAdmin } from "@/lib/auth";
+import { can, getProfile } from "@/lib/auth";
 import { Badge } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
 import { toggleBan } from "@/app/admin/actions";
 import { formatMoney } from "@/lib/currency";
-import { cn, formatDate } from "@/lib/utils";
+import { cn, formatDate, sanitizeSearchTerm } from "@/lib/utils";
 import type { Profile } from "@/lib/types";
 
 export const revalidate = 0;
@@ -33,9 +33,10 @@ export default async function AdminCustomersPage({
     profileQuery = profileQuery.in("role", ["support", "admin", "super_admin"]);
   else if (filter === "banned")
     profileQuery = profileQuery.eq("is_banned", true);
-  if (query) {
+  const safe = sanitizeSearchTerm(query);
+  if (safe) {
     profileQuery = profileQuery.or(
-      `email.ilike.%${query}%,username.ilike.%${query}%`
+      `email.ilike.%${safe}%,username.ilike.%${safe}%`
     );
   }
   const [{ data: profiles }, { data: orders }] = await Promise.all([
@@ -144,7 +145,7 @@ export default async function AdminCustomersPage({
                     )}
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {isAdmin(me) && p.id !== me?.id && (
+                    {can(me, "manage_customers") && p.id !== me?.id && (
                       <ActionButton
                         action={toggleBan}
                         fields={{ user_id: p.id }}

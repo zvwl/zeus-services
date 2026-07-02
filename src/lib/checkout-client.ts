@@ -21,6 +21,10 @@ export async function createCartCheckout(
         variantId: l.variantId,
         quantity: l.quantity,
         customFields: l.customFields,
+        // Forward flexible-listing selections so custom-amount products and
+        // add-on bundles survive a cart checkout (the server re-prices them).
+        customAmount: l.customAmount ?? null,
+        addonIds: (l.addons ?? []).map((a) => a.id),
       })),
     }),
   });

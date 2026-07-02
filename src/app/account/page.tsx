@@ -3,6 +3,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getProfile, getUser } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { attachGuestOrders } from "@/lib/orders";
 import { Badge, Card, statusBadgeVariant } from "@/components/ui";
 import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
@@ -14,18 +15,31 @@ export default async function AccountPage() {
   const [user, profile] = await Promise.all([getUser(), getProfile()]);
   if (!user || !profile) redirect("/login?next=/account");
 
+  // Claim any guest orders placed with this email (covers password logins,
+  // which don't pass through /auth/callback). Idempotent + best effort.
+  await attachGuestOrders(user.id, user.email);
+
   const supabase = await createClient();
-  const { data: orders } = await supabase
-    .from("orders")
-    .select("*")
-    .eq("user_id", user.id)
-    .order("created_at", { ascending: false })
-    .limit(5);
+  const [{ data: orders }, { data: paidOrders }] = await Promise.all([
+    supabase
+      .from("orders")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: false })
+      .limit(5),
+    // Lifetime spend must sum ALL paid orders, not just the 5 most recent.
+    supabase
+      .from("orders")
+      .select("subtotal_usd")
+      .eq("user_id", user.id)
+      .in("status", ["paid", "processing", "completed"]),
+  ]);
 
   const recentOrders = (orders as Order[]) ?? [];
-  const totalSpentUsd = recentOrders
-    .filter((o) => ["paid", "processing", "completed"].includes(o.status))
-    .reduce((s, o) => s + Number(o.subtotal_usd), 0);
+  const totalSpentUsd = (paidOrders ?? []).reduce(
+    (s, o) => s + Number(o.subtotal_usd),
+    0
+  );
 
   return (
     <div className="grid gap-6 lg:grid-cols-3">
@@ -71,7 +85,7 @@ export default async function AccountPage() {
           {formatMoney(totalSpentUsd, "USD")}
         </p>
         <p className="mt-2 text-xs text-zinc-600">
-          Across {recentOrders.length}+ recent orders
+          Across all completed orders
         </p>
       </Card>
 

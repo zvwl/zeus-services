@@ -5,7 +5,7 @@ import { Badge, Card, statusBadgeVariant } from "@/components/ui";
 import { ActionButton, ActionSelect } from "@/components/admin/ActionControls";
 import { DeliverItemForm } from "@/components/admin/DeliverItemForm";
 import { refundOrder, updateOrderStatus } from "@/app/admin/actions";
-import { getProfile, isAdmin } from "@/lib/auth";
+import { can, getProfile } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime } from "@/lib/utils";
 import type { Order, OrderItem, Profile } from "@/lib/types";
@@ -60,7 +60,9 @@ export default async function AdminOrderDetail({
               "refunded",
             ].map((s) => ({ value: s, label: `Set: ${s}` }))}
           />
-          {isAdmin(me) && order.stripe_payment_intent && order.status !== "refunded" && (
+          {can(me, "issue_refunds") &&
+            order.stripe_payment_intent &&
+            order.status !== "refunded" && (
             <ActionButton
               action={refundOrder}
               fields={{ id: order.id }}

@@ -33,6 +33,9 @@ export async function notifyDiscord(opts: {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+        // Never let user-controlled text (ticket subjects, donation names,
+        // order fields) trigger @everyone/@here/role pings in the staff channel.
+        allowed_mentions: { parse: [] },
         embeds: [
           {
             title: opts.title,

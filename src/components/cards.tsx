@@ -63,8 +63,21 @@ export function ProductCard({ product }: { product: Product }) {
   const minVariant = product.variants
     ?.filter((v) => v.is_active)
     .sort((a, b) => Number(a.price) - Number(b.price))[0];
-  const priceUsd = minVariant ? Number(minVariant.price) : Number(product.base_price);
+  // Custom-amount products have no fixed base price — show a "from" price based
+  // on the minimum purchasable amount × unit price instead of $0.
+  const isCustom =
+    product.pricing_mode === "custom" && product.custom_price_per_unit != null;
+  const customFromUsd = isCustom
+    ? Number(product.custom_price_per_unit) * Math.max(1, Number(product.custom_min ?? 1))
+    : 0;
+  const priceUsd = isCustom
+    ? customFromUsd
+    : minVariant
+      ? Number(minVariant.price)
+      : Number(product.base_price);
+  const showFrom = isCustom || Boolean(minVariant);
   const soldOut =
+    !isCustom &&
     product.stock !== null &&
     product.stock <= 0 &&
     !product.variants?.some((v) => v.is_active && (v.stock === null || v.stock > 0));
@@ -99,9 +112,11 @@ export function ProductCard({ product }: { product: Product }) {
           <Price
             usd={priceUsd}
             compareUsd={
-              product.compare_at_price ? Number(product.compare_at_price) : null
+              !isCustom && product.compare_at_price
+                ? Number(product.compare_at_price)
+                : null
             }
-            from={Boolean(minVariant)}
+            from={showFrom}
             className="text-lg font-bold text-white"
           />
           {soldOut ? (

@@ -27,6 +27,15 @@ export function GiveawayForm({ giveaway }: { giveaway: Giveaway | null }) {
       action={(formData) => {
         if (giveaway) formData.set("id", giveaway.id);
         formData.set("image_url", imageUrl ?? "");
+        // The datetime-local input is a naive "wall clock" string. Convert it to
+        // a full ISO timestamp HERE (in the browser, where the admin's timezone
+        // is known) so the server stores the exact instant they intended,
+        // instead of reinterpreting it in the server's (UTC) timezone.
+        const endsRaw = String(formData.get("ends_at") ?? "");
+        if (endsRaw) {
+          const d = new Date(endsRaw);
+          if (!Number.isNaN(d.getTime())) formData.set("ends_at", d.toISOString());
+        }
         startTransition(async () => {
           const res = await upsertGiveaway(formData);
           setMsg({ ok: res.ok, text: res.message });

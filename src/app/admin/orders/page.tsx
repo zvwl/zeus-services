@@ -2,7 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, statusBadgeVariant } from "@/components/ui";
 import { formatMoney } from "@/lib/currency";
-import { formatDateTime, cn } from "@/lib/utils";
+import { formatDateTime, cn, sanitizeSearchTerm } from "@/lib/utils";
 import type { Order, OrderItem } from "@/lib/types";
 
 export const revalidate = 0;
@@ -38,9 +38,10 @@ export default async function AdminOrdersPage({
     if (isOrderNumber) {
       query = query.eq("order_number", Number(search.replace(/^#/, "")));
     } else {
-      query = query.or(
-        `email.ilike.%${search}%,reference.ilike.%${search}%`
-      );
+      const safe = sanitizeSearchTerm(search);
+      if (safe) {
+        query = query.or(`email.ilike.%${safe}%,reference.ilike.%${safe}%`);
+      }
     }
   }
   const { data } = await query;

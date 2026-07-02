@@ -67,12 +67,30 @@ export function CartProvider({
   const [ready, setReady] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const authedRef = useRef(authed);
-  authedRef.current = authed;
+  const prevAuthedRef = useRef(authed);
 
   // On mount: load the local cart, and if signed in, merge it with the saved
   // server cart (server display data wins, quantities are max-merged so this is
   // idempotent across reloads).
   useEffect(() => {
+    const wasAuthed = prevAuthedRef.current;
+    prevAuthedRef.current = authed;
+    authedRef.current = authed;
+
+    // Signing out on a shared device must not leave the previous user's cart —
+    // which can contain sensitive custom-field values (credentials, IDs) — in
+    // localStorage for the next visitor. Clear everything on the true→false edge.
+    if (wasAuthed && !authed) {
+      try {
+        localStorage.removeItem(STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+      setLines([]);
+      setReady(true);
+      return;
+    }
+
     const local = readLocal();
     if (!authed) {
       setLines(local);

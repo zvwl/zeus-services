@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { ProductCard } from "@/components/cards";
 import { EmptyState } from "@/components/ui";
+import { sanitizeSearchTerm } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
 export const metadata: Metadata = { title: "Search" };
@@ -17,13 +18,14 @@ export default async function SearchPage({
   const query = (q ?? "").trim();
   let products: Product[] = [];
 
-  if (query) {
+  const safe = sanitizeSearchTerm(query);
+  if (safe) {
     const supabase = await createClient();
     const { data } = await supabase
       .from("products")
       .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
       .eq("is_active", true)
-      .or(`name.ilike.%${query}%,description.ilike.%${query}%`)
+      .or(`name.ilike.%${safe}%,description.ilike.%${safe}%`)
       .limit(24);
     products = (data as Product[]) ?? [];
   }

@@ -72,3 +72,35 @@ export function originFromRequest(req: Request): string {
 export function truncate(text: string, length: number) {
   return text.length > length ? `${text.slice(0, length).trimEnd()}…` : text;
 }
+
+/**
+ * Cleans a user search term before it's interpolated into a PostgREST `.or()`
+ * / `.ilike()` filter. Commas and parentheses are the OR-list separators and
+ * grouping tokens in PostgREST, so an un-stripped comma silently breaks the
+ * whole filter (→ "no results"); `%` and `_` are ilike wildcards, and `\` is
+ * the escape char. We drop all of them and cap the length.
+ */
+export function sanitizeSearchTerm(input: string, max = 80) {
+  return input
+    .replace(/[,()\\%_*:]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, max);
+}
+
+/**
+ * Sanitises a post-auth `next` redirect target so it can only ever point at a
+ * path on this site — never an absolute URL to an attacker-controlled host
+ * (open-redirect / phishing). Anything that isn't a single-slash-prefixed
+ * relative path falls back to the home page.
+ */
+export function safeNextPath(next: string | null | undefined, fallback = "/") {
+  if (!next) return fallback;
+  // Must start with exactly one "/" (rejects "//evil.com" and "/\evil.com")
+  // and must not smuggle a scheme or backslash.
+  if (!next.startsWith("/") || next.startsWith("//") || next.startsWith("/\\")) {
+    return fallback;
+  }
+  if (next.includes("://") || next.includes("\\")) return fallback;
+  return next;
+}

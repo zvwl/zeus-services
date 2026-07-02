@@ -29,7 +29,15 @@ export function GiveawayEntryButton({
   }
   if (!signedIn) {
     return (
-      <Button className="w-full" variant="gold" onClick={() => router.push("/login?next=back")}>
+      <Button
+        className="w-full"
+        variant="gold"
+        onClick={() =>
+          router.push(
+            `/login?next=${encodeURIComponent(window.location.pathname)}`
+          )
+        }
+      >
         Log in to enter
       </Button>
     );

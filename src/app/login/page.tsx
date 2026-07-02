@@ -12,11 +12,12 @@ import {
 } from "@/components/Turnstile";
 import { Button } from "@/components/ui";
 import { ShieldCheck } from "lucide-react";
+import { safeNextPath } from "@/lib/utils";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/";
+  const next = safeNextPath(searchParams.get("next"));
   const urlError = searchParams.get("error");
 
   const [email, setEmail] = useState("");

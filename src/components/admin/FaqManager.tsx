@@ -54,6 +54,15 @@ function FaqRow({ faq }: { faq: Faq | null }) {
         required
       />
       <div className="flex items-center gap-3">
+        <label className="flex items-center gap-2 text-xs text-zinc-400">
+          <input
+            type="checkbox"
+            name="is_active"
+            defaultChecked={faq?.is_active ?? true}
+            className="h-4 w-4 accent-violet-500"
+          />
+          Visible
+        </label>
         <Button size="sm" disabled={pending}>
           {pending ? "…" : faq ? "Save" : <><Plus className="h-4 w-4" /> Add FAQ</>}
         </Button>

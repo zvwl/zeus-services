@@ -58,10 +58,31 @@ export async function updateSession(request: NextRequest) {
     return redirect(url);
   }
 
+  if (user && needsAuth) {
+    // Server-side 2FA enforcement. A password login issues an AAL1 session even
+    // when the account has a verified TOTP factor; without this check the
+    // client could simply skip the challenge and use that AAL1 session. If a
+    // higher assurance level is available but not yet reached, force a step-up.
+    const { data: aal } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (
+      aal &&
+      aal.nextLevel === "aal2" &&
+      aal.currentLevel === "aal1" &&
+      !path.startsWith("/verify-2fa")
+    ) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/verify-2fa";
+      url.search = "";
+      url.searchParams.set("next", path);
+      return redirect(url);
+    }
+  }
+
   if (user && path.startsWith("/admin")) {
     const { data: profile } = await supabase
       .from("profiles")
-      .select("role, capabilities")
+      .select("role, capabilities, is_banned")
       .eq("id", user.id)
       .maybeSingle();
     const role = profile?.role;
@@ -73,8 +94,8 @@ export async function updateSession(request: NextRequest) {
       return redirect(url);
     };
 
-    if (!role || !STAFF_ROLES.includes(role)) {
-      // Not staff at all → off to the storefront.
+    if (!role || !STAFF_ROLES.includes(role) || profile?.is_banned) {
+      // Not staff (or a suspended staff account) → off to the storefront.
       const url = request.nextUrl.clone();
       url.pathname = "/";
       url.search = "";

@@ -8,13 +8,11 @@ export const runtime = "nodejs";
 // auth token (so RLS sees them as anon and rejects them). We upload here
 // instead: the admin check is enforced server-side and the write uses the
 // service role, so it can't be spoofed and doesn't depend on the browser token.
-const ALLOWED_TYPES = [
-  "image/png",
-  "image/jpeg",
-  "image/webp",
-  "image/gif",
-  "image/svg+xml",
-];
+// Raster image types only. SVG is intentionally excluded: it can carry inline
+// <script>, and these buckets are public + same-origin, so a stored SVG is a
+// stored-XSS vector.
+const ALLOWED_TYPES = ["image/png", "image/jpeg", "image/webp", "image/gif"];
+const ALLOWED_EXTS = ["png", "jpg", "jpeg", "webp", "gif"];
 
 export async function POST(req: Request) {
   const user = await getUser();
@@ -39,8 +37,13 @@ export async function POST(req: Request) {
   if (file.size > 4 * 1024 * 1024) {
     return NextResponse.json({ error: "Max file size is 4 MB." }, { status: 400 });
   }
-  if (file.type && !ALLOWED_TYPES.includes(file.type)) {
-    return NextResponse.json({ error: "Unsupported file type." }, { status: 400 });
+  // Require a recognised image MIME type (an empty/unknown type is rejected
+  // rather than allowed through).
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return NextResponse.json(
+      { error: "Unsupported file type. Use PNG, JPG, WEBP or GIF." },
+      { status: 400 }
+    );
   }
 
   // Per-bucket authorization, mirroring the storage RLS policies.
@@ -55,11 +58,12 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid bucket." }, { status: 400 });
   }
 
-  const ext = (file.name.split(".").pop() || "png")
+  const rawExt = (file.name.split(".").pop() || "")
     .toLowerCase()
     .replace(/[^a-z0-9]/g, "")
     .slice(0, 5);
-  const path = `${folder}/${crypto.randomUUID()}.${ext || "png"}`;
+  const ext = ALLOWED_EXTS.includes(rawExt) ? rawExt : "png";
+  const path = `${folder}/${crypto.randomUUID()}.${ext}`;
 
   const db = createAdminClient();
   const { error } = await db.storage.from(bucket).upload(path, file, {
