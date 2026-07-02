@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Markdown } from "@/components/Markdown";
 
-export const metadata: Metadata = { title: "Privacy Policy" };
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description:
+    "What data Zeuservices collects, why we collect it, how long we keep it, and the rights you have over it. Payments are handled entirely by Stripe.",
+  alternates: { canonical: "/privacy" },
+};
 
 const PRIVACY = `
 Last updated: June 2026

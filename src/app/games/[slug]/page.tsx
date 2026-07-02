@@ -3,6 +3,8 @@ import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { EmptyState } from "@/components/ui";
+import { JsonLd } from "@/components/JsonLd";
+import { siteUrl } from "@/lib/utils";
 import type { Category, Game, Product } from "@/lib/types";
 
 export const revalidate = 0;
@@ -80,8 +82,25 @@ export default async function GamePage({
     (a, b) => a.category.sort_order - b.category.sort_order
   );
 
+  const base = siteUrl();
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: base },
+      { "@type": "ListItem", position: 2, name: "Games", item: `${base}/games` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: game.name,
+        item: `${base}/games/${game.slug}`,
+      },
+    ],
+  };
+
   return (
     <div>
+      <JsonLd data={breadcrumbJsonLd} />
       <div className="relative h-56 overflow-hidden sm:h-72">
         <CoverImage
           src={(game as Game).banner_url ?? (game as Game).image_url}

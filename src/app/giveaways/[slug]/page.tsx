@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Crown, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
@@ -10,6 +11,42 @@ import { GiveawayEntryButton } from "@/components/GiveawayEntryButton";
 import type { Giveaway } from "@/lib/types";
 
 export const revalidate = 0;
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("giveaways")
+    .select("title, slug, description, prize, image_url")
+    .eq("slug", slug)
+    .maybeSingle();
+  if (!data) return { title: "Giveaway not found" };
+  const title = `${data.title} — Giveaway`;
+  const description = (
+    data.description ||
+    `Enter for free to win ${data.prize}. No purchase necessary — sign in and hit enter.`
+  )
+    .replace(/[#*_~>`[\]()]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 160);
+  return {
+    title,
+    description,
+    alternates: { canonical: `/giveaways/${data.slug}` },
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: `/giveaways/${data.slug}`,
+      images: data.image_url ? [{ url: data.image_url }] : undefined,
+    },
+  };
+}
 
 export default async function GiveawayPage({
   params,

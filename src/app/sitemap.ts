@@ -15,7 +15,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     supabase.from("products").select("slug, updated_at").eq("is_active", true),
     supabase.from("categories").select("slug, created_at").eq("is_active", true),
     supabase.from("blog_posts").select("slug, updated_at").eq("is_published", true),
-    supabase.from("giveaways").select("slug, created_at"),
+    supabase.from("giveaways").select("slug, created_at").eq("is_active", true),
   ]);
 
   const staticRoutes: MetadataRoute.Sitemap = [

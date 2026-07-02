@@ -7,7 +7,13 @@ import { formatMoney } from "@/lib/currency";
 import { Badge, ButtonLink, Card, statusBadgeVariant } from "@/components/ui";
 import { AnalyticsEvent } from "@/components/AnalyticsEvent";
 import { ClearCart } from "@/components/ClearCart";
+import type { Metadata } from "next";
 import type { Order, OrderItem } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Order confirmed",
+  robots: { index: false, follow: false },
+};
 
 export const dynamic = "force-dynamic";
 

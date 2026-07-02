@@ -6,7 +6,13 @@ import { EmptyState } from "@/components/ui";
 import { sanitizeSearchTerm } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Search" };
+// Internal search results should never be indexed (Google guidance); follow
+// links so crawlers can still discover products through them.
+export const metadata: Metadata = {
+  title: "Search",
+  robots: { index: false, follow: true },
+  alternates: { canonical: "/search" },
+};
 export const revalidate = 0;
 
 export default async function SearchPage({

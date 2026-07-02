@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Markdown } from "@/components/Markdown";
 
-export const metadata: Metadata = { title: "Terms & Conditions" };
+export const metadata: Metadata = {
+  title: "Terms & Conditions",
+  description:
+    "The terms that apply when you buy game top-ups, boosting or accounts from Zeuservices — eligibility, delivery, refunds and acceptable use.",
+  alternates: { canonical: "/terms" },
+};
 
 const TERMS = `
 Last updated: June 2026

@@ -1,6 +1,13 @@
+import type { Metadata } from "next";
 import { getSections } from "@/lib/data";
 import { SectionRenderer } from "@/components/sections/SectionRenderer";
 import { ButtonLink } from "@/components/ui";
+
+// Title/description/OG come from the root layout; the homepage only needs its
+// own canonical (the layout deliberately doesn't set one — see app/layout.tsx).
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export const revalidate = 0;
 

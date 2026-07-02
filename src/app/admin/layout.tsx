@@ -18,8 +18,14 @@ import {
   Users,
   Zap,
 } from "lucide-react";
+import type { Metadata } from "next";
 import { can, getProfile, isStaff } from "@/lib/auth";
 import type { Capability } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: { index: false, follow: false },
+};
 
 // Each item is shown only to staff who hold its capability (from their role
 // default or a per-staff override). The dashboard needs none. Grouped to mirror

@@ -1,6 +1,12 @@
+import type { Metadata } from "next";
 import { XCircle } from "lucide-react";
 import { ButtonLink } from "@/components/ui";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+
+export const metadata: Metadata = {
+  title: "Checkout cancelled",
+  robots: { index: false, follow: false },
+};
 
 export const revalidate = 0;
 

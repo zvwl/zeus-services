@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { KeyRound, LayoutDashboard, Package, Settings } from "lucide-react";
 import { getProfile } from "@/lib/auth";
+
+export const metadata: Metadata = {
+  title: "My account",
+  robots: { index: false, follow: false },
+};
 
 const tabs = [
   { href: "/account", label: "Overview", icon: LayoutDashboard },

@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Markdown } from "@/components/Markdown";
 
-export const metadata: Metadata = { title: "Refund Policy" };
+export const metadata: Metadata = {
+  title: "Refund Policy",
+  description:
+    "When Zeuservices orders qualify for a refund — undelivered orders, boosting progress, account warranties and how to open a claim.",
+  alternates: { canonical: "/refunds" },
+};
 
 const REFUNDS = `
 Last updated: June 2026

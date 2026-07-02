@@ -36,9 +36,14 @@ export function formatDateTime(date: string | Date | null | undefined) {
 }
 
 export function siteUrl(path = "") {
+  // VERCEL_PROJECT_PRODUCTION_URL (host only, no protocol) is a server-side
+  // safety net so canonicals/sitemap never point at localhost if
+  // NEXT_PUBLIC_SITE_URL is missing from the deployment's env.
   const base =
     process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ||
-    "http://localhost:3000";
+    (process.env.VERCEL_PROJECT_PRODUCTION_URL
+      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+      : "http://localhost:3000");
   return `${base}${path}`;
 }
 

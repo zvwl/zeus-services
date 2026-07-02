@@ -11,10 +11,10 @@ const csp = [
   "frame-ancestors 'none'",
   "form-action 'self'",
   "img-src 'self' data: blob: https:",
-  // Google Fonts (Inter) is loaded via <link> in app/layout.tsx: the stylesheet
-  // comes from fonts.googleapis.com, the woff2 files from fonts.gstatic.com.
-  "font-src 'self' data: https://fonts.gstatic.com",
-  "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+  // Inter is self-hosted via next/font (app/layout.tsx), so fonts are served
+  // same-origin from /_next/static — no Google Fonts hosts needed.
+  "font-src 'self' data:",
+  "style-src 'self' 'unsafe-inline'",
   "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com",
   "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://www.google-analytics.com https://*.google-analytics.com https://www.googletagmanager.com https://api.stripe.com",
   "frame-src 'self' https://challenges.cloudflare.com https://js.stripe.com https://hooks.stripe.com",

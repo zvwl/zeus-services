@@ -67,7 +67,7 @@ export default async function BlogPostPage({
     headline: post.title,
     ...(post.image_url ? { image: post.image_url } : {}),
     datePublished: post.published_at ?? post.created_at,
-    dateModified: post.published_at ?? post.created_at,
+    dateModified: post.updated_at ?? post.published_at ?? post.created_at,
     author: { "@type": "Person", name: post.author?.username ?? "Zeus Team" },
     ...(post.excerpt ? { description: post.excerpt } : {}),
     mainEntityOfPage: `${siteUrl()}/blog/${post.slug}`,

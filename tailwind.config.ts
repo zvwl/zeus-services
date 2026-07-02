@@ -17,7 +17,9 @@ const config: Config = {
         gold: "#fbbf24",
       },
       fontFamily: {
+        // --font-inter is set by next/font in app/layout.tsx (self-hosted Inter).
         sans: [
+          "var(--font-inter)",
           "Inter",
           "ui-sans-serif",
           "system-ui",

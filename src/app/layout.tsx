@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 import { CartProvider } from "@/components/CartProvider";
@@ -13,6 +14,22 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getRates, getSettings, setting } from "@/lib/data";
 import { getUser } from "@/lib/auth";
 import { siteUrl } from "@/lib/utils";
+
+// Self-hosted via next/font: no render-blocking Google Fonts CSS request, no
+// layout shift, and the woff2 files are served same-origin with the app.
+const inter = Inter({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-inter",
+});
+
+// Non-production surfaces (Vercel previews, or a separately-deployed dev site
+// with NEXT_PUBLIC_NOINDEX=1) must never be indexed — they would compete with
+// the live domain as duplicate content.
+const isNoindexDeployment =
+  (Boolean(process.env.VERCEL_ENV) &&
+    process.env.VERCEL_ENV !== "production") ||
+  process.env.NEXT_PUBLIC_NOINDEX === "1";
 
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings();
@@ -49,21 +66,25 @@ export async function generateMetadata(): Promise<Metadata> {
     // Tab favicon: the admin logo when set, otherwise the default mark. Always
     // providing one stops the browser from requesting (and 404-ing) /favicon.ico.
     icons: { icon: logoUrl || "/favicon.svg" },
-    alternates: { canonical: "/" },
-    robots: { index: true, follow: true },
+    // No `alternates.canonical` here: layout metadata is inherited by every
+    // page, so a canonical of "/" would declare all pages that don't override
+    // it as duplicates of the homepage. Each page sets its own canonical.
+    robots: isNoindexDeployment
+      ? { index: false, follow: false }
+      : { index: true, follow: true },
     // OpenGraph/Twitter images come from the dynamic opengraph-image.tsx route
     // (a real 1200×630 branded card) — far better than the old 32px favicon.
+    // No og:url for the same reason as canonical above. Twitter title/
+    // description are left unset so they resolve from each page's own metadata
+    // instead of pinning the sitewide defaults on every page.
     openGraph: {
       type: "website",
       siteName,
       title,
       description: tagline,
-      url: "/",
     },
     twitter: {
       card: "summary_large_image",
-      title,
-      description: tagline,
     },
     ...(googleVerification
       ? { verification: { google: googleVerification } }
@@ -118,19 +139,7 @@ export default async function RootLayout({
   };
 
   return (
-    <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang="en" className={`dark ${inter.variable}`}>
       <body className="flex min-h-screen flex-col font-sans">
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />

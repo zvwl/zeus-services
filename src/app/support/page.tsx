@@ -9,7 +9,12 @@ import { TicketForm } from "@/components/TicketForm";
 import { formatDateTime } from "@/lib/utils";
 import type { SupportTicket } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Support" };
+export const metadata: Metadata = {
+  title: "Support",
+  description:
+    "Need help with an order, delivery or your account? Open a support ticket or reach the Zeuservices team on Discord — we reply fast, around the clock.",
+  alternates: { canonical: "/support" },
+};
 export const revalidate = 0;
 
 export default async function SupportPage() {

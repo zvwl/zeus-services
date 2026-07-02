@@ -10,7 +10,12 @@ import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
 import type { Donation } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Donate" };
+export const metadata: Metadata = {
+  title: "Donate",
+  description:
+    "Support Zeuservices with a donation and get a shout-out on our supporter wall. Every contribution helps us keep prices low.",
+  alternates: { canonical: "/donate" },
+};
 export const revalidate = 0;
 
 export default async function DonatePage({
