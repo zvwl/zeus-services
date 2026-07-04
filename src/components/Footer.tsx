@@ -37,6 +37,7 @@ export async function Footer() {
     {
       title: "Support",
       links: [
+        { label: "About us", href: "/about" },
         { label: "Help center", href: "/support" },
         { label: "FAQ", href: "/faq" },
         { label: "My orders", href: "/account/orders" },

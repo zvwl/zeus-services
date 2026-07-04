@@ -1,13 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { ProductCard } from "@/components/cards";
 import { EmptyState } from "@/components/ui";
-import { cn } from "@/lib/utils";
+import { JsonLd } from "@/components/JsonLd";
+import { Markdown } from "@/components/Markdown";
+import { cn, siteUrl } from "@/lib/utils";
 import type { Game, Product } from "@/lib/types";
 
-export const revalidate = 0;
+export const revalidate = 3600;
+
+// Prebuild live category pages at deploy + ISR-refresh; new slugs on-demand.
+// Admin saves revalidatePath("/", "layout"), so edits appear immediately.
+export async function generateStaticParams() {
+  try {
+    const { data } = await createPublicClient()
+      .from("categories")
+      .select("slug")
+      .eq("is_active", true);
+    return (data ?? []).map((c: { slug: string }) => ({ slug: c.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -15,7 +31,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("categories")
     .select("name, slug, description")
@@ -53,7 +69,7 @@ export default async function CategoryPage({
     params,
     searchParams,
   ]);
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: category } = await supabase
     .from("categories")
     .select("*")
@@ -77,8 +93,40 @@ export default async function CategoryPage({
     ? all.filter((p) => p.game?.slug === gameFilter)
     : all;
 
+  const base = siteUrl();
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: base },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: category.name,
+        item: `${base}/category/${category.slug}`,
+      },
+    ],
+  };
+  const itemListJsonLd =
+    all.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: `${category.name} — Zeuservices`,
+          numberOfItems: all.length,
+          itemListElement: all.map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: p.name,
+            url: `${base}/product/${p.slug}`,
+          })),
+        }
+      : null;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      <JsonLd data={breadcrumbJsonLd} />
+      {itemListJsonLd && <JsonLd data={itemListJsonLd} />}
       <div className="mb-10">
         <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary-light">
           Category
@@ -88,6 +136,11 @@ export default async function CategoryPage({
         </h1>
         {category.description && (
           <p className="mt-3 max-w-2xl text-zinc-400">{category.description}</p>
+        )}
+        {category.intro && (
+          <div className="mt-6 max-w-3xl">
+            <Markdown>{category.intro}</Markdown>
+          </div>
         )}
       </div>
 

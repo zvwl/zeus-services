@@ -13,7 +13,7 @@ export default async function AdminPagesPage() {
     <div className="max-w-4xl">
       <h1 className="text-2xl font-extrabold text-white">Site pages</h1>
       <p className="mt-1 text-sm text-zinc-500">
-        Edit the Terms, Privacy and Refund policy pages. Content is markdown —
+        Edit the About, Terms, Privacy and Refund policy pages. Content is markdown —
         headings with ##, **bold**, [links](/support), tables and lists all
         work. Changes go live immediately.
       </p>

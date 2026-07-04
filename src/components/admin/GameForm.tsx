@@ -62,6 +62,15 @@ export function GameForm({ game }: { game: Game | null }) {
             placeholder="Short blurb shown on the game page banner."
           />
         </div>
+        <div>
+          <label className="label">Intro (SEO body — markdown)</label>
+          <textarea
+            name="intro"
+            className="input min-h-[140px] font-mono text-xs"
+            defaultValue={game?.intro ?? ""}
+            placeholder="Longer, keyword-rich intro shown under the banner on the game page. Supports ## headings, **bold**, [links](/support). Leave blank to hide."
+          />
+        </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <ImageUpload
             folder="games"

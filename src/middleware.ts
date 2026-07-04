@@ -1,4 +1,4 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/lib/supabase/middleware";
 
 // IMPORTANT: with a `src/` directory, Next.js only picks up middleware from
@@ -6,6 +6,20 @@ import { updateSession } from "@/lib/supabase/middleware";
 // silently ignored — which previously disabled session refresh AND all
 // per-path admin capability gating.
 export async function middleware(request: NextRequest) {
+  const path = request.nextUrl.pathname;
+  const needsAuth = path.startsWith("/account") || path.startsWith("/admin");
+  const hasAuthCookie = request.cookies
+    .getAll()
+    .some((c) => c.name.startsWith("sb-"));
+
+  // Fast path: an anonymous visitor (no Supabase auth cookie) on a public route
+  // has no session to refresh and nothing to gate. Skip the Supabase auth
+  // round-trip so crawlers and first-time visitors get a lower TTFB. Signed-in
+  // users and any /account or /admin request always run the full check.
+  if (!needsAuth && !hasAuthCookie) {
+    return NextResponse.next();
+  }
+
   return await updateSession(request);
 }
 

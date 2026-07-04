@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Markdown } from "@/components/Markdown";
 import { getPage } from "@/lib/data";
 
+export const revalidate = 3600;
+
 const DEFAULT_TITLE = "Refund Policy";
 
 // Fallback copy if the DB row is missing — the live text is editable in

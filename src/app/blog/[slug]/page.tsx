@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { CoverImage } from "@/components/cards";
 import { Badge } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
@@ -9,7 +9,20 @@ import { JsonLd } from "@/components/JsonLd";
 import { formatDate, siteUrl } from "@/lib/utils";
 import type { BlogPost } from "@/lib/types";
 
-export const revalidate = 0;
+export const revalidate = 3600;
+
+// Prebuild published posts at deploy + ISR-refresh; new slugs on-demand.
+export async function generateStaticParams() {
+  try {
+    const { data } = await createPublicClient()
+      .from("blog_posts")
+      .select("slug")
+      .eq("is_published", true);
+    return (data ?? []).map((b: { slug: string }) => ({ slug: b.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -17,7 +30,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("blog_posts")
     .select("title, slug, excerpt, content, image_url, published_at")
@@ -51,7 +64,7 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("blog_posts")
     .select("*, author:profiles(username, avatar_url)")

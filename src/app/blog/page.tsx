@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Newspaper } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { CoverImage } from "@/components/cards";
 import { Badge, EmptyState, SectionHeading } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
@@ -13,10 +13,10 @@ export const metadata: Metadata = {
     "Guides, tips and news on game top-ups, boosting and accounts from the Zeuservices team.",
   alternates: { canonical: "/blog" },
 };
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function BlogPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("blog_posts")
     .select("*, author:profiles(username, avatar_url)")

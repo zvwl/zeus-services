@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { Crown, Gift, Timer } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { CoverImage } from "@/components/cards";
 import { Badge, EmptyState, SectionHeading } from "@/components/ui";
 import { formatDate } from "@/lib/utils";
@@ -13,10 +13,10 @@ export const metadata: Metadata = {
     "Enter free giveaways for game top-ups, premium accounts and more. No purchase necessary.",
   alternates: { canonical: "/giveaways" },
 };
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function GiveawaysPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("giveaways")
     .select("*")

@@ -34,7 +34,7 @@ function CategoryRow({ category }: { category: Category | null }) {
       <input
         name="description"
         defaultValue={category?.description ?? ""}
-        placeholder="Short description"
+        placeholder="Short description (card subtitle)"
         className="input min-w-[180px] flex-[2]"
       />
       <input
@@ -43,6 +43,12 @@ function CategoryRow({ category }: { category: Category | null }) {
         defaultValue={category?.sort_order ?? 0}
         className="input w-20"
         title="Sort order"
+      />
+      <textarea
+        name="intro"
+        defaultValue={category?.intro ?? ""}
+        placeholder="Intro (SEO body — markdown, shown under the category heading). Supports ## headings, **bold**, [links](/support). Leave blank to hide."
+        className="input min-h-[110px] w-full font-mono text-xs"
       />
       <label className="flex items-center gap-1.5 text-xs text-zinc-400">
         <input

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { ButtonLink, SectionHeading } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import type { Faq } from "@/lib/types";
@@ -10,10 +10,10 @@ export const metadata: Metadata = {
     "Answers to common questions about delivery times, payments, boosting safety and our 7-day account cover.",
   alternates: { canonical: "/faq" },
 };
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function FaqPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("faqs")
     .select("*")

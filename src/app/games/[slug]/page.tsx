@@ -1,13 +1,28 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
+import { Markdown } from "@/components/Markdown";
 import { siteUrl } from "@/lib/utils";
 import type { Category, Game, Product } from "@/lib/types";
 
-export const revalidate = 0;
+export const revalidate = 3600;
+
+// Prebuild live game pages at deploy + ISR-refresh; new slugs on-demand.
+// Admin saves revalidatePath("/", "layout"), so edits appear immediately.
+export async function generateStaticParams() {
+  try {
+    const { data } = await createPublicClient()
+      .from("games")
+      .select("slug")
+      .eq("is_active", true);
+    return (data ?? []).map((g: { slug: string }) => ({ slug: g.slug }));
+  } catch {
+    return [];
+  }
+}
 
 export async function generateMetadata({
   params,
@@ -15,7 +30,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("games")
     .select("name, slug, description, image_url, banner_url")
@@ -52,7 +67,7 @@ export default async function GamePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data: game } = await supabase
     .from("games")
     .select("*")
@@ -83,6 +98,7 @@ export default async function GamePage({
   );
 
   const base = siteUrl();
+  const allProducts = (products as Product[]) ?? [];
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -97,10 +113,26 @@ export default async function GamePage({
       },
     ],
   };
+  const itemListJsonLd =
+    allProducts.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: `${game.name} services — Zeuservices`,
+          numberOfItems: allProducts.length,
+          itemListElement: allProducts.map((p, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: p.name,
+            url: `${base}/product/${p.slug}`,
+          })),
+        }
+      : null;
 
   return (
     <div>
       <JsonLd data={breadcrumbJsonLd} />
+      {itemListJsonLd && <JsonLd data={itemListJsonLd} />}
       <div className="relative h-56 overflow-hidden sm:h-72">
         <CoverImage
           src={(game as Game).banner_url ?? (game as Game).image_url}
@@ -124,6 +156,11 @@ export default async function GamePage({
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+        {game.intro && (
+          <div className="mb-12 max-w-3xl">
+            <Markdown>{game.intro}</Markdown>
+          </div>
+        )}
         {groups.length === 0 ? (
           <EmptyState
             title="Nothing here yet"

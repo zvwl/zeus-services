@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShieldCheck, Timer, Truck, Zap } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { getUser } from "@/lib/auth";
+import { createPublicClient } from "@/lib/supabase/public";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { Badge, SectionHeading, Stars } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
@@ -14,7 +13,22 @@ import { JsonLd } from "@/components/JsonLd";
 import { siteUrl } from "@/lib/utils";
 import type { Product, Review } from "@/lib/types";
 
-export const revalidate = 0;
+export const revalidate = 3600;
+
+// Prebuild the live product pages at deploy (and ISR-refresh them); new slugs are
+// generated on-demand. Admin saves call revalidatePath("/", "layout"), so price/
+// stock edits still appear immediately despite the long revalidate window.
+export async function generateStaticParams() {
+  try {
+    const { data } = await createPublicClient()
+      .from("products")
+      .select("slug")
+      .eq("is_active", true);
+    return (data ?? []).map((p: { slug: string }) => ({ slug: p.slug }));
+  } catch {
+    return [];
+  }
+}
 
 const stripMd = (s: string) =>
   s.replace(/[#*_~>`[\]()]/g, "").replace(/\s+/g, " ").trim();
@@ -25,7 +39,7 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("products")
     .select("name, slug, description, image_url, game:games(name)")
@@ -65,7 +79,7 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const { data } = await supabase
     .from("products")
     .select(
@@ -77,7 +91,7 @@ export default async function ProductPage({
   if (!data) notFound();
   const product = data as Product;
 
-  const [{ data: reviews }, { count: reviewCount }, { data: related }, user] =
+  const [{ data: reviews }, { count: reviewCount }, { data: related }] =
     await Promise.all([
       supabase
         .from("reviews")
@@ -99,7 +113,6 @@ export default async function ProductPage({
         .neq("id", product.id)
         .order("sort_order")
         .limit(4),
-      getUser(),
     ]);
 
   const productReviews = (reviews as Review[]) ?? [];
@@ -154,10 +167,25 @@ export default async function ProductPage({
       "@type": "Offer",
       priceCurrency: "USD",
       price: price.toFixed(2),
+      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+        .toISOString()
+        .slice(0, 10),
+      itemCondition: "https://schema.org/NewCondition",
       availability: inStock
         ? "https://schema.org/InStock"
         : "https://schema.org/OutOfStock",
       url: `${base}/product/${product.slug}`,
+      seller: { "@type": "Organization", name: "Zeuservices", url: base },
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        applicableCountry: "GB",
+        returnPolicyCategory:
+          "https://schema.org/MerchantReturnFiniteReturnWindow",
+        merchantReturnDays: 0,
+        returnMethod: "https://schema.org/ReturnByMail",
+        returnFees: "https://schema.org/FreeReturn",
+        merchantReturnLink: `${base}/refunds`,
+      },
     },
     ...(totalReviews > 0 && avg
       ? {
@@ -353,7 +381,7 @@ export default async function ProductPage({
         </h2>
         <ProductReviews reviews={productReviews} total={totalReviews} />
         <div className="mt-8 max-w-xl">
-          <ReviewForm productId={product.id} signedIn={Boolean(user)} />
+          <ReviewForm productId={product.id} />
         </div>
       </div>
 

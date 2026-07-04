@@ -24,6 +24,7 @@ export interface Category {
   name: string;
   slug: string;
   description: string | null;
+  intro: string | null;
   icon: string | null;
   sort_order: number;
   is_active: boolean;
@@ -34,6 +35,7 @@ export interface Game {
   name: string;
   slug: string;
   description: string | null;
+  intro: string | null;
   image_url: string | null;
   banner_url: string | null;
   is_active: boolean;

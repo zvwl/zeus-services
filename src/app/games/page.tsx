@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { createPublicClient } from "@/lib/supabase/public";
 import { GameCard } from "@/components/cards";
 import { EmptyState, SectionHeading } from "@/components/ui";
+import { JsonLd } from "@/components/JsonLd";
+import { siteUrl } from "@/lib/utils";
 import { Gamepad2 } from "lucide-react";
 import type { Game } from "@/lib/types";
 
@@ -11,10 +13,10 @@ export const metadata: Metadata = {
     "Browse every supported game — cheap top-ups, professional boosting and premium accounts with fast, secure delivery.",
   alternates: { canonical: "/games" },
 };
-export const revalidate = 0;
+export const revalidate = 3600;
 
 export default async function GamesPage() {
-  const supabase = await createClient();
+  const supabase = createPublicClient();
   const [{ data: games }, { data: products }] = await Promise.all([
     supabase.from("games").select("*").eq("is_active", true).order("sort_order"),
     supabase.from("products").select("game_id").eq("is_active", true),
@@ -25,8 +27,27 @@ export default async function GamesPage() {
     counts.set(p.game_id, (counts.get(p.game_id) ?? 0) + 1);
   }
 
+  const base = siteUrl();
+  const gameList = (games as Game[]) ?? [];
+  const itemListJsonLd =
+    gameList.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Games at Zeuservices",
+          numberOfItems: gameList.length,
+          itemListElement: gameList.map((g, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            name: g.name,
+            url: `${base}/games/${g.slug}`,
+          })),
+        }
+      : null;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      {itemListJsonLd && <JsonLd data={itemListJsonLd} />}
       <SectionHeading
         as="h1"
         eyebrow="Catalogue"

@@ -1,22 +1,39 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { submitReview, type ActionResult } from "@/app/actions";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui";
 import { cn } from "@/lib/utils";
 
 export function ReviewForm({
   productId,
-  signedIn,
+  signedIn: signedInProp,
 }: {
   productId?: string;
-  signedIn: boolean;
+  // Optional: when omitted (e.g. on statically-rendered pages) the form resolves
+  // the sign-in state on the client instead of at server render time.
+  signedIn?: boolean;
 }) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [result, setResult] = useState<ActionResult | null>(null);
   const [pending, startTransition] = useTransition();
+  const [signedIn, setSignedIn] = useState<boolean>(signedInProp ?? false);
+
+  useEffect(() => {
+    if (signedInProp !== undefined) return;
+    let active = true;
+    createClient()
+      .auth.getUser()
+      .then(({ data }) => {
+        if (active) setSignedIn(Boolean(data.user));
+      });
+    return () => {
+      active = false;
+    };
+  }, [signedInProp]);
 
   if (!signedIn) {
     return (

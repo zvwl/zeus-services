@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { cookies } from "next/headers";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
@@ -12,7 +11,6 @@ import { JsonLd } from "@/components/JsonLd";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getRates, getSettings, setting } from "@/lib/data";
-import { getUser } from "@/lib/auth";
 import { siteUrl } from "@/lib/utils";
 
 // Self-hosted via next/font: no render-blocking Google Fonts CSS request, no
@@ -99,13 +97,9 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const [rates, settings, cookieStore, user] = await Promise.all([
-    getRates(),
-    getSettings(),
-    cookies(),
-    getUser(),
-  ]);
-  const initialCurrency = cookieStore.get("currency")?.value ?? "USD";
+  // Only cached, cookie-free reads here so this layout doesn't force every page
+  // to render dynamically. Currency + signed-in user are resolved on the client.
+  const [rates, settings] = await Promise.all([getRates(), getSettings()]);
   // Show a warning bar on any non-production (preview/dev) deployment.
   const isPreview =
     Boolean(process.env.VERCEL_ENV) && process.env.VERCEL_ENV !== "production";
@@ -145,8 +139,8 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col font-sans">
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />
-        <CurrencyProvider initial={initialCurrency} rates={rates}>
-          <CartProvider authed={Boolean(user)}>
+        <CurrencyProvider rates={rates}>
+          <CartProvider>
             {isPreview && (
               <div className="bg-amber-500 px-4 py-1.5 text-center text-xs font-bold tracking-wide text-black">
                 STAGING / DEV PREVIEW — not the live site. Changes here are for
