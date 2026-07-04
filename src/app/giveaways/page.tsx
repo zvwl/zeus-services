@@ -34,6 +34,7 @@ export default async function GiveawaysPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
       <SectionHeading
+        as="h1"
         eyebrow="Free stuff"
         title="Giveaways"
         subtitle="We regularly give away game currency, skins and accounts to our community. Entering is always free."

@@ -189,11 +189,15 @@ export function SectionHeading({
   title,
   subtitle,
   center,
+  as: Heading = "h2",
 }: {
   eyebrow?: string;
   title: string;
   subtitle?: string | null;
   center?: boolean;
+  // Use `as="h1"` when this heading is the page's main title, so each page has
+  // exactly one h1 for SEO/accessibility. Defaults to h2 for section headings.
+  as?: "h1" | "h2";
 }) {
   return (
     <div className={cn("mb-10", center && "text-center")}>
@@ -202,7 +206,7 @@ export function SectionHeading({
           {eyebrow}
         </p>
       )}
-      <h2 className="text-3xl font-bold text-white sm:text-4xl">{title}</h2>
+      <Heading className="text-3xl font-bold text-white sm:text-4xl">{title}</Heading>
       {subtitle && (
         <p
           className={cn(

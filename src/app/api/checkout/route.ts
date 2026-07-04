@@ -4,6 +4,7 @@ import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { convertFromUSD } from "@/lib/currency";
 import { originFromRequest } from "@/lib/utils";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 import type { Product, ProductField, ProductVariant } from "@/lib/types";
 import type Stripe from "stripe";
 
@@ -60,6 +61,13 @@ interface PricedLine {
 
 export async function POST(req: Request) {
   try {
+    // Throttle order/session creation per IP (best effort).
+    if (!rateLimit(`checkout:${clientIp(req)}`, 12, 60_000)) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
     if (!stripeConfigured()) {
       return NextResponse.json(
         { error: "Payments are not configured yet. Please try again later." },
@@ -403,7 +411,13 @@ export async function POST(req: Request) {
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: lineItems,
-      metadata: { type: "order", order_id: order.id },
+      metadata: {
+        type: "order",
+        order_id: order.id,
+        // Lets fulfillment clear the buyer's saved DB cart, but only for cart
+        // checkouts (a single-item "Buy now" must leave the cart untouched).
+        from_cart: fromCart ? "1" : "0",
+      },
       customer_email: user?.email ?? undefined,
       // Abandoned sessions expire in 30 min (Stripe minimum); the
       // checkout.session.expired webhook then cancels the pending order.

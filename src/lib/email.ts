@@ -142,7 +142,7 @@ const STATUS_COPY: Record<
   },
   cancelled: {
     heading: "Your order was cancelled",
-    body: "This order has been cancelled. If you were charged, a refund will follow shortly. Reply to this email if you have any questions.",
+    body: "This order has been cancelled. If you were charged, a refund will follow shortly. If you have any questions, open a support ticket on the site or reach us on Discord.",
     accent: "#ef4444",
   },
   refunded: {

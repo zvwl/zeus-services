@@ -107,6 +107,8 @@ export default async function GamePage({
           alt={game.name}
           fallbackText={game.name}
           className="h-full w-full"
+          sizes="100vw"
+          priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent" />
         <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-8 sm:px-6">

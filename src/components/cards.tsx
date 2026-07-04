@@ -26,11 +26,18 @@ export function CoverImage({
   alt,
   fallbackText,
   className = "",
+  // Grid cards default to a quarter-viewport render; large heroes (product /
+  // game / blog detail pages) should pass a wider `sizes` and `priority` so the
+  // LCP image loads eagerly at the right resolution instead of blurry + late.
+  sizes = "(max-width: 768px) 50vw, 25vw",
+  priority = false,
 }: {
   src: string | null;
   alt: string;
   fallbackText: string;
   className?: string;
+  sizes?: string;
+  priority?: boolean;
 }) {
   if (src) {
     return (
@@ -39,7 +46,8 @@ export function CoverImage({
           src={src}
           alt={alt}
           fill
-          sizes="(max-width: 768px) 50vw, 25vw"
+          sizes={sizes}
+          priority={priority}
           className="object-cover transition duration-500 group-hover:scale-105"
         />
       </div>

@@ -37,7 +37,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const tagline = setting(
     settings,
     "tagline",
-    "Buy cheap game top-ups, boosting and accounts with instant delivery."
+    "Buy cheap game top-ups, boosting and accounts — fast, secure delivery."
   );
   const logoUrl = setting(settings, "logo_url");
   const title = `${siteName} — Game Top-Ups, Boosting & Accounts`;
@@ -53,13 +53,15 @@ export async function generateMetadata(): Promise<Metadata> {
       "cheap game top-ups",
       "buy V-Bucks",
       "cheap V-Bucks",
-      "buy Robux",
-      "Riot Points",
+      "Fortnite V-Bucks",
+      "Rocket League credits",
+      "GTA Online cash",
+      "GTA 5 modded accounts",
+      "GTA Online boosting",
       "game boosting",
       "rank boosting service",
       "buy game accounts",
       "in-game currency",
-      "instant delivery",
       "gaming marketplace",
       siteName,
     ],

@@ -3,11 +3,18 @@ import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { originFromRequest } from "@/lib/utils";
+import { clientIp, rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    if (!rateLimit(`donate:${clientIp(req)}`, 10, 60_000)) {
+      return NextResponse.json(
+        { error: "Too many attempts. Please wait a moment and try again." },
+        { status: 429 }
+      );
+    }
     if (!stripeConfigured() || !hasAdminClient()) {
       return NextResponse.json(
         { error: "Donations are not configured yet." },

@@ -28,8 +28,9 @@ export default async function BlogPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
       <SectionHeading
+        as="h1"
         eyebrow="News & guides"
-        title="The Zeus blog"
+        title="The Zeuservices blog"
         subtitle="Game guides, platform updates, sales announcements and behind-the-scenes."
       />
       {posts.length === 0 ? (

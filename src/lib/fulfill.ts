@@ -189,6 +189,14 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
     });
   }
 
+  // Clear the buyer's saved server cart now that the cart checkout is paid, so
+  // their items don't reappear after payment (works even if they never return
+  // to the success page — this runs from the webhook too). Only for cart
+  // checkouts; "Buy now" purchases never touched the cart.
+  if (order.user_id && session.metadata?.from_cart === "1") {
+    await db.from("cart_items").delete().eq("user_id", order.user_id);
+  }
+
   // Grant the verified-customer Discord role. Works whether the buyer
   // connected Discord before or after paying — connecting later re-runs the
   // same check from the auth callback. Best effort; never throws.

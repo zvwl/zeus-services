@@ -9,12 +9,12 @@ import { useCart } from "@/components/CartProvider";
  * "Buy now" purchases don't render this, so they leave the cart untouched.
  */
 export function ClearCart() {
-  const { clear } = useCart();
+  const { hardClear } = useCart();
   const done = useRef(false);
   useEffect(() => {
     if (done.current) return;
     done.current = true;
-    clear();
-  }, [clear]);
+    hardClear();
+  }, [hardClear]);
   return null;
 }

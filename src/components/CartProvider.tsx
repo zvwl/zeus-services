@@ -33,6 +33,7 @@ interface CartContextValue {
   updateQty: (key: string, quantity: number) => void;
   removeLine: (key: string) => void;
   clear: () => void;
+  hardClear: () => void;
 }
 
 const CartContext = createContext<CartContextValue | null>(null);
@@ -77,6 +78,9 @@ export function CartProvider({
   // short moment after the user stops interacting.
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const pendingSave = useRef<CartLine[] | null>(null);
+  // Set by hardClear() (on the checkout-success page) so the mount-time
+  // server-cart merge can't resurrect a cart we just emptied after payment.
+  const skipServerMerge = useRef(false);
 
   const flushSave = useCallback(() => {
     if (saveTimer.current) {
@@ -141,20 +145,33 @@ export function CartProvider({
       setReady(true);
       return;
     }
+    // Just emptied the cart after a successful checkout — don't merge the (now
+    // being deleted) server cart back in.
+    if (skipServerMerge.current) {
+      skipServerMerge.current = false;
+      setLines(local);
+      setReady(true);
+      return;
+    }
     let cancelled = false;
     loadServerCart()
       .then((server) => {
         if (cancelled) return;
-        const merged = unionMaxCarts(local, server);
-        setLines(merged);
-        writeLocal(merged);
-        // Persist the merge so the server reflects any guest additions.
-        scheduleSave(merged);
+        // Merge against the CURRENT state (functional update) as well as the
+        // pre-load local cart, so any line the user added while this fetch was
+        // in flight isn't overwritten and lost.
+        setLines((current) => {
+          const merged = unionMaxCarts(unionMaxCarts(local, current), server);
+          writeLocal(merged);
+          // Persist the merge so the server reflects any guest additions.
+          scheduleSave(merged);
+          return merged;
+        });
         setReady(true);
       })
       .catch(() => {
         if (cancelled) return;
-        setLines(local);
+        setLines((current) => unionMaxCarts(local, current));
         setReady(true);
       });
     return () => {
@@ -220,6 +237,22 @@ export function CartProvider({
 
   const clear = useCallback(() => commit(() => []), [commit]);
 
+  // Empty the cart immediately and authoritatively after a completed checkout:
+  // cancel any pending debounced save, wipe local + state, block the next
+  // mount-time server merge, and push an immediate empty save to the DB (the
+  // server cart is also cleared at fulfillment, this is the belt-and-braces).
+  const hardClear = useCallback(() => {
+    if (saveTimer.current) {
+      clearTimeout(saveTimer.current);
+      saveTimer.current = null;
+    }
+    pendingSave.current = null;
+    skipServerMerge.current = true;
+    writeLocal([]);
+    setLines([]);
+    if (authedRef.current) void saveServerCart([]);
+  }, []);
+
   const value = useMemo<CartContextValue>(
     () => ({
       lines,
@@ -233,8 +266,9 @@ export function CartProvider({
       updateQty,
       removeLine,
       clear,
+      hardClear,
     }),
-    [lines, ready, isOpen, addLine, updateQty, removeLine, clear]
+    [lines, ready, isOpen, addLine, updateQty, removeLine, clear, hardClear]
   );
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>;

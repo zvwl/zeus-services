@@ -12,7 +12,7 @@ import type { SupportTicket } from "@/lib/types";
 export const metadata: Metadata = {
   title: "Support",
   description:
-    "Need help with an order, delivery or your account? Open a support ticket or reach the Zeuservices team on Discord — we reply fast, around the clock.",
+    "Need help with an order, delivery or your account? Open a support ticket or reach the Zeuservices team on Discord — we reply as fast as we can, usually within a few hours.",
   alternates: { canonical: "/support" },
 };
 export const revalidate = 0;
@@ -35,7 +35,8 @@ export default async function SupportPage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <SectionHeading
-        eyebrow="We're here 24/7"
+        as="h1"
+        eyebrow="We're here to help"
         title="Support center"
         subtitle="Open a ticket and our team will get back to you — usually within a few hours."
         center

@@ -21,7 +21,7 @@ Last updated: July 2026
 
 ## How to request a refund
 
-1. Reach us with your order number — open a ticket on the [support page](/support), message us on [Discord](https://discord.gg/uGDuujHsBW), or reply to your order email.
+1. Reach us with your order number — open a ticket on the [support page](/support) or message us on [Discord](https://discord.gg/uGDuujHsBW).
 2. Tell us what went wrong — screenshots help.
 3. Requests are typically reviewed and processed within **3–5 working days**. Approved refunds are returned to your original payment method via Stripe, which can take a further 5–10 business days to appear on your statement.
 

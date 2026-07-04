@@ -29,7 +29,7 @@ Delivery typically takes between 10 minutes and 2 hours depending on availabilit
 
 ## 4. Game publisher disclaimer
 
-Zeuservices is **not affiliated with, endorsed by, or sponsored by** any game publisher (including Epic Games, Riot Games, Roblox Corporation, Supercell, Rockstar Games or any other rights holder). All trademarks belong to their respective owners. You acknowledge that the use of third-party services may be against certain games' Terms of Service and carries inherent risk; you accept that risk when ordering.
+Zeuservices is **not affiliated with, endorsed by, or sponsored by** any game publisher (including Epic Games, Rockstar Games, Take-Two Interactive, Psyonix or any other rights holder). All trademarks belong to their respective owners. You acknowledge that the use of third-party services may be against certain games' Terms of Service and carries inherent risk; you accept that risk when ordering.
 
 ## 5. Payments
 

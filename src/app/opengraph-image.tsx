@@ -15,7 +15,7 @@ export default async function Image() {
   const tagline = setting(
     settings,
     "tagline",
-    "Buy cheap game top-ups, boosting and accounts with instant delivery."
+    "Buy cheap game top-ups, boosting and accounts — fast, secure delivery."
   );
 
   return new ImageResponse(
@@ -90,7 +90,7 @@ export default async function Image() {
         </div>
 
         <div style={{ display: "flex", gap: "14px", marginTop: "44px" }}>
-          {["Instant delivery", "Secure Stripe checkout", "Multi-currency"].map(
+          {["Fast delivery", "Secure Stripe checkout", "Multi-currency"].map(
             (t) => (
               <div
                 key={t}

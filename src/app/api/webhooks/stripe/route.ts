@@ -62,6 +62,50 @@ export async function POST(req: Request) {
         }
         break;
       }
+      // Dashboard/API refunds and chargebacks: reflect them on the order so the
+      // admin order list and the customer's history stay truthful.
+      case "charge.refunded": {
+        const charge = event.data.object;
+        const paymentIntent =
+          typeof charge.payment_intent === "string"
+            ? charge.payment_intent
+            : charge.payment_intent?.id;
+        if (paymentIntent) {
+          const db = createAdminClient();
+          await db
+            .from("orders")
+            .update({ status: "refunded" })
+            .eq("stripe_payment_intent", paymentIntent)
+            .not("status", "in", "(refunded,cancelled)");
+        }
+        break;
+      }
+      case "charge.dispute.created": {
+        const dispute = event.data.object;
+        const paymentIntent =
+          typeof dispute.payment_intent === "string"
+            ? dispute.payment_intent
+            : dispute.payment_intent?.id;
+        if (paymentIntent) {
+          const db = createAdminClient();
+          // Flag the order as disputed and record it for staff follow-up.
+          const { data: order } = await db
+            .from("orders")
+            .select("id, order_number")
+            .eq("stripe_payment_intent", paymentIntent)
+            .maybeSingle();
+          if (order) {
+            await db.from("audit_logs").insert({
+              actor_id: null,
+              action: "order.disputed",
+              entity: "order",
+              entity_id: order.id,
+              meta: { order_number: order.order_number, reason: dispute.reason },
+            });
+          }
+        }
+        break;
+      }
       default:
         break;
     }

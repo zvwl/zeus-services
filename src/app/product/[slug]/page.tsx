@@ -124,10 +124,17 @@ export default async function ProductPage({
     .sort((a, b) => a.sort_order - b.sort_order);
 
   const base = siteUrl();
+  const isCustom =
+    product.pricing_mode === "custom" && product.custom_price_per_unit != null;
   const activePrices = variants.map((v) => Number(v.price));
+  // "from" price for structured data. Custom-amount products have base_price 0,
+  // so derive their minimum purchasable price instead of advertising $0.00.
   const price = activePrices.length
     ? Math.min(...activePrices)
-    : Number(product.base_price);
+    : isCustom
+      ? Number(product.custom_price_per_unit) *
+        Math.max(1, Number(product.custom_min ?? 1))
+      : Number(product.base_price);
   const inStock = variants.length
     ? variants.some((v) => v.stock === null || v.stock > 0)
     : product.stock === null || product.stock > 0;
@@ -227,6 +234,8 @@ export default async function ProductPage({
             alt={product.name}
             fallbackText={product.name}
             className="aspect-[16/10] w-full rounded-2xl border border-edge"
+            sizes="(max-width: 1024px) 100vw, 50vw"
+            priority
           />
           <div className="mt-5 grid grid-cols-3 gap-3">
             {[

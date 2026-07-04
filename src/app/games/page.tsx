@@ -28,6 +28,7 @@ export default async function GamesPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
       <SectionHeading
+        as="h1"
         eyebrow="Catalogue"
         title="All games"
         subtitle="Pick your game to see every top-up, boosting service and account we offer for it."

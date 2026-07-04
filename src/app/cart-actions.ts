@@ -72,10 +72,16 @@ export async function loadServerCart(): Promise<CartLine[]> {
       const customFields = row.custom_fields ?? {};
       const extra = row.extra ?? {};
       const addons = extra.addons ?? [];
-      const unitPriceUsd =
-        typeof extra.unitPriceUsd === "number"
+      // For fixed / variant products show the LIVE price (matching what checkout
+      // will actually charge), not the possibly-stale add-time price. Custom-
+      // amount lines keep their computed add-time price (amount × unit price),
+      // which the checkout route re-derives server-side anyway.
+      const isCustomAmount = extra.customAmount != null;
+      const unitPriceUsd = isCustomAmount
+        ? typeof extra.unitPriceUsd === "number"
           ? extra.unitPriceUsd
-          : Number(v?.price ?? p.base_price);
+          : Number(v?.price ?? p.base_price)
+        : Number(v?.price ?? p.base_price);
       return {
         key: cartLineKey(row.product_id, row.variant_id, customFields, {
           customAmount: extra.customAmount ?? null,
@@ -111,7 +117,7 @@ export async function saveServerCart(lines: CartLine[]): Promise<void> {
   try {
     await supabase.from("cart_items").delete().eq("user_id", user.id);
     if (lines.length > 0) {
-      await supabase.from("cart_items").insert(
+      const { error } = await supabase.from("cart_items").insert(
         lines.map((l) => ({
           user_id: user.id,
           product_id: l.productId,
@@ -126,6 +132,10 @@ export async function saveServerCart(lines: CartLine[]): Promise<void> {
           },
         }))
       );
+      // The delete already happened; surface an insert failure so a wiped
+      // server cart is at least diagnosable (the client's localStorage copy
+      // remains the source of truth and re-syncs on the next edit).
+      if (error) console.error("saveServerCart insert failed:", error.message);
     }
   } catch {
     // cart table may not exist yet (migration pending) — ignore.

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { XCircle } from "lucide-react";
 import { ButtonLink } from "@/components/ui";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { getStripe, stripeConfigured } from "@/lib/stripe";
 
 export const metadata: Metadata = {
   title: "Checkout cancelled",
@@ -22,11 +23,23 @@ async function cancelPendingOrder(orderId: string) {
   if (!UUID_RE.test(orderId) || !hasAdminClient()) return;
   try {
     const db = createAdminClient();
-    await db
+    const { data: cancelled } = await db
       .from("orders")
       .update({ status: "cancelled", updated_at: new Date().toISOString() })
       .eq("id", orderId)
-      .eq("status", "pending");
+      .eq("status", "pending")
+      .select("stripe_session_id")
+      .maybeSingle();
+    // Expire the Stripe Checkout Session too, so the buyer can't navigate back
+    // and pay for an order we've just cancelled (which would leave them charged
+    // with no fulfilled order). Only reached when THIS call did the cancel.
+    if (cancelled?.stripe_session_id && stripeConfigured()) {
+      try {
+        await getStripe().checkout.sessions.expire(cancelled.stripe_session_id);
+      } catch {
+        // already completed/expired — nothing to do
+      }
+    }
   } catch {
     // best effort — the session-expired webhook is the backstop
   }

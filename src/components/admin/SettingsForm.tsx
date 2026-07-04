@@ -22,8 +22,8 @@ const GENERAL_FIELDS: { key: string; label: string; placeholder: string; textare
   },
   {
     key: "support_email",
-    label: "Support email",
-    placeholder: "support@zeus-services.com",
+    label: "Support email (optional — leave blank if you don't have a mailbox yet)",
+    placeholder: "support@yourdomain.com",
   },
 ];
 

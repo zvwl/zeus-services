@@ -127,10 +127,7 @@ export async function Footer() {
             affiliated with any game publisher.
           </p>
           <div className="flex items-center gap-4 text-xs text-zinc-600">
-            <span className="flex items-center gap-1.5">
-              <span className="h-2 w-2 rounded-full bg-emerald-400" />
-              All systems operational
-            </span>
+            <span>United Kingdom · Delivering worldwide</span>
           </div>
         </div>
       </div>

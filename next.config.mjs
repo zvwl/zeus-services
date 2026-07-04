@@ -40,16 +40,29 @@ const securityHeaders = [
 
 const nextConfig = {
   eslint: { ignoreDuringBuilds: true },
+  // Don't advertise the framework.
+  poweredByHeader: false,
   images: {
+    // Only hosts we actually render from: Supabase storage (product/site
+    // images) and OAuth avatar CDNs (Discord / Google profile pictures).
     remotePatterns: [
       { protocol: "https", hostname: "**.supabase.co" },
       { protocol: "https", hostname: "cdn.discordapp.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
-      { protocol: "https", hostname: "images.unsplash.com" },
     ],
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
+  },
+  async redirects() {
+    return [
+      // Product slug was tidied for SEO; keep the old URL from 404-ing.
+      {
+        source: "/product/v-bucks-top-up",
+        destination: "/product/fortnite-v-bucks",
+        permanent: true,
+      },
+    ];
   },
 };
 

@@ -73,6 +73,7 @@ async function requireRole(roles: Role[]) {
   if (!profile || !roles.includes(profile.role)) {
     throw new Error("Unauthorized");
   }
+  await assertActiveSession(profile);
   return profile;
 }
 
@@ -112,10 +113,28 @@ export function can(profile: Profile | null, capability: Capability) {
   );
 }
 
+/**
+ * Ensures the current session is a banned-free, 2FA-satisfied one. Server
+ * actions are reachable by direct POST, so they must NOT rely on the page-level
+ * middleware (which only guards navigations to /admin and /account). This
+ * mirrors the middleware's ban + AAL2 step-up checks at the action layer.
+ */
+async function assertActiveSession(profile: Profile | null) {
+  if (!profile || profile.is_banned) throw new Error("Unauthorized");
+  const supabase = await createClient();
+  const { data: aal } =
+    await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aal && aal.nextLevel === "aal2" && aal.currentLevel === "aal1") {
+    // A verified TOTP factor exists but the challenge wasn't completed.
+    throw new Error("Unauthorized");
+  }
+}
+
 /** Server-action guard: throws (→ "Unauthorized") if the actor lacks `capability`. */
 export async function requireCapability(capability: Capability) {
   const profile = await getProfile();
   if (!can(profile, capability)) throw new Error("Unauthorized");
+  await assertActiveSession(profile);
   return profile as Profile;
 }
 

@@ -41,6 +41,7 @@ export default async function ReviewsPage() {
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
       <SectionHeading
+        as="h1"
         eyebrow="Wall of fame"
         title="Customer reviews"
         subtitle="Real feedback from verified buyers. Reviews are only accepted from accounts with a completed purchase."

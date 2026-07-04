@@ -15,11 +15,15 @@ export async function attachGuestOrders(
   if (!userId || !email || !hasAdminClient()) return;
   try {
     const db = createAdminClient();
+    // Escape LIKE metacharacters so an address containing "_" or "%" can't match
+    // (and thus claim) other people's guest orders. ilike keeps the match
+    // case-insensitive, which is how email is compared everywhere else.
+    const escaped = email.replace(/([\\%_])/g, "\\$1");
     await db
       .from("orders")
       .update({ user_id: userId })
       .is("user_id", null)
-      .ilike("email", email);
+      .ilike("email", escaped);
   } catch {
     // best effort
   }

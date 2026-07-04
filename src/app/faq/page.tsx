@@ -7,7 +7,7 @@ import type { Faq } from "@/lib/types";
 export const metadata: Metadata = {
   title: "FAQ",
   description:
-    "Answers to common questions about delivery times, payments, boosting safety and account warranties.",
+    "Answers to common questions about delivery times, payments, boosting safety and our 7-day account cover.",
   alternates: { canonical: "/faq" },
 };
 export const revalidate = 0;
@@ -42,6 +42,7 @@ export default async function FaqPage() {
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
       {faqs.length > 0 && <JsonLd data={faqJsonLd} />}
       <SectionHeading
+        as="h1"
         eyebrow="Help center"
         title="Frequently asked questions"
         subtitle="Everything you need to know about ordering, delivery, payments and account safety."
@@ -70,7 +71,7 @@ export default async function FaqPage() {
       <div className="glass mt-12 p-8 text-center">
         <h3 className="text-lg font-bold text-white">Can&apos;t find an answer?</h3>
         <p className="mt-2 text-sm text-zinc-400">
-          Our support team replies within a few hours, 24/7.
+          Our support team usually replies within a few hours.
         </p>
         <ButtonLink href="/support" className="mt-5">
           Contact support

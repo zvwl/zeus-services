@@ -38,10 +38,25 @@ export default async function DonatePage({
     }
   }
 
-  // Back-out cleanup: drop the still-pending (unpaid) donation row.
+  // Back-out cleanup: expire the Stripe session first (so the donor can't
+  // navigate back and pay for a donation we're about to delete, which would
+  // leave them charged with no DB record), then drop the still-pending row.
   if (cancelled && hasAdminClient()) {
     try {
       const db = createAdminClient();
+      const { data: pending } = await db
+        .from("donations")
+        .select("stripe_session_id")
+        .eq("id", cancelled)
+        .eq("status", "pending")
+        .maybeSingle();
+      if (pending?.stripe_session_id && stripeConfigured()) {
+        try {
+          await getStripe().checkout.sessions.expire(pending.stripe_session_id);
+        } catch {
+          // already completed/expired
+        }
+      }
       await db
         .from("donations")
         .delete()
@@ -67,6 +82,7 @@ export default async function DonatePage({
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
       <SectionHeading
+        as="h1"
         eyebrow="Buy us a coffee"
         title="Support Zeuservices"
         subtitle="Love what we do? Tips keep the giveaways flowing and the support team caffeinated."

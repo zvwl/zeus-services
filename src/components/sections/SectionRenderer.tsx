@@ -8,17 +8,18 @@ import {
   Timer,
   Zap,
 } from "lucide-react";
-import { createClient } from "@/lib/supabase/server";
-import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
-import { getCategories, getSettings, setting } from "@/lib/data";
-import type {
-  Faq,
-  Game,
-  Giveaway,
-  Product,
-  Review,
-  SiteSection,
-} from "@/lib/types";
+import {
+  getActiveFaqs,
+  getActiveGames,
+  getApprovedReviews,
+  getCategories,
+  getFeaturedProducts,
+  getLiveGiveaway,
+  getReviewStats,
+  getSettings,
+  setting,
+} from "@/lib/data";
+import type { SiteSection } from "@/lib/types";
 import { ButtonLink, SectionHeading, Stars } from "@/components/ui";
 import { GameCard, ProductCard, ReviewCard } from "@/components/cards";
 import { Markdown } from "@/components/Markdown";
@@ -86,7 +87,7 @@ async function HeroSection({ section }: { section: SiteSection }) {
         </h1>
         <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
           {section.subtitle ??
-            "Cheap top-ups, professional boosting and premium accounts for your favourite games. Instant delivery, secure payments, 24/7 support."}
+            "Cheap top-ups, professional boosting and premium accounts for GTA, Fortnite and Rocket League. Regional pricing, secure Stripe checkout and fast delivery — most orders done in 10 minutes to 2 hours."}
         </p>
         <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
           <ButtonLink href={str(c, "cta_href", "/games")} size="lg">
@@ -104,9 +105,9 @@ async function HeroSection({ section }: { section: SiteSection }) {
         </div>
         <div className="mx-auto mt-14 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
           {[
-            { icon: Zap, text: str(c, "pill1", "Instant delivery") },
+            { icon: Zap, text: str(c, "pill1", "Fast delivery, 10 min–2 hrs") },
             { icon: ShieldCheck, text: str(c, "pill2", "Secure Stripe checkout") },
-            { icon: Timer, text: str(c, "pill3", "24/7 live support") },
+            { icon: Timer, text: str(c, "pill3", "Ticket & Discord support") },
           ].map((item) => (
             <div
               key={item.text}
@@ -161,15 +162,7 @@ async function CategoriesSection({ section }: { section: SiteSection }) {
 }
 
 async function FeaturedProductsSection({ section }: { section: SiteSection }) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("products")
-    .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
-    .eq("is_active", true)
-    .eq("is_featured", true)
-    .order("sort_order")
-    .limit(num(section.content, "limit", 8));
-  const products = (data as Product[]) ?? [];
+  const products = await getFeaturedProducts(num(section.content, "limit", 8));
   if (products.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
@@ -196,14 +189,7 @@ async function FeaturedProductsSection({ section }: { section: SiteSection }) {
 }
 
 async function GamesSection({ section }: { section: SiteSection }) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("games")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order")
-    .limit(num(section.content, "limit", 12));
-  const games = (data as Game[]) ?? [];
+  const games = await getActiveGames(num(section.content, "limit", 12));
   if (games.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
@@ -224,37 +210,21 @@ async function GamesSection({ section }: { section: SiteSection }) {
 
 async function StatsSection({ section }: { section: SiteSection }) {
   const c = section.content ?? {};
-  let orders = num(c, "orders", 1200);
-  let customers = num(c, "customers", 800);
-  let avgRating = 4.9;
-  if (hasAdminClient()) {
-    try {
-      const db = createAdminClient();
-      const [o, p, r] = await Promise.all([
-        db
-          .from("orders")
-          .select("id", { count: "exact", head: true })
-          .in("status", ["paid", "processing", "completed"]),
-        db.from("profiles").select("id", { count: "exact", head: true }),
-        db.from("reviews").select("rating").eq("is_approved", true),
-      ]);
-      if (o.count) orders = o.count;
-      if (p.count) customers = p.count;
-      if (r.data && r.data.length > 0) {
-        avgRating =
-          Math.round(
-            (r.data.reduce((s, x) => s + x.rating, 0) / r.data.length) * 10
-          ) / 10;
-      }
-    } catch {
-      // fall back to configured numbers
-    }
-  }
+  // Honest, owner-verified figures only. The rating and review count are real
+  // (computed from approved reviews); the rest are true facts about the store,
+  // overridable per-field from the section content in Admin → Sections.
+  const { avg, count } = await getReviewStats();
   const stats = [
-    { label: "Orders delivered", value: `${orders.toLocaleString()}+` },
-    { label: "Happy customers", value: `${customers.toLocaleString()}+` },
-    { label: "Average rating", value: `${avgRating} / 5` },
-    { label: "Support", value: "24/7" },
+    { label: "Gamers served", value: str(c, "stat1", "Thousands") },
+    { label: "Trading since 2024", value: str(c, "stat2", "1+ year") },
+    {
+      label: "Verified reviews",
+      value:
+        count > 0
+          ? `${avg} / 5 · ${count}`
+          : str(c, "stat3", "Growing"),
+    },
+    { label: "Typical delivery", value: str(c, "stat4", "10 min–2 hrs") },
   ];
   return (
     <section className="border-y border-edge bg-surface/50">
@@ -273,20 +243,9 @@ async function StatsSection({ section }: { section: SiteSection }) {
 }
 
 async function ReviewsSection({ section }: { section: SiteSection }) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("reviews")
-    .select("*, profile:profiles(username, avatar_url)")
-    .eq("is_approved", true)
-    .order("is_featured", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(num(section.content, "limit", 6));
-  const reviews = (data as Review[]) ?? [];
+  const reviews = await getApprovedReviews(num(section.content, "limit", 6));
   if (reviews.length === 0) return null;
-  const avg =
-    Math.round(
-      (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10
-    ) / 10;
+  const { avg } = await getReviewStats();
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <div className="mb-10 flex flex-col items-center gap-2 text-center">
@@ -318,14 +277,7 @@ async function ReviewsSection({ section }: { section: SiteSection }) {
 }
 
 async function FaqSection({ section }: { section: SiteSection }) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("faqs")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order")
-    .limit(num(section.content, "limit", 6));
-  const faqs = (data as Faq[]) ?? [];
+  const faqs = await getActiveFaqs(num(section.content, "limit", 6));
   if (faqs.length === 0) return null;
   return (
     <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
@@ -393,17 +345,8 @@ async function DiscordSection({ section }: { section: SiteSection }) {
   );
 }
 
-async function GiveawaySection({ section }: { section: SiteSection }) {
-  const supabase = await createClient();
-  const { data } = await supabase
-    .from("giveaways")
-    .select("*")
-    .eq("is_active", true)
-    .gt("ends_at", new Date().toISOString())
-    .order("ends_at")
-    .limit(1)
-    .maybeSingle();
-  const giveaway = data as Giveaway | null;
+async function GiveawaySection({ section: _section }: { section: SiteSection }) {
+  const giveaway = await getLiveGiveaway();
   if (!giveaway) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
@@ -438,7 +381,7 @@ function StepsSection({ section }: { section: SiteSection }) {
   const defaults: [string, string][] = [
     ["Choose your item", "Pick a top-up, boost or account for your game."],
     ["Pay securely", "Check out with Stripe in your own currency — cards, Apple Pay & Google Pay."],
-    ["Instant delivery", "Instant items arrive right away; everything else is handled fast by our team."],
+    ["Fast delivery", "Our team handles your order and delivers to your account, typically within 10 minutes to 2 hours."],
   ];
   const steps = [0, 1, 2].map((i) => ({
     title: str(c, `step${i + 1}_title`, defaults[i][0]),

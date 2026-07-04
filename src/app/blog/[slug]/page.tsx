@@ -98,6 +98,8 @@ export default async function BlogPostPage({
         alt={post.title}
         fallbackText={post.title}
         className="mt-8 aspect-[16/8] w-full rounded-2xl border border-edge"
+        sizes="(max-width: 768px) 100vw, 768px"
+        priority
       />
       <div className="mt-10">
         <Markdown>{post.content}</Markdown>
