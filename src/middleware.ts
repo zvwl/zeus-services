@@ -7,6 +7,14 @@ import { updateSession } from "@/lib/supabase/middleware";
 // per-path admin capability gating.
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;
+
+  // The /auth routes (OAuth callback + signout) establish/clear the session
+  // themselves. Running updateSession()/getUser() here first can interfere with
+  // the PKCE code exchange, so leave them untouched.
+  if (path.startsWith("/auth/")) {
+    return NextResponse.next();
+  }
+
   const needsAuth = path.startsWith("/account") || path.startsWith("/admin");
   const hasAuthCookie = request.cookies
     .getAll()
