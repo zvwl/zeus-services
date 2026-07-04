@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Guides, tips and news on game top-ups, boosting and accounts from the Zeuservices team.",
   alternates: { canonical: "/blog" },
 };
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function BlogPage() {
   const supabase = createPublicClient();

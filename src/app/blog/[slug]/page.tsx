@@ -9,20 +9,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { formatDate, siteUrl } from "@/lib/utils";
 import type { BlogPost } from "@/lib/types";
 
-export const revalidate = 3600;
-
-// Prebuild published posts at deploy + ISR-refresh; new slugs on-demand.
-export async function generateStaticParams() {
-  try {
-    const { data } = await createPublicClient()
-      .from("blog_posts")
-      .select("slug")
-      .eq("is_published", true);
-    return (data ?? []).map((b: { slug: string }) => ({ slug: b.slug }));
-  } catch {
-    return [];
-  }
-}
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,

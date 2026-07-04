@@ -26,8 +26,6 @@ import {
 } from "lucide-react";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { CartButton } from "@/components/CartButton";
-import { createClient } from "@/lib/supabase/client";
-import { STAFF_ROLES } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
 interface NavUser {
@@ -42,57 +40,20 @@ export function NavClient({
   logoUrl,
   categories,
   discordInvite,
+  user,
 }: {
   siteName: string;
   logoUrl?: string;
   categories: { name: string; slug: string }[];
   discordInvite: string;
+  user: NavUser | null;
 }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [user, setUser] = useState<NavUser | null>(null);
   const userRef = useRef<HTMLDivElement>(null);
   const moreRef = useRef<HTMLDivElement>(null);
-
-  // Resolve the signed-in user on the client so the shared layout can render
-  // statically. Loads the auth user, then their own profile row (RLS lets a
-  // user read their own), and keeps it in sync with auth state changes.
-  useEffect(() => {
-    const supabase = createClient();
-    let active = true;
-
-    async function resolve() {
-      const {
-        data: { user: authUser },
-      } = await supabase.auth.getUser();
-      if (!active) return;
-      if (!authUser) {
-        setUser(null);
-        return;
-      }
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("username, avatar_url, role")
-        .eq("id", authUser.id)
-        .maybeSingle();
-      if (!active) return;
-      setUser({
-        email: authUser.email ?? "",
-        username: profile?.username ?? null,
-        avatarUrl: profile?.avatar_url ?? null,
-        staff: Boolean(profile?.role && STAFF_ROLES.includes(profile.role)),
-      });
-    }
-
-    resolve();
-    const { data: sub } = supabase.auth.onAuthStateChange(() => resolve());
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
 
   useEffect(() => {
     setMobileOpen(false);

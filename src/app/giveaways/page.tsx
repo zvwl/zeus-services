@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Enter free giveaways for game top-ups, premium accounts and more. No purchase necessary.",
   alternates: { canonical: "/giveaways" },
 };
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function GiveawaysPage() {
   const supabase = createPublicClient();

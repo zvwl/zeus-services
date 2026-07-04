@@ -8,21 +8,7 @@ import { Markdown } from "@/components/Markdown";
 import { siteUrl } from "@/lib/utils";
 import type { Category, Game, Product } from "@/lib/types";
 
-export const revalidate = 3600;
-
-// Prebuild live game pages at deploy + ISR-refresh; new slugs on-demand.
-// Admin saves revalidatePath("/", "layout"), so edits appear immediately.
-export async function generateStaticParams() {
-  try {
-    const { data } = await createPublicClient()
-      .from("games")
-      .select("slug")
-      .eq("is_active", true);
-    return (data ?? []).map((g: { slug: string }) => ({ slug: g.slug }));
-  } catch {
-    return [];
-  }
-}
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,

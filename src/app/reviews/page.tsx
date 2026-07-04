@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { createPublicClient } from "@/lib/supabase/public";
+import { getUser } from "@/lib/auth";
 import { ReviewCard } from "@/components/cards";
 import { ReviewForm } from "@/components/ReviewForm";
 import { Star } from "lucide-react";
@@ -12,16 +13,19 @@ export const metadata: Metadata = {
     "Real reviews from verified Zeuservices customers across top-ups, boosting and accounts.",
   alternates: { canonical: "/reviews" },
 };
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function ReviewsPage() {
   const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("reviews")
-    .select("*, profile:profiles(username, avatar_url)")
-    .eq("is_approved", true)
-    .order("created_at", { ascending: false })
-    .limit(60);
+  const [{ data }, user] = await Promise.all([
+    supabase
+      .from("reviews")
+      .select("*, profile:profiles(username, avatar_url)")
+      .eq("is_approved", true)
+      .order("created_at", { ascending: false })
+      .limit(60),
+    getUser(),
+  ]);
   const reviews = (data as Review[]) ?? [];
   const avg =
     reviews.length > 0
@@ -76,7 +80,7 @@ export default async function ReviewsPage() {
             ))}
           </div>
           <div className="mt-8 border-t border-edge pt-6">
-            <ReviewForm />
+            <ReviewForm signedIn={Boolean(user)} />
           </div>
         </div>
 

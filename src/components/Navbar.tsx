@@ -1,13 +1,13 @@
 import { getCategories, getSettings, setting } from "@/lib/data";
+import { getProfile, getUser, isStaff } from "@/lib/auth";
 import { NavClient } from "@/components/NavClient";
 
-// Reads only cached, cookie-free data (getSettings/getCategories), so it does
-// NOT force the shared layout to render dynamically. The signed-in user is
-// resolved on the client inside NavClient.
 export async function Navbar() {
-  const [categories, settings] = await Promise.all([
+  const [categories, settings, user, profile] = await Promise.all([
     getCategories(),
     getSettings(),
+    getUser(),
+    getProfile(),
   ]);
 
   const announcement = setting(settings, "announcement");
@@ -24,6 +24,16 @@ export async function Navbar() {
         logoUrl={setting(settings, "logo_url") || undefined}
         categories={categories.map((c) => ({ name: c.name, slug: c.slug }))}
         discordInvite={setting(settings, "discord_invite")}
+        user={
+          user
+            ? {
+                email: user.email ?? "",
+                username: profile?.username ?? null,
+                avatarUrl: profile?.avatar_url ?? null,
+                staff: isStaff(profile),
+              }
+            : null
+        }
       />
     </>
   );

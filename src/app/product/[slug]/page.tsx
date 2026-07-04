@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ShieldCheck, Timer, Truck, Zap } from "lucide-react";
 import { createPublicClient } from "@/lib/supabase/public";
+import { getUser } from "@/lib/auth";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { Badge, SectionHeading, Stars } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
@@ -13,22 +14,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { siteUrl } from "@/lib/utils";
 import type { Product, Review } from "@/lib/types";
 
-export const revalidate = 3600;
-
-// Prebuild the live product pages at deploy (and ISR-refresh them); new slugs are
-// generated on-demand. Admin saves call revalidatePath("/", "layout"), so price/
-// stock edits still appear immediately despite the long revalidate window.
-export async function generateStaticParams() {
-  try {
-    const { data } = await createPublicClient()
-      .from("products")
-      .select("slug")
-      .eq("is_active", true);
-    return (data ?? []).map((p: { slug: string }) => ({ slug: p.slug }));
-  } catch {
-    return [];
-  }
-}
+export const revalidate = 0;
 
 const stripMd = (s: string) =>
   s.replace(/[#*_~>`[\]()]/g, "").replace(/\s+/g, " ").trim();
@@ -91,7 +77,7 @@ export default async function ProductPage({
   if (!data) notFound();
   const product = data as Product;
 
-  const [{ data: reviews }, { count: reviewCount }, { data: related }] =
+  const [{ data: reviews }, { count: reviewCount }, { data: related }, user] =
     await Promise.all([
       supabase
         .from("reviews")
@@ -113,6 +99,7 @@ export default async function ProductPage({
         .neq("id", product.id)
         .order("sort_order")
         .limit(4),
+      getUser(),
     ]);
 
   const productReviews = (reviews as Review[]) ?? [];
@@ -381,7 +368,7 @@ export default async function ProductPage({
         </h2>
         <ProductReviews reviews={productReviews} total={totalReviews} />
         <div className="mt-8 max-w-xl">
-          <ReviewForm productId={product.id} />
+          <ReviewForm productId={product.id} signedIn={Boolean(user)} />
         </div>
       </div>
 

@@ -17,7 +17,6 @@ import {
   unionMaxCarts,
 } from "@/lib/cart";
 import { loadServerCart, saveServerCart } from "@/app/cart-actions";
-import { createClient } from "@/lib/supabase/client";
 import type { CartLine } from "@/lib/types";
 
 const STORAGE_KEY = "zeus_cart_v1";
@@ -58,31 +57,18 @@ function writeLocal(lines: CartLine[]) {
   }
 }
 
-export function CartProvider({ children }: { children: ReactNode }) {
+export function CartProvider({
+  authed,
+  children,
+}: {
+  authed: boolean;
+  children: ReactNode;
+}) {
   const [lines, setLines] = useState<CartLine[]>([]);
   const [ready, setReady] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  // Auth is resolved on the client (the root layout no longer reads the session
-  // server-side, so public pages can render statically). Starts false (guest),
-  // then flips true once the session resolves / on sign-in.
-  const [authed, setAuthed] = useState(false);
   const authedRef = useRef(authed);
   const prevAuthedRef = useRef(authed);
-
-  useEffect(() => {
-    const supabase = createClient();
-    let active = true;
-    supabase.auth.getUser().then(({ data }) => {
-      if (active) setAuthed(Boolean(data.user));
-    });
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, session) => {
-      setAuthed(Boolean(session?.user));
-    });
-    return () => {
-      active = false;
-      sub.subscription.unsubscribe();
-    };
-  }, []);
 
   // Debounced server persistence. Every quantity +/- updates local state and
   // localStorage INSTANTLY (optimistic), but the DB sync is a Next.js Server

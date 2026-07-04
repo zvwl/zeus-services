@@ -10,7 +10,7 @@ export const metadata: Metadata = {
     "Answers to common questions about delivery times, payments, boosting safety and our 7-day account cover.",
   alternates: { canonical: "/faq" },
 };
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function FaqPage() {
   const supabase = createPublicClient();

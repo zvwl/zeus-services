@@ -13,7 +13,7 @@ export const metadata: Metadata = {
     "Browse every supported game — cheap top-ups, professional boosting and premium accounts with fast, secure delivery.",
   alternates: { canonical: "/games" },
 };
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export default async function GamesPage() {
   const supabase = createPublicClient();
