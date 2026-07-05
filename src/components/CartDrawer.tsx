@@ -14,6 +14,19 @@ export function CartDrawer() {
   const { format, currency } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Contents render only while open (plus the close transition) — a closed
+  // drawer was keeping the full line-item list mounted and downloading its
+  // images on every page.
+  const [present, setPresent] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setPresent(true);
+      return;
+    }
+    const t = setTimeout(() => setPresent(false), 300);
+    return () => clearTimeout(t);
+  }, [isOpen]);
 
   // Lock body scroll + close on Escape while the drawer is open.
   useEffect(() => {
@@ -72,7 +85,7 @@ export function CartDrawer() {
           </button>
         </div>
 
-        {lines.length === 0 ? (
+        {!present ? null : lines.length === 0 ? (
           <div className="flex flex-1 flex-col items-center justify-center gap-3 px-6 text-center">
             <ShoppingCart className="h-10 w-10 text-zinc-700" />
             <p className="text-sm text-zinc-500">Your cart is empty.</p>
@@ -195,6 +208,10 @@ function CartThumb({ src, alt }: { src: string | null; alt: string }) {
     <img
       src={src}
       alt={alt}
+      width={64}
+      height={64}
+      loading="lazy"
+      decoding="async"
       className="h-16 w-16 shrink-0 rounded-lg border border-edge object-cover"
     />
   );

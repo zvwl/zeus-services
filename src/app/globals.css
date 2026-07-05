@@ -47,7 +47,11 @@
 
 @layer components {
   .glass {
-    @apply rounded-2xl border border-edge bg-surface/80 backdrop-blur-sm;
+    /* No backdrop-filter here: this class is on every card, and dozens of
+       blur layers made scrolling/hovering the grids janky (poor INP). The
+       higher-opacity fill keeps the translucent look; real blur stays on
+       singular surfaces (sticky header, drawer overlay). */
+    @apply rounded-2xl border border-edge bg-surface/95;
   }
   .text-gradient {
     @apply bg-gradient-to-r from-violet-400 via-primary to-fuchsia-400 bg-clip-text text-transparent;

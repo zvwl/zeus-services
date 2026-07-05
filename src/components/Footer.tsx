@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Zap } from "lucide-react";
 import { getCategories, getSettings, setting } from "@/lib/data";
 
@@ -61,10 +62,12 @@ export async function Footer() {
           <div className="md:col-span-2">
             <Link href="/" className="flex items-center gap-2">
               {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                   src={logoUrl}
                   alt={siteName}
+                  width={40}
+                  height={40}
+                  loading="lazy"
                   className="h-10 w-auto max-w-[200px] object-contain"
                 />
               ) : (

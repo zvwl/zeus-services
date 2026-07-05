@@ -20,6 +20,11 @@ import { loadServerCart, saveServerCart } from "@/app/cart-actions";
 import type { CartLine } from "@/lib/types";
 
 const STORAGE_KEY = "zeus_cart_v1";
+// Present while the stored cart belongs to a signed-in user. Sign-out via the
+// navbar is a native form POST (full document load), so the in-memory
+// true→false auth edge below never fires on that path — this marker lets the
+// next signed-out mount detect and clear the previous user's leftover cart.
+const AUTHED_MARKER_KEY = "zeus_cart_authed";
 
 interface CartContextValue {
   lines: CartLine[];
@@ -131,6 +136,7 @@ export function CartProvider({
     if (wasAuthed && !authed) {
       try {
         localStorage.removeItem(STORAGE_KEY);
+        localStorage.removeItem(AUTHED_MARKER_KEY);
       } catch {
         // ignore
       }
@@ -141,9 +147,34 @@ export function CartProvider({
 
     const local = readLocal();
     if (!authed) {
+      // Sign-out is a full document load, so the edge-clear above never runs
+      // on that path: detect a cart left behind by a signed-in user via the
+      // marker and clear it here instead. Guest carts have no marker.
+      let staleAuthedCart = false;
+      try {
+        staleAuthedCart = localStorage.getItem(AUTHED_MARKER_KEY) === "1";
+      } catch {
+        // ignore
+      }
+      if (staleAuthedCart) {
+        try {
+          localStorage.removeItem(STORAGE_KEY);
+          localStorage.removeItem(AUTHED_MARKER_KEY);
+        } catch {
+          // ignore
+        }
+        setLines([]);
+        setReady(true);
+        return;
+      }
       setLines(local);
       setReady(true);
       return;
+    }
+    try {
+      localStorage.setItem(AUTHED_MARKER_KEY, "1");
+    } catch {
+      // ignore
     }
     // Just emptied the cart after a successful checkout — don't merge the (now
     // being deleted) server cart back in.
@@ -163,8 +194,15 @@ export function CartProvider({
         setLines((current) => {
           const merged = unionMaxCarts(unionMaxCarts(local, current), server);
           writeLocal(merged);
-          // Persist the merge so the server reflects any guest additions.
-          scheduleSave(merged);
+          // Persist the merge only when it actually differs from the server
+          // cart — the unconditional save was a delete+insert pair per mount.
+          const sameAsServer =
+            merged.length === server.length &&
+            merged.every((l) => {
+              const s = server.find((x) => x.key === l.key);
+              return s !== undefined && s.quantity === l.quantity;
+            });
+          if (!sameAsServer) scheduleSave(merged);
           return merged;
         });
         setReady(true);

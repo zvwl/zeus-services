@@ -69,11 +69,18 @@ async function HeroSection({ section }: { section: SiteSection }) {
   const c = section.content ?? {};
   return (
     <section className="relative overflow-hidden">
-      <div className="pointer-events-none absolute inset-0">
-        <div className="absolute -top-32 left-1/2 h-96 w-[800px] -translate-x-1/2 rounded-full bg-primary/20 blur-[120px]" />
-        <div className="absolute right-0 top-40 h-64 w-64 rounded-full bg-fuchsia-500/10 blur-[100px]" />
-        <div className="absolute left-10 top-64 h-48 w-48 rounded-full bg-amber-400/10 blur-[90px]" />
-      </div>
+      {/* Precomputed radial gradients instead of blur-filtered divs: same glow,
+          one cheap paint pass (the three filter layers were slowing first paint
+          and every scroll over the hero). */}
+      <div
+        className="pointer-events-none absolute inset-0"
+        style={{
+          background:
+            "radial-gradient(400px 250px at 50% 0%, rgba(139,92,246,0.22), transparent 70%)," +
+            "radial-gradient(220px 220px at 88% 22%, rgba(217,70,239,0.12), transparent 70%)," +
+            "radial-gradient(170px 170px at 8% 38%, rgba(251,191,36,0.10), transparent 70%)",
+        }}
+      />
       <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-20 text-center sm:px-6 sm:pt-28">
         <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-light">
           <Sparkles className="h-4 w-4" />
@@ -181,7 +188,12 @@ async function FeaturedProductsSection({ section }: { section: SiteSection }) {
       </div>
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
         {products.map((p) => (
-          <ProductCard key={p.id} product={p} />
+          <ProductCard
+            key={p.id}
+            product={p}
+            // 1-col below sm — the default 50vw sizes undersizes mobile covers.
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+          />
         ))}
       </div>
     </section>
@@ -243,9 +255,11 @@ async function StatsSection({ section }: { section: SiteSection }) {
 }
 
 async function ReviewsSection({ section }: { section: SiteSection }) {
-  const reviews = await getApprovedReviews(num(section.content, "limit", 6));
+  const [reviews, { avg }] = await Promise.all([
+    getApprovedReviews(num(section.content, "limit", 6)),
+    getReviewStats(),
+  ]);
   if (reviews.length === 0) return null;
-  const { avg } = await getReviewStats();
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <div className="mb-10 flex flex-col items-center gap-2 text-center">

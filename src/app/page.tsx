@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { getSections } from "@/lib/data";
 import { SectionRenderer } from "@/components/sections/SectionRenderer";
 import { ButtonLink } from "@/components/ui";
@@ -8,8 +9,6 @@ import { ButtonLink } from "@/components/ui";
 export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
-
-export const revalidate = 0;
 
 export default async function HomePage() {
   const sections = await getSections();
@@ -31,11 +30,23 @@ export default async function HomePage() {
     );
   }
 
+  // Stream: the first section (normally the hero — no data awaits, and its
+  // heading is the page's LCP element) flushes with the shell; the data-backed
+  // sections below the fold stream in behind a Suspense boundary instead of
+  // holding up first paint.
+  const [first, ...rest] = sections;
   return (
     <>
-      {sections.map((section) => (
-        <SectionRenderer key={section.id} section={section} />
-      ))}
+      <SectionRenderer section={first} />
+      <Suspense
+        // Roughly viewport-height fallback keeps the footer below the fold
+        // while sections stream, so their arrival doesn't shift visible layout.
+        fallback={<div className="min-h-screen" />}
+      >
+        {rest.map((section) => (
+          <SectionRenderer key={section.id} section={section} />
+        ))}
+      </Suspense>
     </>
   );
 }

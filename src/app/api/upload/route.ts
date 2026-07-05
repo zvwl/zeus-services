@@ -68,7 +68,9 @@ export async function POST(req: Request) {
   const db = createAdminClient();
   const { error } = await db.storage.from(bucket).upload(path, file, {
     upsert: true,
-    cacheControl: "3600",
+    // Paths are UUID-per-upload (above), so the content behind a URL never
+    // changes — let CDNs and the image optimizer cache it for a year.
+    cacheControl: "31536000",
     contentType: file.type || undefined,
   });
   if (error) {

@@ -67,7 +67,17 @@ export function CoverImage({
   );
 }
 
-export function ProductCard({ product }: { product: Product }) {
+export function ProductCard({
+  product,
+  // Set on first-row cards when the grid is the page's LCP element, so the
+  // cover loads eagerly instead of lazily.
+  priority = false,
+  sizes,
+}: {
+  product: Product;
+  priority?: boolean;
+  sizes?: string;
+}) {
   const minVariant = product.variants
     ?.filter((v) => v.is_active)
     .sort((a, b) => Number(a.price) - Number(b.price))[0];
@@ -100,6 +110,8 @@ export function ProductCard({ product }: { product: Product }) {
         alt={product.name}
         fallbackText={product.name}
         className="aspect-[16/10] w-full"
+        priority={priority}
+        {...(sizes ? { sizes } : {})}
       />
       <div className="p-4">
         <div className="mb-2 flex flex-wrap items-center gap-1.5">
@@ -143,9 +155,11 @@ export function ProductCard({ product }: { product: Product }) {
 export function GameCard({
   game,
   productCount,
+  priority = false,
 }: {
   game: Game;
   productCount?: number;
+  priority?: boolean;
 }) {
   return (
     <Link
@@ -157,6 +171,7 @@ export function GameCard({
         alt={game.name}
         fallbackText={game.name}
         className="aspect-[4/3] w-full"
+        priority={priority}
       />
       <div className="flex items-center justify-between p-4">
         <div>
@@ -194,10 +209,16 @@ export function ReviewCard({ review }: { review: Review }) {
       </p>
       <div className="mt-4 flex items-center gap-2 border-t border-edge pt-3">
         {avatar ? (
+          // Raw <img>: avatar hosts vary (Discord/Google/manual), so the
+          // next/image host allowlist can't cover them.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={avatar}
             alt=""
+            width={28}
+            height={28}
+            loading="lazy"
+            decoding="async"
             className="h-7 w-7 rounded-full object-cover"
           />
         ) : (

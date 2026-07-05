@@ -160,6 +160,62 @@ export const getActiveFaqs = unstable_cache(
   CACHE_OPTS
 );
 
+// ── Cached catalog reads for the grid pages ─────────────────────────────────
+// /games and /category/[slug] previously queried Supabase on every anonymous
+// view; these move them onto the same tag-invalidated cache as the homepage.
+
+export const getActiveGamesWithCounts = unstable_cache(
+  async (): Promise<{ games: Game[]; counts: Record<string, number> }> => {
+    const supabase = createPublicClient();
+    const [{ data: games }, { data: products }] = await Promise.all([
+      supabase
+        .from("games")
+        .select("*")
+        .eq("is_active", true)
+        .order("sort_order"),
+      supabase.from("products").select("game_id").eq("is_active", true),
+    ]);
+    const counts: Record<string, number> = {};
+    for (const p of products ?? []) {
+      counts[p.game_id] = (counts[p.game_id] ?? 0) + 1;
+    }
+    return { games: (games as Game[]) ?? [], counts };
+  },
+  ["games-with-counts"],
+  CACHE_OPTS
+);
+
+// One cached unit per category slug (the argument is part of the cache key).
+// Also serves generateMetadata, replacing its previously separate query.
+export const getCategoryWithProducts = unstable_cache(
+  async (
+    slug: string
+  ): Promise<{ category: Category | null; products: Product[] }> => {
+    const supabase = createPublicClient();
+    const { data: category } = await supabase
+      .from("categories")
+      .select("*")
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (!category) return { category: null, products: [] };
+    const { data: products } = await supabase
+      .from("products")
+      .select(
+        "*, game:games(*), category:categories(*), variants:product_variants(*)"
+      )
+      .eq("category_id", category.id)
+      .eq("is_active", true)
+      .order("sort_order");
+    return {
+      category: category as Category,
+      products: (products as Product[]) ?? [],
+    };
+  },
+  ["category-with-products"],
+  CACHE_OPTS
+);
+
 // Rating summary from approved reviews, computed in-database so we never
 // transfer every review row just to average them.
 export const getReviewStats = unstable_cache(

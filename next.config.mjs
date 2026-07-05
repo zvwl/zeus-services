@@ -50,6 +50,10 @@ const nextConfig = {
       { protocol: "https", hostname: "cdn.discordapp.com" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
+    // Uploads get a UUID path per file (api/upload), so a URL's content never
+    // changes — cache optimized variants for a year instead of re-optimizing
+    // hourly (cold optimizer responses were showing up in the LCP tail).
+    minimumCacheTTL: 31536000,
   },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
@@ -60,6 +64,13 @@ const nextConfig = {
       {
         source: "/product/v-bucks-top-up",
         destination: "/product/fortnite-v-bucks",
+        permanent: true,
+      },
+      // Legacy-site URL families still hit by bots/old links. Redirecting at
+      // the edge spares a full dynamic-shell 404 render per hit.
+      {
+        source: "/accounts.gta5/:path*",
+        destination: "/games",
         permanent: true,
       },
     ];

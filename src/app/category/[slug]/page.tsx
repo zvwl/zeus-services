@@ -1,15 +1,11 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createPublicClient } from "@/lib/supabase/public";
-import { ProductCard } from "@/components/cards";
-import { EmptyState } from "@/components/ui";
+import { getCategoryWithProducts } from "@/lib/data";
+import { CategoryGrid } from "@/components/CategoryGrid";
 import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
-import { cn, siteUrl } from "@/lib/utils";
-import type { Game, Product } from "@/lib/types";
-
-export const revalidate = 0;
+import { siteUrl } from "@/lib/utils";
+import type { Game } from "@/lib/types";
 
 export async function generateMetadata({
   params,
@@ -17,13 +13,8 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("categories")
-    .select("name, slug, description")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
+  // Same cached unit the page body uses — no extra query.
+  const { category: data } = await getCategoryWithProducts(slug);
   if (!data) return { title: "Category not found" };
   const description = (
     data.description || `Browse ${data.name} at Zeuservices.`
@@ -46,38 +37,38 @@ export async function generateMetadata({
 
 export default async function CategoryPage({
   params,
-  searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ game?: string }>;
 }) {
-  const [{ slug }, { game: gameFilter }] = await Promise.all([
-    params,
-    searchParams,
-  ]);
-  const supabase = createPublicClient();
-  const { data: category } = await supabase
-    .from("categories")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
+  const { slug } = await params;
+  const { category, products: all } = await getCategoryWithProducts(slug);
   if (!category) notFound();
 
-  const { data: products } = await supabase
-    .from("products")
-    .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
-    .eq("category_id", category.id)
-    .eq("is_active", true)
-    .order("sort_order");
-
-  const all = (products as Product[]) ?? [];
+  // The grid derives the active ?game= filter from useSearchParams (correct on
+  // both SSR deep links and client-side filtering), so the page itself doesn't
+  // read searchParams.
   const games = [...new Map(
     all.filter((p) => p.game).map((p) => [p.game!.id, p.game as Game])
-  ).values()].sort((a, b) => a.sort_order - b.sort_order);
-  const filtered = gameFilter
-    ? all.filter((p) => p.game?.slug === gameFilter)
-    : all;
+  ).values()]
+    .sort((a, b) => a.sort_order - b.sort_order)
+    // Chips only need id/slug/name — keep long text out of the client payload.
+    .map((g) => ({ ...g, description: null, intro: null }));
+
+  // Likewise slim the products handed to the client grid: the cards never
+  // render long text, and inactive variants (with their pricing/stock) should
+  // not ship in the page source at all.
+  const cards = all.map((p) => ({
+    ...p,
+    description: null,
+    delivery_instructions: null,
+    variants: p.variants?.filter((v) => v.is_active),
+    fields: undefined,
+    addons: undefined,
+    game: p.game ? { ...p.game, description: null, intro: null } : p.game,
+    category: p.category
+      ? { ...p.category, description: null, intro: null }
+      : p.category,
+  }));
 
   const base = siteUrl();
   const breadcrumbJsonLd = {
@@ -130,48 +121,7 @@ export default async function CategoryPage({
         )}
       </div>
 
-      {games.length > 1 && (
-        <div className="mb-8 flex flex-wrap gap-2">
-          <Link
-            href={`/category/${slug}`}
-            className={cn(
-              "rounded-full border px-4 py-1.5 text-sm font-medium transition",
-              !gameFilter
-                ? "border-primary/50 bg-primary/15 text-primary-light"
-                : "border-edge bg-raised/50 text-zinc-400 hover:text-white"
-            )}
-          >
-            All games
-          </Link>
-          {games.map((g) => (
-            <Link
-              key={g.id}
-              href={`/category/${slug}?game=${g.slug}`}
-              className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-medium transition",
-                gameFilter === g.slug
-                  ? "border-primary/50 bg-primary/15 text-primary-light"
-                  : "border-edge bg-raised/50 text-zinc-400 hover:text-white"
-              )}
-            >
-              {g.name}
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {filtered.length === 0 ? (
-        <EmptyState
-          title="No offers in this category yet"
-          description="Our team adds new products all the time — check back soon."
-        />
-      ) : (
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          {filtered.map((p) => (
-            <ProductCard key={p.id} product={p} />
-          ))}
-        </div>
-      )}
+      <CategoryGrid categorySlug={slug} games={games} products={cards} />
     </div>
   );
 }

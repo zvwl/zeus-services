@@ -8,7 +8,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
 import { convertFromUSD, formatMoney, FALLBACK_RATES } from "@/lib/currency";
 import type { ExchangeRate } from "@/lib/types";
 
@@ -39,16 +38,15 @@ export function CurrencyProvider({
   const [currency, setCurrencyState] = useState(
     safeRates.some((r) => r.code === initial) ? initial : "USD"
   );
-  const router = useRouter();
 
-  const setCurrency = useCallback(
-    (code: string) => {
-      setCurrencyState(code);
-      document.cookie = `currency=${code}; path=/; max-age=31536000; samesite=lax`;
-      router.refresh();
-    },
-    [router]
-  );
+  const setCurrency = useCallback((code: string) => {
+    setCurrencyState(code);
+    // The cookie only seeds `initial` for the NEXT server render — every
+    // visible price is a client <Price> island that updates from this context,
+    // so no router.refresh() is needed (it was re-running the whole dynamic
+    // tree, middleware and all, inside the interaction).
+    document.cookie = `currency=${code}; path=/; max-age=31536000; samesite=lax`;
+  }, []);
 
   const value = useMemo<CurrencyContextValue>(() => {
     const rate = safeRates.find((r) => r.code === currency)?.rate ?? 1;

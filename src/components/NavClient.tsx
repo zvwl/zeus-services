@@ -91,10 +91,18 @@ export function NavClient({
       <nav className="mx-auto flex h-16 max-w-7xl items-center gap-4 px-4 sm:px-6">
         <Link href="/" className="flex items-center gap-2">
           {logoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            // Optimizer-served and eager: the raw admin upload (up to 4MB) was
+            // downloading full-size in the above-the-fold shell of every page.
+            // width/height are an aspect hint; CSS keeps the rendered h-9 box.
+            <Image
               src={logoUrl}
               alt={siteName}
+              // Square hint matching the uploaded logo, so the pre-decode
+              // layout box equals the decoded one (a wide hint reserved 190px
+              // and collapsed on decode — a visible header shift).
+              width={36}
+              height={36}
+              priority
               className="h-9 w-auto max-w-[190px] object-contain"
             />
           ) : (

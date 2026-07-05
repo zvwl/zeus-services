@@ -12,7 +12,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getRates, getSettings, setting } from "@/lib/data";
-import { getUser } from "@/lib/auth";
+import { getProfile, getUser } from "@/lib/auth";
 import { siteUrl } from "@/lib/utils";
 
 // Self-hosted via next/font: no render-blocking Google Fonts CSS request, no
@@ -99,6 +99,13 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  // Warm the Navbar's getProfile in the same batch: it is request-memoized
+  // (React cache), so starting it here lets its uncached profiles query overlap
+  // these awaits instead of running only after the layout settles — one fewer
+  // serial round-trip before first byte for signed-in users. (getCategories is
+  // NOT warmed: unstable_cache doesn't share in-flight misses, so a second
+  // concurrent call would duplicate the query on cold cache.)
+  void getProfile();
   const [rates, settings, cookieStore, user] = await Promise.all([
     getRates(),
     getSettings(),

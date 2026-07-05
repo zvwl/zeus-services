@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
-import { createPublicClient } from "@/lib/supabase/public";
+import { getActiveGamesWithCounts } from "@/lib/data";
 import { GameCard } from "@/components/cards";
 import { EmptyState, SectionHeading } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { siteUrl } from "@/lib/utils";
 import { Gamepad2 } from "lucide-react";
-import type { Game } from "@/lib/types";
 
 export const metadata: Metadata = {
   title: "All Games",
@@ -13,22 +12,12 @@ export const metadata: Metadata = {
     "Browse every supported game — cheap top-ups, professional boosting and premium accounts with fast, secure delivery.",
   alternates: { canonical: "/games" },
 };
-export const revalidate = 0;
 
 export default async function GamesPage() {
-  const supabase = createPublicClient();
-  const [{ data: games }, { data: products }] = await Promise.all([
-    supabase.from("games").select("*").eq("is_active", true).order("sort_order"),
-    supabase.from("products").select("game_id").eq("is_active", true),
-  ]);
-
-  const counts = new Map<string, number>();
-  for (const p of products ?? []) {
-    counts.set(p.game_id, (counts.get(p.game_id) ?? 0) + 1);
-  }
+  const { games, counts } = await getActiveGamesWithCounts();
 
   const base = siteUrl();
-  const gameList = (games as Game[]) ?? [];
+  const gameList = games;
   const itemListJsonLd =
     gameList.length > 0
       ? {
@@ -54,7 +43,7 @@ export default async function GamesPage() {
         title="All games"
         subtitle="Pick your game to see every top-up, boosting service and account we offer for it."
       />
-      {!games || games.length === 0 ? (
+      {games.length === 0 ? (
         <EmptyState
           icon={<Gamepad2 className="h-10 w-10" />}
           title="No games yet"
@@ -62,8 +51,14 @@ export default async function GamesPage() {
         />
       ) : (
         <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-4">
-          {(games as Game[]).map((g) => (
-            <GameCard key={g.id} game={g} productCount={counts.get(g.id) ?? 0} />
+          {games.map((g, i) => (
+            <GameCard
+              key={g.id}
+              game={g}
+              productCount={counts[g.id] ?? 0}
+              // The first row of covers is this page's LCP element.
+              priority={i < 4}
+            />
           ))}
         </div>
       )}
