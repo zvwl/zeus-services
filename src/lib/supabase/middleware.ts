@@ -2,6 +2,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { SUPABASE_ANON_KEY, SUPABASE_URL } from "@/lib/config";
 import { pathCapability, resolveCapabilities } from "@/lib/types";
+import { safeNextPath } from "@/lib/utils";
 
 type CookieToSet = { name: string; value: string; options?: CookieOptions };
 
@@ -56,6 +57,20 @@ export async function updateSession(request: NextRequest) {
     url.pathname = "/login";
     url.searchParams.set("next", path);
     return redirect(url);
+  }
+
+  if (user && path.startsWith("/verify-2fa")) {
+    // Self-heal: a session that already reached AAL2 has nothing left to verify
+    // here (e.g. the client landed back on this page via a stale cached
+    // redirect). Forward it to its destination instead of stranding the user.
+    const { data: aal } =
+      await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+    if (aal?.currentLevel === "aal2") {
+      let dest = safeNextPath(request.nextUrl.searchParams.get("next"));
+      // A next pointing back here would redirect forever.
+      if (dest.startsWith("/verify-2fa")) dest = "/";
+      return redirect(new URL(dest, request.url));
+    }
   }
 
   if (user && needsAuth) {

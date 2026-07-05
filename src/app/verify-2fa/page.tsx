@@ -22,11 +22,17 @@ function VerifyForm() {
     setError(null);
     setLoading(true);
     const supabase = createClient();
-    const { data: factors } = await supabase.auth.mfa.listFactors();
+    const { data: factors, error: factorsError } =
+      await supabase.auth.mfa.listFactors();
+    if (factorsError) {
+      setError("Couldn't reach the authentication service — try again.");
+      setLoading(false);
+      return;
+    }
     const totp = factors?.totp?.[0];
     if (!totp) {
       // No usable factor — nothing to step up to; send them on their way.
-      router.replace(next);
+      window.location.assign(next);
       return;
     }
     const { error } = await supabase.auth.mfa.challengeAndVerify({
@@ -39,8 +45,12 @@ function VerifyForm() {
       setLoading(false);
       return;
     }
-    router.replace(next);
-    router.refresh();
+    // Full-document navigation on purpose. A soft router navigation can replay
+    // a prefetched middleware redirect from before the step-up (the client
+    // router caches the AAL1-era 307 for `next` for up to 5 minutes), landing
+    // back on this page and leaving the form stuck on "Verifying…". A document
+    // request always re-runs middleware against the fresh AAL2 cookies.
+    window.location.assign(next);
   }
 
   // Auto-submit once all six digits are entered.

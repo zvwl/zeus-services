@@ -205,9 +205,13 @@ export function NavClient({
               </button>
               {userOpen && (
                 <div className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-xl border border-edge bg-surface p-1.5 shadow-xl">
+                  {/* prefetch={false} on the auth-gated links: prefetching them
+                      before the 2FA step-up caches the middleware redirect to
+                      /verify-2fa, which the router replays after verification. */}
                   {user.staff && (
                     <Link
                       href="/admin"
+                      prefetch={false}
                       className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium text-amber-300 hover:bg-raised"
                     >
                       <LayoutDashboard className="h-4 w-4" /> Admin panel
@@ -215,18 +219,21 @@ export function NavClient({
                   )}
                   <Link
                     href="/account"
+                    prefetch={false}
                     className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:bg-raised hover:text-white"
                   >
                     <User className="h-4 w-4 text-zinc-500" /> My account
                   </Link>
                   <Link
                     href="/account/orders"
+                    prefetch={false}
                     className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:bg-raised hover:text-white"
                   >
                     <Package className="h-4 w-4 text-zinc-500" /> My orders
                   </Link>
                   <Link
                     href="/account/settings"
+                    prefetch={false}
                     className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm text-zinc-300 hover:bg-raised hover:text-white"
                   >
                     <Settings className="h-4 w-4 text-zinc-500" /> Settings

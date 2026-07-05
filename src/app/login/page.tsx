@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { AuthShell, OAuthButtons } from "@/components/AuthShell";
 import {
@@ -15,7 +15,6 @@ import { ShieldCheck } from "lucide-react";
 import { safeNextPath } from "@/lib/utils";
 
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const next = safeNextPath(searchParams.get("next"));
   const urlError = searchParams.get("error");
@@ -58,8 +57,11 @@ function LoginForm() {
       setLoading(false);
       return;
     }
-    router.push(next);
-    router.refresh();
+    // Full-document navigation on purpose: a soft router navigation can replay
+    // a redirect the client router cached before the auth state changed (see
+    // verify-2fa/page.tsx). A document request re-runs middleware with the
+    // fresh session cookies.
+    window.location.assign(next);
   }
 
   async function verifyMfa() {
@@ -67,7 +69,13 @@ function LoginForm() {
     setError(null);
     setLoading(true);
     const supabase = createClient();
-    const { data: factors } = await supabase.auth.mfa.listFactors();
+    const { data: factors, error: factorsError } =
+      await supabase.auth.mfa.listFactors();
+    if (factorsError) {
+      setError("Couldn't reach the authentication service — try again.");
+      setLoading(false);
+      return;
+    }
     const totp = factors?.totp?.[0];
     if (!totp) {
       setError("No authenticator found on this account.");
@@ -84,8 +92,8 @@ function LoginForm() {
       setLoading(false);
       return;
     }
-    router.push(next);
-    router.refresh();
+    // Full-document navigation — same rationale as handleLogin above.
+    window.location.assign(next);
   }
 
   async function handleMfa(e: React.FormEvent) {
