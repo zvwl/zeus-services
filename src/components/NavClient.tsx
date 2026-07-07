@@ -35,6 +35,17 @@ interface NavUser {
   staff: boolean;
 }
 
+// Brand wordmark treatment: "Zeu" white + "services" in the violet gradient
+// (see the design system's brand-mark guideline). Falls back to splitting at
+// the first space for multi-word names, or all-white for anything else.
+function splitBrand(name: string): [string, string] {
+  const idx = name.toLowerCase().indexOf("services");
+  if (idx > 0) return [name.slice(0, idx), name.slice(idx)];
+  const space = name.indexOf(" ");
+  if (space > 0) return [name.slice(0, space), name.slice(space)];
+  return [name, ""];
+}
+
 export function NavClient({
   siteName,
   logoUrl,
@@ -49,6 +60,7 @@ export function NavClient({
   user: NavUser | null;
 }) {
   const pathname = usePathname();
+  const [brandStart, brandEnd] = splitBrand(siteName);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [moreOpen, setMoreOpen] = useState(false);
@@ -107,14 +119,12 @@ export function NavClient({
             />
           ) : (
             <>
-              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-fuchsia-600 shadow-glow-sm">
+              <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-primary-dark to-fuchsia-500 shadow-glow-sm">
                 <Zap className="h-5 w-5 text-white" fill="currentColor" />
               </span>
               <span className="text-lg font-bold tracking-tight text-white">
-                {siteName.split(" ")[0]}
-                <span className="text-gradient">
-                  {siteName.includes(" ") ? ` ${siteName.split(" ").slice(1).join(" ")}` : ""}
-                </span>
+                {brandStart}
+                {brandEnd && <span className="text-gradient">{brandEnd}</span>}
               </span>
             </>
           )}

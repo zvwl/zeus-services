@@ -7,6 +7,15 @@ import { EmptyState } from "@/components/ui";
 import { cn } from "@/lib/utils";
 import type { Game, Product } from "@/lib/types";
 
+const chipClass = (active: boolean) =>
+  cn(
+    // min-h keeps the tap target ≥44px on touch screens; tightens on sm+.
+    "inline-flex min-h-[44px] items-center rounded-full border px-4 py-1.5 text-sm font-medium transition sm:min-h-0",
+    active
+      ? "border-primary/50 bg-primary/15 text-primary-light"
+      : "border-edge bg-raised/50 text-zinc-400 hover:border-primary/40 hover:text-white"
+  );
+
 // The full product list is already in the page payload, so game filtering is a
 // pure in-memory operation. Doing it client-side makes chip clicks instant —
 // as <Link> navigations they each cost a full dynamic server render (the page
@@ -54,12 +63,7 @@ export function CategoryGrid({
           <Link
             href={`/category/${categorySlug}`}
             onClick={(e) => select(e, null)}
-            className={cn(
-              "rounded-full border px-4 py-1.5 text-sm font-medium transition",
-              !gameFilter
-                ? "border-primary/50 bg-primary/15 text-primary-light"
-                : "border-edge bg-raised/50 text-zinc-400 hover:text-white"
-            )}
+            className={chipClass(!gameFilter)}
           >
             All games
           </Link>
@@ -68,12 +72,7 @@ export function CategoryGrid({
               key={g.id}
               href={`/category/${categorySlug}?game=${g.slug}`}
               onClick={(e) => select(e, g.slug)}
-              className={cn(
-                "rounded-full border px-4 py-1.5 text-sm font-medium transition",
-                gameFilter === g.slug
-                  ? "border-primary/50 bg-primary/15 text-primary-light"
-                  : "border-edge bg-raised/50 text-zinc-400 hover:text-white"
-              )}
+              className={chipClass(gameFilter === g.slug)}
             >
               {g.name}
             </Link>
@@ -87,17 +86,29 @@ export function CategoryGrid({
           description="Our team adds new products all the time — check back soon."
         />
       ) : (
+        // CSS-only staggered entrance (animate-fade-up starts at first paint,
+        // so the LCP row never SSRs at opacity:0 waiting for hydration; it is
+        // disabled under prefers-reduced-motion via globals.css). Items are
+        // keyed by product id, so cards that survive a filter click keep their
+        // identity and never re-animate — filtering stays instant (the INP fix
+        // above is preserved).
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {filtered.map((p, i) => (
-            <ProductCard
+            <div
               key={p.id}
-              product={p}
-              // First row of covers is the LCP element on category pages. The
-              // grid is 1-col below sm, so the default 50vw sizes undersizes
-              // the mobile LCP image.
-              priority={i < 4}
-              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-            />
+              className="animate-fade-up"
+              // First FOUR cards get 0ms so the LCP row is never delayed.
+              style={{ animationDelay: `${i < 4 ? 0 : Math.min(i, 8) * 60}ms` }}
+            >
+              <ProductCard
+                product={p}
+                // First row of covers is the LCP element on category pages. The
+                // grid is 1-col below sm, so the default 50vw sizes undersizes
+                // the mobile LCP image.
+                priority={i < 4}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
+            </div>
           ))}
         </div>
       )}

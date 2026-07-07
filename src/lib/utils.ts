@@ -79,6 +79,15 @@ export function truncate(text: string, length: number) {
 }
 
 /**
+ * Estimated reading time in whole minutes (220 wpm, min 1). Single source of
+ * truth — the blog post page and the admin markdown editor must agree.
+ */
+export function readingTime(text: string): number {
+  const words = text.trim().split(/\s+/).filter(Boolean).length;
+  return Math.max(1, Math.round(words / 220));
+}
+
+/**
  * Cleans a user search term before it's interpolated into a PostgREST `.or()`
  * / `.ilike()` filter. Commas and parentheses are the OR-list separators and
  * grouping tokens in PostgREST, so an un-stripped comma silently breaks the

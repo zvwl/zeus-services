@@ -23,7 +23,7 @@ export function OrderItemReview({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="mt-3 inline-flex items-center gap-1.5 rounded-xl border border-edge bg-raised/50 px-3.5 py-2 text-sm font-medium text-zinc-300 transition hover:border-primary/40 hover:text-white"
+        className="mt-3 inline-flex min-h-[44px] items-center gap-1.5 rounded-xl border border-edge bg-raised/50 px-3.5 py-2 text-sm font-medium text-zinc-300 transition hover:border-primary/40 hover:bg-raised hover:text-white"
       >
         <Star className="h-4 w-4 text-amber-400" /> Review {productName}
       </button>

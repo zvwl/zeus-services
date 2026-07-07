@@ -5,6 +5,7 @@ import { ReviewCard } from "@/components/cards";
 import { ReviewForm } from "@/components/ReviewForm";
 import { Star } from "lucide-react";
 import { SectionHeading, Stars } from "@/components/ui";
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
 import type { Review } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -40,15 +41,17 @@ export default async function ReviewsPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-      <SectionHeading
-        as="h1"
-        eyebrow="Wall of fame"
-        title="Customer reviews"
-        subtitle="Real feedback from verified buyers. Reviews are only accepted from accounts with a completed purchase."
-      />
+      <Reveal y={14}>
+        <SectionHeading
+          as="h1"
+          eyebrow="Wall of fame"
+          title="Customer reviews"
+          subtitle="Real feedback from verified buyers. Reviews are only accepted from accounts with a completed purchase."
+        />
+      </Reveal>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <div className="glass h-fit p-6 lg:sticky lg:top-24">
+      <div className="grid items-start gap-6 lg:grid-cols-3">
+        <Reveal y={16} className="glass h-fit p-6 lg:sticky lg:top-24">
           <div className="text-center">
             <p className="text-5xl font-extrabold text-gradient">{avg || "—"}</p>
             <div className="mt-2 flex justify-center">
@@ -82,7 +85,7 @@ export default async function ReviewsPage() {
           <div className="mt-8 border-t border-edge pt-6">
             <ReviewForm signedIn={Boolean(user)} />
           </div>
-        </div>
+        </Reveal>
 
         <div className="lg:col-span-2">
           {reviews.length === 0 ? (
@@ -90,11 +93,13 @@ export default async function ReviewsPage() {
               No reviews yet — be the first to share your experience!
             </p>
           ) : (
-            <div className="grid gap-5 md:grid-cols-2">
+            <RevealGroup className="grid gap-5 md:grid-cols-2" stagger={0.05}>
               {reviews.map((r) => (
-                <ReviewCard key={r.id} review={r} />
+                <RevealItem key={r.id} y={16} className="h-full">
+                  <ReviewCard review={r} />
+                </RevealItem>
               ))}
-            </div>
+            </RevealGroup>
           )}
         </div>
       </div>

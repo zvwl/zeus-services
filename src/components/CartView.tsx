@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
+import { Lock, Minus, Plus, ShoppingCart, Trash2, Zap } from "lucide-react";
 import { useCart } from "@/components/CartProvider";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { Button, ButtonLink, Card, EmptyState } from "@/components/ui";
+import { Reveal } from "@/components/motion";
 import { lineTotalUsd } from "@/lib/cart";
 import { createCartCheckout } from "@/lib/checkout-client";
 
@@ -35,31 +36,36 @@ export function CartView() {
 
   if (lines.length === 0) {
     return (
-      <EmptyState
-        icon={<ShoppingCart className="h-10 w-10" />}
-        title="Your cart is empty"
-        description="Browse our games and services to find your next top-up, boost or account."
-        action={<ButtonLink href="/games">Browse games</ButtonLink>}
-      />
+      <Reveal y={16}>
+        <EmptyState
+          icon={<ShoppingCart className="h-10 w-10" />}
+          title="Your cart is empty"
+          description="Browse our games and services to find your next top-up, boost or account."
+          action={<ButtonLink href="/games">Browse games</ButtonLink>}
+        />
+      </Reveal>
     );
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-3">
+    <Reveal y={16} className="grid gap-8 lg:grid-cols-3">
       {/* Items */}
       <div className="lg:col-span-2">
         <ul className="space-y-4">
           {lines.map((l) => {
             const fieldLabels = Object.keys(l.customFields ?? {});
             return (
-              <li key={l.key} className="glass flex gap-4 p-4">
+              <li
+                key={l.key}
+                className="glass flex gap-4 p-4 transition hover:border-primary/30"
+              >
                 <Thumb src={l.imageUrl} alt={l.name} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <Link
                         href={`/product/${l.slug}`}
-                        className="font-medium text-white hover:text-primary-light"
+                        className="font-medium text-white transition hover:text-primary-light"
                       >
                         {l.name}
                       </Link>
@@ -69,7 +75,10 @@ export function CartView() {
                       {l.customLabel && (
                         <p className="text-sm text-primary-light">{l.customLabel}</p>
                       )}
-                      <p className="mt-0.5 text-xs text-zinc-600">
+                      <p className="mt-0.5 flex items-center gap-1 text-xs text-zinc-600">
+                        {l.deliveryType === "instant" && (
+                          <Zap className="h-3 w-3 text-gold" fill="currentColor" />
+                        )}
                         {l.deliveryType === "instant"
                           ? "Instant delivery"
                           : "Manual delivery"}
@@ -88,7 +97,7 @@ export function CartView() {
                     <button
                       onClick={() => removeLine(l.key)}
                       aria-label="Remove item"
-                      className="rounded-lg p-1.5 text-zinc-500 hover:bg-red-500/10 hover:text-red-300"
+                      className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-zinc-500 transition hover:bg-red-500/10 hover:text-red-300 sm:h-8 sm:w-8"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>
@@ -101,7 +110,7 @@ export function CartView() {
                       <div className="flex items-center gap-1 rounded-lg border border-edge bg-raised p-0.5">
                         <button
                           onClick={() => updateQty(l.key, l.quantity - 1)}
-                          className="rounded p-1.5 text-zinc-400 hover:bg-surface hover:text-white"
+                          className="flex h-10 w-10 items-center justify-center rounded text-zinc-400 transition hover:bg-surface hover:text-white sm:h-8 sm:w-8"
                           aria-label="Decrease quantity"
                         >
                           <Minus className="h-3.5 w-3.5" />
@@ -111,7 +120,7 @@ export function CartView() {
                         </span>
                         <button
                           onClick={() => updateQty(l.key, l.quantity + 1)}
-                          className="rounded p-1.5 text-zinc-400 hover:bg-surface hover:text-white"
+                          className="flex h-10 w-10 items-center justify-center rounded text-zinc-400 transition hover:bg-surface hover:text-white sm:h-8 sm:w-8"
                           aria-label="Increase quantity"
                         >
                           <Plus className="h-3.5 w-3.5" />
@@ -119,7 +128,7 @@ export function CartView() {
                       </div>
                     )}
                     <div className="text-right">
-                      <span className="font-semibold text-white">
+                      <span className="font-semibold tabular-nums text-white">
                         {format(lineTotalUsd(l))}
                       </span>
                       {l.customAmount == null && l.quantity > 1 && (
@@ -144,11 +153,13 @@ export function CartView() {
             <span className="text-zinc-400">
               Subtotal ({count} item{count === 1 ? "" : "s"})
             </span>
-            <span className="font-medium text-white">{format(subtotalUsd)}</span>
+            <span className="font-medium tabular-nums text-white">
+              {format(subtotalUsd)}
+            </span>
           </div>
           <div className="mt-2 flex items-center justify-between border-t border-edge pt-4">
             <span className="text-zinc-300">Total</span>
-            <span className="text-xl font-bold text-white">
+            <span className="text-xl font-bold tabular-nums text-white">
               {format(subtotalUsd)}
             </span>
           </div>
@@ -172,16 +183,17 @@ export function CartView() {
           </Button>
           <Link
             href="/games"
-            className="mt-3 block text-center text-xs text-zinc-500 hover:text-primary-light"
+            className="mt-3 block py-2 text-center text-xs text-zinc-500 transition hover:text-primary-light"
           >
             Continue shopping
           </Link>
-          <p className="mt-4 text-center text-xs text-zinc-500">
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-center text-xs text-zinc-500">
+            <Lock className="h-3 w-3" />
             Secure payment via Stripe · Apple Pay &amp; Google Pay
           </p>
         </Card>
       </div>
-    </div>
+    </Reveal>
   );
 }
 

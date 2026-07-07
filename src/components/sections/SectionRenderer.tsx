@@ -1,11 +1,16 @@
 import Link from "next/link";
 import {
+  type LucideIcon,
+  ArrowRight,
+  Coins,
   Crown,
   Gamepad2,
   Gift,
+  Headphones,
+  MessageCircle,
   ShieldCheck,
-  Sparkles,
-  Timer,
+  TrendingUp,
+  UserCheck,
   Zap,
 } from "lucide-react";
 import {
@@ -20,10 +25,12 @@ import {
   setting,
 } from "@/lib/data";
 import type { SiteSection } from "@/lib/types";
-import { ButtonLink, SectionHeading, Stars } from "@/components/ui";
+import { Badge, ButtonLink, SectionHeading, Stars } from "@/components/ui";
 import { GameCard, ProductCard, ReviewCard } from "@/components/cards";
 import { Markdown } from "@/components/Markdown";
 import { Countdown } from "@/components/Countdown";
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
+import { HeroVideo } from "@/components/HeroVideo";
 
 function str(content: Record<string, unknown>, key: string, fallback = "") {
   const v = content?.[key];
@@ -65,69 +72,111 @@ export async function SectionRenderer({ section }: { section: SiteSection }) {
   }
 }
 
-async function HeroSection({ section }: { section: SiteSection }) {
+function HeroSection({ section }: { section: SiteSection }) {
   const c = section.content ?? {};
   return (
     <section className="relative overflow-hidden">
-      {/* Precomputed radial gradients instead of blur-filtered divs: same glow,
-          one cheap paint pass (the three filter layers were slowing first paint
-          and every scroll over the hero). */}
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(400px 250px at 50% 0%, rgba(139,92,246,0.22), transparent 70%)," +
-            "radial-gradient(220px 220px at 88% 22%, rgba(217,70,239,0.12), transparent 70%)," +
-            "radial-gradient(170px 170px at 8% 38%, rgba(251,191,36,0.10), transparent 70%)",
-        }}
+      {/* Higgsfield ambient loop (first frame == last frame, so it cycles
+          seamlessly). The poster paints immediately and doubles as the
+          reduced-motion / slow-connection fallback. Source/poster are
+          admin-overridable from the section content (Admin → Layout). */}
+      <HeroVideo
+        src={str(c, "video_src", "/media/hero-loop.mp4")}
+        poster={str(c, "video_poster", "/media/hero-poster.webp")}
       />
-      <div className="relative mx-auto max-w-7xl px-4 pb-20 pt-20 text-center sm:px-6 sm:pt-28">
-        <div className="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-sm text-primary-light">
-          <Sparkles className="h-4 w-4" />
-          {str(c, "badge", "Trusted by thousands of gamers worldwide")}
-        </div>
-        <h1 className="mx-auto max-w-4xl text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-6xl">
-          {section.title ?? "Level up for less with"}{" "}
-          <span className="text-gradient">
-            {str(c, "highlight", "Zeuservices")}
-          </span>
-        </h1>
-        <p className="mx-auto mt-6 max-w-2xl text-lg text-zinc-400">
-          {section.subtitle ??
-            "Cheap top-ups, professional boosting and premium accounts for GTA, Fortnite and Rocket League. Regional pricing, secure Stripe checkout and fast delivery — most orders done in 10 minutes to 2 hours."}
-        </p>
-        <div className="mt-10 flex flex-wrap items-center justify-center gap-4">
-          <ButtonLink href={str(c, "cta_href", "/games")} size="lg">
-            <Gamepad2 className="h-5 w-5" />
-            {str(c, "cta_text", "Browse games")}
-          </ButtonLink>
-          <ButtonLink
-            href={str(c, "cta2_href", "/category/topups")}
-            variant="outline"
-            size="lg"
+      <div className="art-veil" />
+      {/* Hero copy is the LCP element: entrance is CSS-only (animate-fade-up
+          runs at first paint, no JS/hydration dependency) — framer Reveal here
+          would SSR the headline at opacity:0 until hydration. */}
+      <div className="relative mx-auto flex min-h-[560px] max-w-7xl items-center px-4 pb-16 pt-16 sm:px-6 sm:pb-24 sm:pt-24">
+        <div>
+          <div className="mb-5 animate-fade-up">
+            <Badge variant="primary" className="px-3 py-1 text-sm">
+              <Zap className="h-3.5 w-3.5" fill="currentColor" />
+              {str(c, "badge", "Instant delivery on top-ups")}
+            </Badge>
+          </div>
+          <h1 className="animate-fade-up text-4xl font-extrabold leading-[1.08] tracking-tight text-white sm:text-6xl">
+            {section.title ?? "Level up."}
+            <br />
+            <span className="text-gradient">
+              {str(c, "highlight", "Instantly.")}
+            </span>
+          </h1>
+          <p
+            className="mt-5 max-w-xl animate-fade-up text-lg text-zinc-300"
+            style={{ animationDelay: "120ms" }}
           >
-            <Zap className="h-5 w-5 text-gold" fill="currentColor" />
-            {str(c, "cta2_text", "Cheap top-ups")}
-          </ButtonLink>
-        </div>
-        <div className="mx-auto mt-14 grid max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
-          {[
-            { icon: Zap, text: str(c, "pill1", "Fast delivery, 10 min–2 hrs") },
-            { icon: ShieldCheck, text: str(c, "pill2", "Secure Stripe checkout") },
-            { icon: Timer, text: str(c, "pill3", "Ticket & Discord support") },
-          ].map((item) => (
-            <div
-              key={item.text}
-              className="glass flex items-center justify-center gap-2.5 px-4 py-3 text-sm font-medium text-zinc-300"
+            {section.subtitle ??
+              "Premium game top-ups, rank boosting and accounts — delivered in seconds, paid securely through Stripe, trusted by thousands of gamers."}
+          </p>
+          <div
+            className="mt-8 flex animate-fade-up flex-wrap gap-3"
+            style={{ animationDelay: "200ms" }}
+          >
+            <ButtonLink href={str(c, "cta_href", "/games")} size="lg">
+              <Gamepad2 className="h-5 w-5" />
+              {str(c, "cta_text", "Browse the shop")}
+            </ButtonLink>
+            <ButtonLink
+              href={str(c, "cta2_href", "/giveaways")}
+              variant="outline"
+              size="lg"
+              className="bg-bg/40 backdrop-blur-sm"
             >
-              <item.icon className="h-4 w-4 text-primary-light" />
-              {item.text}
-            </div>
-          ))}
+              <Gift className="h-5 w-5" />
+              {str(c, "cta2_text", "View giveaways")}
+            </ButtonLink>
+          </div>
+          <div
+            className="mt-8 flex animate-fade-up flex-wrap gap-x-7 gap-y-3"
+            style={{ animationDelay: "280ms" }}
+          >
+            {[
+              { icon: ShieldCheck, text: str(c, "pill1", "Stripe-secured") },
+              { icon: Zap, text: str(c, "pill2", "Instant delivery") },
+              { icon: Headphones, text: str(c, "pill3", "24/7 support") },
+            ].map((item) => (
+              <span
+                key={item.text}
+                className="flex items-center gap-2 text-sm text-zinc-400"
+              >
+                <item.icon className="h-4 w-4 text-primary-light" />
+                {item.text}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>
   );
+}
+
+// The design keys category tiles to Lucide glyphs (Coins / TrendingUp /
+// UserCheck). Categories are admin-created with no icon field, so match on
+// name/slug keywords and fall back to the gamepad.
+const CATEGORY_ICONS: [RegExp, LucideIcon][] = [
+  [/top.?up|currenc|coin|credit|point/i, Coins],
+  [/boost|rank|level/i, TrendingUp],
+  [/account/i, UserCheck],
+];
+
+function categoryIcon(cat: { name: string; slug: string }): LucideIcon {
+  const hay = `${cat.name} ${cat.slug}`;
+  return CATEGORY_ICONS.find(([re]) => re.test(hay))?.[1] ?? Gamepad2;
+}
+
+// Higgsfield artwork behind the three canonical category tiles, keyed the same
+// way as the icons. Admin-created categories that match none get plain glass.
+const CATEGORY_ART: [RegExp, string][] = [
+  [/top.?up|currenc|coin|credit|point/i, "/media/cat-topups.webp"],
+  [/boost|rank|level/i, "/media/cat-boosting.webp"],
+  [/account/i, "/media/cat-accounts.webp"],
+];
+
+function categoryArt(cat: { name: string; slug: string }): string | null {
+  const hay = `${cat.name} ${cat.slug}`;
+  return CATEGORY_ART.find(([re]) => re.test(hay))?.[1] ?? null;
 }
 
 async function CategoriesSection({ section }: { section: SiteSection }) {
@@ -135,35 +184,58 @@ async function CategoriesSection({ section }: { section: SiteSection }) {
   if (categories.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <SectionHeading
-        eyebrow="What we offer"
-        title={section.title ?? "Shop by category"}
-        subtitle={section.subtitle}
-        center
-      />
-      <div className="grid gap-5 md:grid-cols-3">
-        {categories.map((cat) => (
-          <Link
-            key={cat.id}
-            href={`/category/${cat.slug}`}
-            className="group glass relative overflow-hidden p-7 transition duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow-sm"
-          >
-            <span className="absolute -right-6 -top-6 text-[90px] opacity-[0.07] transition group-hover:opacity-[0.14]">
-              {(cat.name[0] ?? "").toUpperCase()}
-            </span>
-            <span className="text-3xl">{(cat.name[0] ?? "").toUpperCase()}</span>
-            <h3 className="mt-4 text-xl font-bold text-white group-hover:text-primary-light">
-              {cat.name}
-            </h3>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-400">
-              {cat.description}
-            </p>
-            <span className="mt-4 inline-block text-sm font-medium text-primary-light">
-              Explore {cat.name.toLowerCase()} →
-            </span>
-          </Link>
-        ))}
-      </div>
+      {section.title && (
+        <Reveal>
+          <SectionHeading
+            eyebrow="What we offer"
+            title={section.title}
+            subtitle={section.subtitle}
+          />
+        </Reveal>
+      )}
+      <RevealGroup className="grid gap-5 md:grid-cols-3">
+        {categories.map((cat) => {
+          const Icon = categoryIcon(cat);
+          const art = categoryArt(cat);
+          return (
+            <RevealItem key={cat.id}>
+              <Link
+                href={`/category/${cat.slug}`}
+                className="group glass relative flex min-h-[230px] flex-col gap-3 overflow-hidden p-6 transition duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-glow-sm"
+              >
+                {art && (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={art}
+                      alt=""
+                      aria-hidden
+                      loading="lazy"
+                      className="absolute inset-0 h-full w-full object-cover opacity-70 transition duration-500 group-hover:scale-105 group-hover:opacity-90"
+                    />
+                    <span className="art-veil" />
+                  </>
+                )}
+                <span className="relative flex h-12 w-12 items-center justify-center rounded-xl bg-primary/20 text-primary-light backdrop-blur-sm">
+                  <Icon className="h-6 w-6" />
+                </span>
+                <h3 className="relative text-lg font-bold text-white transition group-hover:text-primary-light">
+                  {cat.name}
+                </h3>
+                {cat.description && (
+                  <p className="relative text-sm leading-relaxed text-zinc-400">
+                    {cat.description}
+                  </p>
+                )}
+                <span className="relative mt-auto flex items-center gap-1.5 pt-1 text-sm font-medium text-primary-light">
+                  Shop {cat.name}
+                  <ArrowRight className="h-4 w-4 transition group-hover:translate-x-1" />
+                </span>
+              </Link>
+            </RevealItem>
+          );
+        })}
+      </RevealGroup>
     </section>
   );
 }
@@ -173,29 +245,35 @@ async function FeaturedProductsSection({ section }: { section: SiteSection }) {
   if (products.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="flex items-end justify-between">
-        <SectionHeading
-          eyebrow="Hand-picked"
-          title={section.title ?? "Featured offers"}
-          subtitle={section.subtitle}
-        />
-        <Link
-          href="/games"
-          className="mb-10 hidden text-sm font-medium text-primary-light hover:underline sm:block"
-        >
-          View all →
-        </Link>
-      </div>
-      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        {products.map((p) => (
-          <ProductCard
-            key={p.id}
-            product={p}
-            // 1-col below sm — the default 50vw sizes undersizes mobile covers.
-            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+      <Reveal>
+        <div className="flex items-end justify-between">
+          <SectionHeading
+            eyebrow="Featured"
+            title={section.title ?? "Popular right now"}
+            subtitle={
+              section.subtitle ??
+              "Hand-picked offers with the fastest delivery and best value."
+            }
           />
+          <Link
+            href="/games"
+            className="mb-10 hidden text-sm font-medium text-primary-light hover:underline sm:block"
+          >
+            View all →
+          </Link>
+        </div>
+      </Reveal>
+      <RevealGroup className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        {products.map((p) => (
+          <RevealItem key={p.id}>
+            <ProductCard
+              product={p}
+              // 1-col below sm — the default 50vw sizes undersizes mobile covers.
+              sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+            />
+          </RevealItem>
         ))}
-      </div>
+      </RevealGroup>
     </section>
   );
 }
@@ -205,17 +283,20 @@ async function GamesSection({ section }: { section: SiteSection }) {
   if (games.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <SectionHeading
-        eyebrow="Supported titles"
-        title={section.title ?? "Popular games"}
-        subtitle={section.subtitle}
-        center
-      />
-      <div className="grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-6">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Browse by game"
+          title={section.title ?? "Popular games"}
+          subtitle={section.subtitle}
+        />
+      </Reveal>
+      <RevealGroup className="grid grid-cols-2 gap-5 md:grid-cols-3">
         {games.map((g) => (
-          <GameCard key={g.id} game={g} />
+          <RevealItem key={g.id}>
+            <GameCard game={g} />
+          </RevealItem>
         ))}
-      </div>
+      </RevealGroup>
     </section>
   );
 }
@@ -239,53 +320,57 @@ async function StatsSection({ section }: { section: SiteSection }) {
     { label: "Typical delivery", value: str(c, "stat4", "10 min–2 hrs") },
   ];
   return (
-    <section className="border-y border-edge bg-surface/50">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-8 px-4 py-12 sm:px-6 lg:grid-cols-4">
+    <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <RevealGroup className="glass grid grid-cols-2 gap-8 px-6 py-10 lg:grid-cols-4" stagger={0.1}>
         {stats.map((s) => (
-          <div key={s.label} className="text-center">
-            <p className="text-3xl font-extrabold text-gradient sm:text-4xl">
+          <RevealItem key={s.label} className="text-center" y={16}>
+            <p className="text-3xl font-extrabold tracking-tight text-gradient sm:text-4xl">
               {s.value}
             </p>
-            <p className="mt-1 text-sm text-zinc-500">{s.label}</p>
-          </div>
+            <p className="mt-1.5 text-[13px] text-zinc-500">{s.label}</p>
+          </RevealItem>
         ))}
-      </div>
+      </RevealGroup>
     </section>
   );
 }
 
 async function ReviewsSection({ section }: { section: SiteSection }) {
-  const [reviews, { avg }] = await Promise.all([
+  const [reviews, stats] = await Promise.all([
     getApprovedReviews(num(section.content, "limit", 6)),
     getReviewStats(),
   ]);
   if (reviews.length === 0) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="mb-10 flex flex-col items-center gap-2 text-center">
-        <p className="text-sm font-semibold uppercase tracking-widest text-primary-light">
-          Reviews
-        </p>
-        <h2 className="text-3xl font-bold text-white sm:text-4xl">
-          {section.title ?? "What gamers say about us"}
-        </h2>
-        <div className="mt-2 flex items-center gap-2">
-          <Stars rating={avg} />
-          <span className="text-sm text-zinc-400">
-            {avg} / 5 from verified customers
-          </span>
-        </div>
-      </div>
-      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Reviews"
+          title={section.title ?? "Loved by the community"}
+          subtitle={section.subtitle ?? "Every review is from a verified buyer."}
+        />
+        {stats.count > 0 && (
+          <div className="-mt-6 mb-8 flex items-center gap-2 text-sm text-zinc-400">
+            <Stars rating={stats.avg} />
+            <span className="font-semibold text-white">{stats.avg} / 5</span>
+            <span>from {stats.count} verified reviews</span>
+          </div>
+        )}
+      </Reveal>
+      <RevealGroup className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {reviews.map((r) => (
-          <ReviewCard key={r.id} review={r} />
+          <RevealItem key={r.id}>
+            <ReviewCard review={r} />
+          </RevealItem>
         ))}
-      </div>
-      <div className="mt-8 text-center">
-        <ButtonLink href="/reviews" variant="outline">
-          Read all reviews
-        </ButtonLink>
-      </div>
+      </RevealGroup>
+      <Reveal>
+        <div className="mt-8 text-center">
+          <ButtonLink href="/reviews" variant="outline">
+            Read all reviews
+          </ButtonLink>
+        </div>
+      </Reveal>
     </section>
   );
 }
@@ -295,15 +380,18 @@ async function FaqSection({ section }: { section: SiteSection }) {
   if (faqs.length === 0) return null;
   return (
     <section className="mx-auto max-w-3xl px-4 py-16 sm:px-6">
-      <SectionHeading
-        eyebrow="Got questions?"
-        title={section.title ?? "Frequently asked questions"}
-        subtitle={section.subtitle}
-        center
-      />
-      <div className="space-y-3">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Got questions?"
+          title={section.title ?? "Frequently asked questions"}
+          subtitle={section.subtitle}
+          center
+        />
+      </Reveal>
+      <RevealGroup className="space-y-3" stagger={0.06}>
         {faqs.map((f) => (
-          <details key={f.id} className="glass group p-0">
+          <RevealItem key={f.id} y={14}>
+          <details className="glass group p-0">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 font-medium text-white [&::-webkit-details-marker]:hidden">
               {f.question}
               <span className="text-primary-light transition group-open:rotate-45">
@@ -314,8 +402,9 @@ async function FaqSection({ section }: { section: SiteSection }) {
               {f.answer}
             </p>
           </details>
+          </RevealItem>
         ))}
-      </div>
+      </RevealGroup>
       <p className="mt-6 text-center text-sm text-zinc-500">
         Still stuck?{" "}
         <Link href="/support" className="text-primary-light hover:underline">
@@ -337,24 +426,32 @@ async function DiscordSection({ section }: { section: SiteSection }) {
   if (!invite) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="glass relative overflow-hidden bg-gradient-to-r from-[#5865F2]/20 via-surface to-surface p-10 text-center sm:p-14">
-        <div className="pointer-events-none absolute -left-10 -top-10 h-48 w-48 rounded-full bg-[#5865F2]/30 blur-[80px]" />
-        <h2 className="text-3xl font-bold text-white">
-          {section.title ?? "Join our Discord community"}
-        </h2>
-        <p className="mx-auto mt-3 max-w-xl text-zinc-400">
-          {section.subtitle ??
-            "Get order support, exclusive drops, flash sales and giveaway alerts before anyone else."}
-        </p>
+      <Reveal>
+      <div className="glass flex flex-wrap items-center justify-between gap-6 p-8 sm:px-10">
+        <div className="flex items-center gap-4">
+          <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-[#5865F2]/15 text-[#5865F2]">
+            <MessageCircle className="h-7 w-7" />
+          </span>
+          <div>
+            <h2 className="text-xl font-bold text-white sm:text-2xl">
+              {section.title ?? "Join our Discord community"}
+            </h2>
+            <p className="mt-1 text-zinc-500">
+              {section.subtitle ??
+                "Deals, drops and support — all in one place."}
+            </p>
+          </div>
+        </div>
         <a
           href={invite}
           target="_blank"
           rel="noopener noreferrer"
-          className="mt-8 inline-flex items-center gap-2 rounded-xl bg-[#5865F2] px-8 py-3 font-semibold text-white transition hover:bg-[#4752c4]"
+          className="inline-flex items-center gap-2 rounded-xl bg-[#5865F2] px-5 py-3 text-[15px] font-semibold text-white transition hover:bg-[#4752c4]"
         >
-          Join the server →
+          Join the server
         </a>
       </div>
+      </Reveal>
     </section>
   );
 }
@@ -364,14 +461,24 @@ async function GiveawaySection({ section: _section }: { section: SiteSection }) 
   if (!giveaway) return null;
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <div className="glass relative overflow-hidden border-amber-400/30 p-10 sm:p-14">
-        <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-amber-400/15 blur-[90px]" />
-        <div className="flex flex-col items-start gap-8 lg:flex-row lg:items-center lg:justify-between">
+      <Reveal>
+      <div className="relative overflow-hidden rounded-2xl border border-amber-400/30 bg-amber-400/[0.06] p-10 shadow-glow-gold sm:p-12">
+        {/* Higgsfield gold treasure artwork, veiled so the copy stays legible */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/media/giveaway-banner.webp"
+          alt=""
+          aria-hidden
+          loading="lazy"
+          className="absolute inset-0 h-full w-full object-cover opacity-80"
+        />
+        <div className="art-veil" />
+        <div className="relative flex flex-col items-start gap-8 lg:flex-row lg:items-center lg:justify-between">
           <div>
-            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-gold">
-              <Gift className="h-4 w-4" /> Live giveaway
+            <p className="flex items-center gap-2 text-sm font-semibold uppercase tracking-widest text-amber-300">
+              <Gift className="h-4 w-4" /> Free giveaway
             </p>
-            <h2 className="mt-3 text-3xl font-bold text-white">
+            <h2 className="mt-2 text-3xl font-extrabold tracking-tight text-gradient-gold">
               {giveaway.title}
             </h2>
             <p className="mt-2 flex items-center gap-2 text-zinc-400">
@@ -381,11 +488,13 @@ async function GiveawaySection({ section: _section }: { section: SiteSection }) 
           <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
             <Countdown target={giveaway.ends_at} />
             <ButtonLink href={`/giveaways/${giveaway.slug}`} variant="gold" size="lg">
-              Enter free →
+              <Gift className="h-5 w-5" />
+              Enter giveaway
             </ButtonLink>
           </div>
         </div>
       </div>
+      </Reveal>
     </section>
   );
 }
@@ -403,23 +512,27 @@ function StepsSection({ section }: { section: SiteSection }) {
   }));
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
-      <SectionHeading
-        eyebrow="Simple & fast"
-        title={section.title ?? "How it works"}
-        subtitle={section.subtitle}
-        center
-      />
-      <div className="grid gap-5 md:grid-cols-3">
+      <Reveal>
+        <SectionHeading
+          eyebrow="Simple & fast"
+          title={section.title ?? "How it works"}
+          subtitle={section.subtitle}
+          center
+        />
+      </Reveal>
+      <RevealGroup className="grid gap-5 md:grid-cols-3" stagger={0.12}>
         {steps.map((s, i) => (
-          <div key={i} className="glass p-7 text-center">
-            <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-xl font-bold text-primary-light">
-              {i + 1}
-            </span>
-            <h3 className="text-lg font-bold text-white">{s.title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-zinc-400">{s.text}</p>
-          </div>
+          <RevealItem key={i}>
+            <div className="glass h-full p-7 text-center">
+              <span className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/15 text-xl font-bold text-primary-light">
+                {i + 1}
+              </span>
+              <h3 className="text-lg font-bold text-white">{s.title}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-zinc-400">{s.text}</p>
+            </div>
+          </RevealItem>
         ))}
-      </div>
+      </RevealGroup>
     </section>
   );
 }
@@ -428,8 +541,9 @@ function CtaBannerSection({ section }: { section: SiteSection }) {
   const c = section.content ?? {};
   return (
     <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+      <Reveal>
       <div className="glass relative overflow-hidden bg-gradient-to-r from-primary/20 via-surface to-surface p-10 text-center sm:p-14">
-        <div className="pointer-events-none absolute -left-10 -top-10 h-48 w-48 rounded-full bg-primary/30 blur-[80px]" />
+        <div className="pointer-events-none absolute -left-10 -top-10 h-48 w-48 animate-glow-pulse rounded-full bg-primary/30 blur-[80px]" />
         <h2 className="text-3xl font-bold text-white">
           {section.title ?? "Ready to level up?"}
         </h2>
@@ -442,6 +556,7 @@ function CtaBannerSection({ section }: { section: SiteSection }) {
           </ButtonLink>
         </div>
       </div>
+      </Reveal>
     </section>
   );
 }

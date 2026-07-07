@@ -67,6 +67,27 @@ export function CoverImage({
   );
 }
 
+/**
+ * The lowest purchasable price for a product, and whether it's a "from" price
+ * (variants or custom-amount pricing). Custom-amount products have no fixed
+ * base price — derive the minimum purchasable amount × unit price instead
+ * of showing $0.
+ */
+export function fromPrice(product: Product): { usd: number; from: boolean } {
+  const minVariant = product.variants
+    ?.filter((v) => v.is_active)
+    .sort((a, b) => Number(a.price) - Number(b.price))[0];
+  const isCustom =
+    product.pricing_mode === "custom" && product.custom_price_per_unit != null;
+  const usd = isCustom
+    ? Number(product.custom_price_per_unit) *
+      Math.max(1, Number(product.custom_min ?? 1))
+    : minVariant
+      ? Number(minVariant.price)
+      : Number(product.base_price);
+  return { usd, from: isCustom || Boolean(minVariant) };
+}
+
 export function ProductCard({
   product,
   // Set on first-row cards when the grid is the page's LCP element, so the
@@ -78,22 +99,9 @@ export function ProductCard({
   priority?: boolean;
   sizes?: string;
 }) {
-  const minVariant = product.variants
-    ?.filter((v) => v.is_active)
-    .sort((a, b) => Number(a.price) - Number(b.price))[0];
-  // Custom-amount products have no fixed base price — show a "from" price based
-  // on the minimum purchasable amount × unit price instead of $0.
   const isCustom =
     product.pricing_mode === "custom" && product.custom_price_per_unit != null;
-  const customFromUsd = isCustom
-    ? Number(product.custom_price_per_unit) * Math.max(1, Number(product.custom_min ?? 1))
-    : 0;
-  const priceUsd = isCustom
-    ? customFromUsd
-    : minVariant
-      ? Number(minVariant.price)
-      : Number(product.base_price);
-  const showFrom = isCustom || Boolean(minVariant);
+  const { usd: priceUsd, from: showFrom } = fromPrice(product);
   const soldOut =
     !isCustom &&
     product.stock !== null &&

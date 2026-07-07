@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Markdown } from "@/components/Markdown";
+import { Reveal } from "@/components/motion";
 import { getPage } from "@/lib/data";
 
 export const revalidate = 3600;
@@ -80,12 +81,19 @@ export default async function TermsPage() {
   const page = await getPage("terms");
   return (
     <div className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
-      <h1 className="text-4xl font-extrabold text-white">
-        {page?.title ?? DEFAULT_TITLE}
-      </h1>
-      <div className="mt-8">
-        <Markdown>{page?.content ?? TERMS}</Markdown>
-      </div>
+      <Reveal y={14}>
+        <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary-light">
+          Legal
+        </p>
+        <h1 className="text-4xl font-extrabold tracking-tight text-white">
+          {page?.title ?? DEFAULT_TITLE}
+        </h1>
+      </Reveal>
+      <Reveal y={16} delay={0.08}>
+        <div className="mt-8">
+          <Markdown>{page?.content ?? TERMS}</Markdown>
+        </div>
+      </Reveal>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Plus } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, ButtonLink } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
+import { AdminTable } from "@/components/admin/AdminTable";
 import { deleteProduct, duplicateProduct } from "@/app/admin/actions";
 import { formatMoney } from "@/lib/currency";
 import type { Product } from "@/lib/types";
@@ -20,85 +21,95 @@ export default async function AdminProductsPage() {
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold text-white">Products</h1>
+        <div>
+          <h1 className="text-2xl font-extrabold text-white">Products</h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            Everything you sell — prices, options, delivery and visibility.
+          </p>
+        </div>
         <ButtonLink href="/admin/products/new">
           <Plus className="h-4 w-4" /> New product
         </ButtonLink>
       </div>
 
-      <div className="glass mt-6 overflow-x-auto p-0">
-        <table className="w-full min-w-[760px] text-sm">
-          <thead>
-            <tr className="border-b border-edge text-left text-xs uppercase tracking-wider text-zinc-500">
-              <th className="px-4 py-3">Product</th>
-              <th className="px-4 py-3">Game</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Price (USD)</th>
-              <th className="px-4 py-3">Stock</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-edge">
-            {products.map((p) => (
-              <tr key={p.id} className="transition hover:bg-raised/40">
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/products/${p.id}`}
-                    className="font-medium text-primary-light hover:underline"
-                  >
-                    {p.name}
-                  </Link>
-                  {(p.variants?.length ?? 0) > 0 && (
-                    <span className="ml-2 text-xs text-zinc-600">
-                      {p.variants!.length} options
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-zinc-400">{p.game?.name}</td>
-                <td className="px-4 py-3 text-zinc-400">{p.category?.name}</td>
-                <td className="px-4 py-3 text-white">
-                  {formatMoney(Number(p.base_price), "USD")}
-                </td>
-                <td className="px-4 py-3 text-zinc-400">{p.stock ?? "∞"}</td>
-                <td className="px-4 py-3">
-                  <div className="flex gap-1.5">
-                    <Badge variant={p.is_active ? "success" : "danger"}>
-                      {p.is_active ? "active" : "hidden"}
-                    </Badge>
-                    {p.is_featured && <Badge variant="gold">featured</Badge>}
-                  </div>
-                </td>
-                <td className="px-4 py-3 text-right">
-                  <div className="flex justify-end gap-1.5">
-                    <ActionButton
-                      action={duplicateProduct}
-                      fields={{ id: p.id }}
-                      variant="outline"
-                    >
-                      Duplicate
-                    </ActionButton>
-                    <ActionButton
-                      action={deleteProduct}
-                      fields={{ id: p.id }}
-                      variant="danger"
-                      confirmText={`Delete "${p.name}"? This cannot be undone.`}
-                    >
-                      Delete
-                    </ActionButton>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {products.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-zinc-500">
-                  No products yet — create your first one.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <AdminTable
+          minWidth={760}
+          empty="No products yet — hit “New product” to create your first one."
+          columns={[
+            { header: "Product" },
+            { header: "Game" },
+            { header: "Category" },
+            { header: "Price (USD)" },
+            { header: "Stock" },
+            { header: "Status" },
+            { header: "" },
+          ]}
+          rows={products.map((p) => ({
+            key: p.id,
+            cells: [
+              <span key="name">
+                <Link
+                  href={`/admin/products/${p.id}`}
+                  className="font-medium text-primary-light hover:underline"
+                >
+                  {p.name}
+                </Link>
+                {(p.variants?.length ?? 0) > 0 && (
+                  <span className="ml-2 text-xs text-zinc-600">
+                    {p.variants!.length} options
+                  </span>
+                )}
+                {p.pricing_mode === "custom" && (
+                  <span className="ml-2 text-xs text-zinc-600">slider</span>
+                )}
+              </span>,
+              <span key="game" className="text-zinc-400">
+                {p.game?.name}
+              </span>,
+              <span key="cat" className="text-zinc-400">
+                {p.category?.name}
+              </span>,
+              <span key="price" className="text-white">
+                {p.pricing_mode === "custom" && p.custom_price_per_unit != null
+                  ? `${formatMoney(
+                      // Mirror the storefront fromPrice — a null custom_min
+                      // must not show a $0.00 floor.
+                      Math.max(1, Number(p.custom_min ?? 1)) *
+                        Number(p.custom_price_per_unit),
+                      "USD"
+                    )}+`
+                  : formatMoney(Number(p.base_price), "USD")}
+              </span>,
+              <span key="stock" className="text-zinc-400">
+                {p.stock ?? "∞"}
+              </span>,
+              <span key="status" className="inline-flex gap-1.5">
+                <Badge variant={p.is_active ? "success" : "danger"}>
+                  {p.is_active ? "active" : "hidden"}
+                </Badge>
+                {p.is_featured && <Badge variant="gold">featured</Badge>}
+              </span>,
+              <span key="actions" className="inline-flex justify-end gap-1.5">
+                <ActionButton
+                  action={duplicateProduct}
+                  fields={{ id: p.id }}
+                  variant="outline"
+                >
+                  Duplicate
+                </ActionButton>
+                <ActionButton
+                  action={deleteProduct}
+                  fields={{ id: p.id }}
+                  variant="danger"
+                  confirmText={`Delete "${p.name}"? This cannot be undone.`}
+                >
+                  Delete
+                </ActionButton>
+              </span>,
+            ],
+          }))}
+        />
       </div>
     </div>
   );

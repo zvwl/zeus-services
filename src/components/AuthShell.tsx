@@ -2,9 +2,11 @@
 
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
+import Image from "next/image";
 import { Zap } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui";
 
 export function AuthShell({
@@ -31,25 +33,54 @@ export function AuthShell({
   }, []);
 
   return (
-    <div className="mx-auto flex max-w-md flex-col px-4 py-16 sm:py-24">
-      <Link href="/" className="mx-auto mb-6 flex items-center gap-2">
-        {logoUrl ? (
-          <img
-            src={logoUrl}
-            alt="Logo"
-            className="h-11 w-auto max-w-[200px] object-contain"
-          />
-        ) : (
-          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary to-fuchsia-600 shadow-glow-sm">
-            <Zap className="h-6 w-6 text-white" fill="currentColor" />
-          </span>
-        )}
-      </Link>
-      <h1 className="text-center text-2xl font-extrabold text-white">{title}</h1>
-      {subtitle && (
-        <p className="mt-2 text-center text-sm text-zinc-400">{subtitle}</p>
-      )}
-      <div className="glass mt-8 p-6 sm:p-8">{children}</div>
+    <div className="relative isolate overflow-hidden">
+      {/* Storm backdrop — pure atmosphere. Veiled + faded into the page bg at
+          the top and bottom edges so it never competes with the card. */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 select-none">
+        <Image
+          src="/media/auth-backdrop.webp"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center"
+        />
+        <div className="art-veil-full" />
+        <div className="absolute inset-0 bg-gradient-to-b from-bg/80 via-transparent to-bg" />
+      </div>
+
+      <div className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col justify-center px-4 py-14 sm:py-20">
+        <Reveal y={16}>
+          <Link
+            href="/"
+            aria-label="Zeuservices — back to home"
+            className="mx-auto mb-6 flex w-fit items-center gap-2"
+          >
+            {logoUrl ? (
+              <img
+                src={logoUrl}
+                alt="Logo"
+                className="h-11 w-auto max-w-[200px] object-contain"
+              />
+            ) : (
+              <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-dark to-fuchsia-500 shadow-glow-sm">
+                <Zap className="h-6 w-6 text-white" fill="currentColor" />
+              </span>
+            )}
+          </Link>
+          <h1 className="text-center text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+            {title}
+          </h1>
+          {subtitle && (
+            <p className="mx-auto mt-2 max-w-sm text-center text-sm leading-relaxed text-zinc-400">
+              {subtitle}
+            </p>
+          )}
+          <div className="glass mt-8 p-6 shadow-[0_24px_80px_-32px_rgba(139,92,246,0.4)] sm:p-8">
+            {children}
+          </div>
+        </Reveal>
+      </div>
     </div>
   );
 }
@@ -70,10 +101,10 @@ export function OAuthButtons({ next = "/" }: { next?: string }) {
       <Button
         type="button"
         variant="outline"
-        className="w-full bg-[#5865F2]/10 hover:border-[#5865F2]/60"
+        className="min-h-[44px] w-full bg-[#5865F2]/10 hover:border-[#5865F2]/60"
         onClick={() => signInWith("discord")}
       >
-        <svg viewBox="0 0 24 24" className="h-4.5 w-4.5 h-5 w-5" fill="#5865F2">
+        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="#5865F2">
           <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z" />
         </svg>
         Continue with Discord
@@ -81,7 +112,7 @@ export function OAuthButtons({ next = "/" }: { next?: string }) {
       <Button
         type="button"
         variant="outline"
-        className="w-full"
+        className="min-h-[44px] w-full"
         onClick={() => signInWith("google")}
       >
         <svg viewBox="0 0 24 24" className="h-5 w-5">
@@ -106,7 +137,7 @@ export function OAuthButtons({ next = "/" }: { next?: string }) {
       </Button>
       <div className="flex items-center gap-3 py-1">
         <span className="h-px flex-1 bg-edge" />
-        <span className="text-xs uppercase tracking-wider text-zinc-600">or</span>
+        <span className="text-xs uppercase tracking-wider text-zinc-500">or</span>
         <span className="h-px flex-1 bg-edge" />
       </div>
     </div>

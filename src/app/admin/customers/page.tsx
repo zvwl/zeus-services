@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { can, getProfile } from "@/lib/auth";
 import { Badge } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
+import { AdminTable } from "@/components/admin/AdminTable";
 import { toggleBan } from "@/app/admin/actions";
 import { formatMoney } from "@/lib/currency";
 import { cn, formatDate, sanitizeSearchTerm } from "@/lib/utils";
@@ -61,8 +62,13 @@ export default async function AdminCustomersPage({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold text-white">Customers</h1>
-        <form action="/admin/customers" className="w-72">
+        <div>
+          <h1 className="text-2xl font-extrabold text-white">Customers</h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            Every registered account — open one for order history and details.
+          </p>
+        </div>
+        <form action="/admin/customers" className="w-full sm:w-72">
           {filter !== "all" && (
             <input type="hidden" name="filter" value={filter} />
           )}
@@ -99,79 +105,74 @@ export default async function AdminCustomersPage({
         })}
       </div>
 
-      <div className="glass mt-6 overflow-x-auto p-0">
-        <table className="w-full min-w-[760px] text-sm">
-          <thead>
-            <tr className="border-b border-edge text-left text-xs uppercase tracking-wider text-zinc-500">
-              <th className="px-4 py-3">User</th>
-              <th className="px-4 py-3">Role</th>
-              <th className="px-4 py-3">Orders</th>
-              <th className="px-4 py-3">Spent (USD)</th>
-              <th className="px-4 py-3">Joined</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3" />
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-edge">
-            {customers.map((p) => {
-              const spend = spendByUser.get(p.id);
-              return (
-                <tr key={p.id} className="transition hover:bg-raised/40">
-                  <td className="px-4 py-3">
-                    <Link href={`/admin/customers/${p.id}`} className="group">
-                      <p className="font-medium text-white group-hover:text-primary-light">
-                        {p.username ?? "—"}
-                      </p>
-                      <p className="text-xs text-zinc-500">{p.email}</p>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3">
-                    <Badge variant={p.role === "customer" ? "default" : "gold"}>
-                      {p.role.replace("_", " ")}
-                    </Badge>
-                  </td>
-                  <td className="px-4 py-3 text-zinc-300">{spend?.count ?? 0}</td>
-                  <td className="px-4 py-3 font-semibold text-white">
-                    {formatMoney(spend?.total ?? 0, "USD")}
-                  </td>
-                  <td className="px-4 py-3 text-xs text-zinc-500">
-                    {formatDate(p.created_at)}
-                  </td>
-                  <td className="px-4 py-3">
-                    {p.is_banned ? (
-                      <Badge variant="danger">banned</Badge>
-                    ) : (
-                      <Badge variant="success">active</Badge>
-                    )}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {can(me, "manage_customers") && p.id !== me?.id && (
-                      <ActionButton
-                        action={toggleBan}
-                        fields={{ user_id: p.id }}
-                        variant={p.is_banned ? "success" : "danger"}
-                        confirmText={
-                          p.is_banned
-                            ? `Unban ${p.username ?? p.email}?`
-                            : `Ban ${p.username ?? p.email}? They won't be able to purchase.`
-                        }
-                      >
-                        {p.is_banned ? "Unban" : "Ban"}
-                      </ActionButton>
-                    )}
-                  </td>
-                </tr>
-              );
-            })}
-            {customers.length === 0 && (
-              <tr>
-                <td colSpan={7} className="px-4 py-10 text-center text-zinc-500">
-                  No users found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <AdminTable
+          minWidth={760}
+          empty={
+            query || filter !== "all"
+              ? "No users match this filter or search."
+              : "No users yet."
+          }
+          columns={[
+            { header: "User" },
+            { header: "Role" },
+            { header: "Orders" },
+            { header: "Spent (USD)" },
+            { header: "Joined" },
+            { header: "Status" },
+            { header: "" },
+          ]}
+          rows={customers.map((p) => {
+            const spend = spendByUser.get(p.id);
+            return {
+              key: p.id,
+              cells: [
+                <Link key="user" href={`/admin/customers/${p.id}`} className="group block">
+                  <span className="block font-medium text-white group-hover:text-primary-light">
+                    {p.username ?? "—"}
+                  </span>
+                  <span className="block break-all text-xs text-zinc-500">{p.email}</span>
+                </Link>,
+                <Badge key="role" variant={p.role === "customer" ? "default" : "gold"}>
+                  {p.role.replace("_", " ")}
+                </Badge>,
+                <span key="orders" className="text-zinc-300">
+                  {spend?.count ?? 0}
+                </span>,
+                <span key="spent" className="font-semibold text-white">
+                  {formatMoney(spend?.total ?? 0, "USD")}
+                </span>,
+                <span key="joined" className="text-xs text-zinc-500">
+                  {formatDate(p.created_at)}
+                </span>,
+                p.is_banned ? (
+                  <Badge key="status" variant="danger">
+                    banned
+                  </Badge>
+                ) : (
+                  <Badge key="status" variant="success">
+                    active
+                  </Badge>
+                ),
+                can(me, "manage_customers") && p.id !== me?.id ? (
+                  <ActionButton
+                    key="ban"
+                    action={toggleBan}
+                    fields={{ user_id: p.id }}
+                    variant={p.is_banned ? "success" : "danger"}
+                    confirmText={
+                      p.is_banned
+                        ? `Unban ${p.username ?? p.email}?`
+                        : `Ban ${p.username ?? p.email}? They won't be able to purchase.`
+                    }
+                  >
+                    {p.is_banned ? "Unban" : "Ban"}
+                  </ActionButton>
+                ) : null,
+              ],
+            };
+          })}
+        />
       </div>
     </div>
   );

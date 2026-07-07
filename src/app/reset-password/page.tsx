@@ -43,10 +43,13 @@ export default function ResetPasswordPage() {
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="label">New password</label>
+          <label htmlFor="reset-password" className="label">
+            New password
+          </label>
           <input
+            id="reset-password"
             type="password"
-            className="input"
+            className="input min-h-[44px]"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="Min. 8 characters"
@@ -55,10 +58,13 @@ export default function ResetPasswordPage() {
           />
         </div>
         <div>
-          <label className="label">Confirm new password</label>
+          <label htmlFor="reset-confirm" className="label">
+            Confirm new password
+          </label>
           <input
+            id="reset-confirm"
             type="password"
-            className="input"
+            className="input min-h-[44px]"
             value={confirm}
             onChange={(e) => setConfirm(e.target.value)}
             placeholder="Repeat password"
@@ -66,8 +72,12 @@ export default function ResetPasswordPage() {
             required
           />
         </div>
-        {error && <p className="text-sm text-red-400">{error}</p>}
-        <Button className="w-full" disabled={loading}>
+        {error && (
+          <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {error}
+          </p>
+        )}
+        <Button size="lg" className="w-full" disabled={loading}>
           {loading ? "Updating…" : "Update password"}
         </Button>
       </form>

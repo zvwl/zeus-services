@@ -25,7 +25,8 @@ export default async function AdminBlogEditPage({
   }
 
   return (
-    <div className="max-w-3xl">
+    // Wide container so the editor and its live preview sit side by side.
+    <div className="max-w-6xl">
       <Link href="/admin/blog" className="text-sm text-zinc-500 hover:text-primary-light">
         ← All posts
       </Link>

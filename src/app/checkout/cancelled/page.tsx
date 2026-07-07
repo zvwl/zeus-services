@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { XCircle } from "lucide-react";
 import { ButtonLink } from "@/components/ui";
+import { Reveal } from "@/components/motion";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 
@@ -54,23 +55,29 @@ export default async function CheckoutCancelledPage({
   if (order) await cancelPendingOrder(order);
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-32 text-center">
-      <span className="inline-flex h-16 w-16 items-center justify-center rounded-full bg-red-500/15">
-        <XCircle className="h-9 w-9 text-red-400" />
-      </span>
-      <h1 className="mt-6 text-3xl font-extrabold text-white">
-        Checkout cancelled
-      </h1>
-      <p className="mt-2 max-w-md text-zinc-400">
-        No payment was taken. Your order was not completed — you can try again
-        whenever you&apos;re ready.
-      </p>
-      <div className="mt-8 flex gap-3">
-        <ButtonLink href="/games">Back to store</ButtonLink>
-        <ButtonLink href="/support" variant="outline">
-          Need help?
-        </ButtonLink>
-      </div>
+    <div className="mx-auto flex max-w-2xl flex-col items-center px-4 py-28 text-center sm:py-32">
+      <Reveal y={12}>
+        <span className="inline-flex h-20 w-20 items-center justify-center rounded-full border border-red-500/30 bg-red-500/10 shadow-[0_0_50px_-12px_rgba(239,68,68,0.5)]">
+          <XCircle className="h-10 w-10 text-red-400" />
+        </span>
+      </Reveal>
+      <Reveal y={14} delay={0.08}>
+        <h1 className="mt-6 text-3xl font-extrabold text-white sm:text-4xl">
+          Checkout cancelled
+        </h1>
+        <p className="mx-auto mt-3 max-w-md text-zinc-400">
+          No payment was taken. Your order was not completed — your cart is
+          untouched, so you can pick up right where you left off.
+        </p>
+      </Reveal>
+      <Reveal y={12} delay={0.16}>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <ButtonLink href="/games">Back to store</ButtonLink>
+          <ButtonLink href="/support" variant="outline">
+            Need help?
+          </ButtonLink>
+        </div>
+      </Reveal>
     </div>
   );
 }

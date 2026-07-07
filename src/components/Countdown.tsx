@@ -39,16 +39,16 @@ export function Countdown({ target }: { target: string }) {
     { label: "Sec", value: t.s },
   ];
   return (
-    <div className="flex gap-2">
+    <div className="flex gap-2" role="timer" aria-label="Time remaining">
       {cells.map((c) => (
         <div
           key={c.label}
-          className="flex w-16 flex-col items-center rounded-xl border border-edge bg-raised px-2 py-2"
+          className="flex w-16 flex-col items-center rounded-xl border border-amber-400/25 bg-amber-400/[0.06] px-2 py-2"
         >
           <span className="text-xl font-bold tabular-nums text-white">
             {String(c.value).padStart(2, "0")}
           </span>
-          <span className="text-[10px] uppercase tracking-wider text-zinc-500">
+          <span className="text-[10px] uppercase tracking-wider text-amber-200/70">
             {c.label}
           </span>
         </div>

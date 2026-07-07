@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Zap } from "lucide-react";
 import { closeTicket, replyToTicket, type ActionResult } from "@/app/actions";
 import { Button } from "@/components/ui";
 import { cn, formatDateTime } from "@/lib/utils";
@@ -40,13 +41,23 @@ export function TicketThread({
               className={cn(
                 "max-w-[85%] rounded-2xl px-4 py-3",
                 m.isStaff
-                  ? "border border-primary/30 bg-primary/10"
-                  : "border border-edge bg-raised"
+                  ? "rounded-bl-md border border-primary/30 bg-primary/10"
+                  : m.mine
+                    ? "rounded-br-md border border-edge bg-raised"
+                    : "rounded-bl-md border border-edge bg-raised"
               )}
             >
-              <p className="mb-1 text-xs font-semibold">
+              <p className="mb-1 flex items-center gap-1.5 text-xs font-semibold">
                 {m.isStaff ? (
-                  <span className="text-primary-light">Zeuservices Support</span>
+                  <>
+                    <span className="flex h-4 w-4 items-center justify-center rounded-full bg-primary/25">
+                      <Zap
+                        className="h-2.5 w-2.5 text-primary-light"
+                        fill="currentColor"
+                      />
+                    </span>
+                    <span className="text-primary-light">Zeuservices Support</span>
+                  </>
                 ) : (
                   <span className="text-zinc-400">{m.mine ? "You" : "Customer"}</span>
                 )}

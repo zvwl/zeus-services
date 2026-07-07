@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
 import { CoverImage, ProductCard } from "@/components/cards";
-import { EmptyState } from "@/components/ui";
+import { Badge, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
+import { Reveal } from "@/components/motion";
 import { siteUrl } from "@/lib/utils";
 import type { Category, Game, Product } from "@/lib/types";
 
@@ -119,7 +120,8 @@ export default async function GamePage({
     <div>
       <JsonLd data={breadcrumbJsonLd} />
       {itemListJsonLd && <JsonLd data={itemListJsonLd} />}
-      <div className="relative h-56 overflow-hidden sm:h-72">
+      {/* Banner hero — DB art behind a legibility veil, copy pinned bottom-left */}
+      <div className="relative h-64 overflow-hidden border-b border-edge sm:h-80">
         <CoverImage
           src={(game as Game).banner_url ?? (game as Game).image_url}
           alt={game.name}
@@ -128,24 +130,37 @@ export default async function GamePage({
           sizes="100vw"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-bg via-bg/60 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-8 sm:px-6">
-          <h1 className="text-4xl font-extrabold text-white drop-shadow">
-            {game.name}
-          </h1>
-          {game.description && (
-            <p className="mt-2 max-w-2xl text-sm text-zinc-300">
-              {game.description}
-            </p>
-          )}
+        <div className="art-veil" />
+        <div className="absolute inset-x-0 bottom-0 mx-auto max-w-7xl px-4 pb-8 sm:px-6 sm:pb-10">
+          <Reveal y={14}>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <Badge variant="primary">Official store</Badge>
+              {allProducts.length > 0 && (
+                <Badge>
+                  {allProducts.length}{" "}
+                  {allProducts.length === 1 ? "offer" : "offers"}
+                </Badge>
+              )}
+            </div>
+            <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow sm:text-5xl">
+              {game.name}
+            </h1>
+            {game.description && (
+              <p className="mt-2 max-w-2xl text-sm text-zinc-300 sm:text-base">
+                {game.description}
+              </p>
+            )}
+          </Reveal>
         </div>
       </div>
 
       <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
         {game.intro && (
-          <div className="mb-12 max-w-3xl">
-            <Markdown>{game.intro}</Markdown>
-          </div>
+          <Reveal y={16}>
+            <div className="mb-12 max-w-3xl">
+              <Markdown>{game.intro}</Markdown>
+            </div>
+          </Reveal>
         )}
         {groups.length === 0 ? (
           <EmptyState
@@ -155,12 +170,27 @@ export default async function GamePage({
         ) : (
           groups.map(({ category, items }) => (
             <section key={category.id} className="mb-14">
-              <h2 className="mb-6 flex items-center gap-2.5 text-2xl font-bold text-white">
-                {category.name}
-              </h2>
+              <Reveal y={14}>
+                <h2 className="mb-6 flex items-center gap-3 text-2xl font-bold text-white">
+                  <span
+                    aria-hidden
+                    className="h-6 w-1 rounded-full bg-gradient-to-b from-primary to-fuchsia-500"
+                  />
+                  {category.name}
+                </h2>
+              </Reveal>
+              {/* CSS-only stagger — cards paint at first paint instead of
+                  waiting for framer hydration (LCP); disabled under
+                  prefers-reduced-motion via globals.css. */}
               <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                {items.map((p) => (
-                  <ProductCard key={p.id} product={p} />
+                {items.map((p, i) => (
+                  <div
+                    key={p.id}
+                    className="animate-fade-up"
+                    style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+                  >
+                    <ProductCard product={p} />
+                  </div>
                 ))}
               </div>
             </section>

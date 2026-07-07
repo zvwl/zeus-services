@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ShieldCheck, Timer, Truck, Zap } from "lucide-react";
+import { Headphones, ShieldCheck, Truck, Zap } from "lucide-react";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getUser } from "@/lib/auth";
 import { CoverImage, ProductCard } from "@/components/cards";
@@ -11,6 +11,7 @@ import { BuyBox } from "@/components/BuyBox";
 import { ReviewForm } from "@/components/ReviewForm";
 import { ProductReviews } from "@/components/ProductReviews";
 import { JsonLd } from "@/components/JsonLd";
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
 import { siteUrl } from "@/lib/utils";
 import type { Product, Review } from "@/lib/types";
 
@@ -18,6 +19,51 @@ export const revalidate = 0;
 
 const stripMd = (s: string) =>
   s.replace(/[#*_~>`[\]()]/g, "").replace(/\s+/g, " ").trim();
+
+/**
+ * Rating summary panel: big average, stars, and a 5→1 distribution of the
+ * loaded reviews (the list is capped server-side, so percentages reflect the
+ * most recent reviews).
+ */
+function ReviewSummary({
+  avg,
+  total,
+  reviews,
+}: {
+  avg: number;
+  total: number;
+  reviews: Review[];
+}) {
+  return (
+    <div className="glass p-6">
+      <p className="text-5xl font-extrabold leading-none text-white">{avg}</p>
+      <Stars rating={avg} className="mt-2.5" />
+      <p className="mb-4 mt-2 text-[13px] text-zinc-500">
+        {total} verified {total === 1 ? "review" : "reviews"}
+      </p>
+      <div className="space-y-1.5">
+        {[5, 4, 3, 2, 1].map((star) => {
+          const count = reviews.filter((r) => r.rating === star).length;
+          const pct = Math.round((count / reviews.length) * 100);
+          return (
+            <div key={star} className="flex items-center gap-2">
+              <span className="w-3 text-xs text-zinc-500">{star}</span>
+              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-raised">
+                <div
+                  className="h-full rounded-full bg-gradient-to-r from-amber-300 to-amber-500"
+                  style={{ width: `${pct}%` }}
+                />
+              </div>
+              <span className="w-8 text-right text-xs text-zinc-500">
+                {pct}%
+              </span>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 export async function generateMetadata({
   params,
@@ -210,7 +256,8 @@ export default async function ProductPage({
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
+    // Bottom padding on mobile keeps content clear of the BuyBox sticky bar.
+    <div className="mx-auto max-w-7xl px-4 pb-28 pt-12 sm:px-6 lg:pb-12">
       <JsonLd data={productJsonLd} />
       <JsonLd data={breadcrumbJsonLd} />
       {/* Breadcrumbs */}
@@ -242,7 +289,7 @@ export default async function ProductPage({
         <span className="text-zinc-300">{product.name}</span>
       </nav>
 
-      <div className="grid gap-10 lg:grid-cols-2">
+      <div className="grid gap-10 lg:grid-cols-[1.2fr_1fr]">
         <div>
           <CoverImage
             src={product.image_url}
@@ -252,7 +299,7 @@ export default async function ProductPage({
             sizes="(max-width: 1024px) 100vw, 50vw"
             priority
           />
-          <div className="mt-5 grid grid-cols-3 gap-3">
+          <RevealGroup className="mt-5 flex flex-wrap gap-2.5" stagger={0.06}>
             {[
               {
                 icon: product.delivery_type === "instant" ? Zap : Truck,
@@ -261,18 +308,17 @@ export default async function ProductPage({
                     ? "Instant delivery"
                     : "Manual delivery",
               },
-              { icon: ShieldCheck, label: "Stripe secured" },
-              { icon: Timer, label: "24/7 support" },
+              { icon: ShieldCheck, label: "Stripe-secured" },
+              { icon: Headphones, label: "24/7 support" },
             ].map((f) => (
-              <div
-                key={f.label}
-                className="glass flex flex-col items-center gap-1.5 px-2 py-3 text-center"
-              >
-                <f.icon className="h-4 w-4 text-primary-light" />
-                <span className="text-xs text-zinc-400">{f.label}</span>
-              </div>
+              <RevealItem key={f.label} y={12}>
+                <div className="glass flex items-center gap-2 rounded-xl px-3.5 py-2.5 text-[13px] text-zinc-300">
+                  <f.icon className="h-4 w-4 text-primary-light" />
+                  {f.label}
+                </div>
+              </RevealItem>
             ))}
-          </div>
+          </RevealGroup>
         </div>
 
         <div>
@@ -300,7 +346,7 @@ export default async function ProductPage({
             </div>
           )}
 
-          <div className="mt-6">
+          <div className="mt-6 lg:sticky lg:top-24">
             <BuyBox
               product={{
                 id: product.id,
@@ -356,32 +402,58 @@ export default async function ProductPage({
       </div>
 
       {product.description && (
-        <div className="mt-16 max-w-3xl">
-          <h2 className="mb-4 text-2xl font-bold text-white">About this offer</h2>
-          <Markdown>{product.description}</Markdown>
-        </div>
+        <Reveal y={18}>
+          <div className="mt-16 max-w-3xl">
+            <h2 className="mb-4 text-2xl font-bold text-white">About this offer</h2>
+            <Markdown>{product.description}</Markdown>
+          </div>
+        </Reveal>
       )}
 
       <div className="mt-16">
-        <h2 className="text-2xl font-bold text-white">
-          Customer reviews{totalReviews > 0 ? ` (${totalReviews})` : ""}
-        </h2>
-        <ProductReviews reviews={productReviews} total={totalReviews} />
-        <div className="mt-8 max-w-xl">
-          <ReviewForm productId={product.id} signedIn={Boolean(user)} />
-        </div>
+        <Reveal y={14}>
+          <h2 className="text-2xl font-bold text-white">
+            Customer reviews{totalReviews > 0 ? ` (${totalReviews})` : ""}
+          </h2>
+        </Reveal>
+        {avg !== null && productReviews.length > 0 ? (
+          <div className="mt-6 grid items-start gap-8 lg:grid-cols-[300px_1fr]">
+            <Reveal y={16}>
+              <ReviewSummary
+                avg={avg}
+                total={totalReviews}
+                reviews={productReviews}
+              />
+            </Reveal>
+            <ProductReviews reviews={productReviews} total={totalReviews} />
+          </div>
+        ) : (
+          <ProductReviews reviews={productReviews} total={totalReviews} />
+        )}
+        <Reveal y={16}>
+          <div className="mt-8 max-w-xl">
+            <ReviewForm productId={product.id} signedIn={Boolean(user)} />
+          </div>
+        </Reveal>
       </div>
 
       {related && related.length > 0 && (
         <div className="mt-20">
-          <SectionHeading
-            title={`More for ${product.game?.name ?? "this game"}`}
-          />
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+          <Reveal y={14}>
+            <SectionHeading
+              title={`More for ${product.game?.name ?? "this game"}`}
+            />
+          </Reveal>
+          <RevealGroup
+            className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+            stagger={0.06}
+          >
             {(related as Product[]).map((p) => (
-              <ProductCard key={p.id} product={p} />
+              <RevealItem key={p.id}>
+                <ProductCard product={p} />
+              </RevealItem>
             ))}
-          </div>
+          </RevealGroup>
         </div>
       )}
     </div>

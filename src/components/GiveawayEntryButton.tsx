@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Gift, PartyPopper } from "lucide-react";
 import { enterGiveaway, type ActionResult } from "@/app/actions";
 import { Button } from "@/components/ui";
 
@@ -22,7 +23,7 @@ export function GiveawayEntryButton({
 
   if (ended) {
     return (
-      <Button className="w-full" disabled>
+      <Button size="lg" className="w-full" disabled>
         Giveaway ended
       </Button>
     );
@@ -30,6 +31,7 @@ export function GiveawayEntryButton({
   if (!signedIn) {
     return (
       <Button
+        size="lg"
         className="w-full"
         variant="gold"
         onClick={() =>
@@ -38,20 +40,23 @@ export function GiveawayEntryButton({
           )
         }
       >
+        <Gift className="h-5 w-5" />
         Log in to enter
       </Button>
     );
   }
   if (entered || result?.ok) {
     return (
-      <Button className="w-full" variant="success" disabled>
-        ✓ You&apos;re entered — good luck!
+      <Button size="lg" className="w-full" variant="success" disabled>
+        <PartyPopper className="h-5 w-5" />
+        You&apos;re entered — good luck!
       </Button>
     );
   }
   return (
     <div>
       <Button
+        size="lg"
         className="w-full"
         variant="gold"
         disabled={pending}
@@ -63,6 +68,7 @@ export function GiveawayEntryButton({
           })
         }
       >
+        <Gift className="h-5 w-5" />
         {pending ? "Entering…" : "Enter giveaway"}
       </Button>
       {result && !result.ok && (

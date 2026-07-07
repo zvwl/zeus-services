@@ -75,29 +75,45 @@ function VerifyForm() {
           e.preventDefault();
           verify();
         }}
-        className="space-y-4"
+        className="space-y-5"
       >
         <div className="flex justify-center">
-          <ShieldCheck className="h-10 w-10 text-primary-light" />
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
+            <ShieldCheck className="h-7 w-7 text-primary-light" />
+          </span>
         </div>
-        <input
-          className="input text-center text-2xl tracking-[0.5em]"
-          inputMode="numeric"
-          maxLength={6}
-          placeholder="000000"
-          value={code}
-          onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-          autoComplete="one-time-code"
-          autoFocus
-        />
-        {error && <p className="text-sm text-red-400">{error}</p>}
-        <Button className="w-full" disabled={loading || code.length !== 6}>
+        <div>
+          <label htmlFor="verify-2fa-code" className="sr-only">
+            6-digit authentication code
+          </label>
+          <input
+            id="verify-2fa-code"
+            className="input min-h-[52px] text-center font-mono text-2xl tracking-[0.5em]"
+            inputMode="numeric"
+            maxLength={6}
+            placeholder="000000"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            autoComplete="one-time-code"
+            autoFocus
+          />
+        </div>
+        {error && (
+          <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+            {error}
+          </p>
+        )}
+        <Button
+          size="lg"
+          className="w-full"
+          disabled={loading || code.length !== 6}
+        >
           {loading ? "Verifying…" : "Verify"}
         </Button>
         <button
           type="button"
           onClick={signOut}
-          className="w-full text-center text-sm text-zinc-500 hover:text-primary-light"
+          className="min-h-[44px] w-full rounded-xl text-center text-sm text-zinc-400 transition hover:text-primary-light"
         >
           Sign in with a different account
         </button>

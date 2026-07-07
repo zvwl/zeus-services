@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createPublicClient } from "@/lib/supabase/public";
+import { ArrowLeft, Clock } from "lucide-react";
 import { CoverImage } from "@/components/cards";
 import { Badge } from "@/components/ui";
 import { Markdown } from "@/components/Markdown";
 import { JsonLd } from "@/components/JsonLd";
-import { formatDate, siteUrl } from "@/lib/utils";
+import { Reveal } from "@/components/motion";
+import { formatDate, readingTime, siteUrl } from "@/lib/utils";
 import type { BlogPost } from "@/lib/types";
 
 export const revalidate = 0;
@@ -73,28 +75,42 @@ export default async function BlogPostPage({
     mainEntityOfPage: `${siteUrl()}/blog/${post.slug}`,
   };
 
+  const readMins = readingTime(post.content ?? "");
+
   return (
     <article className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
       <JsonLd data={articleJsonLd} />
-      <Link href="/blog" className="text-sm text-zinc-500 hover:text-primary-light">
-        ← All posts
-      </Link>
-      <div className="mt-6 flex flex-wrap gap-1.5">
-        {post.tags?.map((t) => (
-          <Badge key={t} variant="primary">
-            {t}
-          </Badge>
-        ))}
-      </div>
-      <h1 className="mt-4 text-4xl font-extrabold leading-tight text-white">
-        {post.title}
-      </h1>
-      <p className="mt-4 text-sm text-zinc-500">
-        By {post.author?.username ?? "Zeus Team"} ·{" "}
-        {formatDate(post.published_at ?? post.created_at)}
-      </p>
+      <Reveal y={14}>
+        <Link
+          href="/blog"
+          className="inline-flex min-h-[44px] items-center gap-1.5 text-sm text-zinc-500 transition hover:text-primary-light sm:min-h-0"
+        >
+          <ArrowLeft className="h-4 w-4" /> All posts
+        </Link>
+        <div className="mt-6 flex flex-wrap gap-1.5">
+          {post.tags?.map((t) => (
+            <Badge key={t} variant="primary">
+              {t}
+            </Badge>
+          ))}
+        </div>
+        <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
+          {post.title}
+        </h1>
+        <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-500">
+          <span>By {post.author?.username ?? "Zeus Team"}</span>
+          <span aria-hidden>·</span>
+          <span>{formatDate(post.published_at ?? post.created_at)}</span>
+          <span aria-hidden>·</span>
+          <span className="inline-flex items-center gap-1">
+            <Clock className="h-3.5 w-3.5" /> {readMins} min read
+          </span>
+        </p>
+      </Reveal>
+      {/* Priority cover = LCP candidate — never inside a framer <Reveal>
+          (it would SSR at opacity:0 until hydration); paint immediately. */}
       <CoverImage
-        src={post.image_url}
+        src={post.image_url || "/media/blog-cover.webp"}
         alt={post.title}
         fallbackText={post.title}
         className="mt-8 aspect-[16/8] w-full rounded-2xl border border-edge"

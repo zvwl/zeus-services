@@ -42,7 +42,7 @@ export function DonateForm() {
   }
 
   return (
-    <div className="glass p-6">
+    <div className="glass border-amber-400/15 p-6">
       <p className="label">Pick an amount ({currency})</p>
       <div className="grid grid-cols-4 gap-2">
         {PRESETS.map((p) => (

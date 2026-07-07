@@ -81,7 +81,10 @@ export default function SignupPage() {
             <span className="font-semibold text-white">{email}</span>. Click the
             link to activate your account, then log in.
           </p>
-          <Link href="/login" className="text-sm text-primary-light hover:underline">
+          <Link
+            href="/login"
+            className="inline-flex min-h-[44px] items-center rounded-xl px-4 text-sm text-primary-light transition hover:underline"
+          >
             Back to login
           </Link>
         </div>
@@ -92,21 +95,17 @@ export default function SignupPage() {
   return (
     <AuthShell
       title="Create your account"
-      subtitle={
-        <>
-          Already registered?{" "}
-          <Link href="/login" className="text-primary-light hover:underline">
-            Log in
-          </Link>
-        </>
-      }
+      subtitle="Track orders, save your details and enter giveaways."
     >
       <OAuthButtons />
       <form onSubmit={handleSignup} className="space-y-4">
         <div>
-          <label className="label">Username</label>
+          <label htmlFor="signup-username" className="label">
+            Username
+          </label>
           <input
-            className="input"
+            id="signup-username"
+            className="input min-h-[44px]"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             placeholder="zeus_gamer"
@@ -115,10 +114,13 @@ export default function SignupPage() {
           />
         </div>
         <div>
-          <label className="label">Email</label>
+          <label htmlFor="signup-email" className="label">
+            Email
+          </label>
           <input
+            id="signup-email"
             type="email"
-            className="input"
+            className="input min-h-[44px]"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
@@ -126,12 +128,15 @@ export default function SignupPage() {
             required
           />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid gap-4 sm:grid-cols-2 sm:gap-3">
           <div>
-            <label className="label">Password</label>
+            <label htmlFor="signup-password" className="label">
+              Password
+            </label>
             <input
+              id="signup-password"
               type="password"
-              className="input"
+              className="input min-h-[44px]"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="Min. 8 characters"
@@ -140,10 +145,13 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <label className="label">Confirm</label>
+            <label htmlFor="signup-confirm" className="label">
+              Confirm
+            </label>
             <input
+              id="signup-confirm"
               type="password"
-              className="input"
+              className="input min-h-[44px]"
               value={confirm}
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Repeat password"
@@ -164,12 +172,13 @@ export default function SignupPage() {
           className="flex justify-center"
         />
         <Button
+          size="lg"
           className="w-full"
           disabled={loading || (captchaEnabled && !captchaToken)}
         >
           {loading ? "Creating account…" : "Create account"}
         </Button>
-        <p className="text-center text-xs text-zinc-600">
+        <p className="text-center text-xs leading-relaxed text-zinc-500">
           By signing up you agree to our{" "}
           <Link href="/terms" className="text-zinc-400 underline">
             Terms
@@ -181,6 +190,12 @@ export default function SignupPage() {
           .
         </p>
       </form>
+      <p className="mt-5 text-center text-sm text-zinc-500">
+        Already registered?{" "}
+        <Link href="/login" className="text-primary-light hover:underline">
+          Log in
+        </Link>
+      </p>
     </AuthShell>
   );
 }

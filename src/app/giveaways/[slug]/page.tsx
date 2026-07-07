@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { Crown, Users } from "lucide-react";
+import { Crown, Trophy, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { getUser } from "@/lib/auth";
-import { CoverImage } from "@/components/cards";
 import { Badge, Card } from "@/components/ui";
 import { Countdown } from "@/components/Countdown";
 import { Markdown } from "@/components/Markdown";
 import { GiveawayEntryButton } from "@/components/GiveawayEntryButton";
+import { Reveal } from "@/components/motion";
 import type { Giveaway } from "@/lib/types";
 
 export const revalidate = 0;
@@ -82,65 +82,101 @@ export default async function GiveawayPage({
     !giveaway.is_active || new Date(giveaway.ends_at).getTime() <= Date.now();
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-14 sm:px-6">
-      <CoverImage
-        src={giveaway.image_url}
-        alt={giveaway.title}
-        fallbackText={giveaway.title}
-        className="aspect-[16/7] w-full rounded-2xl border border-edge"
-      />
-      <div className="mt-8 flex flex-wrap items-start justify-between gap-6">
-        <div>
-          <Badge variant={ended ? "danger" : "gold"}>
-            {ended ? "Ended" : "Live giveaway"}
-          </Badge>
-          <h1 className="mt-3 text-4xl font-extrabold text-white">
-            {giveaway.title}
-          </h1>
-          <p className="mt-2 flex items-center gap-2 text-lg text-zinc-300">
-            <Crown className="h-5 w-5 text-gold" /> Prize:{" "}
-            <span className="font-semibold text-gold">{giveaway.prize}</span>
-          </p>
-          <p className="mt-2 flex items-center gap-2 text-sm text-zinc-500">
-            <Users className="h-4 w-4" />
-            {Number(entryCount ?? 0).toLocaleString()} entries
-          </p>
+    <div>
+      {/* Gold hero — the giveaway's own art (or the Higgsfield banner) behind
+          a legibility veil */}
+      <div className="relative overflow-hidden border-b border-edge">
+        {/* Plain img: giveaway art can live on any host, and this is purely
+            decorative background art. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={giveaway.image_url || "/media/giveaway-banner.webp"}
+          alt=""
+          aria-hidden
+          className="absolute inset-0 h-full w-full object-cover"
+        />
+        <div className="art-veil" />
+        <div className="relative mx-auto max-w-4xl px-4 pb-12 pt-16 sm:px-6 sm:pb-14 sm:pt-24">
+          <Reveal y={16}>
+            <Badge variant={ended ? "danger" : "gold"} className="px-3 py-1">
+              {ended ? "Ended" : "Live giveaway"}
+            </Badge>
+            <h1 className="mt-4 text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+              {giveaway.title}
+            </h1>
+            <p className="mt-3 flex items-center gap-2 text-lg text-zinc-300">
+              <Crown className="h-5 w-5 shrink-0 text-gold" /> Prize:{" "}
+              <span className="font-semibold text-gradient-gold">
+                {giveaway.prize}
+              </span>
+            </p>
+            <p className="mt-2 flex items-center gap-2 text-sm text-zinc-400">
+              <Users className="h-4 w-4" />
+              {Number(entryCount ?? 0).toLocaleString()} entries
+            </p>
+          </Reveal>
+          {!ended && (
+            <Reveal y={14} delay={0.12}>
+              <div className="mt-6">
+                <Countdown target={giveaway.ends_at} />
+              </div>
+            </Reveal>
+          )}
         </div>
-        {!ended && <Countdown target={giveaway.ends_at} />}
       </div>
 
-      {winnerName && (
-        <Card className="mt-8 border-gold/40 bg-gold/5 text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-gold">
-            Winner
-          </p>
-          <p className="mt-1 font-bold text-gold">{String(winnerName)}</p>
-          <p className="mt-1 text-sm text-zinc-400">
-            Congratulations! Check your account email / Discord DMs to claim.
-          </p>
-        </Card>
-      )}
+      <div className="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+        {winnerName && (
+          <Reveal y={16}>
+            <Card className="mb-8 border-gold/40 bg-gold/5 text-center shadow-glow-gold">
+              <Trophy className="mx-auto h-8 w-8 text-gold" />
+              <p className="mt-2 text-sm font-semibold uppercase tracking-widest text-gold">
+                Winner
+              </p>
+              <p className="mt-1 text-lg font-bold text-gold">
+                {String(winnerName)}
+              </p>
+              <p className="mt-1 text-sm text-zinc-400">
+                Congratulations! Check your account email / Discord DMs to claim.
+              </p>
+            </Card>
+          </Reveal>
+        )}
 
-      <div className="mt-8 grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2">
-          {giveaway.description && <Markdown>{giveaway.description}</Markdown>}
+        <div className="grid items-start gap-6 md:grid-cols-3">
+          <Reveal y={16} className="md:col-span-2">
+            {giveaway.description && <Markdown>{giveaway.description}</Markdown>}
+          </Reveal>
+          <Reveal y={16} delay={0.08}>
+            <Card className="h-fit border-gold/25">
+              <h3 className="font-bold text-white">How to enter</h3>
+              <ol className="mt-3 space-y-2.5 text-sm text-zinc-400">
+                {[
+                  "Create a free account or log in",
+                  ...(giveaway.requirement_text
+                    ? [giveaway.requirement_text]
+                    : []),
+                  "Hit the enter button below",
+                ].map((s, i) => (
+                  <li key={i} className="flex items-start gap-2.5">
+                    <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gold/15 text-[11px] font-bold text-gold">
+                      {i + 1}
+                    </span>
+                    {s}
+                  </li>
+                ))}
+              </ol>
+              <div className="mt-5">
+                <GiveawayEntryButton
+                  giveawayId={giveaway.id}
+                  ended={ended}
+                  entered={entered}
+                  signedIn={Boolean(user)}
+                />
+              </div>
+            </Card>
+          </Reveal>
         </div>
-        <Card className="h-fit">
-          <h3 className="font-bold text-white">How to enter</h3>
-          <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm text-zinc-400">
-            <li>Create a free account or log in</li>
-            {giveaway.requirement_text && <li>{giveaway.requirement_text}</li>}
-            <li>Hit the enter button below</li>
-          </ol>
-          <div className="mt-5">
-            <GiveawayEntryButton
-              giveawayId={giveaway.id}
-              ended={ended}
-              entered={entered}
-              signedIn={Boolean(user)}
-            />
-          </div>
-        </Card>
       </div>
     </div>
   );

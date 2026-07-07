@@ -218,8 +218,10 @@ export default async function AdminDashboard() {
         <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-6">
           {stats.map((s) => (
             <Card key={s.label} className="p-4">
-              <s.icon className={`h-4 w-4 ${s.tint}`} />
-              <p className="mt-2 truncate text-lg font-extrabold text-white">{s.value}</p>
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-raised">
+                <s.icon className={`h-4 w-4 ${s.tint}`} />
+              </span>
+              <p className="mt-2.5 truncate text-lg font-extrabold text-white">{s.value}</p>
               <p className="text-xs text-zinc-500">{s.label}</p>
             </Card>
           ))}

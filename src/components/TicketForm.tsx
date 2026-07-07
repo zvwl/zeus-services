@@ -21,7 +21,7 @@ export function TicketForm() {
 
   return (
     <form
-      className="glass space-y-4 p-5"
+      className="glass space-y-4 p-6"
       action={(formData) =>
         startTransition(async () => {
           const res = await createTicket(formData);
@@ -69,7 +69,9 @@ export function TicketForm() {
           {result.message}
         </p>
       )}
-      <Button disabled={pending}>{pending ? "Opening…" : "Open ticket"}</Button>
+      <Button size="lg" className="w-full" disabled={pending}>
+        {pending ? "Opening…" : "Open ticket"}
+      </Button>
     </form>
   );
 }

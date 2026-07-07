@@ -10,6 +10,7 @@ import {
   type TurnstileHandle,
 } from "@/components/Turnstile";
 import { Button } from "@/components/ui";
+import { MailCheck } from "lucide-react";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -45,15 +46,18 @@ export default function ForgotPasswordPage() {
       subtitle="We'll email you a secure reset link."
     >
       {sent ? (
-        <div className="text-center text-sm text-zinc-400">
-          <p>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
+            <MailCheck className="h-7 w-7 text-primary-light" />
+          </span>
+          <p className="text-sm leading-relaxed text-zinc-400">
             If an account exists for{" "}
             <span className="font-semibold text-white">{email}</span>, a reset
             link is on its way. Check your inbox (and spam folder).
           </p>
           <Link
             href="/login"
-            className="mt-4 inline-block text-primary-light hover:underline"
+            className="inline-flex min-h-[44px] items-center rounded-xl px-4 text-sm text-primary-light transition hover:underline"
           >
             Back to login
           </Link>
@@ -61,10 +65,13 @@ export default function ForgotPasswordPage() {
       ) : (
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="label">Email</label>
+            <label htmlFor="forgot-email" className="label">
+              Email
+            </label>
             <input
+              id="forgot-email"
               type="email"
-              className="input"
+              className="input min-h-[44px]"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="you@example.com"
@@ -72,7 +79,11 @@ export default function ForgotPasswordPage() {
               required
             />
           </div>
-          {error && <p className="text-sm text-red-400">{error}</p>}
+          {error && (
+            <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+              {error}
+            </p>
+          )}
           <Turnstile
             ref={turnstileRef}
             onVerify={setCaptchaToken}
@@ -80,6 +91,7 @@ export default function ForgotPasswordPage() {
             className="flex justify-center"
           />
           <Button
+            size="lg"
             className="w-full"
             disabled={loading || (captchaEnabled && !captchaToken)}
           >

@@ -5,7 +5,7 @@ import type { ReactNode, ButtonHTMLAttributes } from "react";
 const buttonVariants = {
   primary:
     "bg-primary hover:bg-primary-dark text-white shadow-glow-sm hover:shadow-glow",
-  gold: "bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-zinc-950 font-semibold shadow-glow-gold",
+  gold: "bg-gradient-to-r from-amber-200 via-gold to-amber-500 hover:from-amber-100 hover:via-amber-300 hover:to-amber-400 text-zinc-950 font-semibold shadow-glow-gold",
   outline:
     "border border-edge bg-raised/50 hover:bg-raised hover:border-primary/50 text-zinc-200",
   ghost: "hover:bg-raised text-zinc-300 hover:text-white",

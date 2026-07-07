@@ -6,6 +6,7 @@ import { KeyRound, ShieldCheck, ShieldOff } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cleanupUnverifiedMfa } from "@/app/actions";
 import { Badge, Button, Card, Spinner } from "@/components/ui";
+import { RevealGroup, RevealItem } from "@/components/motion";
 import type { Factor, User } from "@supabase/supabase-js";
 
 export default function SecurityPage() {
@@ -193,30 +194,50 @@ export default function SecurityPage() {
   const verifiedFactors = factors.filter((f) => f.status === "verified");
 
   return (
-    <div className="grid max-w-4xl gap-6 lg:grid-cols-2">
-      <Card>
-        <h2 className="mb-1 flex items-center gap-2 font-bold text-white">
-          <KeyRound className="h-4 w-4 text-primary-light" /> Change password
-        </h2>
-        <p className="mb-5 text-xs text-zinc-500">
-          Use at least 8 characters with a mix of letters and numbers.
-        </p>
+    <RevealGroup className="grid max-w-4xl gap-5 lg:grid-cols-2" stagger={0.07}>
+      <RevealItem y={16}>
+      <Card className="h-full">
+        <div className="mb-5 flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+            <KeyRound className="h-5 w-5 text-primary-light" />
+          </span>
+          <div>
+            <h2 className="font-bold text-white">Change password</h2>
+            <p className="mt-0.5 text-xs text-zinc-500">
+              Use at least 8 characters with a mix of letters and numbers.
+            </p>
+          </div>
+        </div>
         <form onSubmit={changePassword} className="space-y-4">
-          <input
-            type="password"
-            className="input"
-            placeholder="New password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            className="input"
-            placeholder="Confirm new password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-          />
-          <Button disabled={savingPw}>
+          <div>
+            <label htmlFor="security-new-password" className="label">
+              New password
+            </label>
+            <input
+              id="security-new-password"
+              type="password"
+              className="input min-h-[44px]"
+              placeholder="New password"
+              autoComplete="new-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </div>
+          <div>
+            <label htmlFor="security-confirm-password" className="label">
+              Confirm new password
+            </label>
+            <input
+              id="security-confirm-password"
+              type="password"
+              className="input min-h-[44px]"
+              placeholder="Confirm new password"
+              autoComplete="new-password"
+              value={confirm}
+              onChange={(e) => setConfirm(e.target.value)}
+            />
+          </div>
+          <Button disabled={savingPw} className="min-h-[44px]">
             {savingPw ? "Updating…" : "Update password"}
           </Button>
         </form>
@@ -235,16 +256,22 @@ export default function SecurityPage() {
           </div>
         </div>
       </Card>
+      </RevealItem>
 
-      <Card>
-        <h2 className="mb-1 flex items-center gap-2 font-bold text-white">
-          <ShieldCheck className="h-4 w-4 text-primary-light" /> Two-factor
-          authentication
-        </h2>
-        <p className="mb-5 text-xs text-zinc-500">
-          Protect your account with an authenticator app (Google Authenticator,
-          Authy, 1Password…).
-        </p>
+      <RevealItem y={16}>
+      <Card className="h-full">
+        <div className="mb-5 flex items-start gap-3">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/15">
+            <ShieldCheck className="h-5 w-5 text-primary-light" />
+          </span>
+          <div>
+            <h2 className="font-bold text-white">Two-factor authentication</h2>
+            <p className="mt-0.5 text-xs text-zinc-500">
+              Protect your account with an authenticator app (Google
+              Authenticator, Authy, 1Password…).
+            </p>
+          </div>
+        </div>
 
         {verifiedFactors.length > 0 && !enrolling && (
           <div className="space-y-3">
@@ -262,6 +289,7 @@ export default function SecurityPage() {
                 <Button
                   size="sm"
                   variant="danger"
+                  className="min-h-[44px]"
                   onClick={() => {
                     setDisablingId(f.id);
                     setDisableCode("");
@@ -277,11 +305,15 @@ export default function SecurityPage() {
                 onSubmit={confirmDisable}
                 className="space-y-3 rounded-xl border border-edge bg-raised/40 p-4"
               >
-                <p className="text-sm text-zinc-300">
+                <label
+                  htmlFor="disable-2fa-code"
+                  className="block text-sm text-zinc-300"
+                >
                   Enter your current 6-digit authenticator code to turn off 2FA.
-                </p>
+                </label>
                 <input
-                  className="input text-center text-lg tracking-[0.4em]"
+                  id="disable-2fa-code"
+                  className="input min-h-[48px] text-center font-mono text-lg tracking-[0.4em]"
                   inputMode="numeric"
                   maxLength={6}
                   placeholder="000000"
@@ -289,11 +321,13 @@ export default function SecurityPage() {
                   onChange={(e) =>
                     setDisableCode(e.target.value.replace(/\D/g, ""))
                   }
+                  autoComplete="one-time-code"
                   autoFocus
                 />
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant="danger"
+                    className="min-h-[44px]"
                     disabled={disabling || disableCode.length !== 6}
                   >
                     {disabling ? "Disabling…" : "Confirm disable"}
@@ -301,6 +335,7 @@ export default function SecurityPage() {
                   <Button
                     type="button"
                     variant="ghost"
+                    className="min-h-[44px]"
                     onClick={() => setDisablingId(null)}
                   >
                     Cancel
@@ -312,45 +347,71 @@ export default function SecurityPage() {
         )}
 
         {verifiedFactors.length === 0 && !enrolling && (
-          <Button onClick={startEnroll}>
+          <Button onClick={startEnroll} className="min-h-[44px]">
             <ShieldCheck className="h-4 w-4" /> Enable 2FA
           </Button>
         )}
 
         {enrolling && (
           <form onSubmit={verifyEnroll} className="space-y-4">
-            <div className="rounded-xl bg-white p-3 text-center">
+            <p className="text-sm text-zinc-400">
+              Scan the QR code with your authenticator app, then enter the
+              6-digit code it shows.
+            </p>
+            <div className="mx-auto w-fit rounded-2xl border border-edge bg-white p-3">
               <img
                 src={enrolling.qr}
                 alt="Scan this QR code with your authenticator app"
                 className="mx-auto h-44 w-44"
               />
             </div>
-            <p className="break-all rounded-xl bg-raised px-3 py-2 text-center font-mono text-xs text-zinc-400">
-              {enrolling.secret}
-            </p>
-            <input
-              className="input text-center text-xl tracking-[0.4em]"
-              inputMode="numeric"
-              maxLength={6}
-              placeholder="000000"
-              value={code}
-              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-            />
-            <div className="flex gap-2">
-              <Button disabled={verifying || code.length !== 6}>
+            <div>
+              <p className="mb-1.5 text-center text-xs text-zinc-500">
+                Or enter this setup key manually:
+              </p>
+              <p className="break-all rounded-xl border border-edge bg-raised px-3 py-2 text-center font-mono text-xs text-zinc-400">
+                {enrolling.secret}
+              </p>
+            </div>
+            <div>
+              <label htmlFor="enroll-2fa-code" className="sr-only">
+                6-digit authentication code
+              </label>
+              <input
+                id="enroll-2fa-code"
+                className="input min-h-[48px] text-center font-mono text-xl tracking-[0.4em]"
+                inputMode="numeric"
+                maxLength={6}
+                placeholder="000000"
+                value={code}
+                onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+                autoComplete="one-time-code"
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                className="min-h-[44px]"
+                disabled={verifying || code.length !== 6}
+              >
                 {verifying ? "Verifying…" : "Verify & enable"}
               </Button>
-              <Button type="button" variant="ghost" onClick={cancelEnroll}>
+              <Button
+                type="button"
+                variant="ghost"
+                className="min-h-[44px]"
+                onClick={cancelEnroll}
+              >
                 Cancel
               </Button>
             </div>
           </form>
         )}
       </Card>
+      </RevealItem>
 
       {msg && (
         <p
+          role="status"
           className={`lg:col-span-2 rounded-xl border px-4 py-3 text-sm ${
             msg.ok
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
@@ -360,6 +421,6 @@ export default function SecurityPage() {
           {msg.text}
         </p>
       )}
-    </div>
+    </RevealGroup>
   );
 }

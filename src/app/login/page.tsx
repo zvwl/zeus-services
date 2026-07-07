@@ -11,7 +11,7 @@ import {
   type TurnstileHandle,
 } from "@/components/Turnstile";
 import { Button } from "@/components/ui";
-import { ShieldCheck } from "lucide-react";
+import { MailCheck, ShieldCheck } from "lucide-react";
 import { safeNextPath } from "@/lib/utils";
 
 function LoginForm() {
@@ -142,17 +142,22 @@ function LoginForm() {
         title="Check your email"
         subtitle="We sent a one-click login link."
       >
-        <p className="text-center text-sm leading-relaxed text-zinc-400">
-          A login link is on its way to{" "}
-          <span className="font-semibold text-white">{email}</span>. Open it on
-          this device to sign in. The link expires shortly.
-        </p>
-        <button
-          onClick={() => setMagicSent(false)}
-          className="mt-5 block w-full text-center text-sm text-primary-light hover:underline"
-        >
-          Back to login
-        </button>
+        <div className="flex flex-col items-center gap-4 text-center">
+          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
+            <MailCheck className="h-7 w-7 text-primary-light" />
+          </span>
+          <p className="text-sm leading-relaxed text-zinc-400">
+            A login link is on its way to{" "}
+            <span className="font-semibold text-white">{email}</span>. Open it
+            on this device to sign in. The link expires shortly.
+          </p>
+          <button
+            onClick={() => setMagicSent(false)}
+            className="min-h-[44px] w-full rounded-xl text-center text-sm text-primary-light transition hover:underline"
+          >
+            Back to login
+          </button>
+        </div>
       </AuthShell>
     );
   }
@@ -163,22 +168,38 @@ function LoginForm() {
         title="Two-factor authentication"
         subtitle="Enter the 6-digit code from your authenticator app."
       >
-        <form onSubmit={handleMfa} className="space-y-4">
+        <form onSubmit={handleMfa} className="space-y-5">
           <div className="flex justify-center">
-            <ShieldCheck className="h-10 w-10 text-primary-light" />
+            <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
+              <ShieldCheck className="h-7 w-7 text-primary-light" />
+            </span>
           </div>
-          <input
-            className="input text-center text-2xl tracking-[0.5em]"
-            inputMode="numeric"
-            maxLength={6}
-            placeholder="000000"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-            autoComplete="one-time-code"
-            autoFocus
-          />
-          {error && <p className="text-sm text-red-400">{error}</p>}
-          <Button className="w-full" disabled={loading || code.length !== 6}>
+          <div>
+            <label htmlFor="login-mfa-code" className="sr-only">
+              6-digit authentication code
+            </label>
+            <input
+              id="login-mfa-code"
+              className="input min-h-[52px] text-center font-mono text-2xl tracking-[0.5em]"
+              inputMode="numeric"
+              maxLength={6}
+              placeholder="000000"
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+              autoComplete="one-time-code"
+              autoFocus
+            />
+          </div>
+          {error && (
+            <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+              {error}
+            </p>
+          )}
+          <Button
+            size="lg"
+            className="w-full"
+            disabled={loading || code.length !== 6}
+          >
             {loading ? "Verifying…" : "Verify"}
           </Button>
         </form>
@@ -189,22 +210,18 @@ function LoginForm() {
   return (
     <AuthShell
       title="Welcome back"
-      subtitle={
-        <>
-          New here?{" "}
-          <Link href="/signup" className="text-primary-light hover:underline">
-            Create an account
-          </Link>
-        </>
-      }
+      subtitle="Sign in to track orders, save details and enter giveaways."
     >
       <OAuthButtons next={next} />
       <form onSubmit={handleLogin} className="space-y-4">
         <div>
-          <label className="label">Email</label>
+          <label htmlFor="login-email" className="label">
+            Email
+          </label>
           <input
+            id="login-email"
             type="email"
-            className="input"
+            className="input min-h-[44px]"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="you@example.com"
@@ -214,7 +231,9 @@ function LoginForm() {
         </div>
         <div>
           <div className="flex items-center justify-between">
-            <label className="label">Password</label>
+            <label htmlFor="login-password" className="label">
+              Password
+            </label>
             <Link
               href="/forgot-password"
               className="text-xs text-primary-light hover:underline"
@@ -223,8 +242,9 @@ function LoginForm() {
             </Link>
           </div>
           <input
+            id="login-password"
             type="password"
-            className="input"
+            className="input min-h-[44px]"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
@@ -244,6 +264,7 @@ function LoginForm() {
           className="flex justify-center"
         />
         <Button
+          size="lg"
           className="w-full"
           disabled={loading || (captchaEnabled && !captchaToken)}
         >
@@ -253,11 +274,17 @@ function LoginForm() {
           type="button"
           onClick={handleMagicLink}
           disabled={loading || (captchaEnabled && !captchaToken)}
-          className="w-full text-center text-sm text-zinc-400 transition hover:text-primary-light disabled:opacity-50"
+          className="min-h-[44px] w-full rounded-xl text-center text-sm text-zinc-400 transition hover:text-primary-light disabled:opacity-50"
         >
           Email me a login link instead
         </button>
       </form>
+      <p className="mt-5 text-center text-sm text-zinc-500">
+        New here?{" "}
+        <Link href="/signup" className="text-primary-light hover:underline">
+          Create an account
+        </Link>
+      </p>
     </AuthShell>
   );
 }

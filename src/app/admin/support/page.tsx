@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, statusBadgeVariant } from "@/components/ui";
+import { AdminTable } from "@/components/admin/AdminTable";
 import { cn, formatDateTime } from "@/lib/utils";
 import type { SupportTicket } from "@/lib/types";
 
@@ -29,6 +30,9 @@ export default async function AdminSupportPage({
   return (
     <div>
       <h1 className="text-2xl font-extrabold text-white">Support tickets</h1>
+      <p className="mt-1 text-sm text-zinc-500">
+        Open a ticket to reply and set its status or priority.
+      </p>
       <div className="mt-4 flex flex-wrap gap-2">
         {FILTERS.map((f) => (
           <Link
@@ -46,63 +50,59 @@ export default async function AdminSupportPage({
         ))}
       </div>
 
-      <div className="glass mt-6 overflow-x-auto p-0">
-        <table className="w-full min-w-[680px] text-sm">
-          <thead>
-            <tr className="border-b border-edge text-left text-xs uppercase tracking-wider text-zinc-500">
-              <th className="px-4 py-3">Ticket</th>
-              <th className="px-4 py-3">Customer</th>
-              <th className="px-4 py-3">Category</th>
-              <th className="px-4 py-3">Priority</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Updated</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-edge">
-            {tickets.map((t) => (
-              <tr key={t.id} className="transition hover:bg-raised/40">
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/support/${t.id}`}
-                    className="font-medium text-primary-light hover:underline"
-                  >
-                    #{t.ticket_number} — {t.subject}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-zinc-400">
-                  {t.profile?.username ?? t.profile?.email ?? "—"}
-                </td>
-                <td className="px-4 py-3 text-zinc-400">{t.category}</td>
-                <td className="px-4 py-3">
-                  <Badge
-                    variant={
-                      t.priority === "high"
-                        ? "danger"
-                        : t.priority === "low"
-                          ? "default"
-                          : "info"
-                    }
-                  >
-                    {t.priority}
-                  </Badge>
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant={statusBadgeVariant(t.status)}>{t.status}</Badge>
-                </td>
-                <td className="px-4 py-3 text-xs text-zinc-500">
-                  {formatDateTime(t.updated_at)}
-                </td>
-              </tr>
-            ))}
-            {tickets.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-zinc-500">
-                  No tickets here.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <AdminTable
+          minWidth={680}
+          empty={
+            filter !== "all"
+              ? `No ${filter} tickets right now.`
+              : "No tickets yet — customer questions will land here."
+          }
+          columns={[
+            { header: "Ticket" },
+            { header: "Customer" },
+            { header: "Category" },
+            { header: "Priority" },
+            { header: "Status" },
+            { header: "Updated" },
+          ]}
+          rows={tickets.map((t) => ({
+            key: t.id,
+            cells: [
+              <Link
+                key="subject"
+                href={`/admin/support/${t.id}`}
+                className="font-medium text-primary-light hover:underline"
+              >
+                #{t.ticket_number} — {t.subject}
+              </Link>,
+              <span key="customer" className="break-all text-zinc-400">
+                {t.profile?.username ?? t.profile?.email ?? "—"}
+              </span>,
+              <span key="category" className="text-zinc-400">
+                {t.category}
+              </span>,
+              <Badge
+                key="priority"
+                variant={
+                  t.priority === "high"
+                    ? "danger"
+                    : t.priority === "low"
+                      ? "default"
+                      : "info"
+                }
+              >
+                {t.priority}
+              </Badge>,
+              <Badge key="status" variant={statusBadgeVariant(t.status)}>
+                {t.status}
+              </Badge>,
+              <span key="updated" className="text-xs text-zinc-500">
+                {formatDateTime(t.updated_at)}
+              </span>,
+            ],
+          }))}
+        />
       </div>
     </div>
   );

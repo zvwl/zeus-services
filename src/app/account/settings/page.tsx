@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { ImageUpload } from "@/components/ImageUpload";
 import { Button, Card, Spinner, Badge } from "@/components/ui";
+import { RevealGroup, RevealItem } from "@/components/motion";
 import type { User } from "@supabase/supabase-js";
 
 export default function AccountSettingsPage() {
@@ -112,94 +113,118 @@ export default function AccountSettingsPage() {
   const identities = user?.identities?.map((i) => i.provider) ?? [];
 
   return (
-    <div className="grid max-w-4xl gap-6 lg:grid-cols-2">
-      <Card>
-        <h2 className="mb-5 font-bold text-white">Profile</h2>
-        <form onSubmit={saveProfile} className="space-y-4">
-          <ImageUpload
-            bucket="zeus-avatars"
-            folder={userId ?? "anon"}
-            value={avatarUrl}
-            onChange={setAvatarUrl}
-            label="Avatar"
-          />
-          <div>
-            <label className="label">Username</label>
-            <input
-              className="input"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
+    <RevealGroup className="grid max-w-4xl gap-5 lg:grid-cols-2" stagger={0.07}>
+      <RevealItem y={16}>
+        <Card className="h-full">
+          <h2 className="mb-5 font-bold text-white">Profile</h2>
+          <form onSubmit={saveProfile} className="space-y-4">
+            <ImageUpload
+              bucket="zeus-avatars"
+              folder={userId ?? "anon"}
+              value={avatarUrl}
+              onChange={setAvatarUrl}
+              label="Avatar"
             />
-          </div>
-          <div>
-            <label className="label">Preferred currency</label>
-            <select
-              className="input"
-              value={preferredCurrency}
-              onChange={(e) => setPreferredCurrency(e.target.value)}
-            >
-              {rates.map((r) => (
-                <option key={r.code} value={r.code}>
-                  {r.code} — {r.label}
-                </option>
-              ))}
-            </select>
-          </div>
-          <Button disabled={saving}>{saving ? "Saving…" : "Save profile"}</Button>
-        </form>
-      </Card>
-
-      <div className="space-y-6">
-        <Card>
-          <h2 className="mb-5 font-bold text-white">Email address</h2>
-          <form onSubmit={changeEmail} className="space-y-4">
-            <input
-              type="email"
-              className="input"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Button variant="outline" disabled={saving || email === user?.email}>
-              Change email
+            <div>
+              <label htmlFor="settings-username" className="label">
+                Username
+              </label>
+              <input
+                id="settings-username"
+                className="input min-h-[44px]"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+              />
+            </div>
+            <div>
+              <label htmlFor="settings-currency" className="label">
+                Preferred currency
+              </label>
+              <select
+                id="settings-currency"
+                className="input min-h-[44px]"
+                value={preferredCurrency}
+                onChange={(e) => setPreferredCurrency(e.target.value)}
+              >
+                {rates.map((r) => (
+                  <option key={r.code} value={r.code}>
+                    {r.code} — {r.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <Button disabled={saving} className="min-h-[44px]">
+              {saving ? "Saving…" : "Save profile"}
             </Button>
           </form>
         </Card>
+      </RevealItem>
 
-        <Card>
-          <h2 className="mb-5 font-bold text-white">Connected accounts</h2>
-          <div className="space-y-3">
-            {(["discord", "google"] as const).map((provider) => (
-              <div
-                key={provider}
-                className="flex items-center justify-between rounded-xl border border-edge bg-raised/50 px-4 py-3"
-              >
-                <span className="text-sm font-medium capitalize text-zinc-300">
-                  {provider}
-                </span>
-                {identities.includes(provider) ? (
-                  <Badge variant="success">✓ Connected</Badge>
-                ) : (
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => linkProvider(provider)}
-                  >
-                    Connect
-                  </Button>
-                )}
+      <RevealItem y={16}>
+        <div className="space-y-5">
+          <Card>
+            <h2 className="mb-5 font-bold text-white">Email address</h2>
+            <form onSubmit={changeEmail} className="space-y-4">
+              <div>
+                <label htmlFor="settings-email" className="label">
+                  Email
+                </label>
+                <input
+                  id="settings-email"
+                  type="email"
+                  className="input min-h-[44px]"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
               </div>
-            ))}
-          </div>
-          <p className="mt-3 text-xs text-zinc-600">
-            Linking Discord lets us verify giveaway entries and deliver faster
-            support.
-          </p>
-        </Card>
-      </div>
+              <Button
+                variant="outline"
+                className="min-h-[44px]"
+                disabled={saving || email === user?.email}
+              >
+                Change email
+              </Button>
+            </form>
+          </Card>
+
+          <Card>
+            <h2 className="mb-5 font-bold text-white">Connected accounts</h2>
+            <div className="space-y-3">
+              {(["discord", "google"] as const).map((provider) => (
+                <div
+                  key={provider}
+                  className="flex min-h-[56px] items-center justify-between rounded-xl border border-edge bg-raised/50 px-4 py-2"
+                >
+                  <span className="text-sm font-medium capitalize text-zinc-300">
+                    {provider}
+                  </span>
+                  {identities.includes(provider) ? (
+                    <Badge variant="success">✓ Connected</Badge>
+                  ) : (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      className="min-h-[40px]"
+                      onClick={() => linkProvider(provider)}
+                    >
+                      Connect
+                    </Button>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="mt-3 text-xs text-zinc-500">
+              Linking Discord lets us verify giveaway entries and deliver faster
+              support.
+            </p>
+          </Card>
+        </div>
+      </RevealItem>
 
       {msg && (
         <p
+          role="status"
           className={`lg:col-span-2 rounded-xl border px-4 py-3 text-sm ${
             msg.ok
               ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
@@ -209,6 +234,6 @@ export default function AccountSettingsPage() {
           {msg.text}
         </p>
       )}
-    </div>
+    </RevealGroup>
   );
 }

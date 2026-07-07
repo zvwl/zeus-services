@@ -6,6 +6,7 @@ import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { fulfillCheckoutSession } from "@/lib/fulfill";
 import { SectionHeading } from "@/components/ui";
 import { DonateForm } from "@/components/DonateForm";
+import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
 import { formatMoney } from "@/lib/currency";
 import { formatDate } from "@/lib/utils";
 import type { Donation } from "@/lib/types";
@@ -81,13 +82,15 @@ export default async function DonatePage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
-      <SectionHeading
-        as="h1"
-        eyebrow="Buy us a coffee"
-        title="Support Zeuservices"
-        subtitle="Love what we do? Tips keep the giveaways flowing and the support team caffeinated."
-        center
-      />
+      <Reveal y={14}>
+        <SectionHeading
+          as="h1"
+          eyebrow="Buy us a coffee"
+          title="Support Zeuservices"
+          subtitle="Love what we do? Tips keep the giveaways flowing and the support team caffeinated."
+          center
+        />
+      </Reveal>
 
       {thanks && (
         <p className="mx-auto mb-8 max-w-md rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-center text-sm text-emerald-300">
@@ -95,39 +98,47 @@ export default async function DonatePage({
         </p>
       )}
 
-      <div className="grid gap-8 lg:grid-cols-2">
-        <DonateForm />
+      <div className="grid items-start gap-8 lg:grid-cols-2">
+        <Reveal y={16}>
+          <DonateForm />
+        </Reveal>
         <div>
-          <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
-            <Coffee className="h-5 w-5 text-gold" /> Recent supporters
-          </h2>
+          <Reveal y={14} delay={0.08}>
+            <h2 className="mb-4 flex items-center gap-2 text-lg font-bold text-white">
+              <Coffee className="h-5 w-5 text-gold" /> Recent supporters
+            </h2>
+          </Reveal>
           {donations.length === 0 ? (
-            <p className="glass p-8 text-center text-sm text-zinc-500">
-              Be the first to buy us a coffee!
-            </p>
+            <Reveal y={16} delay={0.1}>
+              <p className="glass p-8 text-center text-sm text-zinc-500">
+                Be the first to buy us a coffee!
+              </p>
+            </Reveal>
           ) : (
-            <div className="space-y-3">
+            <RevealGroup className="space-y-3" stagger={0.05} delay={0.1}>
               {donations.map((d) => (
-                <div key={d.id} className="glass p-4">
-                  <div className="flex items-center justify-between">
-                    <p className="font-semibold text-white">
-                      {d.name || "Anonymous"}
+                <RevealItem key={d.id} y={14}>
+                  <div className="glass p-4 transition hover:border-gold/30">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-white">
+                        {d.name || "Anonymous"}
+                      </p>
+                      <span className="font-bold text-gold">
+                        {formatMoney(Number(d.amount), d.currency)}
+                      </span>
+                    </div>
+                    {d.message && (
+                      <p className="mt-1 text-sm italic text-zinc-400">
+                        “{d.message}”
+                      </p>
+                    )}
+                    <p className="mt-1 text-xs text-zinc-600">
+                      {formatDate(d.created_at)}
                     </p>
-                    <span className="font-bold text-gold">
-                      {formatMoney(Number(d.amount), d.currency)}
-                    </span>
                   </div>
-                  {d.message && (
-                    <p className="mt-1 text-sm italic text-zinc-400">
-                      “{d.message}”
-                    </p>
-                  )}
-                  <p className="mt-1 text-xs text-zinc-600">
-                    {formatDate(d.created_at)}
-                  </p>
-                </div>
+                </RevealItem>
               ))}
-            </div>
+            </RevealGroup>
           )}
         </div>
       </div>

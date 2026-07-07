@@ -55,7 +55,7 @@ export function ReviewForm({
             onMouseEnter={() => setHover(i)}
             onMouseLeave={() => setHover(0)}
             aria-label={`${i} stars`}
-            className="p-0.5"
+            className="rounded-lg p-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
           >
             <svg
               viewBox="0 0 20 20"
@@ -96,7 +96,11 @@ export function ReviewForm({
           {result.message}
         </p>
       )}
-      <Button type="submit" disabled={pending || rating === 0}>
+      <Button
+        type="submit"
+        className="min-h-[44px]"
+        disabled={pending || rating === 0}
+      >
         {pending ? "Submitting…" : "Submit review"}
       </Button>
     </form>

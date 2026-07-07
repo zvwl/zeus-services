@@ -2,12 +2,93 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { GripVertical, Plus, Trash2 } from "lucide-react";
+import {
+  CircleDollarSign,
+  GripVertical,
+  Plus,
+  SlidersHorizontal,
+  Trash2,
+} from "lucide-react";
 import { upsertProduct, type ProductPayload } from "@/app/admin/actions";
+import { BuyBoxSlider } from "@/components/BuyBoxSlider";
 import { ImageUpload } from "@/components/ImageUpload";
-import { Button, Card } from "@/components/ui";
-import { slugify } from "@/lib/utils";
+import { Badge, Button, Card } from "@/components/ui";
+import { formatMoney } from "@/lib/currency";
+import { cn, slugify } from "@/lib/utils";
 import type { Category, Game, Product } from "@/lib/types";
+
+/**
+ * Live, interactive replica of the storefront BuyBox custom-amount slider.
+ * Uses the same clamping + pricing math (amount × price per unit, USD) so the
+ * preview is exactly what buyers will see.
+ */
+function SliderPreview({
+  unitLabel,
+  min: rawMin,
+  max: rawMax,
+  step: rawStep,
+  perUnit,
+}: {
+  unitLabel: string;
+  min: number;
+  max: number;
+  step: number;
+  perUnit: number;
+}) {
+  // Mirror BuyBox: clamp min to ≥0, max to ≥min, step to >0.
+  const min = Math.max(0, rawMin);
+  const max = Math.max(min, rawMax);
+  const step = rawStep > 0 ? rawStep : 1;
+  const clamp = (n: number) =>
+    Number.isFinite(n) ? Math.min(max, Math.max(min, n)) : min;
+
+  const [amount, setAmount] = useState(min);
+  const shown = clamp(amount);
+  const label = `${shown.toLocaleString()} ${unitLabel || "units"}`;
+
+  return (
+    <div className="rounded-xl border border-primary/30 bg-primary/5 p-4">
+      <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+        <Badge variant="primary">Live preview — what buyers see</Badge>
+        <span className="text-xs text-zinc-500">
+          {formatMoney(min * perUnit, "USD")} – {formatMoney(max * perUnit, "USD")}
+        </span>
+      </div>
+      <p className="label">
+        Choose amount{unitLabel ? ` (${unitLabel})` : ""}
+      </p>
+      <BuyBoxSlider
+        min={min}
+        max={max}
+        step={step}
+        value={shown}
+        onChange={(n) => setAmount(clamp(n))}
+        ariaLabel="Preview amount"
+      />
+      <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+        <input
+          type="number"
+          min={min}
+          max={max}
+          step={step}
+          value={shown}
+          onChange={(e) => setAmount(clamp(Number(e.target.value)))}
+          className="input w-36"
+          aria-label="Preview amount (typed)"
+        />
+      </div>
+      <div className="mt-3 flex items-center justify-between border-t border-primary/20 pt-3">
+        <span className="text-sm text-zinc-500">{label}</span>
+        <span className="text-2xl font-extrabold text-white">
+          {formatMoney(shown * perUnit, "USD")}
+        </span>
+      </div>
+      <p className="mt-1 text-right text-xs text-zinc-600">
+        Buyers pay in their own currency — converted from this USD price.
+      </p>
+    </div>
+  );
+}
 
 interface VariantDraft {
   id?: string;
@@ -125,8 +206,57 @@ export function ProductForm({
       }))
   );
 
+  // ── Custom-amount (slider) inline validation ─────────────────────────────
+  // Mirrors what the storefront BuyBox expects so what staff configure here is
+  // exactly what buyers get.
+  const nPpu = customPricePerUnit === "" ? null : Number(customPricePerUnit);
+  const nMin = customMin === "" ? null : Number(customMin);
+  const nMax = customMax === "" ? null : Number(customMax);
+  const nStep = customStep === "" ? null : Number(customStep);
+
+  const ppuError =
+    nPpu === null || !Number.isFinite(nPpu)
+      ? "Enter the price of one unit."
+      : nPpu <= 0
+        ? "Price per unit must be greater than 0."
+        : null;
+  const minError =
+    nMin === null || !Number.isFinite(nMin)
+      ? "Enter the smallest amount a buyer can pick."
+      : nMin < 0
+        ? "Minimum can't be negative."
+        : null;
+  const maxError =
+    nMax === null || !Number.isFinite(nMax)
+      ? "Enter the largest amount a buyer can pick."
+      : nMin !== null && Number.isFinite(nMin) && nMax <= nMin
+        ? "Maximum must be greater than the minimum."
+        : null;
+  let stepError: string | null = null;
+  if (nStep === null || !Number.isFinite(nStep)) {
+    stepError = "Enter the slider increment.";
+  } else if (nStep <= 0) {
+    stepError = "Step must be greater than 0.";
+  } else if (!minError && !maxError && nMin !== null && nMax !== null) {
+    const ratio = (nMax - nMin) / nStep;
+    // Relative epsilon: a fixed 1e-9 false-positives for large ranges (e.g.
+    // min=0, max=10,000,000, step=0.1) where float error alone exceeds it.
+    if (Math.abs(Math.round(ratio) - ratio) > 1e-9 * Math.max(1, Math.abs(ratio))) {
+      stepError =
+        "Step must divide the range evenly — (max − min) ÷ step has to be a whole number, or the slider can never reach the maximum.";
+    }
+  }
+  const customValid = !ppuError && !minError && !maxError && !stepError;
+
   function submit() {
     setMsg(null);
+    if (pricingMode === "custom" && !customValid) {
+      setMsg({
+        ok: false,
+        text: "Fix the highlighted custom-amount settings before saving.",
+      });
+      return;
+    }
     const payload: ProductPayload = {
       id: product?.id,
       game_id: gameId,
@@ -257,19 +387,49 @@ export function ProductForm({
       <Card className="space-y-4">
         <h2 className="font-bold text-white">Pricing & stock</h2>
         <div>
-          <label className="label">Pricing mode</label>
-          <select
-            className="input"
-            value={pricingMode}
-            onChange={(e) =>
-              setPricingMode(e.target.value as "fixed" | "custom")
-            }
-          >
-            <option value="fixed">Fixed — base price or options</option>
-            <option value="custom">
-              Custom amount — buyer picks an amount with a slider
-            </option>
-          </select>
+          <label className="label">How is this product priced?</label>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              type="button"
+              onClick={() => setPricingMode("fixed")}
+              aria-pressed={pricingMode === "fixed"}
+              className={cn(
+                "rounded-xl border p-4 text-left transition",
+                pricingMode === "fixed"
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                  : "border-edge bg-raised/40 hover:border-primary/40"
+              )}
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold text-white">
+                <CircleDollarSign className="h-4 w-4 text-primary-light" />
+                Fixed price / options
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
+                One set price, or a list of options (e.g. 1,000 / 2,800 V-Bucks)
+                each with its own price and stock.
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setPricingMode("custom")}
+              aria-pressed={pricingMode === "custom"}
+              className={cn(
+                "rounded-xl border p-4 text-left transition",
+                pricingMode === "custom"
+                  ? "border-primary bg-primary/10 ring-2 ring-primary/20"
+                  : "border-edge bg-raised/40 hover:border-primary/40"
+              )}
+            >
+              <span className="flex items-center gap-2 text-sm font-semibold text-white">
+                <SlidersHorizontal className="h-4 w-4 text-primary-light" />
+                Custom amount (slider)
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-zinc-500">
+                The buyer drags a slider to pick how much they want — price is
+                amount × price per unit. Great for currency top-ups.
+              </span>
+            </button>
+          </div>
         </div>
         {pricingMode === "fixed" ? (
           <div className="grid gap-4 sm:grid-cols-3">
@@ -312,67 +472,96 @@ export function ProductForm({
             </div>
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <label className="label">Unit label</label>
-              <input
-                className="input"
-                value={customUnitLabel}
-                onChange={(e) => setCustomUnitLabel(e.target.value)}
-                placeholder="e.g. gold, 1,000 V-Bucks"
-              />
-              <p className="mt-1 text-xs text-zinc-600">
-                What one unit of the amount is called.
-              </p>
+          <div className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="label">Unit label</label>
+                <input
+                  className="input"
+                  value={customUnitLabel}
+                  onChange={(e) => setCustomUnitLabel(e.target.value)}
+                  placeholder="e.g. V-Bucks, GTA$ millions, Credits"
+                />
+                <p className="mt-1 text-xs text-zinc-600">
+                  What the buyer is choosing an amount of — shown next to the
+                  slider. Falls back to “units” if left empty.
+                </p>
+              </div>
+              <div>
+                <label className="label">Price per unit (USD) *</label>
+                <input
+                  type="number"
+                  step="0.0001"
+                  min="0"
+                  className={cn("input", ppuError && "border-red-500/50")}
+                  value={customPricePerUnit}
+                  onChange={(e) => setCustomPricePerUnit(e.target.value)}
+                  placeholder="0.01"
+                />
+                <p className={cn("mt-1 text-xs", ppuError ? "text-red-400" : "text-zinc-600")}>
+                  {ppuError ??
+                    "What one unit costs. E.g. 0.005 = $5.00 per 1,000 units."}
+                </p>
+              </div>
+              <div>
+                <label className="label">Minimum amount *</label>
+                <input
+                  type="number"
+                  min="0"
+                  className={cn("input", minError && "border-red-500/50")}
+                  value={customMin}
+                  onChange={(e) => setCustomMin(e.target.value)}
+                  placeholder="1000"
+                />
+                <p className={cn("mt-1 text-xs", minError ? "text-red-400" : "text-zinc-600")}>
+                  {minError ?? "Where the slider starts."}
+                </p>
+              </div>
+              <div>
+                <label className="label">Maximum amount *</label>
+                <input
+                  type="number"
+                  min="0"
+                  className={cn("input", maxError && "border-red-500/50")}
+                  value={customMax}
+                  onChange={(e) => setCustomMax(e.target.value)}
+                  placeholder="100000"
+                />
+                <p className={cn("mt-1 text-xs", maxError ? "text-red-400" : "text-zinc-600")}>
+                  {maxError ?? "Where the slider ends."}
+                </p>
+              </div>
+              <div className="sm:col-span-2">
+                <label className="label">Step *</label>
+                <input
+                  type="number"
+                  min="0"
+                  className={cn("input sm:max-w-[240px]", stepError && "border-red-500/50")}
+                  value={customStep}
+                  onChange={(e) => setCustomStep(e.target.value)}
+                  placeholder="500"
+                />
+                <p className={cn("mt-1 text-xs", stepError ? "text-red-400" : "text-zinc-600")}>
+                  {stepError ??
+                    "How much the slider jumps per notch. Must divide the min–max range evenly."}
+                </p>
+              </div>
             </div>
-            <div>
-              <label className="label">Price per unit (USD) *</label>
-              <input
-                type="number"
-                step="0.0001"
-                min="0"
-                className="input"
-                value={customPricePerUnit}
-                onChange={(e) => setCustomPricePerUnit(e.target.value)}
-                placeholder="0.01"
+
+            {customValid ? (
+              <SliderPreview
+                unitLabel={customUnitLabel}
+                min={nMin!}
+                max={nMax!}
+                step={nStep!}
+                perUnit={nPpu!}
               />
-            </div>
-            <div>
-              <label className="label">Minimum amount</label>
-              <input
-                type="number"
-                min="0"
-                className="input"
-                value={customMin}
-                onChange={(e) => setCustomMin(e.target.value)}
-                placeholder="100"
-              />
-            </div>
-            <div>
-              <label className="label">Maximum amount</label>
-              <input
-                type="number"
-                min="0"
-                className="input"
-                value={customMax}
-                onChange={(e) => setCustomMax(e.target.value)}
-                placeholder="100000"
-              />
-            </div>
-            <div>
-              <label className="label">Step</label>
-              <input
-                type="number"
-                min="1"
-                className="input"
-                value={customStep}
-                onChange={(e) => setCustomStep(e.target.value)}
-                placeholder="100"
-              />
-              <p className="mt-1 text-xs text-zinc-600">
-                Slider increment. Price = amount × price per unit.
-              </p>
-            </div>
+            ) : (
+              <div className="rounded-xl border border-dashed border-edge bg-raised/30 p-4 text-sm text-zinc-500">
+                Fill in the fields above to see a live preview of the slider
+                buyers will get.
+              </div>
+            )}
           </div>
         )}
         <div className="grid gap-4 sm:grid-cols-2">

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, statusBadgeVariant } from "@/components/ui";
+import { AdminTable } from "@/components/admin/AdminTable";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime, cn, sanitizeSearchTerm } from "@/lib/utils";
 import type { Order, OrderItem } from "@/lib/types";
@@ -58,8 +59,13 @@ export default async function AdminOrdersPage({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-extrabold text-white">Orders</h1>
-        <form action="/admin/orders" className="w-72">
+        <div>
+          <h1 className="text-2xl font-extrabold text-white">Orders</h1>
+          <p className="mt-1 text-sm text-zinc-500">
+            Search, filter and open orders to deliver items or issue refunds.
+          </p>
+        </div>
+        <form action="/admin/orders" className="w-full sm:w-72">
           {filter !== "all" && (
             <input type="hidden" name="status" value={filter} />
           )}
@@ -89,53 +95,50 @@ export default async function AdminOrdersPage({
         ))}
       </div>
 
-      <div className="glass mt-6 overflow-x-auto p-0">
-        <table className="w-full min-w-[720px] text-sm">
-          <thead>
-            <tr className="border-b border-edge text-left text-xs uppercase tracking-wider text-zinc-500">
-              <th className="px-4 py-3">Order</th>
-              <th className="px-4 py-3">Customer</th>
-              <th className="px-4 py-3">Items</th>
-              <th className="px-4 py-3">Total</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3">Date</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-edge">
-            {orders.map((o) => (
-              <tr key={o.id} className="transition hover:bg-raised/40">
-                <td className="px-4 py-3">
-                  <Link
-                    href={`/admin/orders/${o.id}`}
-                    className="font-semibold text-primary-light hover:underline"
-                  >
-                    {o.reference ?? `#${o.order_number}`}
-                  </Link>
-                </td>
-                <td className="px-4 py-3 text-zinc-300">{o.email ?? "guest"}</td>
-                <td className="max-w-[260px] truncate px-4 py-3 text-zinc-400">
-                  {o.items?.map((i) => `${i.quantity}× ${i.product_name}`).join(", ")}
-                </td>
-                <td className="px-4 py-3 font-semibold text-white">
-                  {formatMoney(Number(o.total), o.currency)}
-                </td>
-                <td className="px-4 py-3">
-                  <Badge variant={statusBadgeVariant(o.status)}>{o.status}</Badge>
-                </td>
-                <td className="px-4 py-3 text-xs text-zinc-500">
-                  {formatDateTime(o.created_at)}
-                </td>
-              </tr>
-            ))}
-            {orders.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-4 py-10 text-center text-zinc-500">
-                  No orders found.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+      <div className="mt-6">
+        <AdminTable
+          minWidth={720}
+          empty={
+            search || filter !== "all"
+              ? "No orders match this filter or search."
+              : "No orders yet — they'll appear here as soon as customers buy."
+          }
+          columns={[
+            { header: "Order" },
+            { header: "Customer" },
+            { header: "Items" },
+            { header: "Total" },
+            { header: "Status" },
+            { header: "Date" },
+          ]}
+          rows={orders.map((o) => ({
+            key: o.id,
+            cells: [
+              <Link
+                key="ref"
+                href={`/admin/orders/${o.id}`}
+                className="font-semibold text-primary-light hover:underline"
+              >
+                {o.reference ?? `#${o.order_number}`}
+              </Link>,
+              <span key="email" className="break-all text-zinc-300">
+                {o.email ?? "guest"}
+              </span>,
+              <span key="items" className="block max-w-[260px] truncate text-zinc-400">
+                {o.items?.map((i) => `${i.quantity}× ${i.product_name}`).join(", ")}
+              </span>,
+              <span key="total" className="font-semibold text-white">
+                {formatMoney(Number(o.total), o.currency)}
+              </span>,
+              <Badge key="status" variant={statusBadgeVariant(o.status)}>
+                {o.status}
+              </Badge>,
+              <span key="date" className="text-xs text-zinc-500">
+                {formatDateTime(o.created_at)}
+              </span>,
+            ],
+          }))}
+        />
       </div>
     </div>
   );

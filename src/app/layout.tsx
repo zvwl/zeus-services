@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
+import { MotionProvider } from "@/components/motion";
 import { CartProvider } from "@/components/CartProvider";
 import { CartDrawer } from "@/components/CartDrawer";
 import { Navbar } from "@/components/Navbar";
@@ -152,6 +153,7 @@ export default async function RootLayout({
       <body className="flex min-h-screen flex-col font-sans">
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />
+        <MotionProvider>
         <CurrencyProvider initial={initialCurrency} rates={rates}>
           <CartProvider authed={Boolean(user)}>
             {isPreview && (
@@ -167,6 +169,7 @@ export default async function RootLayout({
             <CartDrawer />
           </CartProvider>
         </CurrencyProvider>
+        </MotionProvider>
         <Analytics />
         <SpeedInsights />
       </body>

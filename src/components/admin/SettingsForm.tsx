@@ -7,31 +7,46 @@ import { Button, Card } from "@/components/ui";
 import { ImageUpload } from "@/components/ImageUpload";
 import type { ExchangeRate } from "@/lib/types";
 
-const GENERAL_FIELDS: { key: string; label: string; placeholder: string; textarea?: boolean }[] = [
-  { key: "site_name", label: "Site name", placeholder: "Zeuservices" },
+const GENERAL_FIELDS: {
+  key: string;
+  label: string;
+  placeholder: string;
+  textarea?: boolean;
+  help?: string;
+}[] = [
+  {
+    key: "site_name",
+    label: "Site name",
+    placeholder: "Zeuservices",
+    help: "Shown in the navbar, footer, browser tab and emails.",
+  },
   {
     key: "tagline",
-    label: "Tagline (footer + SEO description)",
+    label: "Tagline",
     placeholder: "Premium game top-ups, boosting and accounts…",
     textarea: true,
+    help: "One or two sentences. Appears in the footer and as the SEO description search engines show.",
   },
   {
     key: "announcement",
-    label: "Announcement bar (empty = hidden)",
+    label: "Announcement bar",
     placeholder: "SUMMER SALE — 20% off all top-ups this week!",
+    help: "Banner shown at the very top of every storefront page. Visitors can dismiss it. Leave empty to hide the bar.",
   },
   {
     key: "support_email",
-    label: "Support email (optional — leave blank if you don't have a mailbox yet)",
+    label: "Support email",
     placeholder: "support@yourdomain.com",
+    help: "Shown on the support page. Optional — leave blank if you don't have a mailbox yet.",
   },
 ];
 
-const COMMUNITY_FIELDS: { key: string; label: string; placeholder: string }[] = [
+const COMMUNITY_FIELDS: { key: string; label: string; placeholder: string; help?: string }[] = [
   {
     key: "discord_invite",
     label: "Discord invite URL",
     placeholder: "https://discord.gg/yourserver",
+    help: "Also powers the “Join our Discord” homepage section — that section hides itself if this is empty.",
   },
   { key: "twitter_url", label: "X / Twitter URL", placeholder: "https://x.com/…" },
   { key: "youtube_url", label: "YouTube URL", placeholder: "https://youtube.com/@…" },
@@ -78,13 +93,25 @@ export function SettingsForm({
         }
       >
         <Card className="space-y-4">
-          <h2 className="font-bold text-white">General</h2>
-          <ImageUpload
-            folder="branding"
-            value={logoUrl}
-            onChange={setLogoUrl}
-            label="Site logo — shown in the navbar & footer (PNG or SVG, transparent background works best). Leave empty to use the default logo mark."
-          />
+          <div>
+            <h2 className="font-bold text-white">Branding</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              How the store presents itself — name, logo, tagline and the
+              announcement bar. Changes go live immediately.
+            </p>
+          </div>
+          <div>
+            <ImageUpload
+              folder="branding"
+              value={logoUrl}
+              onChange={setLogoUrl}
+              label="Site logo"
+            />
+            <p className="mt-1 text-xs text-zinc-600">
+              Shown in the navbar & footer. PNG or SVG with a transparent
+              background works best. Leave empty to use the default ⚡ logo mark.
+            </p>
+          </div>
           <input type="hidden" name="setting_logo_url" value={logoUrl ?? ""} />
           {GENERAL_FIELDS.map((f) => (
             <div key={f.key}>
@@ -104,9 +131,16 @@ export function SettingsForm({
                   placeholder={f.placeholder}
                 />
               )}
+              {f.help && <p className="mt-1 text-xs text-zinc-600">{f.help}</p>}
             </div>
           ))}
-          <h2 className="pt-2 font-bold text-white">Community</h2>
+          <div className="border-t border-edge pt-4">
+            <h2 className="font-bold text-white">Community & socials</h2>
+            <p className="mt-1 text-xs text-zinc-500">
+              Links shown as icons in the footer. Leave any of them empty to
+              hide that icon.
+            </p>
+          </div>
           {COMMUNITY_FIELDS.map((f) => (
             <div key={f.key}>
               <label className="label">{f.label}</label>
@@ -116,6 +150,7 @@ export function SettingsForm({
                 defaultValue={settings[f.key] ?? ""}
                 placeholder={f.placeholder}
               />
+              {f.help && <p className="mt-1 text-xs text-zinc-600">{f.help}</p>}
             </div>
           ))}
           <Feedback msg={msg} />
@@ -136,8 +171,10 @@ export function SettingsForm({
           <div>
             <h2 className="font-bold text-white">Currencies & exchange rates</h2>
             <p className="mt-1 text-xs text-zinc-500">
-              Prices are stored in USD. Each rate = how much 1 USD is worth in
-              that currency. Customers can pay in any of these at checkout.
+              All prices are set in USD; the storefront converts them using
+              these rates. Each rate = how much 1 USD is worth in that currency
+              (e.g. EUR 0.92 means $10 shows as €9.20). Customers pick their
+              currency in the navbar and pay in it at checkout.
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-2">

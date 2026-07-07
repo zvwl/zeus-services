@@ -1,9 +1,12 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import { notFound } from "next/navigation";
 import { getCategoryWithProducts } from "@/lib/data";
 import { CategoryGrid } from "@/components/CategoryGrid";
 import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
+import { Reveal } from "@/components/motion";
+import { categoryVisual } from "@/lib/category-art";
 import { siteUrl } from "@/lib/utils";
 import type { Game } from "@/lib/types";
 
@@ -100,28 +103,71 @@ export default async function CategoryPage({
         }
       : null;
 
+  const { art } = categoryVisual(category);
+
   return (
-    <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+    <div>
       <JsonLd data={breadcrumbJsonLd} />
       {itemListJsonLd && <JsonLd data={itemListJsonLd} />}
-      <div className="mb-10">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary-light">
-          Category
-        </p>
-        <h1 className="flex items-center gap-3 text-4xl font-extrabold text-white">
-          {category.name}
-        </h1>
-        {category.description && (
-          <p className="mt-3 max-w-2xl text-zinc-400">{category.description}</p>
-        )}
-        {category.intro && (
-          <div className="mt-6 max-w-3xl">
-            <Markdown>{category.intro}</Markdown>
-          </div>
-        )}
-      </div>
 
-      <CategoryGrid categorySlug={slug} games={games} products={cards} />
+      {art ? (
+        // Cinematic category header — Higgsfield art behind a legibility veil
+        <div className="relative overflow-hidden border-b border-edge">
+          <Image
+            src={art}
+            alt=""
+            aria-hidden
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover"
+          />
+          <div className="art-veil" />
+          <div className="relative mx-auto max-w-7xl px-4 pb-12 pt-16 sm:px-6 sm:pb-14 sm:pt-24">
+            <Reveal y={14}>
+              <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary-light">
+                Category
+              </p>
+              <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+                {category.name}
+              </h1>
+              {category.description && (
+                <p className="mt-3 max-w-2xl text-zinc-300">
+                  {category.description}
+                </p>
+              )}
+            </Reveal>
+          </div>
+        </div>
+      ) : (
+        <div className="mx-auto max-w-7xl px-4 pt-14 sm:px-6">
+          <Reveal y={14}>
+            <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary-light">
+              Category
+            </p>
+            <h1 className="text-4xl font-extrabold text-white">
+              {category.name}
+            </h1>
+            {category.description && (
+              <p className="mt-3 max-w-2xl text-zinc-400">
+                {category.description}
+              </p>
+            )}
+          </Reveal>
+        </div>
+      )}
+
+      <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+        {category.intro && (
+          <Reveal y={16}>
+            <div className="mb-10 max-w-3xl">
+              <Markdown>{category.intro}</Markdown>
+            </div>
+          </Reveal>
+        )}
+
+        <CategoryGrid categorySlug={slug} games={games} products={cards} />
+      </div>
     </div>
   );
 }

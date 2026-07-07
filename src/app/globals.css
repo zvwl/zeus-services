@@ -27,10 +27,10 @@
     height: 10px;
   }
   ::-webkit-scrollbar-track {
-    background: #0c0c16;
+    background: theme(colors.surface);
   }
   ::-webkit-scrollbar-thumb {
-    background: #2a2a42;
+    background: theme(colors.edge.strong);
     border-radius: 8px;
   }
   ::-webkit-scrollbar-thumb:hover {
@@ -54,7 +54,7 @@
     @apply rounded-2xl border border-edge bg-surface/95;
   }
   .text-gradient {
-    @apply bg-gradient-to-r from-violet-400 via-primary to-fuchsia-400 bg-clip-text text-transparent;
+    @apply bg-gradient-to-r from-violet-400 via-primary to-fuchsia-500 bg-clip-text text-transparent;
   }
   .text-gradient-gold {
     @apply bg-gradient-to-r from-amber-200 via-gold to-amber-500 bg-clip-text text-transparent;
@@ -102,5 +102,32 @@
   }
   .prose-dark blockquote {
     @apply border-l-4 border-primary/50 pl-4 italic text-zinc-400 my-4;
+  }
+  /* Dark veil over Higgsfield artwork so overlay text stays AA-legible. */
+  .art-veil {
+    @apply pointer-events-none absolute inset-0;
+    background: linear-gradient(
+        to right,
+        rgba(7, 7, 14, 0.92) 0%,
+        rgba(7, 7, 14, 0.55) 45%,
+        rgba(7, 7, 14, 0.25) 100%
+      ),
+      linear-gradient(to top, rgba(7, 7, 14, 0.9) 0%, transparent 40%);
+  }
+  .art-veil-full {
+    @apply pointer-events-none absolute inset-0;
+    background: rgba(7, 7, 14, 0.62);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .animate-page-in,
+  .animate-fade-up,
+  .animate-glow-pulse,
+  .animate-shimmer {
+    animation: none !important;
   }
 }

@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { upsertPost } from "@/app/admin/actions";
 import { ImageUpload } from "@/components/ImageUpload";
+import { MarkdownEditor } from "@/components/admin/MarkdownEditor";
 import { Button, Card } from "@/components/ui";
 import type { BlogPost } from "@/lib/types";
 
@@ -66,13 +67,17 @@ export function PostForm({ post }: { post: BlogPost | null }) {
           />
         </div>
         <div>
-          <label className="label">Content (Markdown) *</label>
-          <textarea
+          <label className="label">Content *</label>
+          <MarkdownEditor
             name="content"
-            className="input min-h-[320px] font-mono text-xs"
             defaultValue={post?.content ?? ""}
             required
+            folder="blog"
           />
+          <p className="mt-1 text-xs text-zinc-600">
+            Use the toolbar to format text and insert images — no Markdown
+            knowledge needed. The preview shows exactly how the post will look.
+          </p>
         </div>
         <ImageUpload
           folder="blog"
