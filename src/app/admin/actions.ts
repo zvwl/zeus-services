@@ -1235,6 +1235,26 @@ export async function saveSettings(formData: FormData): Promise<AdminResult> {
   return ok("Settings saved.");
 }
 
+export async function syncRatesNow(): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_settings");
+  } catch {
+    return fail("Unauthorized");
+  }
+  try {
+    const { syncExchangeRates } = await import("@/lib/rates");
+    const updated = await syncExchangeRates();
+    await audit("rates.sync", "exchange_rates", null, updated);
+    refreshStore();
+    const summary = Object.entries(updated)
+      .map(([c, r]) => `${c} ${r}`)
+      .join(", ");
+    return ok(summary ? `Rates synced: ${summary}` : "Rates already current.");
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : "Rate sync failed.");
+  }
+}
+
 export async function saveRates(formData: FormData): Promise<AdminResult> {
   try {
     await requireCapability("manage_settings");

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { saveRates, saveSettings } from "@/app/admin/actions";
+import { saveSettings, syncRatesNow } from "@/app/admin/actions";
 import { Button, Card } from "@/components/ui";
 import { ImageUpload } from "@/components/ImageUpload";
 import type { ExchangeRate } from "@/lib/types";
@@ -164,54 +164,44 @@ export function SettingsForm({
         </Card>
       </form>
 
-      <form
-        action={(formData) =>
-          startTransition(async () => {
-            const res = await saveRates(formData);
-            setRatesMsg({ ok: res.ok, text: res.message });
-            router.refresh();
-          })
-        }
-      >
-        <Card className="space-y-4">
-          <div>
-            <h2 className="font-bold text-white">Currencies & exchange rates</h2>
-            <p className="mt-1 text-xs text-zinc-500">
-              All prices are set in USD; the storefront converts them using
-              these rates. Each rate = how much 1 USD is worth in that currency
-              (e.g. EUR 0.92 means $10 shows as €9.20). Customers pick their
-              currency in the navbar and pay in it at checkout.
-            </p>
-          </div>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {rates.map((r) => (
-              <div
-                key={r.code}
-                className="flex items-center gap-3 rounded-xl border border-edge bg-raised/40 px-4 py-3"
-              >
-                <span className="w-12 font-bold text-white">{r.code}</span>
-                <span className="flex-1 text-xs text-zinc-500">{r.label}</span>
-                {r.code === "USD" ? (
-                  <span className="w-28 text-right font-mono text-sm text-zinc-500">
-                    1.000000
-                  </span>
-                ) : (
-                  <input
-                    type="number"
-                    step="0.000001"
-                    min="0.000001"
-                    name={`rate_${r.code}`}
-                    defaultValue={Number(r.rate)}
-                    className="input w-28 text-right font-mono"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
-          <Feedback msg={ratesMsg} />
-          <Button disabled={pending}>{pending ? "Saving…" : "Save rates"}</Button>
-        </Card>
-      </form>
+      <Card className="space-y-4">
+        <div>
+          <h2 className="font-bold text-white">Currencies & exchange rates</h2>
+          <p className="mt-1 text-xs text-zinc-500">
+            All prices are set in USD; the storefront converts them with live
+            market rates (ECB reference data), refreshed automatically every
+            day at 06:00 UTC. Nothing to maintain — use “Sync now” only if you
+            want today's rates immediately.
+          </p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {rates.map((r) => (
+            <div
+              key={r.code}
+              className="flex items-center gap-3 rounded-xl border border-edge bg-raised/40 px-4 py-3"
+            >
+              <span className="w-12 font-bold text-white">{r.code}</span>
+              <span className="flex-1 text-xs text-zinc-500">{r.label}</span>
+              <span className="text-right font-mono text-sm text-zinc-300">
+                {Number(r.rate).toFixed(4)}
+              </span>
+            </div>
+          ))}
+        </div>
+        <Feedback msg={ratesMsg} />
+        <Button
+          disabled={pending}
+          onClick={() =>
+            startTransition(async () => {
+              const res = await syncRatesNow();
+              setRatesMsg({ ok: res.ok, text: res.message });
+              router.refresh();
+            })
+          }
+        >
+          {pending ? "Syncing…" : "Sync now"}
+        </Button>
+      </Card>
     </div>
   );
 }

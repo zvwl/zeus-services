@@ -1,13 +1,10 @@
 import { NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
-import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
+import { hasAdminClient } from "@/lib/supabase/admin";
+import { syncExchangeRates } from "@/lib/rates";
 
-// Daily exchange-rate sync (Vercel Cron, see vercel.json). Pulls ECB reference
-// rates from frankfurter.dev (free, keyless) and updates zeus.exchange_rates,
-// so displayed prices track the real market instead of the seeded values.
-// USD stays the base currency; product prices are stored in USD.
-
-const CODES = ["GBP", "EUR", "CAD", "AUD"] as const;
+// Daily exchange-rate sync (Vercel Cron, see vercel.json). Displayed prices
+// track the real market instead of the seeded values.
 
 export async function GET(req: Request) {
   // Vercel Cron sends `Authorization: Bearer ${CRON_SECRET}` when the env var
@@ -23,33 +20,15 @@ export async function GET(req: Request) {
     );
   }
 
-  const res = await fetch(
-    `https://api.frankfurter.dev/v1/latest?base=USD&symbols=${CODES.join(",")}`,
-    { cache: "no-store" }
-  );
-  if (!res.ok) {
+  try {
+    const updated = await syncExchangeRates();
+    // Bust the cached getRates() so new prices show without waiting 5 minutes.
+    revalidateTag("site");
+    return NextResponse.json({ ok: true, base: "USD", updated });
+  } catch (err) {
     return NextResponse.json(
-      { error: `Rate provider returned ${res.status}` },
+      { error: err instanceof Error ? err.message : "sync failed" },
       { status: 502 }
     );
   }
-  const { rates } = (await res.json()) as { rates: Record<string, number> };
-
-  const db = createAdminClient();
-  const updated: Record<string, number> = {};
-  for (const code of CODES) {
-    const rate = Number(rates?.[code]);
-    // Sanity guard: ignore zero/absurd values rather than poisoning checkout.
-    if (!Number.isFinite(rate) || rate <= 0 || rate > 100) continue;
-    const { error } = await db
-      .from("exchange_rates")
-      .update({ rate, updated_at: new Date().toISOString() })
-      .eq("code", code);
-    if (!error) updated[code] = rate;
-  }
-
-  // Bust the cached getRates() so new prices show without waiting 5 minutes.
-  revalidateTag("site");
-
-  return NextResponse.json({ ok: true, base: "USD", updated });
 }
