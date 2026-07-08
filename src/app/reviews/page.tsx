@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getUser } from "@/lib/auth";
-import { getReviewStats } from "@/lib/data";
+import { getReviewStats, getSettings, setting } from "@/lib/data";
 import { ReviewCard } from "@/components/cards";
 import { ReviewForm } from "@/components/ReviewForm";
 import { JsonLd } from "@/components/JsonLd";
+import { TRUSTBOX, TrustBox } from "@/components/TrustBox";
 import { Star } from "lucide-react";
 import { SectionHeading, Stars } from "@/components/ui";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
@@ -20,7 +21,7 @@ export const revalidate = 0;
 
 export default async function ReviewsPage() {
   const supabase = createPublicClient();
-  const [{ data }, stats, user] = await Promise.all([
+  const [{ data }, stats, settings, user] = await Promise.all([
     supabase
       .from("reviews")
       .select("*, profile:profiles(username, avatar_url)")
@@ -28,8 +29,10 @@ export default async function ReviewsPage() {
       .order("created_at", { ascending: false })
       .limit(60),
     getReviewStats(),
+    getSettings(),
     getUser(),
   ]);
+  const trustpilotId = setting(settings, "trustpilot_business_unit_id");
   const reviews = (data as Review[]) ?? [];
   // All-time stats (cached, DB-computed) so the headline number matches the
   // homepage badge and the structured data — not just the 60 loaded reviews.
@@ -82,6 +85,15 @@ export default async function ReviewsPage() {
           subtitle="Real feedback from verified buyers. Reviews are only accepted from accounts with a completed purchase."
         />
       </Reveal>
+      {trustpilotId && (
+        <div className="mb-8 max-w-md">
+          <TrustBox
+            businessUnitId={trustpilotId}
+            templateId={TRUSTBOX.reviewCollector.templateId}
+            height={TRUSTBOX.reviewCollector.height}
+          />
+        </div>
+      )}
 
       <div className="grid items-start gap-6 lg:grid-cols-3">
         <Reveal y={16} className="glass h-fit p-6 lg:sticky lg:top-24">

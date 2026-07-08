@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { getActiveGames, getCategories, getSettings, setting } from "@/lib/data";
+import { TRUSTBOX, TrustBox } from "@/components/TrustBox";
 
 export async function Footer() {
   const [games, categories, settings] = await Promise.all([
@@ -126,6 +127,15 @@ export async function Footer() {
               <span className="font-semibold text-zinc-400">Stripe</span> · We
               never store card details.
             </p>
+            {setting(settings, "trustpilot_business_unit_id") && (
+              <div className="mt-5 max-w-xs">
+                <TrustBox
+                  businessUnitId={setting(settings, "trustpilot_business_unit_id")}
+                  templateId={TRUSTBOX.microReviewCount.templateId}
+                  height={TRUSTBOX.microReviewCount.height}
+                />
+              </div>
+            )}
           </div>
           {columns.map((col) => (
             <div key={col.title}>

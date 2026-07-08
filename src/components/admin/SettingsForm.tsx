@@ -51,6 +51,12 @@ const COMMUNITY_FIELDS: { key: string; label: string; placeholder: string; help?
   { key: "twitter_url", label: "X / Twitter URL", placeholder: "https://x.com/…" },
   { key: "youtube_url", label: "YouTube URL", placeholder: "https://youtube.com/@…" },
   { key: "tiktok_url", label: "TikTok URL", placeholder: "https://tiktok.com/@…" },
+  {
+    key: "trustpilot_business_unit_id",
+    label: "Trustpilot Business Unit ID",
+    placeholder: "e.g. 46da6a2xxxxxxxxxxxxxxxx",
+    help: "Enables the Trustpilot widgets in the footer and on the reviews page. Find it in Trustpilot Business → Showcase → any TrustBox → the embed code's data-businessunit-id value.",
+  },
 ];
 
 function Feedback({ msg }: { msg: { ok: boolean; text: string } | null }) {

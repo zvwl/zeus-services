@@ -1,0 +1,76 @@
+"use client";
+
+import { useEffect, useRef } from "react";
+import Script from "next/script";
+import { cn } from "@/lib/utils";
+
+declare global {
+  interface Window {
+    Trustpilot?: {
+      loadFromElement: (el: HTMLElement, force?: boolean) => void;
+    };
+  }
+}
+
+/** Standard Trustpilot TrustBox template ids (global constants, not per-account). */
+export const TRUSTBOX = {
+  /** "Review us on Trustpilot" prompt — the right widget until reviews build up. */
+  reviewCollector: { templateId: "56278e9abfbbba0bdcd568bc", height: "52px" },
+  /** Compact "TrustScore x.x | n reviews" line — footer-friendly. */
+  microReviewCount: { templateId: "5419b6a8b0d04a076446a9ad", height: "24px" },
+} as const;
+
+/**
+ * Trustpilot TrustBox embed. Renders nothing useful until the bootstrap script
+ * initialises it; the fallback link inside keeps it accessible (and is what
+ * crawlers see). Requires widget.trustpilot.com in the CSP (next.config.mjs).
+ */
+export function TrustBox({
+  businessUnitId,
+  templateId,
+  height,
+  className,
+}: {
+  businessUnitId: string;
+  templateId: string;
+  height: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // The bootstrap script scans the DOM once on load; widgets mounted after a
+  // client-side navigation need an explicit kick.
+  useEffect(() => {
+    if (window.Trustpilot && ref.current) {
+      window.Trustpilot.loadFromElement(ref.current, true);
+    }
+  }, []);
+
+  return (
+    <>
+      <Script
+        src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"
+        strategy="lazyOnload"
+      />
+      <div
+        ref={ref}
+        className={cn("trustpilot-widget", className)}
+        data-locale="en-GB"
+        data-template-id={templateId}
+        data-businessunit-id={businessUnitId}
+        data-style-height={height}
+        data-style-width="100%"
+        data-theme="dark"
+      >
+        <a
+          href="https://uk.trustpilot.com/review/zeuservices.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-zinc-500 transition hover:text-primary-light"
+        >
+          Review us on Trustpilot
+        </a>
+      </div>
+    </>
+  );
+}
