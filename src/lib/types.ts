@@ -28,6 +28,11 @@ export interface Category {
   icon: string | null;
   sort_order: number;
   is_active: boolean;
+  /** Hand-written SERP overrides; optional so code tolerates pre-0021 schemas. */
+  meta_title?: string | null;
+  meta_description?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export interface Game {
@@ -41,6 +46,11 @@ export interface Game {
   is_active: boolean;
   is_featured: boolean;
   sort_order: number;
+  /** Hand-written SERP overrides; optional so code tolerates pre-0021 schemas. */
+  meta_title?: string | null;
+  meta_description?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 }
 
 export type DeliveryType = "instant" | "manual";
@@ -69,6 +79,9 @@ export interface Product {
   custom_min: number | null;
   custom_max: number | null;
   custom_step: number | null;
+  /** Hand-written SERP overrides; optional so code tolerates pre-0021 schemas. */
+  meta_title?: string | null;
+  meta_description?: string | null;
   game?: Game | null;
   category?: Category | null;
   variants?: ProductVariant[];
@@ -215,6 +228,9 @@ export interface BlogPost {
   published_at: string | null;
   created_at: string;
   updated_at: string;
+  /** Hand-written SERP overrides; optional so code tolerates pre-0021 schemas. */
+  meta_title?: string | null;
+  meta_description?: string | null;
   author?: Pick<Profile, "username" | "avatar_url"> | null;
 }
 

@@ -19,21 +19,28 @@ export async function generateMetadata({
   // Same cached unit the page body uses — no extra query.
   const { category: data } = await getCategoryWithProducts(slug);
   if (!data) return { title: "Category not found" };
+  const title = data.meta_title || data.name;
   const description = (
-    data.description || `Browse ${data.name} at Zeuservices.`
+    data.meta_description ||
+    data.description ||
+    `Browse ${data.name} at Zeuservices.`
   )
     .replace(/\s+/g, " ")
     .trim()
     .slice(0, 160);
+  // Category art exists locally — without this, shares fall back to the
+  // generic sitewide card while games/products get real art.
+  const { art } = categoryVisual(data);
   return {
-    title: data.name,
+    title,
     description,
     alternates: { canonical: `/category/${data.slug}` },
     openGraph: {
       type: "website",
-      title: data.name,
+      title,
       description,
       url: `/category/${data.slug}`,
+      images: art ? [{ url: art }] : undefined,
     },
   };
 }

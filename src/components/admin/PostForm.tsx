@@ -66,6 +66,28 @@ export function PostForm({ post }: { post: BlogPost | null }) {
             placeholder="One-line summary shown on the blog page"
           />
         </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">Meta title (SERP override)</label>
+            <input
+              name="meta_title"
+              className="input"
+              defaultValue={post?.meta_title ?? ""}
+              maxLength={70}
+              placeholder="Leave blank to use the post title"
+            />
+          </div>
+          <div>
+            <label className="label">Meta description (SERP override)</label>
+            <input
+              name="meta_description"
+              className="input"
+              defaultValue={post?.meta_description ?? ""}
+              maxLength={170}
+              placeholder="~150 chars shown in Google — blank for excerpt"
+            />
+          </div>
+        </div>
         <div>
           <label className="label">Content *</label>
           <MarkdownEditor

@@ -12,9 +12,13 @@ export const metadata: Metadata = {
   title: "Blog",
   description:
     "Guides, tips and news on game top-ups, boosting and accounts from the Zeuservices team.",
-  alternates: { canonical: "/blog" },
+  alternates: {
+    canonical: "/blog",
+    types: { "application/rss+xml": "/blog/feed.xml" },
+  },
 };
-export const revalidate = 0;
+// No cookies read — static + revalidated instead of a DB render per crawl.
+export const revalidate = 300;
 
 // Higgsfield fallback art so posts without a cover never render as a plain
 // gradient tile.

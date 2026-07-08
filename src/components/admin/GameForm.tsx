@@ -72,6 +72,28 @@ export function GameForm({ game }: { game: Game | null }) {
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">Meta title (SERP override)</label>
+            <input
+              name="meta_title"
+              className="input"
+              defaultValue={game?.meta_title ?? ""}
+              maxLength={70}
+              placeholder="e.g. GTA 5 Modded Accounts, Money & Boosting — leave blank for default"
+            />
+          </div>
+          <div>
+            <label className="label">Meta description (SERP override)</label>
+            <textarea
+              name="meta_description"
+              className="input min-h-[60px]"
+              defaultValue={game?.meta_description ?? ""}
+              maxLength={170}
+              placeholder="~150 characters shown under the title in Google. Leave blank for default."
+            />
+          </div>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
           <ImageUpload
             folder="games"
             value={imageUrl}

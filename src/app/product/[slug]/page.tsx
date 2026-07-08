@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Headphones, ShieldCheck, Truck, Zap } from "lucide-react";
-import { createPublicClient } from "@/lib/supabase/public";
+import { getProductPageData } from "@/lib/data";
 import { getUser } from "@/lib/auth";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { Badge, SectionHeading, Stars } from "@/components/ui";
@@ -13,9 +13,11 @@ import { ProductReviews } from "@/components/ProductReviews";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
 import { siteUrl } from "@/lib/utils";
-import type { Product, Review } from "@/lib/types";
+import type { Review } from "@/lib/types";
 
-export const revalidate = 0;
+// The page renders dynamically (getUser for the review form), but every
+// catalog/review query below goes through the tag-invalidated cache in
+// lib/data.ts, so crawls and anonymous hits no longer pay per-request DB reads.
 
 const stripMd = (s: string) =>
   s.replace(/[#*_~>`[\]()]/g, "").replace(/\s+/g, " ").trim();
@@ -71,25 +73,15 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("products")
-    .select("name, slug, description, image_url, game:games(name)")
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
+  // Same cached unit the page body uses — no extra query.
+  const data = await getProductPageData(slug);
   if (!data) return { title: "Product not found" };
-  const p = data as unknown as {
-    name: string;
-    slug: string;
-    description: string | null;
-    image_url: string | null;
-    game: { name: string } | { name: string }[] | null;
-  };
-  const gameName = Array.isArray(p.game) ? p.game[0]?.name : p.game?.name;
-  const title = `${gameName ? `${gameName} ` : ""}${p.name}`;
-  const description = stripMd(
-    p.description || `Buy ${p.name} fast and securely at Zeuservices.`
+  const p = data.product;
+  const title =
+    p.meta_title || `${p.game?.name ? `${p.game.name} ` : ""}${p.name}`;
+  const description = (
+    p.meta_description ||
+    stripMd(p.description || `Buy ${p.name} fast and securely at Zeuservices.`)
   ).slice(0, 160);
   return {
     title,
@@ -111,52 +103,17 @@ export default async function ProductPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("products")
-    .select(
-      "*, game:games(*), category:categories(*), variants:product_variants(*), fields:product_fields(*), addons:product_addons(*)"
-    )
-    .eq("slug", slug)
-    .eq("is_active", true)
-    .maybeSingle();
+  const [data, user] = await Promise.all([getProductPageData(slug), getUser()]);
   if (!data) notFound();
-  const product = data as Product;
+  const { product, reviews: productReviews, ratings, related } = data;
 
-  const [{ data: reviews }, { count: reviewCount }, { data: related }, user] =
-    await Promise.all([
-      supabase
-        .from("reviews")
-        .select("*, profile:profiles(username, avatar_url)")
-        .eq("product_id", product.id)
-        .eq("is_approved", true)
-        .order("created_at", { ascending: false })
-        .limit(30),
-      supabase
-        .from("reviews")
-        .select("id", { count: "exact", head: true })
-        .eq("product_id", product.id)
-        .eq("is_approved", true),
-      supabase
-        .from("products")
-        .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
-        .eq("game_id", product.game_id)
-        .eq("is_active", true)
-        .neq("id", product.id)
-        .order("sort_order")
-        .limit(4),
-      getUser(),
-    ]);
-
-  const productReviews = (reviews as Review[]) ?? [];
-  const totalReviews = reviewCount ?? productReviews.length;
+  // Average over EVERY approved rating (not just the 30 shown) so the visible
+  // score, the review count and the JSON-LD aggregateRating all agree.
+  const totalReviews = ratings.length;
   const avg =
-    productReviews.length > 0
-      ? Math.round(
-          (productReviews.reduce((s, r) => s + r.rating, 0) /
-            productReviews.length) *
-            10
-        ) / 10
+    totalReviews > 0
+      ? Math.round((ratings.reduce((s, r) => s + r, 0) / totalReviews) * 10) /
+        10
       : null;
 
   const variants = (product.variants ?? [])
@@ -185,6 +142,46 @@ export default async function ProductPage({
     ? variants.some((v) => v.stock === null || v.stock > 0)
     : product.stock === null || product.stock > 0;
 
+  // Shared Offer plumbing; multi-variant products advertise the real price
+  // range via AggregateOffer instead of asserting the "from" price as THE price.
+  const offerCommon = {
+    priceCurrency: "USD",
+    itemCondition: "https://schema.org/NewCondition",
+    availability: inStock
+      ? "https://schema.org/InStock"
+      : "https://schema.org/OutOfStock",
+    url: `${base}/product/${product.slug}`,
+    seller: { "@type": "Organization", name: "Zeuservices", url: base },
+    hasMerchantReturnPolicy: {
+      "@type": "MerchantReturnPolicy",
+      applicableCountry: "GB",
+      returnPolicyCategory:
+        "https://schema.org/MerchantReturnFiniteReturnWindow",
+      merchantReturnDays: 0,
+      returnMethod: "https://schema.org/ReturnByMail",
+      returnFees: "https://schema.org/FreeReturn",
+      merchantReturnLink: `${base}/refunds`,
+    },
+  };
+  const priceValidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
+    .toISOString()
+    .slice(0, 10);
+  const offers =
+    activePrices.length > 1
+      ? {
+          "@type": "AggregateOffer",
+          lowPrice: Math.min(...activePrices).toFixed(2),
+          highPrice: Math.max(...activePrices).toFixed(2),
+          offerCount: activePrices.length,
+          ...offerCommon,
+        }
+      : {
+          "@type": "Offer",
+          price: price.toFixed(2),
+          priceValidUntil,
+          ...offerCommon,
+        };
+
   const productJsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
@@ -196,30 +193,7 @@ export default async function ProductPage({
     ...(product.game?.name
       ? { brand: { "@type": "Brand", name: product.game.name } }
       : {}),
-    offers: {
-      "@type": "Offer",
-      priceCurrency: "USD",
-      price: price.toFixed(2),
-      priceValidUntil: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .slice(0, 10),
-      itemCondition: "https://schema.org/NewCondition",
-      availability: inStock
-        ? "https://schema.org/InStock"
-        : "https://schema.org/OutOfStock",
-      url: `${base}/product/${product.slug}`,
-      seller: { "@type": "Organization", name: "Zeuservices", url: base },
-      hasMerchantReturnPolicy: {
-        "@type": "MerchantReturnPolicy",
-        applicableCountry: "GB",
-        returnPolicyCategory:
-          "https://schema.org/MerchantReturnFiniteReturnWindow",
-        merchantReturnDays: 0,
-        returnMethod: "https://schema.org/ReturnByMail",
-        returnFees: "https://schema.org/FreeReturn",
-        merchantReturnLink: `${base}/refunds`,
-      },
-    },
+    offers,
     ...(totalReviews > 0 && avg
       ? {
           aggregateRating: {
@@ -227,6 +201,23 @@ export default async function ProductPage({
             ratingValue: avg,
             reviewCount: totalReviews,
           },
+          // Individual review snippets (top 5 most recent) — the data is
+          // already fetched and rendered on the page, so mark it up too.
+          review: productReviews.slice(0, 5).map((r) => ({
+            "@type": "Review",
+            reviewRating: {
+              "@type": "Rating",
+              ratingValue: r.rating,
+              bestRating: 5,
+              worstRating: 1,
+            },
+            author: {
+              "@type": "Person",
+              name: r.profile?.username ?? r.author_name ?? "Verified buyer",
+            },
+            datePublished: r.created_at?.slice(0, 10),
+            ...(r.content ? { reviewBody: r.content.slice(0, 500) } : {}),
+          })),
         }
       : {}),
   };
@@ -340,8 +331,8 @@ export default async function ProductPage({
             <div className="mt-2 flex items-center gap-2">
               <Stars rating={avg} />
               <span className="text-sm text-zinc-400">
-                {avg} ({productReviews.length}{" "}
-                {productReviews.length === 1 ? "review" : "reviews"})
+                {avg} ({totalReviews}{" "}
+                {totalReviews === 1 ? "review" : "reviews"})
               </span>
             </div>
           )}
@@ -448,7 +439,7 @@ export default async function ProductPage({
             className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
             stagger={0.06}
           >
-            {(related as Product[]).map((p) => (
+            {related.map((p) => (
               <RevealItem key={p.id}>
                 <ProductCard product={p} />
               </RevealItem>

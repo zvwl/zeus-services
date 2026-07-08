@@ -50,6 +50,20 @@ function CategoryRow({ category }: { category: Category | null }) {
         placeholder="Intro (SEO body — markdown, shown under the category heading). Supports ## headings, **bold**, [links](/support). Leave blank to hide."
         className="input min-h-[110px] w-full font-mono text-xs"
       />
+      <input
+        name="meta_title"
+        defaultValue={category?.meta_title ?? ""}
+        maxLength={70}
+        placeholder="Meta title (SERP override — blank for default)"
+        className="input min-w-[180px] flex-1"
+      />
+      <input
+        name="meta_description"
+        defaultValue={category?.meta_description ?? ""}
+        maxLength={170}
+        placeholder="Meta description (~150 chars shown in Google — blank for default)"
+        className="input min-w-[220px] flex-[2]"
+      />
       <label className="flex items-center gap-1.5 text-xs text-zinc-400">
         <input
           type="checkbox"

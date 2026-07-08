@@ -11,7 +11,9 @@ import { Reveal } from "@/components/motion";
 import { formatDate, readingTime, siteUrl } from "@/lib/utils";
 import type { BlogPost } from "@/lib/types";
 
-export const revalidate = 0;
+// No cookies are read here, so the page renders statically and revalidates —
+// crawls stop paying a full DB-bound render per hit.
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,
@@ -20,25 +22,30 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const supabase = createPublicClient();
+  // select("*") so the optional meta_title/meta_description columns are picked
+  // up when present without breaking on pre-0021 schemas.
   const { data } = await supabase
     .from("blog_posts")
-    .select("title, slug, excerpt, content, image_url, published_at")
+    .select("*")
     .eq("slug", slug)
     .eq("is_published", true)
-    .maybeSingle();
+    .maybeSingle<BlogPost>();
   if (!data) return { title: "Post not found" };
-  const description = (data.excerpt || data.content || "")
-    .replace(/[#*_~>`[\]()]/g, "")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
+  const title = data.meta_title || data.title;
+  const description =
+    data.meta_description ||
+    (data.excerpt || data.content || "")
+      .replace(/[#*_~>`[\]()]/g, "")
+      .replace(/\s+/g, " ")
+      .trim()
+      .slice(0, 160);
   return {
-    title: data.title,
+    title,
     description,
     alternates: { canonical: `/blog/${data.slug}` },
     openGraph: {
       type: "article",
-      title: data.title,
+      title,
       description,
       url: `/blog/${data.slug}`,
       ...(data.published_at ? { publishedTime: data.published_at } : {}),
@@ -63,6 +70,28 @@ export default async function BlogPostPage({
   if (!data) notFound();
   const post = data as BlogPost;
 
+  // Related posts: newest others sharing a tag, padded with newest overall —
+  // guides should pass equity to each other instead of dead-ending.
+  const { data: others } = await supabase
+    .from("blog_posts")
+    .select("slug, title, image_url, tags, excerpt, published_at, created_at")
+    .eq("is_published", true)
+    .neq("id", post.id)
+    .order("published_at", { ascending: false })
+    .limit(24);
+  const pool = (others as Pick<
+    BlogPost,
+    "slug" | "title" | "image_url" | "tags" | "excerpt" | "published_at" | "created_at"
+  >[]) ?? [];
+  const shared = pool.filter((p) =>
+    p.tags?.some((t) => post.tags?.includes(t))
+  );
+  const related = [
+    ...shared,
+    ...pool.filter((p) => !shared.includes(p)),
+  ].slice(0, 3);
+
+  const base = siteUrl();
   const articleJsonLd = {
     "@context": "https://schema.org",
     "@type": "Article",
@@ -71,8 +100,27 @@ export default async function BlogPostPage({
     datePublished: post.published_at ?? post.created_at,
     dateModified: post.updated_at ?? post.published_at ?? post.created_at,
     author: { "@type": "Person", name: post.author?.username ?? "Zeus Team" },
+    publisher: {
+      "@type": "Organization",
+      name: "Zeuservices",
+      url: base,
+    },
     ...(post.excerpt ? { description: post.excerpt } : {}),
-    mainEntityOfPage: `${siteUrl()}/blog/${post.slug}`,
+    mainEntityOfPage: `${base}/blog/${post.slug}`,
+  };
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: base },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${base}/blog` },
+      {
+        "@type": "ListItem",
+        position: 3,
+        name: post.title,
+        item: `${base}/blog/${post.slug}`,
+      },
+    ],
   };
 
   const readMins = readingTime(post.content ?? "");
@@ -80,6 +128,7 @@ export default async function BlogPostPage({
   return (
     <article className="mx-auto max-w-3xl px-4 py-14 sm:px-6">
       <JsonLd data={articleJsonLd} />
+      <JsonLd data={breadcrumbJsonLd} />
       <Reveal y={14}>
         <Link
           href="/blog"
@@ -89,9 +138,9 @@ export default async function BlogPostPage({
         </Link>
         <div className="mt-6 flex flex-wrap gap-1.5">
           {post.tags?.map((t) => (
-            <Badge key={t} variant="primary">
-              {t}
-            </Badge>
+            <Link key={t} href={`/blog/tag/${encodeURIComponent(t)}`}>
+              <Badge variant="primary">{t}</Badge>
+            </Link>
           ))}
         </div>
         <h1 className="mt-4 text-4xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
@@ -120,6 +169,36 @@ export default async function BlogPostPage({
       <div className="mt-10">
         <Markdown>{post.content}</Markdown>
       </div>
+
+      {related.length > 0 && (
+        <aside className="mt-14 border-t border-edge pt-10">
+          <h2 className="mb-6 text-xl font-bold text-white">Keep reading</h2>
+          <div className="grid gap-5 sm:grid-cols-3">
+            {related.map((p) => (
+              <Link
+                key={p.slug}
+                href={`/blog/${p.slug}`}
+                className="group glass flex h-full flex-col overflow-hidden p-0 transition duration-300 hover:-translate-y-1 hover:border-primary/50"
+              >
+                <CoverImage
+                  src={p.image_url || "/media/blog-cover.webp"}
+                  alt={p.title}
+                  fallbackText={p.title}
+                  className="aspect-[16/9] w-full"
+                />
+                <div className="flex flex-1 flex-col p-4">
+                  <h3 className="text-sm font-bold leading-snug text-white transition group-hover:text-primary-light">
+                    {p.title}
+                  </h3>
+                  <p className="mt-auto pt-3 text-xs text-zinc-600">
+                    {formatDate(p.published_at ?? p.created_at)}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </aside>
+      )}
     </article>
   );
 }

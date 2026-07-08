@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import { createPublicClient } from "@/lib/supabase/public";
 import { getUser } from "@/lib/auth";
+import { getReviewStats } from "@/lib/data";
 import { ReviewCard } from "@/components/cards";
 import { ReviewForm } from "@/components/ReviewForm";
+import { JsonLd } from "@/components/JsonLd";
 import { Star } from "lucide-react";
 import { SectionHeading, Stars } from "@/components/ui";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
@@ -18,29 +20,60 @@ export const revalidate = 0;
 
 export default async function ReviewsPage() {
   const supabase = createPublicClient();
-  const [{ data }, user] = await Promise.all([
+  const [{ data }, stats, user] = await Promise.all([
     supabase
       .from("reviews")
       .select("*, profile:profiles(username, avatar_url)")
       .eq("is_approved", true)
       .order("created_at", { ascending: false })
       .limit(60),
+    getReviewStats(),
     getUser(),
   ]);
   const reviews = (data as Review[]) ?? [];
-  const avg =
-    reviews.length > 0
-      ? Math.round(
-          (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10
-        ) / 10
-      : 0;
+  // All-time stats (cached, DB-computed) so the headline number matches the
+  // homepage badge and the structured data — not just the 60 loaded reviews.
+  const avg = stats.count > 0 ? stats.avg : 0;
   const distribution = [5, 4, 3, 2, 1].map((star) => ({
     star,
     count: reviews.filter((r) => r.rating === star).length,
   }));
 
+  // Review snippets for the trust page. Each review is about a purchased
+  // product/service, so it's marked up as an ItemList of Review items (org-level
+  // self-serving aggregateRating is against Google's guidelines).
+  const reviewsJsonLd =
+    reviews.length > 0
+      ? {
+          "@context": "https://schema.org",
+          "@type": "ItemList",
+          name: "Zeuservices customer reviews",
+          numberOfItems: stats.count,
+          itemListElement: reviews.slice(0, 12).map((r, i) => ({
+            "@type": "ListItem",
+            position: i + 1,
+            item: {
+              "@type": "Review",
+              reviewRating: {
+                "@type": "Rating",
+                ratingValue: r.rating,
+                bestRating: 5,
+                worstRating: 1,
+              },
+              author: {
+                "@type": "Person",
+                name: r.profile?.username ?? r.author_name ?? "Verified buyer",
+              },
+              datePublished: r.created_at?.slice(0, 10),
+              ...(r.content ? { reviewBody: r.content.slice(0, 500) } : {}),
+            },
+          })),
+        }
+      : null;
+
   return (
     <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
+      {reviewsJsonLd && <JsonLd data={reviewsJsonLd} />}
       <Reveal y={14}>
         <SectionHeading
           as="h1"
@@ -58,7 +91,7 @@ export default async function ReviewsPage() {
               <Stars rating={avg} />
             </div>
             <p className="mt-1 text-sm text-zinc-500">
-              {reviews.length} verified {reviews.length === 1 ? "review" : "reviews"}
+              {stats.count} verified {stats.count === 1 ? "review" : "reviews"}
             </p>
           </div>
           <div className="mt-6 space-y-2">

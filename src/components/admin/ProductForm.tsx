@@ -134,6 +134,10 @@ export function ProductForm({
     product?.category_id ?? categories[0]?.id ?? ""
   );
   const [description, setDescription] = useState(product?.description ?? "");
+  const [metaTitle, setMetaTitle] = useState(product?.meta_title ?? "");
+  const [metaDescription, setMetaDescription] = useState(
+    product?.meta_description ?? ""
+  );
   const [imageUrl, setImageUrl] = useState<string | null>(product?.image_url ?? null);
   const [basePrice, setBasePrice] = useState(String(product?.base_price ?? "9.99"));
   const [compareAt, setCompareAt] = useState(
@@ -264,6 +268,8 @@ export function ProductForm({
       name,
       slug: slug || slugify(name),
       description,
+      meta_title: metaTitle,
+      meta_description: metaDescription,
       image_url: imageUrl,
       base_price: Number(basePrice),
       compare_at_price: compareAt ? Number(compareAt) : null,
@@ -375,6 +381,28 @@ export function ProductForm({
             onChange={(e) => setDescription(e.target.value)}
             placeholder="What does the customer get? Delivery time? Requirements?"
           />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label className="label">Meta title (SERP override)</label>
+            <input
+              className="input"
+              value={metaTitle}
+              onChange={(e) => setMetaTitle(e.target.value)}
+              maxLength={70}
+              placeholder="Leave blank for “Game Product-name”"
+            />
+          </div>
+          <div>
+            <label className="label">Meta description (SERP override)</label>
+            <input
+              className="input"
+              value={metaDescription}
+              onChange={(e) => setMetaDescription(e.target.value)}
+              maxLength={170}
+              placeholder="~150 chars shown in Google — blank for description"
+            />
+          </div>
         </div>
         <ImageUpload
           folder="products"

@@ -216,6 +216,112 @@ export const getCategoryWithProducts = unstable_cache(
   CACHE_OPTS
 );
 
+// One cached unit per game×category combination — the SEO landing pages
+// (/games/[slug]/[category]). Returns nulls when either half is missing or
+// inactive so the route can 404.
+export const getGameCategoryLanding = unstable_cache(
+  async (
+    gameSlug: string,
+    categorySlug: string
+  ): Promise<{
+    game: Game | null;
+    category: Category | null;
+    products: Product[];
+  }> => {
+    const supabase = createPublicClient();
+    const [{ data: game }, { data: category }] = await Promise.all([
+      supabase
+        .from("games")
+        .select("*")
+        .eq("slug", gameSlug)
+        .eq("is_active", true)
+        .maybeSingle(),
+      supabase
+        .from("categories")
+        .select("*")
+        .eq("slug", categorySlug)
+        .eq("is_active", true)
+        .maybeSingle(),
+    ]);
+    if (!game || !category) return { game: null, category: null, products: [] };
+    const { data: products } = await supabase
+      .from("products")
+      .select(
+        "*, game:games(*), category:categories(*), variants:product_variants(*)"
+      )
+      .eq("game_id", game.id)
+      .eq("category_id", category.id)
+      .eq("is_active", true)
+      .order("sort_order");
+    return {
+      game: game as Game,
+      category: category as Category,
+      products: (products as Product[]) ?? [],
+    };
+  },
+  ["game-category-landing"],
+  CACHE_OPTS
+);
+
+// Everything the product page needs in one cached unit (also serves its
+// generateMetadata). `ratings` is every approved rating for the product so the
+// displayed average and the JSON-LD aggregateRating agree with the all-time
+// review count instead of just the latest page of reviews.
+export const getProductPageData = unstable_cache(
+  async (
+    slug: string
+  ): Promise<{
+    product: Product;
+    reviews: Review[];
+    ratings: number[];
+    related: Product[];
+  } | null> => {
+    const supabase = createPublicClient();
+    const { data: product } = await supabase
+      .from("products")
+      .select(
+        "*, game:games(*), category:categories(*), variants:product_variants(*), fields:product_fields(*), addons:product_addons(*)"
+      )
+      .eq("slug", slug)
+      .eq("is_active", true)
+      .maybeSingle();
+    if (!product) return null;
+    const [{ data: reviews }, { data: ratings }, { data: related }] =
+      await Promise.all([
+        supabase
+          .from("reviews")
+          .select("*, profile:profiles(username, avatar_url)")
+          .eq("product_id", product.id)
+          .eq("is_approved", true)
+          .order("created_at", { ascending: false })
+          .limit(30),
+        supabase
+          .from("reviews")
+          .select("rating")
+          .eq("product_id", product.id)
+          .eq("is_approved", true),
+        supabase
+          .from("products")
+          .select(
+            "*, game:games(*), category:categories(*), variants:product_variants(*)"
+          )
+          .eq("game_id", product.game_id)
+          .eq("is_active", true)
+          .neq("id", product.id)
+          .order("sort_order")
+          .limit(4),
+      ]);
+    return {
+      product: product as Product,
+      reviews: (reviews as Review[]) ?? [],
+      ratings: ((ratings as { rating: number }[]) ?? []).map((r) => r.rating),
+      related: (related as Product[]) ?? [],
+    };
+  },
+  ["product-page"],
+  CACHE_OPTS
+);
+
 // Rating summary from approved reviews, computed in-database so we never
 // transfer every review row just to average them.
 export const getReviewStats = unstable_cache(

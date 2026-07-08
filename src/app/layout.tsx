@@ -49,23 +49,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: title, template: `%s — ${siteName}` },
     description: tagline,
     applicationName: siteName,
-    keywords: [
-      "game top-ups",
-      "cheap game top-ups",
-      "buy V-Bucks",
-      "cheap V-Bucks",
-      "Fortnite V-Bucks",
-      "Rocket League credits",
-      "GTA Online cash",
-      "GTA 5 modded accounts",
-      "GTA Online boosting",
-      "game boosting",
-      "rank boosting service",
-      "buy game accounts",
-      "in-game currency",
-      "gaming marketplace",
-      siteName,
-    ],
+    // No `keywords` meta: every major engine ignores it — dead weight.
     // Tab favicon: the admin logo when set, otherwise the default mark. Always
     // providing one stops the browser from requesting (and 404-ing) /favicon.ico.
     icons: { icon: logoUrl || "/favicon.svg" },

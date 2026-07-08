@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
+import { ArrowRight } from "lucide-react";
 import { createPublicClient } from "@/lib/supabase/public";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { Badge, EmptyState } from "@/components/ui";
@@ -9,7 +11,9 @@ import { Reveal } from "@/components/motion";
 import { siteUrl } from "@/lib/utils";
 import type { Category, Game, Product } from "@/lib/types";
 
-export const revalidate = 0;
+// Static + tag-invalidated (admin saves call revalidateTag("site")) with a
+// 5-minute safety net, instead of a full DB-bound render per crawl.
+export const revalidate = 300;
 
 export async function generateMetadata({
   params,
@@ -18,15 +22,18 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { slug } = await params;
   const supabase = createPublicClient();
+  // select("*") so the optional meta_title/meta_description columns are picked
+  // up when present without breaking on pre-0021 schemas.
   const { data } = await supabase
     .from("games")
-    .select("name, slug, description, image_url, banner_url")
+    .select("*")
     .eq("slug", slug)
     .eq("is_active", true)
-    .maybeSingle();
+    .maybeSingle<Game>();
   if (!data) return { title: "Game not found" };
-  const title = `${data.name} Top-Ups, Boosting & Accounts`;
+  const title = data.meta_title || `${data.name} Top-Ups, Boosting & Accounts`;
   const description = (
+    data.meta_description ||
     data.description ||
     `Cheap ${data.name} top-ups, boosting and accounts — fast, secure delivery.`
   )
@@ -171,13 +178,28 @@ export default async function GamePage({
           groups.map(({ category, items }) => (
             <section key={category.id} className="mb-14">
               <Reveal y={14}>
-                <h2 className="mb-6 flex items-center gap-3 text-2xl font-bold text-white">
-                  <span
-                    aria-hidden
-                    className="h-6 w-1 rounded-full bg-gradient-to-b from-primary to-fuchsia-500"
-                  />
-                  {category.name}
-                </h2>
+                <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+                  <h2 className="flex items-center gap-3 text-2xl font-bold text-white">
+                    <span
+                      aria-hidden
+                      className="h-6 w-1 rounded-full bg-gradient-to-b from-primary to-fuchsia-500"
+                    />
+                    {/* Deep link into the game×category SEO landing page */}
+                    <Link
+                      href={`/games/${game.slug}/${category.slug}`}
+                      className="transition hover:text-primary-light"
+                    >
+                      {category.name}
+                    </Link>
+                  </h2>
+                  <Link
+                    href={`/games/${game.slug}/${category.slug}`}
+                    className="inline-flex items-center gap-1 text-sm text-zinc-400 transition hover:text-primary-light"
+                  >
+                    View all {game.name} {category.name.toLowerCase()}
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
               </Reveal>
               {/* CSS-only stagger — cards paint at first paint instead of
                   waiting for framer hydration (LCP); disabled under

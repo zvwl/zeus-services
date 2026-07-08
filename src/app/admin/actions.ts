@@ -97,6 +97,17 @@ export async function upsertGame(formData: FormData): Promise<AdminResult> {
     is_active: formData.get("is_active") === "on",
     is_featured: formData.get("is_featured") === "on",
     sort_order: Number(formData.get("sort_order") ?? 0) || 0,
+    // Included only when the form posts them (requires migration 0021's
+    // columns) so stale pre-deploy clients that omit them still save cleanly.
+    ...(formData.has("meta_title")
+      ? { meta_title: String(formData.get("meta_title") ?? "").trim() || null }
+      : {}),
+    ...(formData.has("meta_description")
+      ? {
+          meta_description:
+            String(formData.get("meta_description") ?? "").trim() || null,
+        }
+      : {}),
   };
   const supabase = await actionDb();
   const query = id
@@ -146,6 +157,15 @@ export async function upsertCategory(formData: FormData): Promise<AdminResult> {
     icon: String(formData.get("icon") ?? "").trim() || null,
     sort_order: Number(formData.get("sort_order") ?? 0) || 0,
     is_active: formData.get("is_active") === "on",
+    ...(formData.has("meta_title")
+      ? { meta_title: String(formData.get("meta_title") ?? "").trim() || null }
+      : {}),
+    ...(formData.has("meta_description")
+      ? {
+          meta_description:
+            String(formData.get("meta_description") ?? "").trim() || null,
+        }
+      : {}),
   };
   const supabase = await actionDb();
   const query = id
@@ -184,6 +204,8 @@ export interface ProductPayload {
   name: string;
   slug?: string;
   description?: string;
+  meta_title?: string | null;
+  meta_description?: string | null;
   image_url?: string | null;
   base_price: number;
   compare_at_price?: number | null;
@@ -255,6 +277,14 @@ export async function upsertProduct(payloadJson: string): Promise<AdminResult> {
     name: payload.name.trim(),
     ...(slug !== undefined ? { slug } : {}),
     description: payload.description?.trim() || null,
+    // Included only when the client sends them (requires migration 0021's
+    // columns) so stale pre-deploy clients that omit them still save cleanly.
+    ...("meta_title" in payload
+      ? { meta_title: payload.meta_title?.trim() || null }
+      : {}),
+    ...("meta_description" in payload
+      ? { meta_description: payload.meta_description?.trim() || null }
+      : {}),
     image_url: payload.image_url || null,
     base_price: Number(payload.base_price),
     compare_at_price: payload.compare_at_price
@@ -782,6 +812,13 @@ export async function upsertPost(formData: FormData): Promise<AdminResult> {
     is_published: isPublished,
     updated_at: new Date().toISOString(),
   };
+  if (formData.has("meta_title")) {
+    row.meta_title = String(formData.get("meta_title") ?? "").trim() || null;
+  }
+  if (formData.has("meta_description")) {
+    row.meta_description =
+      String(formData.get("meta_description") ?? "").trim() || null;
+  }
   if (!id) row.author_id = profile.id;
 
   const supabase = await actionDb();

@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { createPublicClient } from "@/lib/supabase/public";
 import { siteUrl } from "@/lib/utils";
+import type { Category, Game } from "@/lib/types";
 
 // Regenerate hourly so newly added/removed games, products, categories, blog
 // posts and giveaways show up for Google automatically (with lastModified).
@@ -10,10 +11,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = siteUrl();
   const supabase = createPublicClient();
 
+  // games/categories use select("*") so updated_at (migration 0021) is used
+  // when present without breaking on older schemas.
   const [games, products, categories, posts, giveaways] = await Promise.all([
-    supabase.from("games").select("slug, created_at").eq("is_active", true),
-    supabase.from("products").select("slug, updated_at").eq("is_active", true),
-    supabase.from("categories").select("slug, created_at").eq("is_active", true),
+    supabase.from("games").select("*").eq("is_active", true),
+    supabase
+      .from("products")
+      .select("slug, updated_at, game_id, category_id")
+      .eq("is_active", true),
+    supabase.from("categories").select("*").eq("is_active", true),
     supabase.from("blog_posts").select("slug, updated_at").eq("is_published", true),
     supabase.from("giveaways").select("slug, created_at").eq("is_active", true),
   ]);
@@ -33,22 +39,53 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/refunds`, changeFrequency: "yearly", priority: 0.2 },
   ];
 
+  const gameRows = (games.data as Game[]) ?? [];
+  const categoryRows = (categories.data as Category[]) ?? [];
+  const productRows =
+    (products.data as {
+      slug: string;
+      updated_at: string | null;
+      game_id: string;
+      category_id: string;
+    }[]) ?? [];
+
+  // Game×category landing pages (/games/[slug]/[category]) — only combos that
+  // actually have live products, mirroring the route's own 404 rule.
+  const gameById = new Map(gameRows.map((g) => [g.id, g]));
+  const categoryById = new Map(categoryRows.map((c) => [c.id, c]));
+  const combos = new Map<string, string | undefined>();
+  for (const p of productRows) {
+    const game = gameById.get(p.game_id);
+    const category = categoryById.get(p.category_id);
+    if (!game || !category) continue;
+    const url = `${base}/games/${game.slug}/${category.slug}`;
+    const prev = combos.get(url);
+    const next = p.updated_at ?? undefined;
+    if (!prev || (next && next > prev)) combos.set(url, next);
+  }
+
   const dynamicRoutes: MetadataRoute.Sitemap = [
-    ...(products.data ?? []).map((p) => ({
+    ...productRows.map((p) => ({
       url: `${base}/product/${p.slug}`,
       lastModified: p.updated_at ?? undefined,
       changeFrequency: "weekly" as const,
       priority: 0.8,
     })),
-    ...(games.data ?? []).map((g) => ({
+    ...[...combos.entries()].map(([url, lastModified]) => ({
+      url,
+      lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.8,
+    })),
+    ...gameRows.map((g) => ({
       url: `${base}/games/${g.slug}`,
-      lastModified: g.created_at ?? undefined,
+      lastModified: g.updated_at ?? g.created_at ?? undefined,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
-    ...(categories.data ?? []).map((c) => ({
+    ...categoryRows.map((c) => ({
       url: `${base}/category/${c.slug}`,
-      lastModified: c.created_at ?? undefined,
+      lastModified: c.updated_at ?? c.created_at ?? undefined,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),

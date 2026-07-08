@@ -8,11 +8,11 @@ import { sanitizeSearchTerm } from "@/lib/utils";
 import type { Product } from "@/lib/types";
 
 // Internal search results should never be indexed (Google guidance); follow
-// links so crawlers can still discover products through them.
+// links so crawlers can still discover products through them. No canonical —
+// declaring one on a noindex page sends contradictory signals.
 export const metadata: Metadata = {
   title: "Search",
   robots: { index: false, follow: true },
-  alternates: { canonical: "/search" },
 };
 export const revalidate = 0;
 
