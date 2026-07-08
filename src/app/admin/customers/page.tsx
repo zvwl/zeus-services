@@ -11,16 +11,22 @@ import type { Profile } from "@/lib/types";
 
 export const revalidate = 0;
 
-const CUSTOMER_FILTERS = ["all", "customers", "staff", "banned"];
+const CUSTOMER_FILTERS = ["all", "customers", "buyers", "staff", "banned"];
+const SORTS = [
+  { key: "newest", label: "Newest" },
+  { key: "spend", label: "Top spenders" },
+  { key: "orders", label: "Most orders" },
+];
 
 export default async function AdminCustomersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ q?: string; filter?: string }>;
+  searchParams: Promise<{ q?: string; filter?: string; sort?: string }>;
 }) {
-  const { q, filter: filterRaw } = await searchParams;
+  const { q, filter: filterRaw, sort: sortRaw } = await searchParams;
   const query = (q ?? "").trim();
   const filter = CUSTOMER_FILTERS.includes(filterRaw ?? "") ? filterRaw! : "all";
+  const sort = SORTS.some((s) => s.key === sortRaw) ? sortRaw! : "newest";
   const supabase = await createClient();
   const me = await getProfile();
 
@@ -57,7 +63,21 @@ export default async function AdminCustomersPage({
     spendByUser.set(o.user_id, entry);
   }
 
-  const customers = (profiles as Profile[]) ?? [];
+  let customers = (profiles as Profile[]) ?? [];
+  // "buyers" and the spend/order sorts work off the aggregated order data, so
+  // they're applied here rather than in the profiles query.
+  if (filter === "buyers") {
+    customers = customers.filter((p) => spendByUser.has(p.id));
+  }
+  if (sort === "spend") {
+    customers = [...customers].sort(
+      (a, b) => (spendByUser.get(b.id)?.total ?? 0) - (spendByUser.get(a.id)?.total ?? 0)
+    );
+  } else if (sort === "orders") {
+    customers = [...customers].sort(
+      (a, b) => (spendByUser.get(b.id)?.count ?? 0) - (spendByUser.get(a.id)?.count ?? 0)
+    );
+  }
 
   return (
     <div>
@@ -72,6 +92,7 @@ export default async function AdminCustomersPage({
           {filter !== "all" && (
             <input type="hidden" name="filter" value={filter} />
           )}
+          {sort !== "newest" && <input type="hidden" name="sort" value={sort} />}
           <input
             type="search"
             name="q"
@@ -82,10 +103,11 @@ export default async function AdminCustomersPage({
         </form>
       </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         {CUSTOMER_FILTERS.map((f) => {
           const params = new URLSearchParams();
           if (f !== "all") params.set("filter", f);
+          if (sort !== "newest") params.set("sort", sort);
           if (query) params.set("q", query);
           const qs = params.toString();
           return (
@@ -100,6 +122,28 @@ export default async function AdminCustomersPage({
               )}
             >
               {f}
+            </Link>
+          );
+        })}
+        <span aria-hidden className="mx-1 h-4 w-px bg-edge" />
+        {SORTS.map((s) => {
+          const params = new URLSearchParams();
+          if (filter !== "all") params.set("filter", filter);
+          if (s.key !== "newest") params.set("sort", s.key);
+          if (query) params.set("q", query);
+          const qs = params.toString();
+          return (
+            <Link
+              key={s.key}
+              href={qs ? `/admin/customers?${qs}` : "/admin/customers"}
+              className={cn(
+                "rounded-full border px-3.5 py-1.5 text-xs font-medium transition",
+                sort === s.key
+                  ? "border-primary/50 bg-primary/15 text-primary-light"
+                  : "border-edge bg-raised/50 text-zinc-400 hover:text-white"
+              )}
+            >
+              {s.label}
             </Link>
           );
         })}

@@ -1,21 +1,42 @@
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { Badge, Card, Stars } from "@/components/ui";
 import { ActionButton } from "@/components/admin/ActionControls";
 import { ReviewReplyForm } from "@/components/admin/ReviewReplyForm";
 import { moderateReview } from "@/app/admin/actions";
-import { formatDateTime } from "@/lib/utils";
+import { cn, formatDateTime } from "@/lib/utils";
 import type { Review } from "@/lib/types";
 
 export const revalidate = 0;
 
-export default async function AdminReviewsPage() {
+const REVIEW_FILTERS = [
+  { key: "all", label: "All" },
+  { key: "pending", label: "Pending" },
+  { key: "approved", label: "Approved" },
+  { key: "featured", label: "Featured" },
+];
+
+export default async function AdminReviewsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ filter?: string }>;
+}) {
+  const { filter: filterRaw } = await searchParams;
+  const filter = REVIEW_FILTERS.some((f) => f.key === filterRaw)
+    ? filterRaw!
+    : "all";
+
   const supabase = await createClient();
-  const { data } = await supabase
+  let query = supabase
     .from("reviews")
     .select("*, profile:profiles(username, avatar_url)")
     .order("is_approved", { ascending: true })
     .order("created_at", { ascending: false })
     .limit(100);
+  if (filter === "pending") query = query.eq("is_approved", false);
+  else if (filter === "approved") query = query.eq("is_approved", true);
+  else if (filter === "featured") query = query.eq("is_featured", true);
+  const { data } = await query;
   const reviews = (data as Review[]) ?? [];
 
   return (
@@ -25,6 +46,27 @@ export default async function AdminReviewsPage() {
         New reviews are hidden until approved. Featured reviews appear first on
         the homepage.
       </p>
+
+      <div className="mt-4 flex flex-wrap gap-2">
+        {REVIEW_FILTERS.map((f) => (
+          <Link
+            key={f.key}
+            href={
+              f.key === "all"
+                ? "/admin/reviews"
+                : `/admin/reviews?filter=${f.key}`
+            }
+            className={cn(
+              "rounded-full border px-3.5 py-1.5 text-xs font-medium transition",
+              filter === f.key
+                ? "border-primary/50 bg-primary/15 text-primary-light"
+                : "border-edge bg-raised/50 text-zinc-400 hover:text-white"
+            )}
+          >
+            {f.label}
+          </Link>
+        ))}
+      </div>
 
       <div className="mt-6 space-y-4">
         {reviews.map((r) => (
@@ -76,7 +118,9 @@ export default async function AdminReviewsPage() {
           </Card>
         ))}
         {reviews.length === 0 && (
-          <Card className="text-center text-sm text-zinc-500">No reviews yet.</Card>
+          <Card className="text-center text-sm text-zinc-500">
+            {filter === "all" ? "No reviews yet." : "No reviews match this filter."}
+          </Card>
         )}
       </div>
     </div>

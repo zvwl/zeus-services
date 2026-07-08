@@ -410,6 +410,9 @@ export async function POST(req: Request) {
     const stripe = getStripe();
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
+      // Coupon/promo codes created in the Stripe dashboard work at checkout —
+      // needed for coupon-site listings and the /discount-codes SEO play.
+      allow_promotion_codes: true,
       line_items: lineItems,
       metadata: {
         type: "order",
