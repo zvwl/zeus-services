@@ -1,0 +1,29 @@
+# Zeuservices
+
+> Zeuservices (zeuservices.com) is a UK-based game-services store selling worldwide: cheap in-game currency top-ups, professional boosting services, and ready-to-play game accounts for GTA 5 / GTA Online, Fortnite, Rocket League and Forza Horizon 6. Payments are Stripe-secured, most orders deliver within minutes to hours, and every order is warranty-backed with 24/7 support.
+
+## What we sell
+
+- [GTA 5 services](https://zeuservices.com/games/gta-5): modded accounts, money boosts, full account upgrades, modded cars and outfits (PC)
+- [Fortnite services](https://zeuservices.com/games/fortnite): accounts with rare/OG skins and V-Bucks top-ups
+- [Forza Horizon 6 services](https://zeuservices.com/games/forza-horizon-6): credits (1 billion CR packages) and wheel spins
+- [Top-ups](https://zeuservices.com/category/topups): in-game currency for less than official store prices
+- [Boosting](https://zeuservices.com/category/boosting): ranks, levels, wins and recovery services by experienced staff
+- [Accounts](https://zeuservices.com/category/accounts): ready-to-play accounts delivered with full email access
+
+## Key pages
+
+- [All games](https://zeuservices.com/games)
+- [Customer reviews](https://zeuservices.com/reviews): verified purchase reviews
+- [FAQ](https://zeuservices.com/faq)
+- [Blog](https://zeuservices.com/blog): guides on game currencies, accounts and boosting ([RSS](https://zeuservices.com/blog/feed.xml))
+- [Support](https://zeuservices.com/support): 24/7 ticket support
+- [About](https://zeuservices.com/about)
+
+## Policies
+
+- [Terms](https://zeuservices.com/terms)
+- [Privacy](https://zeuservices.com/privacy)
+- [Refunds](https://zeuservices.com/refunds)
+
+Zeuservices is not affiliated with any game publisher.

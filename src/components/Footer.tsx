@@ -1,10 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
-import { getCategories, getSettings, setting } from "@/lib/data";
+import { getActiveGames, getCategories, getSettings, setting } from "@/lib/data";
 
 export async function Footer() {
-  const [categories, settings] = await Promise.all([
+  const [games, categories, settings] = await Promise.all([
+    getActiveGames(6),
     getCategories(),
     getSettings(),
   ]);
@@ -39,14 +40,23 @@ export async function Footer() {
 
   const columns: { title: string; links: { label: string; href: string; external?: boolean }[] }[] = [
     {
-      title: "Shop",
+      // Sitewide links to every game hub — crawlers and shoppers both need
+      // more than one path into the money pages.
+      title: "Games",
       links: [
         { label: "All games", href: "/games" },
-        ...categories.map((c) => ({
-          label: c.name,
-          href: `/category/${c.slug}`,
+        ...games.map((g) => ({
+          label: g.name,
+          href: `/games/${g.slug}`,
         })),
       ],
+    },
+    {
+      title: "Shop",
+      links: categories.map((c) => ({
+        label: c.name,
+        href: `/category/${c.slug}`,
+      })),
     },
     {
       title: "Community",
@@ -83,8 +93,8 @@ export async function Footer() {
   return (
     <footer className="mt-24 border-t border-edge bg-surface/50">
       <div className="mx-auto max-w-7xl px-4 py-14 sm:px-6">
-        <div className="grid gap-10 md:grid-cols-6">
-          <div className="md:col-span-2">
+        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-7">
+          <div className="sm:col-span-2 md:col-span-3 lg:col-span-2">
             <Link href="/" className="flex items-center gap-2">
               {logoUrl ? (
                 <Image

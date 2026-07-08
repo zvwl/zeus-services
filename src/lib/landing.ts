@@ -221,6 +221,29 @@ Discreet, fast and warranty-backed, with progress updates along the way. Pick yo
       },
     ],
   },
+  "forza-horizon-6/topups": {
+    title: "Forza Horizon 6 Money — 1 Billion Credits, Fast",
+    description:
+      "Buy Forza Horizon 6 credits cheap: 1 billion CR delivered fast, with wheel-spin bundles available. Safe login delivery, warranty and 24/7 support.",
+    h1: "Forza Horizon 6 Money & Credits",
+    intro: `Skip hundreds of hours of grinding. Our **Forza Horizon 6 money services** put a full **1 billion credits** on your account — enough to buy essentially any car in the game — with optional **wheel spin bundles** on top.
+
+Delivery is handled by experienced staff via temporary login access: check out securely with Stripe, follow the short instructions, and most orders complete the same day. Every order carries our warranty, and support is around the clock.`,
+    faqs: [
+      {
+        q: "How do I receive the credits?",
+        a: "After checkout you provide temporary login access via the secure order form. Our team completes the setup on your account — most orders finish the same day. Change your password before and after the service.",
+      },
+      {
+        q: "Is 1 billion credits safe?",
+        a: "We use tested delivery methods and offer a free re-setup if anything goes wrong with the service. As with any account service, you accept responsibility for your account when purchasing.",
+      },
+      {
+        q: "Do I need to own the game?",
+        a: "Yes — you must own Forza Horizon 6. The game itself is not included with any money or wheel-spin package.",
+      },
+    ],
+  },
   "rocket-league/accounts": {
     title: "Rocket League Accounts for Sale — Ranked & Stacked",
     description:
