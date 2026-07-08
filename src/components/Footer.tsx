@@ -128,11 +128,14 @@ export async function Footer() {
               never store card details.
             </p>
             {setting(settings, "trustpilot_business_unit_id") && (
+              // Review Collector — the TrustBox included in Trustpilot's free
+              // plan (score widgets are paid-tier).
               <div className="mt-5 max-w-xs">
                 <TrustBox
                   businessUnitId={setting(settings, "trustpilot_business_unit_id")}
-                  templateId={TRUSTBOX.microReviewCount.templateId}
-                  height={TRUSTBOX.microReviewCount.height}
+                  templateId={TRUSTBOX.reviewCollector.templateId}
+                  height={TRUSTBOX.reviewCollector.height}
+                  token={setting(settings, "trustpilot_widget_token") || undefined}
                 />
               </div>
             )}

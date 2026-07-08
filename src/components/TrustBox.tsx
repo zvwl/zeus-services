@@ -29,11 +29,14 @@ export function TrustBox({
   businessUnitId,
   templateId,
   height,
+  token,
   className,
 }: {
   businessUnitId: string;
   templateId: string;
   height: string;
+  /** data-token from the embed snippet — the Review Collector includes one. */
+  token?: string;
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -61,6 +64,7 @@ export function TrustBox({
         data-style-height={height}
         data-style-width="100%"
         data-theme="dark"
+        {...(token ? { "data-token": token } : {})}
       >
         <a
           href="https://uk.trustpilot.com/review/zeuservices.com"

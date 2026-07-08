@@ -91,6 +91,7 @@ export default async function ReviewsPage() {
             businessUnitId={trustpilotId}
             templateId={TRUSTBOX.reviewCollector.templateId}
             height={TRUSTBOX.reviewCollector.height}
+            token={setting(settings, "trustpilot_widget_token") || undefined}
           />
         </div>
       )}

@@ -57,6 +57,12 @@ const COMMUNITY_FIELDS: { key: string; label: string; placeholder: string; help?
     placeholder: "e.g. 46da6a2xxxxxxxxxxxxxxxx",
     help: "Enables the Trustpilot widgets in the footer and on the reviews page. Find it in Trustpilot Business → Showcase → any TrustBox → the embed code's data-businessunit-id value.",
   },
+  {
+    key: "trustpilot_widget_token",
+    label: "Trustpilot widget token",
+    placeholder: "e.g. db38f191-…",
+    help: "The data-token value from the Review Collector embed code. Optional but recommended — Trustpilot includes it in the snippet.",
+  },
 ];
 
 function Feedback({ msg }: { msg: { ok: boolean; text: string } | null }) {
