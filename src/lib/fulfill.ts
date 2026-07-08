@@ -175,6 +175,10 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
     await sendEmail({
       to: email,
       subject: `Order ${orderRef} confirmed`,
+      // Trustpilot Automatic Feedback Service: set TRUSTPILOT_BCC_EMAIL to the
+      // unique BCC address from Trustpilot and every confirmed order triggers
+      // an automatic review invite. Confirmations only — never status mail.
+      bcc: process.env.TRUSTPILOT_BCC_EMAIL,
       html: orderConfirmationEmail({
         orderNumber: orderRef,
         total: Number(order.total),

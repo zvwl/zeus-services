@@ -9,6 +9,8 @@ interface SendArgs {
   subject: string;
   html: string;
   replyTo?: string;
+  /** Optional BCC — e.g. Trustpilot's Automatic Feedback Service address. */
+  bcc?: string;
 }
 
 export function emailConfigured() {
@@ -26,6 +28,7 @@ export async function sendEmail({
   subject,
   html,
   replyTo,
+  bcc,
 }: SendArgs): Promise<SendResult> {
   const key = process.env.RESEND_API_KEY;
   if (!key) {
@@ -47,6 +50,7 @@ export async function sendEmail({
         subject,
         html,
         ...(replyTo ? { reply_to: replyTo } : {}),
+        ...(bcc ? { bcc } : {}),
       }),
     });
     if (!res.ok) {
