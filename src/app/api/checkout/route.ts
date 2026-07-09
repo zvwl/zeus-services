@@ -370,8 +370,20 @@ export async function POST(req: Request) {
       );
     }
 
+    const origin = originFromRequest(req);
     const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] =
       priced.flatMap((l) => {
+        // Stripe rejects relative image URLs (products now use local
+        // /media/*.webp art) — absolutize against the request origin, and a
+        // malformed value must never take down the session call.
+        const rawImg = l.product.image_url;
+        const img = rawImg
+          ? rawImg.startsWith("http")
+            ? rawImg
+            : rawImg.startsWith("/")
+              ? `${origin}${rawImg}`
+              : null
+          : null;
         const main: Stripe.Checkout.SessionCreateParams.LineItem = {
           quantity: l.quantity,
           price_data: {
@@ -385,7 +397,7 @@ export async function POST(req: Request) {
                     ? ` — ${l.variant.name}`
                     : ""
               }`,
-              ...(l.product.image_url ? { images: [l.product.image_url] } : {}),
+              ...(img ? { images: [img] } : {}),
               metadata: { product_id: l.product.id },
             },
           },
@@ -406,35 +418,48 @@ export async function POST(req: Request) {
         return [main, ...addonItems];
       });
 
-    const origin = originFromRequest(req);
     const stripe = getStripe();
-    const session = await stripe.checkout.sessions.create({
-      mode: "payment",
-      // Coupon/promo codes created in the Stripe dashboard work at checkout —
-      // needed for coupon-site listings and the /discount-codes SEO play.
-      allow_promotion_codes: true,
-      line_items: lineItems,
-      metadata: {
-        type: "order",
-        order_id: order.id,
-        // Lets fulfillment clear the buyer's saved DB cart, but only for cart
-        // checkouts (a single-item "Buy now" must leave the cart untouched).
-        from_cart: fromCart ? "1" : "0",
-      },
-      customer_email: user?.email ?? undefined,
-      // Abandoned sessions expire in 30 min (Stripe minimum); the
-      // checkout.session.expired webhook then cancels the pending order.
-      expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
-      // Return the buyer to the exact domain they're on so their session sticks.
-      // `cart=1` tells the success page to clear the cart after a cart checkout.
-      success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}${
-        fromCart ? "&cart=1" : ""
-      }`,
-      // Use the unguessable order UUID (not the sequential order_number) so the
-      // cancel page can't be used to enumerate + cancel other people's pending
-      // orders. Guarded again by status='pending' on the update.
-      cancel_url: `${origin}/checkout/cancelled?order=${order.id}`,
-    });
+    let session: Stripe.Checkout.Session;
+    try {
+      session = await stripe.checkout.sessions.create({
+        mode: "payment",
+        // Coupon/promo codes created in the Stripe dashboard work at checkout —
+        // needed for coupon-site listings and the /discount-codes SEO play.
+        allow_promotion_codes: true,
+        line_items: lineItems,
+        metadata: {
+          type: "order",
+          order_id: order.id,
+          // Lets fulfillment clear the buyer's saved DB cart, but only for cart
+          // checkouts (a single-item "Buy now" must leave the cart untouched).
+          from_cart: fromCart ? "1" : "0",
+        },
+        customer_email: user?.email ?? undefined,
+        // Abandoned sessions expire in 30 min (Stripe minimum); the
+        // checkout.session.expired webhook then cancels the pending order.
+        expires_at: Math.floor(Date.now() / 1000) + 30 * 60,
+        // Return the buyer to the exact domain they're on so their session sticks.
+        // `cart=1` tells the success page to clear the cart after a cart checkout.
+        success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}${
+          fromCart ? "&cart=1" : ""
+        }`,
+        // Use the unguessable order UUID (not the sequential order_number) so the
+        // cancel page can't be used to enumerate + cancel other people's pending
+        // orders. Guarded again by status='pending' on the update.
+        cancel_url: `${origin}/checkout/cancelled?order=${order.id}`,
+      });
+    } catch (err) {
+      // The pending order + items were already inserted — without a session
+      // they can never be paid OR expired by the webhook, so roll them back
+      // instead of stranding them in the admin order list.
+      console.error("Stripe session create failed:", err);
+      await db.from("order_items").delete().eq("order_id", order.id);
+      await db.from("orders").delete().eq("id", order.id);
+      return NextResponse.json(
+        { error: "Checkout failed. Please try again." },
+        { status: 500 }
+      );
+    }
 
     await db
       .from("orders")
