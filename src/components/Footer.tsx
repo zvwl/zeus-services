@@ -128,6 +128,24 @@ export async function Footer() {
               <span className="font-semibold text-zinc-400">Stripe</span> · We
               never store card details.
             </p>
+            {/* ScamAdviser seal — display terms require the logo to link to
+                our detail page. Logo self-hosted; rated "Very Likely Safe". */}
+            <a
+              href="https://www.scamadviser.com/check-website/zeuservices.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block rounded-lg bg-white/95 px-2.5 py-1.5 transition hover:bg-white"
+              aria-label="Zeuservices is rated Very Likely Safe on ScamAdviser — view the report"
+            >
+              <Image
+                src="/media/scamadviser-seal.webp"
+                alt="Check zeuservices.com on ScamAdviser.com — rated Very Likely Safe"
+                width={156}
+                height={30}
+                loading="lazy"
+                className="h-[30px] w-auto"
+              />
+            </a>
             {setting(settings, "trustpilot_business_unit_id") && (
               // Review Collector — the TrustBox included in Trustpilot's free
               // plan (score widgets are paid-tier).
