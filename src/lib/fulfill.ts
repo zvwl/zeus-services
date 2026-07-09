@@ -67,6 +67,18 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
     .maybeSingle();
   if (!order) return; // already fulfilled or unknown
 
+  // Promotion codes are applied on the Stripe payment page, AFTER the order
+  // row was created with the undiscounted total — reconcile so the order,
+  // revenue reporting, Discord ping and confirmation email all show what the
+  // customer actually paid.
+  const paidTotal =
+    typeof session.amount_total === "number" ? session.amount_total / 100 : null;
+  const discount = (session.total_details?.amount_discount ?? 0) / 100;
+  if (paidTotal !== null && Math.abs(paidTotal - Number(order.total)) >= 0.01) {
+    await db.from("orders").update({ total: paidTotal }).eq("id", orderId);
+    order.total = paidTotal;
+  }
+
   const { data: items } = await db
     .from("order_items")
     .select("*")
@@ -140,7 +152,11 @@ async function fulfillOrder(session: Stripe.Checkout.Session) {
     action: "order.paid",
     entity: "order",
     entity_id: orderId,
-    meta: { order_number: order.order_number, total: order.total },
+    meta: {
+      order_number: order.order_number,
+      total: order.total,
+      ...(discount > 0 ? { discount } : {}),
+    },
   });
 
   const orderRef = order.reference ?? `#${order.order_number}`;

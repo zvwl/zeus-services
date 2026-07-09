@@ -164,7 +164,8 @@ export function CartView() {
             </span>
           </div>
           <p className="mt-1 text-xs text-zinc-500">
-            Charged in {currency} · taxes/fees calculated at checkout
+            Charged in {currency} · taxes/fees calculated at checkout · promo
+            codes can be entered on the payment page
           </p>
 
           {error && (

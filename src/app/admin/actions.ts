@@ -1418,3 +1418,123 @@ export async function setUserCapabilities(
   revalidatePath("/admin/team");
   return ok(capabilities === null ? "Reset to role defaults." : "Permissions updated.");
 }
+
+/* ------------------------- Discount codes (Stripe) ------------------------ */
+// Codes live entirely in Stripe (coupons + promotion codes) — no DB tables.
+// Checkout already passes allow_promotion_codes, so an active code typed on
+// the Stripe payment page just works; fulfillment reconciles the paid total.
+
+export async function createPromotionCode(
+  formData: FormData
+): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_discounts");
+  } catch {
+    return fail("Unauthorized");
+  }
+  if (!stripeConfigured()) return fail("Stripe is not configured.");
+
+  const code = String(formData.get("code") ?? "")
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9_-]/g, "");
+  if (code.length < 3 || code.length > 20) {
+    return fail("Code must be 3–20 letters, numbers, - or _.");
+  }
+  const kind = String(formData.get("kind") ?? "percent");
+  const value = Number(formData.get("value"));
+  if (!Number.isFinite(value) || value <= 0) return fail("Enter a discount value.");
+  if (kind === "percent" && (value < 1 || value > 90)) {
+    return fail("Percentage must be between 1 and 90.");
+  }
+  const maxRedemptions = Number(formData.get("max_redemptions"));
+  const expiresDays = Number(formData.get("expires_days"));
+  const isPublic = formData.get("public") === "on";
+
+  try {
+    const stripe = getStripe();
+    // duration "once" = applies to the single payment (we only sell one-time
+    // checkouts). The coupon carries the discount; the promotion code is the
+    // customer-facing string that can be toggled/expired independently.
+    const coupon = await stripe.coupons.create(
+      kind === "percent"
+        ? { percent_off: value, duration: "once", name: code }
+        : {
+            amount_off: Math.round(value * 100),
+            currency: "usd",
+            duration: "once",
+            name: code,
+          }
+    );
+    const promo = await stripe.promotionCodes.create({
+      coupon: coupon.id,
+      code,
+      ...(Number.isFinite(maxRedemptions) && maxRedemptions > 0
+        ? { max_redemptions: Math.floor(maxRedemptions) }
+        : {}),
+      ...(Number.isFinite(expiresDays) && expiresDays > 0
+        ? { expires_at: Math.floor(Date.now() / 1000) + Math.floor(expiresDays) * 86400 }
+        : {}),
+      // "public: true" opts the code into the /discount-codes page — private
+      // partner/creator codes stay off it.
+      metadata: { public: isPublic ? "true" : "false" },
+    });
+    await audit("discount.create", "promotion_code", promo.id, {
+      code,
+      kind,
+      value,
+      public: isPublic,
+    });
+    revalidatePath("/admin/discounts");
+    revalidatePath("/discount-codes");
+    return ok(`Code ${code} is live — it works at checkout immediately.`);
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : "Stripe error.");
+  }
+}
+
+export async function setPromotionCodeActive(
+  id: string,
+  active: boolean
+): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_discounts");
+  } catch {
+    return fail("Unauthorized");
+  }
+  if (!stripeConfigured()) return fail("Stripe is not configured.");
+  try {
+    const stripe = getStripe();
+    await stripe.promotionCodes.update(id, { active });
+    await audit("discount.toggle", "promotion_code", id, { active });
+    revalidatePath("/admin/discounts");
+    revalidatePath("/discount-codes");
+    return ok(active ? "Code re-activated." : "Code deactivated.");
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : "Stripe error.");
+  }
+}
+
+export async function setPromotionCodePublic(
+  id: string,
+  isPublic: boolean
+): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_discounts");
+  } catch {
+    return fail("Unauthorized");
+  }
+  if (!stripeConfigured()) return fail("Stripe is not configured.");
+  try {
+    const stripe = getStripe();
+    await stripe.promotionCodes.update(id, {
+      metadata: { public: isPublic ? "true" : "false" },
+    });
+    await audit("discount.public", "promotion_code", id, { public: isPublic });
+    revalidatePath("/admin/discounts");
+    revalidatePath("/discount-codes");
+    return ok(isPublic ? "Code now listed on /discount-codes." : "Code hidden from /discount-codes.");
+  } catch (err) {
+    return fail(err instanceof Error ? err.message : "Stripe error.");
+  }
+}

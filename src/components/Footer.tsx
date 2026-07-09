@@ -2,8 +2,6 @@ import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { getActiveGames, getCategories, getSettings, setting } from "@/lib/data";
-import { TrustBox } from "@/components/TrustBox";
-import { TRUSTBOX } from "@/lib/trustbox";
 
 export async function Footer() {
   const [games, categories, settings] = await Promise.all([
@@ -67,6 +65,7 @@ export async function Footer() {
           ? [{ label: "Discord server", href: discord, external: true }]
           : []),
         { label: "Giveaways", href: "/giveaways" },
+        { label: "Discount codes", href: "/discount-codes" },
         { label: "Reviews", href: "/reviews" },
         { label: "Blog", href: "/blog" },
         { label: "Donate", href: "/donate" },
@@ -149,19 +148,30 @@ export async function Footer() {
                 />
               </a>
               {setting(settings, "trustpilot_business_unit_id") && (
-                // Review Collector — the TrustBox included in Trustpilot's
-                // free plan (score widgets are paid-tier). The widget centers
-                // itself inside its container, so the wrapper must match the
-                // collector's natural ~180px width or the extra space reads
-                // as misalignment.
-                <div className="w-[190px]">
-                  <TrustBox
-                    businessUnitId={setting(settings, "trustpilot_business_unit_id")}
-                    templateId={TRUSTBOX.reviewCollector.templateId}
-                    height={TRUSTBOX.reviewCollector.height}
-                    token={setting(settings, "trustpilot_widget_token") || undefined}
-                  />
-                </div>
+                // Native Trustpilot link badge, styled to match the
+                // ScamAdviser chip. The official TrustBox iframe centers
+                // itself and can't be aligned in a narrow column (and loaded
+                // Trustpilot's script sitewide) — the real widget lives on
+                // /reviews instead.
+                <a
+                  href="https://uk.trustpilot.com/review/zeuservices.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex h-10 items-center gap-1.5 rounded-lg bg-white/95 px-2.5 transition hover:bg-white"
+                  aria-label="Review Zeuservices on Trustpilot"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-[17px] w-[17px]"
+                    fill="#00B67A"
+                    aria-hidden
+                  >
+                    <path d="M12 1.5l3.09 6.26 6.91 1-5 4.87 1.18 6.88L12 17.27l-6.18 3.24L7 13.63l-5-4.87 6.91-1L12 1.5z" />
+                  </svg>
+                  <span className="text-[13px] font-semibold leading-none text-zinc-900">
+                    Review us on Trustpilot
+                  </span>
+                </a>
               )}
             </div>
           </div>

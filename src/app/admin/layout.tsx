@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  BadgePercent,
   Coffee,
   FileText,
   FolderTree,
@@ -60,6 +61,7 @@ const NAV_GROUPS: { heading: string | null; items: NavItem[] }[] = [
       { href: "/admin/products", label: "Products", icon: ShoppingBag, capability: "manage_products" },
       { href: "/admin/games", label: "Games", icon: Gamepad2, capability: "manage_games" },
       { href: "/admin/categories", label: "Categories", icon: FolderTree, capability: "manage_categories" },
+      { href: "/admin/discounts", label: "Discounts", icon: BadgePercent, capability: "manage_discounts" },
     ],
   },
   {
