@@ -1522,6 +1522,150 @@ export async function setPromotionCodeActive(
   }
 }
 
+/* ---------------------- Product & game sales (native) --------------------- */
+// Product/game-scoped discounts can't use Stripe promotion codes (our checkout
+// builds line items dynamically, so Stripe's applies_to can't target them).
+// Instead a "sale" moves the current price into compare_at_price and sets a
+// discounted price — the storefront already renders the strikethrough. Ending
+// the sale restores the original. Slider-priced (custom) products and items
+// already on sale are skipped, so sales never stack or lose the original price.
+
+export async function applySale(formData: FormData): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_discounts");
+  } catch {
+    return fail("Unauthorized");
+  }
+  const percent = Number(formData.get("percent"));
+  if (!Number.isFinite(percent) || percent < 1 || percent > 90) {
+    return fail("Percentage must be between 1 and 90.");
+  }
+  const gameId = String(formData.get("game_id") ?? "");
+  const productIds = formData.getAll("product_ids").map(String).filter(Boolean);
+  if (!gameId && productIds.length === 0) {
+    return fail("Pick a game or at least one product.");
+  }
+
+  const supabase = await actionDb();
+  let query = supabase
+    .from("products")
+    .select("id, name, base_price, compare_at_price, pricing_mode")
+    .eq("is_active", true);
+  query = gameId ? query.eq("game_id", gameId) : query.in("id", productIds);
+  const { data: products, error } = await query;
+  if (error) return fail(error.message);
+  if (!products?.length) return fail("No active products in that scope.");
+
+  const factor = 1 - percent / 100;
+  const discounted = (n: number) =>
+    Math.max(0.5, Math.round(n * factor * 100) / 100);
+  let updated = 0;
+  let skipped = 0;
+  for (const p of products) {
+    if (p.pricing_mode === "custom" || p.compare_at_price != null) {
+      skipped++;
+      continue;
+    }
+    const { error: prodErr } = await supabase
+      .from("products")
+      .update({
+        compare_at_price: p.base_price,
+        base_price: discounted(Number(p.base_price)),
+      })
+      .eq("id", p.id);
+    if (prodErr) {
+      skipped++;
+      continue;
+    }
+    // Variants carry their own prices — discount the ones not already on sale.
+    const { data: variants } = await supabase
+      .from("product_variants")
+      .select("id, price")
+      .eq("product_id", p.id)
+      .is("compare_at_price", null);
+    for (const v of variants ?? []) {
+      await supabase
+        .from("product_variants")
+        .update({
+          compare_at_price: v.price,
+          price: discounted(Number(v.price)),
+        })
+        .eq("id", v.id);
+    }
+    updated++;
+  }
+
+  await audit("sale.apply", "products", gameId || null, {
+    percent,
+    updated,
+    skipped,
+    product_ids: productIds,
+  });
+  refreshStore();
+  revalidatePath("/admin/discounts");
+  return ok(
+    `${percent}% sale applied to ${updated} product${updated === 1 ? "" : "s"}${
+      skipped ? ` — ${skipped} skipped (already on sale or slider-priced)` : ""
+    }.`
+  );
+}
+
+export async function endSale(formData: FormData): Promise<AdminResult> {
+  try {
+    await requireCapability("manage_discounts");
+  } catch {
+    return fail("Unauthorized");
+  }
+  const gameId = String(formData.get("game_id") ?? "");
+  const productIds = formData.getAll("product_ids").map(String).filter(Boolean);
+  const everything = formData.get("all") === "1";
+  if (!everything && !gameId && productIds.length === 0) {
+    return fail("Pick a scope to end.");
+  }
+
+  const supabase = await actionDb();
+  let query = supabase
+    .from("products")
+    .select("id, compare_at_price")
+    .not("compare_at_price", "is", null);
+  if (!everything) {
+    query = gameId ? query.eq("game_id", gameId) : query.in("id", productIds);
+  }
+  const { data: products, error } = await query;
+  if (error) return fail(error.message);
+  if (!products?.length) return fail("Nothing on sale in that scope.");
+
+  let restored = 0;
+  for (const p of products) {
+    const { error: prodErr } = await supabase
+      .from("products")
+      .update({ base_price: p.compare_at_price, compare_at_price: null })
+      .eq("id", p.id);
+    if (prodErr) continue;
+    const { data: variants } = await supabase
+      .from("product_variants")
+      .select("id, compare_at_price")
+      .eq("product_id", p.id)
+      .not("compare_at_price", "is", null);
+    for (const v of variants ?? []) {
+      await supabase
+        .from("product_variants")
+        .update({ price: v.compare_at_price, compare_at_price: null })
+        .eq("id", v.id);
+    }
+    restored++;
+  }
+
+  await audit("sale.end", "products", gameId || null, {
+    restored,
+    all: everything,
+    product_ids: productIds,
+  });
+  refreshStore();
+  revalidatePath("/admin/discounts");
+  return ok(`Sale ended — ${restored} product${restored === 1 ? "" : "s"} restored to original pricing.`);
+}
+
 export async function setPromotionCodePublic(
   id: string,
   isPublic: boolean
