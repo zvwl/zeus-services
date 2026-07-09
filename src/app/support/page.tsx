@@ -21,6 +21,7 @@ export const revalidate = 0;
 export default async function SupportPage() {
   const [user, settings] = await Promise.all([getUser(), getSettings()]);
   const discord = setting(settings, "discord_invite");
+  const supportEmail = setting(settings, "support_email");
 
   let tickets: SupportTicket[] = [];
   if (user) {
@@ -100,6 +101,17 @@ export default async function SupportPage() {
             <span className="mt-3 inline-block text-sm text-zinc-600">
               Form below ↓
             </span>
+            {supportEmail && (
+              <p className="mt-2 text-xs text-zinc-500">
+                or email{" "}
+                <a
+                  href={`mailto:${supportEmail}`}
+                  className="text-primary-light hover:underline"
+                >
+                  {supportEmail}
+                </a>
+              </p>
+            )}
           </Card>
         </RevealItem>
       </RevealGroup>

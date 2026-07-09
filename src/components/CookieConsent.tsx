@@ -36,15 +36,20 @@ export function CookieConsent() {
     setMounted(true);
   }, []);
 
-  // Track client-side navigations once analytics is active.
+  // Track client-side navigations (a cookieless ping while consent is denied
+  // — Consent Mode governs storage, not whether events fire).
   useEffect(() => {
-    if (consent === "accepted") trackPageView(pathname);
-  }, [pathname, consent]);
+    trackPageView(pathname);
+  }, [pathname]);
 
   const choose = useCallback((value: Consent) => {
     writeConsent(value);
     setConsent(value);
     setOpen(false);
+    // Consent Mode v2 upgrade/downgrade at the moment of choice.
+    window.gtag?.("consent", "update", {
+      analytics_storage: value === "accepted" ? "granted" : "denied",
+    });
   }, []);
 
   // No analytics configured → nothing to consent to.
@@ -52,18 +57,25 @@ export function CookieConsent() {
 
   return (
     <>
-      {/* GA4 loads only after the visitor accepts. */}
-      {consent === "accepted" && (
-        <>
-          <Script
-            src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
-            strategy="lazyOnload"
-          />
-          <Script id="ga-init" strategy="lazyOnload">
-            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','${GA_ID}',{anonymize_ip:true});`}
-          </Script>
-        </>
-      )}
+      {/* Consent Mode v2: the tag ALWAYS loads, but with storage denied by
+          default — GA runs cookieless until the visitor accepts. (The old
+          load-after-accept gating made the tag invisible to Google's
+          detection and dropped every non-accepting visitor from
+          measurement.) The inline block must queue the consent default
+          BEFORE config; dataLayer preserves command order even if gtag.js
+          finishes loading first. */}
+      <Script id="ga-init" strategy="lazyOnload">
+        {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=window.gtag||gtag;
+gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'${
+          consent === "accepted" ? "granted" : "denied"
+        }'});
+gtag('js',new Date());
+gtag('config','${GA_ID}',{anonymize_ip:true});`}
+      </Script>
+      <Script
+        src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+        strategy="lazyOnload"
+      />
 
       {/* Floating cookie button to reopen/change the choice anytime. */}
       {!open && (

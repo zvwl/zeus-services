@@ -1065,8 +1065,15 @@ export async function updateTicketMeta(formData: FormData): Promise<AdminResult>
   if (["low", "normal", "high"].includes(priority)) updates.priority = priority;
 
   const supabase = await actionDb();
-  const { error } = await supabase.from("support_tickets").update(updates).eq("id", id);
+  const { data: updated, error } = await supabase
+    .from("support_tickets")
+    .update(updates)
+    .eq("id", id)
+    .select("id")
+    .maybeSingle();
   if (error) return fail(error.message);
+  if (!updated) return fail("Ticket not found.");
+  await audit("ticket.meta", "support_ticket", id, updates);
   revalidatePath("/admin/support");
   revalidatePath(`/admin/support/${id}`);
   return ok("Ticket updated.");

@@ -98,6 +98,22 @@ function itemRows(
     .join("");
 }
 
+export function ticketReplyEmail(opts: {
+  ticketNumber: number | string;
+  subject: string;
+  /** First ~300 chars of the staff reply, plain text (already trimmed). */
+  snippet: string;
+  ticketId: string;
+}) {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const body = `
+    <p style="margin:0 0 16px;color:#a1a1aa;line-height:1.6">Our support team replied to your ticket <strong style="color:#fff">#${opts.ticketNumber} — ${esc(opts.subject)}</strong>:</p>
+    <p style="margin:0 0 20px;padding:12px 14px;background:rgba(167,139,250,.08);border-left:3px solid #a78bfa;border-radius:8px;color:#d4d4d8;line-height:1.6">${esc(opts.snippet)}${opts.snippet.length >= 300 ? "…" : ""}</p>
+    <p style="margin:0"><a href="${siteUrl()}/support/${opts.ticketId}" style="display:inline-block;padding:10px 18px;background:#7c3aed;border-radius:10px;color:#fff;text-decoration:none;font-weight:600">View & reply →</a></p>`;
+  return layout(`New reply on ticket #${opts.ticketNumber}`, body);
+}
+
 export function orderConfirmationEmail(opts: {
   orderNumber: number | string;
   total: number;

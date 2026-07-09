@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient, hasAdminClient } from "@/lib/supabase/admin";
 import { can, getProfile, getUser } from "@/lib/auth";
 import { notifyDiscord } from "@/lib/discord";
+import { sendEmail, ticketReplyEmail } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
 
 /**
  * Removes the signed-in user's leftover UNVERIFIED 2FA factors (from a cancelled
@@ -138,14 +140,32 @@ export async function submitReview(formData: FormData): Promise<ActionResult> {
   };
 }
 
+/** The categories the ticket form offers — enforced server-side too. */
+const TICKET_CATEGORIES = [
+  "Order issue",
+  "Delivery question",
+  "Refund request",
+  "Account & login",
+  "Payment problem",
+  "Other",
+];
+
 export async function createTicket(formData: FormData): Promise<ActionResult> {
   const user = await getUser();
   if (!user) return { ok: false, message: "Please log in to open a ticket." };
   const banned = await banGuard();
   if (banned) return banned;
+  // Each ticket also fires a staff Discord webhook — cap the blast radius.
+  if (!rateLimit(`ticket-create:${user.id}`, 5, 60 * 60 * 1000)) {
+    return {
+      ok: false,
+      message: "You've opened several tickets recently — please reply on an existing one instead.",
+    };
+  }
 
   const subject = String(formData.get("subject") ?? "").slice(0, 150).trim();
-  const category = String(formData.get("category") ?? "General").slice(0, 50);
+  const rawCategory = String(formData.get("category") ?? "");
+  const category = TICKET_CATEGORIES.includes(rawCategory) ? rawCategory : "Other";
   const message = String(formData.get("message") ?? "").slice(0, 4000).trim();
   if (subject.length < 3) return { ok: false, message: "Subject is too short." };
   if (message.length < 10) return { ok: false, message: "Message is too short." };
@@ -165,9 +185,15 @@ export async function createTicket(formData: FormData): Promise<ActionResult> {
     message,
   });
   // The opening message is the whole point of the ticket — if it fails to save,
-  // roll the empty ticket back rather than leaving a blank thread.
+  // roll the empty ticket back rather than leaving a blank thread. RLS has no
+  // owner-delete policy (by design), so the rollback needs the service role.
   if (msgError) {
-    await supabase.from("support_tickets").delete().eq("id", ticket.id);
+    if (hasAdminClient()) {
+      await createAdminClient()
+        .from("support_tickets")
+        .delete()
+        .eq("id", ticket.id);
+    }
     return { ok: false, message: "Could not open ticket. Please try again." };
   }
 
@@ -185,10 +211,14 @@ export async function createTicket(formData: FormData): Promise<ActionResult> {
 export async function replyToTicket(formData: FormData): Promise<ActionResult> {
   const profile = await getProfile();
   if (!profile) return { ok: false, message: "Please log in." };
-  // Customers who are banned can't post; staff replies are unaffected.
-  const staff = can(profile, "manage_support");
-  if (!staff && profile.is_banned) {
+  // Bans apply to EVERYONE — a banned staff account must not keep speaking
+  // for the store (matches the action-layer security model in lib/auth.ts).
+  if (profile.is_banned) {
     return { ok: false, message: "Your account is suspended. Contact support." };
+  }
+  const staff = can(profile, "manage_support");
+  if (!rateLimit(`ticket-reply:${profile.id}`, 30, 60 * 60 * 1000)) {
+    return { ok: false, message: "Too many replies — give us a moment to catch up." };
   }
 
   const ticketId = String(formData.get("ticket_id") ?? "");
@@ -201,14 +231,16 @@ export async function replyToTicket(formData: FormData): Promise<ActionResult> {
 
   const { data: ticket } = await supabase
     .from("support_tickets")
-    .select("id, user_id, status, ticket_number")
+    .select("id, user_id, status, ticket_number, subject")
     .eq("id", ticketId)
     .maybeSingle();
   if (!ticket) return { ok: false, message: "Ticket not found." };
   if (!staff && ticket.user_id !== profile.id) {
     return { ok: false, message: "Not your ticket." };
   }
-  if (ticket.status === "closed") {
+  // Customers can't post into a closed thread; a STAFF reply re-opens it (so
+  // support never has to flip the status dropdown before answering).
+  if (ticket.status === "closed" && !staff) {
     return { ok: false, message: "This ticket is closed." };
   }
 
@@ -220,13 +252,48 @@ export async function replyToTicket(formData: FormData): Promise<ActionResult> {
   });
   if (error) return { ok: false, message: "Could not send reply." };
 
-  await supabase
+  // Status flip via the service role: the owner-side RLS update policy is
+  // deliberately close-only (migration 0022), and staff may be acting on a
+  // ticket they don't own.
+  const db = hasAdminClient() ? createAdminClient() : supabase;
+  await db
     .from("support_tickets")
     .update({
       status: staff ? "answered" : "open",
       updated_at: new Date().toISOString(),
     })
     .eq("id", ticketId);
+
+  if (staff) {
+    // Tell the customer — otherwise they only find out by re-visiting /support.
+    if (hasAdminClient()) {
+      const { data: owner } = await createAdminClient()
+        .from("profiles")
+        .select("email")
+        .eq("id", ticket.user_id)
+        .maybeSingle();
+      if (owner?.email) {
+        await sendEmail({
+          to: owner.email,
+          subject: `New reply on ticket #${ticket.ticket_number} — Zeuservices`,
+          html: ticketReplyEmail({
+            ticketNumber: ticket.ticket_number,
+            subject: ticket.subject ?? "",
+            snippet: message.slice(0, 300),
+            ticketId,
+          }),
+        });
+      }
+    }
+  } else {
+    // Tell the team — Discord previously only fired on ticket creation, so
+    // customer follow-ups went unnoticed until someone checked the queue.
+    await notifyDiscord({
+      title: `Reply on ticket #${ticket.ticket_number}`,
+      description: `${ticket.subject ?? ""}\n\n${message.slice(0, 200)}`,
+      color: 0x38bdf8,
+    });
+  }
 
   revalidatePath(`/support/${ticketId}`);
   revalidatePath(`/admin/support/${ticketId}`);
@@ -236,6 +303,9 @@ export async function replyToTicket(formData: FormData): Promise<ActionResult> {
 export async function closeTicket(formData: FormData): Promise<ActionResult> {
   const profile = await getProfile();
   if (!profile) return { ok: false, message: "Please log in." };
+  if (profile.is_banned) {
+    return { ok: false, message: "Your account is suspended. Contact support." };
+  }
   const ticketId = String(formData.get("ticket_id") ?? "");
   const staff = can(profile, "manage_support");
 

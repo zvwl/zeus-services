@@ -7,25 +7,51 @@ import type { SupportTicket } from "@/lib/types";
 
 export const revalidate = 0;
 
-const FILTERS = ["all", "open", "answered", "closed"];
+// "active" (needs attention: open + answered) is the default work queue view.
+const FILTERS = ["active", "open", "answered", "closed", "all"];
+const PAGE_SIZE = 50;
 
 export default async function AdminSupportPage({
   searchParams,
 }: {
-  searchParams: Promise<{ status?: string }>;
+  searchParams: Promise<{ status?: string; page?: string }>;
 }) {
-  const { status } = await searchParams;
-  const filter = FILTERS.includes(status ?? "") ? status! : "all";
+  const { status, page: pageParam } = await searchParams;
+  const filter = FILTERS.includes(status ?? "") ? status! : "active";
+  const page = Math.max(1, Number(pageParam) || 1);
 
   const supabase = await createClient();
   let query = supabase
     .from("support_tickets")
-    .select("*, profile:profiles(username, email)")
-    .order("updated_at", { ascending: false })
-    .limit(100);
-  if (filter !== "all") query = query.eq("status", filter);
-  const { data } = await query;
-  const tickets = (data as SupportTicket[]) ?? [];
+    .select("*, profile:profiles(username, email)", { count: "exact" });
+  if (filter === "active") {
+    // status desc = open before answered (the only two values here), so
+    // tickets awaiting a first staff reply always lead the queue.
+    query = query
+      .neq("status", "closed")
+      .order("status", { ascending: false })
+      .order("updated_at", { ascending: false });
+  } else {
+    if (filter !== "all") query = query.eq("status", filter);
+    query = query.order("updated_at", { ascending: false });
+  }
+  const { data, count } = await query.range(
+    (page - 1) * PAGE_SIZE,
+    page * PAGE_SIZE - 1
+  );
+  let tickets = (data as SupportTicket[]) ?? [];
+  // High priority floats to the top within each status group of the page.
+  const prioRank = { high: 0, normal: 1, low: 2 } as const;
+  if (filter === "active") {
+    tickets = [...tickets].sort(
+      (a, b) =>
+        (a.status === b.status
+          ? (prioRank[a.priority as keyof typeof prioRank] ?? 3) -
+            (prioRank[b.priority as keyof typeof prioRank] ?? 3)
+          : 0) || 0
+    );
+  }
+  const totalPages = Math.max(1, Math.ceil((count ?? 0) / PAGE_SIZE));
 
   return (
     <div>
@@ -104,6 +130,32 @@ export default async function AdminSupportPage({
           }))}
         />
       </div>
+
+      {totalPages > 1 && (
+        <div className="mt-6 flex items-center justify-between text-sm text-zinc-400">
+          <span>
+            Page {page} of {totalPages} · {count ?? 0} tickets
+          </span>
+          <div className="flex gap-2">
+            {page > 1 && (
+              <Link
+                href={`/admin/support?status=${filter}&page=${page - 1}`}
+                className="rounded-lg border border-edge px-3 py-1.5 transition hover:text-white"
+              >
+                ← Newer
+              </Link>
+            )}
+            {page < totalPages && (
+              <Link
+                href={`/admin/support?status=${filter}&page=${page + 1}`}
+                className="rounded-lg border border-edge px-3 py-1.5 transition hover:text-white"
+              >
+                Older →
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
