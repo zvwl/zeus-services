@@ -26,13 +26,15 @@ export interface LandingCopy {
 
 const CURATED: Record<string, LandingCopy> = {
   "gta-5/accounts": {
-    title: "GTA 5 Modded Accounts for Sale — PS5, PS4, Xbox & PC",
+    title: "GTA 5 Modded Accounts for Sale — Fully Loaded, Cheap",
     description:
-      "Buy GTA 5 modded accounts loaded with cash, high rank and unlocks. Fast, safe delivery on PS5, PS4, Xbox and PC from a UK store trusted by thousands.",
+      "Buy GTA 5 modded accounts loaded with cash, high rank and unlock-all. Full email access, 7-day cover and fast delivery from a UK store trusted by thousands.",
     h1: "GTA 5 Modded Accounts",
-    intro: `Skip years of grinding. Our **GTA 5 modded accounts** come preloaded with cash, high rank and the unlocks that matter — ready to drop straight into GTA Online on **PS5, PS4, Xbox or PC**.
+    intro: `Skip years of grinding. Our **GTA 5 modded accounts** come preloaded with cash, high rank and the unlocks that matter — ready to drop straight into GTA Online from your first session.
 
-Every account is prepared with safe, tested methods and delivered with **full credentials and email access**, so you can make it your own from day one. If anything isn't right, our support team is on Discord and tickets around the clock, and every order is covered by our warranty.
+Every account is prepared with safe, tested methods and delivered with **full credentials and email access**, so you can make it your own from day one. If anything isn't right, our support team is on Discord and tickets around the clock, and every account purchase includes **7 days of cover**.
+
+Accounts are currently for **PC** (Enhanced and Legacy editions). Playing on PS5, PS4 or Xbox? Our [money boosts and account services](/games/gta-5/boosting) are the way to level up the account you already own — and console modded accounts are on the roadmap, so join the Discord to hear first.
 
 We're a UK-based store selling worldwide — smaller than the big marketplaces, which is exactly why we're cheaper and faster.`,
     faqs: [
@@ -46,7 +48,7 @@ We're a UK-based store selling worldwide — smaller than the big marketplaces, 
       },
       {
         q: "Which platforms do you support?",
-        a: "We sell GTA 5 modded accounts for PS5, PS4, Xbox and PC. Pick your platform on the product page before checkout.",
+        a: "Modded accounts are currently available for PC, in Enhanced and Legacy editions. For PS5, PS4 and Xbox we offer account services and boosts on your own account instead, and console modded accounts are planned.",
       },
       {
         q: "How fast is delivery?",
@@ -142,9 +144,13 @@ Every listing shows exactly which skins and cosmetics are included. Delivery is 
     description:
       "Buy V-Bucks cheaper. Fortnite top-ups and V-Bucks gift cards delivered fast, with secure Stripe checkout and 24/7 support. Every platform supported.",
     h1: "Fortnite V-Bucks Top-Ups",
-    intro: `Why pay full price in the item shop? Our **cheap V-Bucks top-ups** get currency onto your Fortnite account for less, on every platform.
+    intro: `Why pay full price in the item shop? Our **cheap V-Bucks top-ups** get currency onto your Fortnite account for less, on every platform — whether you spell it V-Bucks or vbucks, this is where they cost less.
 
-Pick a package, check out securely, and follow the short delivery instructions — most V-Bucks orders complete within minutes to a few hours. Support is around the clock if you need a hand.`,
+Pick a package, check out securely, and follow the short delivery instructions — most V-Bucks orders complete within minutes to a few hours. Support is around the clock if you need a hand.
+
+**How much do you need?** As a rule of thumb: most item-shop skins cost 800–1,500 V-Bucks, the Battle Pass is 950, and bundles or Crew-style sets run 1,800–2,800. Our packages map to the popular denominations — 1,000, 2,800, 5,000 and 13,500 V-Bucks — so you can buy exactly what the item you want costs instead of overshooting.
+
+Buying for someone else? V-Bucks top-ups make an easy **gift for a Fortnite player** — order to their Epic account and the balance lands the same way a gift card would, without the plastic.`,
     faqs: [
       {
         q: "How can the V-Bucks be cheaper than Epic's prices?",
@@ -222,13 +228,13 @@ Discreet, fast and warranty-backed, with progress updates along the way. Pick yo
     ],
   },
   "forza-horizon-6/topups": {
-    title: "Forza Horizon 6 Money — 1 Billion Credits, Fast",
+    title: "Buy Forza Horizon 6 Credits — 1 Billion CR, Cheap & Fast",
     description:
-      "Buy Forza Horizon 6 credits cheap: 1 billion CR delivered fast, with wheel-spin bundles available. Safe login delivery, warranty and 24/7 support.",
-    h1: "Forza Horizon 6 Money & Credits",
-    intro: `Skip hundreds of hours of grinding. Our **Forza Horizon 6 money services** put a full **1 billion credits** on your account — enough to buy essentially any car in the game — with optional **wheel spin bundles** on top.
+      "Buy FH6 credits cheap: 1 billion Forza Horizon 6 credits delivered fast, with wheel-spin bundles available. Safe login delivery, warranty, 24/7 support.",
+    h1: "Forza Horizon 6 Credits & Money",
+    intro: `Skip hundreds of hours of grinding. Buy **Forza Horizon 6 credits** here and our team puts a full **1 billion CR** on your account — enough to buy essentially any car in the game — with optional **wheel spin bundles** on top.
 
-Delivery is handled by experienced staff via temporary login access: check out securely with Stripe, follow the short instructions, and most orders complete the same day. Every order carries our warranty, and support is around the clock.`,
+If you've been searching for **FH6 credits cheap**, this is the maths: one billion **Forza credits** for less than the price of a car pack. Delivery is handled by experienced staff via temporary login access — check out securely with Stripe, follow the short instructions, and most orders complete the same day. Every order carries our warranty, and support is around the clock.`,
     faqs: [
       {
         q: "How do I receive the credits?",
@@ -241,6 +247,32 @@ Delivery is handled by experienced staff via temporary login access: check out s
       {
         q: "Do I need to own the game?",
         a: "Yes — you must own Forza Horizon 6. The game itself is not included with any money or wheel-spin package.",
+      },
+    ],
+  },
+  "forza-horizon-6/accounts": {
+    // FH5 precedent: accounts demand is the first cluster to register after a
+    // Horizon launch ("forza horizon 5 modded account" 210/mo KD18). This page
+    // only goes live once an active FH6 account product exists.
+    title: "Forza Horizon 6 Modded Accounts — Credits & Cars Ready",
+    description:
+      "Buy a Forza Horizon 6 modded account loaded with credits, cars and wheel spins. Full email access, fast delivery and warranty from a trusted UK store.",
+    h1: "Forza Horizon 6 Modded Accounts",
+    intro: `Start Horizon with the garage already full. Our **Forza Horizon 6 modded accounts** come loaded with credits, cars and wheel spins — log in and drive, no grind required.
+
+Every account is delivered with **full email access**, so you change the credentials at handover and it's permanently yours. Prefer to keep your own progress? Our [FH6 credit top-ups](/games/forza-horizon-6/topups) add 1 billion CR to the account you already play on instead.`,
+    faqs: [
+      {
+        q: "What comes with a Forza Horizon 6 modded account?",
+        a: "Each listing states exactly what's included — typically a large credit balance, a stocked garage and wheel spins. You get the login plus full email access so the account becomes permanently yours.",
+      },
+      {
+        q: "Modded account or credit top-up — which should I pick?",
+        a: "If you already have progress you care about, a credit top-up on your own account is the better fit. If you're starting fresh or want a second account, a modded account is instant and self-contained.",
+      },
+      {
+        q: "How fast is delivery?",
+        a: "Most account orders are delivered within minutes to a few hours — credentials appear in your Zeuservices dashboard and inbox as soon as the order completes.",
       },
     ],
   },

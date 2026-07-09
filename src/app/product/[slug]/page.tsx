@@ -12,7 +12,8 @@ import { ReviewForm } from "@/components/ReviewForm";
 import { ProductReviews } from "@/components/ProductReviews";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
-import { siteUrl } from "@/lib/utils";
+import { metaText, siteUrl } from "@/lib/utils";
+import { LANDING_CATEGORIES } from "@/lib/landing";
 import type { Review } from "@/lib/types";
 
 // The page renders dynamically (getUser for the review form), but every
@@ -75,14 +76,21 @@ export async function generateMetadata({
   const { slug } = await params;
   // Same cached unit the page body uses — no extra query.
   const data = await getProductPageData(slug);
-  if (!data) return { title: "Product not found" };
+  // Real 404 status for unknown slugs — the page body's notFound() fires too
+  // late once the streamed shell has already sent a 200 (soft-404).
+  if (!data) notFound();
   const p = data.product;
-  const title =
-    p.meta_title || `${p.game?.name ? `${p.game.name} ` : ""}${p.name}`;
-  const description = (
+  // Only prefix the game name when the product name doesn't already carry it
+  // ("Fortnite V-Bucks" must not become "Fortnite Fortnite V-Bucks").
+  const gamePrefix =
+    p.game?.name && !p.name.toLowerCase().includes(p.game.name.toLowerCase())
+      ? `${p.game.name} `
+      : "";
+  const title = p.meta_title || `${gamePrefix}${p.name}`;
+  const description = metaText(
     p.meta_description ||
-    stripMd(p.description || `Buy ${p.name} fast and securely at Zeuservices.`)
-  ).slice(0, 160);
+      stripMd(p.description || `Buy ${p.name} fast and securely at Zeuservices.`)
+  );
   return {
     title,
     description,
@@ -221,6 +229,15 @@ export default async function ProductPage({
         }
       : {}),
   };
+
+  // Deep link to the game×category SEO landing page (when one exists) — these
+  // money pages otherwise sit one referring page away from orphan status.
+  const landingHref =
+    product.game &&
+    product.category &&
+    (LANDING_CATEGORIES as readonly string[]).includes(product.category.slug)
+      ? `/games/${product.game.slug}/${product.category.slug}`
+      : null;
 
   const breadcrumbJsonLd = {
     "@context": "https://schema.org",
@@ -399,6 +416,19 @@ export default async function ProductPage({
             <Markdown>{product.description}</Markdown>
           </div>
         </Reveal>
+      )}
+
+      {landingHref && (
+        <p className="mt-8 text-sm text-zinc-400">
+          Looking for more options? Browse all{" "}
+          <Link
+            href={landingHref}
+            className="font-semibold text-primary-light transition hover:underline"
+          >
+            {product.game!.name} {product.category!.name.toLowerCase()}
+          </Link>
+          .
+        </p>
       )}
 
       <div className="mt-16">

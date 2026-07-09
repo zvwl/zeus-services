@@ -73,6 +73,25 @@ const nextConfig = {
         destination: "/games",
         permanent: true,
       },
+      // v1-site URLs that still hold the domain's only Semrush rankings
+      // ("modded services", July 2026 audit) — preserve that equity.
+      {
+        source: "/boosting",
+        destination: "/category/boosting",
+        permanent: true,
+      },
+      {
+        source: "/comparison",
+        destination: "/",
+        permanent: true,
+      },
+      // Post consolidated into the where-to-buy buyer's guide (they competed
+      // for the same "buy gta modded account" cluster).
+      {
+        source: "/blog/buying-gta-modded-account-checklist",
+        destination: "/blog/where-to-buy-gta-5-modded-accounts",
+        permanent: true,
+      },
     ];
   },
 };

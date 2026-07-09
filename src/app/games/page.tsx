@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { getActiveGamesWithCounts } from "@/lib/data";
 import { GameCard } from "@/components/cards";
 import { Badge, EmptyState } from "@/components/ui";
@@ -129,6 +130,56 @@ export default async function GamesPage() {
             ))}
           </div>
         )}
+
+        {/* Crawlable hub copy — the grid alone left this page thin (Semrush
+            issue 117) on a URL that should rank for generic store terms. */}
+        <Reveal y={16}>
+          <div className="mt-14 max-w-3xl space-y-4 border-t border-edge pt-10 text-sm leading-relaxed text-zinc-400">
+            <h2 className="text-xl font-bold text-white">
+              One store for every game you play
+            </h2>
+            <p>
+              Zeuservices covers three things for every supported title:{" "}
+              <Link href="/category/topups" className="text-primary-light hover:underline">
+                top-ups
+              </Link>{" "}
+              (in-game currency like GTA$ money, V-Bucks and Forza credits for
+              less than official store prices),{" "}
+              <Link href="/category/boosting" className="text-primary-light hover:underline">
+                boosting
+              </Link>{" "}
+              (ranks, levels, unlocks and account services performed on the
+              account you already own), and{" "}
+              <Link href="/category/accounts" className="text-primary-light hover:underline">
+                accounts
+              </Link>{" "}
+              (ready-to-play accounts delivered with full email access so they
+              become permanently yours).
+            </p>
+            <p>
+              Whichever game you pick — from{" "}
+              <Link href="/games/gta-5" className="text-primary-light hover:underline">
+                GTA 5 modded accounts and money boosts
+              </Link>{" "}
+              to{" "}
+              <Link href="/games/fortnite" className="text-primary-light hover:underline">
+                cheap Fortnite V-Bucks
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/games/forza-horizon-6"
+                className="text-primary-light hover:underline"
+              >
+                Forza Horizon 6 credits
+              </Link>{" "}
+              — the ordering flow is the same: Stripe-secured checkout, live
+              order tracking in your dashboard, delivery typically within
+              minutes to a few hours, and a warranty behind every order. New
+              titles are added based on what the community asks for, so if your
+              game isn't here yet, tell us on Discord.
+            </p>
+          </div>
+        </Reveal>
       </div>
     </div>
   );

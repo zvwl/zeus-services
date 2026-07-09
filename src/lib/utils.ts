@@ -79,6 +79,22 @@ export function truncate(text: string, length: number) {
 }
 
 /**
+ * Meta-description truncation: collapses whitespace and cuts at a word
+ * boundary instead of mid-word ("…trusted by thousa" reads as broken copy in
+ * the SERP and Semrush flags it). No ellipsis — search engines add their own.
+ */
+export function metaText(text: string, max = 160) {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max + 1);
+  const lastSpace = cut.lastIndexOf(" ");
+  return (lastSpace > 60 ? cut.slice(0, lastSpace) : cut.slice(0, max)).replace(
+    /[,;:\s]+$/,
+    ""
+  );
+}
+
+/**
  * Estimated reading time in whole minutes (220 wpm, min 1). Single source of
  * truth — the blog post page and the admin markdown editor must agree.
  */

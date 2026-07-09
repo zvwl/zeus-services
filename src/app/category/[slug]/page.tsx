@@ -7,7 +7,7 @@ import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
 import { Reveal } from "@/components/motion";
 import { categoryVisual } from "@/lib/category-art";
-import { siteUrl } from "@/lib/utils";
+import { metaText, siteUrl } from "@/lib/utils";
 import type { Game } from "@/lib/types";
 
 export async function generateMetadata({
@@ -18,16 +18,16 @@ export async function generateMetadata({
   const { slug } = await params;
   // Same cached unit the page body uses — no extra query.
   const { category: data } = await getCategoryWithProducts(slug);
-  if (!data) return { title: "Category not found" };
+  // notFound() here (not just in the page body) so unknown slugs get a real
+  // 404 status: once the streamed shell has flushed, the body's notFound()
+  // can no longer change the 200 that already went out (soft-404).
+  if (!data) notFound();
   const title = data.meta_title || data.name;
-  const description = (
+  const description = metaText(
     data.meta_description ||
-    data.description ||
-    `Browse ${data.name} at Zeuservices.`
-  )
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
+      data.description ||
+      `Browse ${data.name} at Zeuservices.`
+  );
   // Category art exists locally — without this, shares fall back to the
   // generic sitewide card while games/products get real art.
   const { art } = categoryVisual(data);

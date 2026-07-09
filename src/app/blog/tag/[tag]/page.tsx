@@ -25,6 +25,9 @@ export async function generateMetadata({
   return {
     title,
     description,
+    // Thin archive pages (a card grid, ~100 words) — keep them for UX and as
+    // crawl paths (follow) but out of the index (July 2026 Semrush audit).
+    robots: { index: false, follow: true },
     alternates: { canonical: `/blog/tag/${encodeURIComponent(name)}` },
     openGraph: {
       type: "website",

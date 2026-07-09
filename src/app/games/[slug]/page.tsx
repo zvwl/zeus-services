@@ -8,7 +8,7 @@ import { Badge, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
 import { Reveal } from "@/components/motion";
-import { siteUrl } from "@/lib/utils";
+import { metaText, siteUrl } from "@/lib/utils";
 import type { Category, Game, Product } from "@/lib/types";
 
 // Static + tag-invalidated (admin saves call revalidateTag("site")) with a
@@ -30,16 +30,15 @@ export async function generateMetadata({
     .eq("slug", slug)
     .eq("is_active", true)
     .maybeSingle<Game>();
-  if (!data) return { title: "Game not found" };
+  // Real 404 status for unknown slugs — the page body's notFound() fires too
+  // late once the streamed shell has already sent a 200 (soft-404).
+  if (!data) notFound();
   const title = data.meta_title || `${data.name} Top-Ups, Boosting & Accounts`;
-  const description = (
+  const description = metaText(
     data.meta_description ||
-    data.description ||
-    `Cheap ${data.name} top-ups, boosting and accounts — fast, secure delivery.`
-  )
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 160);
+      data.description ||
+      `Cheap ${data.name} top-ups, boosting and accounts — fast, secure delivery.`
+  );
   const image = data.banner_url || data.image_url;
   return {
     title,
