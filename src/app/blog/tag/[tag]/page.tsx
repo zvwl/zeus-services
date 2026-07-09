@@ -68,7 +68,7 @@ export default async function BlogTagPage({
         />
       </Reveal>
       <RevealGroup className="grid gap-6 md:grid-cols-2 lg:grid-cols-3" stagger={0.07}>
-        {posts.map((post) => (
+        {posts.map((post, i) => (
           <RevealItem key={post.id} className="h-full">
             <Link
               href={`/blog/${post.slug}`}
@@ -79,6 +79,7 @@ export default async function BlogTagPage({
                 alt={post.title}
                 fallbackText={post.title}
                 className="aspect-[16/9] w-full"
+                priority={i < 3}
               />
               <div className="flex flex-1 flex-col p-5">
                 <div className="mb-2 flex flex-wrap gap-1.5">

@@ -124,7 +124,10 @@ function VerifyForm() {
 
 export default function Verify2FAPage() {
   return (
-    <Suspense>
+    // Height-reserving fallback — same footer-shove CLS footgun as /login.
+    <Suspense
+      fallback={<div className="min-h-[calc(100svh-4rem)]" aria-hidden />}
+    >
       <VerifyForm />
     </Suspense>
   );

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import Script from "next/script";
 import { cn } from "@/lib/utils";
 
@@ -32,21 +32,39 @@ export function TrustBox({
   className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const [load, setLoad] = useState(false);
 
-  // The bootstrap script scans the DOM once on load; widgets mounted after a
-  // client-side navigation need an explicit kick.
   useEffect(() => {
-    if (window.Trustpilot && ref.current) {
-      window.Trustpilot.loadFromElement(ref.current, true);
-    }
+    if (!ref.current) return;
+    // The widget lives in the footer on most pages — don't pay for Trustpilot's
+    // bootstrap (script + iframe) until the box is near the viewport. The
+    // SSR'd fallback link below is what crawlers see either way.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setLoad(true);
+          observer.disconnect();
+          // The bootstrap script scans the DOM once on load; widgets mounted
+          // after a client-side navigation need an explicit kick.
+          if (window.Trustpilot && ref.current) {
+            window.Trustpilot.loadFromElement(ref.current, true);
+          }
+        }
+      },
+      { rootMargin: "400px" }
+    );
+    observer.observe(ref.current);
+    return () => observer.disconnect();
   }, []);
 
   return (
     <>
-      <Script
-        src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"
-        strategy="lazyOnload"
-      />
+      {load && (
+        <Script
+          src="https://widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"
+          strategy="lazyOnload"
+        />
+      )}
       <div
         ref={ref}
         className={cn("trustpilot-widget", className)}

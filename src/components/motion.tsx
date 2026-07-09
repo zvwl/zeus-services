@@ -3,18 +3,22 @@
 import {
   LazyMotion,
   MotionConfig,
-  domAnimation,
   m,
   useReducedMotion,
 } from "framer-motion";
 import type { ReactNode } from "react";
 
 // LazyMotion + `m` keeps the animation runtime ~5kb instead of shipping the
-// full framer-motion bundle on every page. `reducedMotion="user"` disables
-// transform/opacity animation for visitors with prefers-reduced-motion.
+// full framer-motion bundle on every page. The feature bundle MUST be loaded
+// via a dynamic import — a static domAnimation import would pull it back into
+// every page's critical chunks (measured ~29KB gz of homepage TBT).
+// `reducedMotion="user"` disables animation for prefers-reduced-motion.
+const loadFeatures = () =>
+  import("./motion-features").then((mod) => mod.default);
+
 export function MotionProvider({ children }: { children: ReactNode }) {
   return (
-    <LazyMotion features={domAnimation} strict>
+    <LazyMotion features={loadFeatures} strict>
       <MotionConfig reducedMotion="user">{children}</MotionConfig>
     </LazyMotion>
   );
@@ -32,21 +36,29 @@ export function Reveal({
   delay = 0,
   y = 20,
   once = true,
+  fade = true,
 }: {
   children: ReactNode;
   className?: string;
   delay?: number;
   y?: number;
   once?: boolean;
+  /**
+   * fade={false} animates transform only, so the SSR'd markup never carries
+   * opacity:0 — required when the wrapped content is the page's LCP candidate
+   * (e.g. the auth card): text hidden until hydration turns a fast LCP into a
+   * multi-second one on slow runs.
+   */
+  fade?: boolean;
 }) {
   return (
     <m.div
       className={className}
-      initial={{ opacity: 0, y }}
+      initial={fade ? { opacity: 0, y } : { y }}
       // margin 0: a shrunken root (-60px) can never fire for content sitting
       // in the last strip of a page too short to scroll, leaving it stuck at
       // opacity 0. Triggering right at the viewport edge is visually the same.
-      whileInView={{ opacity: 1, y: 0 }}
+      whileInView={fade ? { opacity: 1, y: 0 } : { y: 0 }}
       viewport={{ once, margin: "0px" }}
       transition={{ duration: 0.55, delay, ease: EASE }}
     >

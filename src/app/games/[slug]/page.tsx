@@ -174,7 +174,7 @@ export default async function GamePage({
             description={`We don't have offers for ${game.name} right now — check back soon.`}
           />
         ) : (
-          groups.map(({ category, items }) => (
+          groups.map(({ category, items }, gi) => (
             <section key={category.id} className="mb-14">
               <Reveal y={14}>
                 <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
@@ -210,7 +210,13 @@ export default async function GamePage({
                     className="animate-fade-up"
                     style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
                   >
-                    <ProductCard product={p} />
+                    {/* First visible row is the LCP when the game has no hero
+                        art — must load eagerly, not lazily. */}
+                    <ProductCard
+                      product={p}
+                      priority={gi === 0 && i < 4}
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                    />
                   </div>
                 ))}
               </div>

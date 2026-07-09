@@ -164,7 +164,13 @@ export default async function GameCategoryPage({
               className="animate-fade-up"
               style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
             >
-              <ProductCard product={p} />
+              {/* First row is the LCP candidate on these landing pages —
+                  load eagerly, not lazily. */}
+              <ProductCard
+                product={p}
+                priority={i < 4}
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+              />
             </div>
           ))}
         </div>

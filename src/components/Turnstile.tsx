@@ -128,6 +128,13 @@ export const Turnstile = forwardRef<TurnstileHandle, TurnstileProps>(
     }, []);
 
     if (!TURNSTILE_SITE_KEY) return null;
-    return <div ref={containerRef} className={className} />;
+    // min-h reserves the widget's rendered box (Cloudflare's normal size is
+    // 300x65) so the buttons below don't jump down when the iframe mounts.
+    return (
+      <div
+        ref={containerRef}
+        className={`min-h-[65px]${className ? ` ${className}` : ""}`}
+      />
+    );
   }
 );

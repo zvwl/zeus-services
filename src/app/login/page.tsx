@@ -291,7 +291,13 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense>
+    // The fallback MUST reserve the same min-height as AuthShell's container:
+    // an empty pending boundary lets the footer paint at the top of the
+    // viewport, then the streamed form shoves it down a full screen
+    // (measured CLS 0.775 in lab).
+    <Suspense
+      fallback={<div className="min-h-[calc(100svh-4rem)]" aria-hidden />}
+    >
       <LoginForm />
     </Suspense>
   );

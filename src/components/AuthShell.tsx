@@ -50,16 +50,20 @@ export function AuthShell({
       </div>
 
       <div className="mx-auto flex min-h-[calc(100svh-4rem)] w-full max-w-md flex-col justify-center px-4 py-14 sm:py-20">
-        <Reveal y={16}>
+        {/* fade={false}: the title/card is the LCP candidate when the backdrop
+            is excluded — it must not SSR at opacity:0 waiting for hydration. */}
+        <Reveal y={16} fade={false}>
           <Link
             href="/"
             aria-label="Zeuservices — back to home"
-            className="mx-auto mb-6 flex w-fit items-center gap-2"
+            className="mx-auto mb-6 flex h-11 w-fit items-center gap-2"
           >
             {logoUrl ? (
               <img
                 src={logoUrl}
                 alt="Logo"
+                width={176}
+                height={44}
                 className="h-11 w-auto max-w-[200px] object-contain"
               />
             ) : (
