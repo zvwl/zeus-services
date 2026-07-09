@@ -12,14 +12,6 @@ declare global {
   }
 }
 
-/** Standard Trustpilot TrustBox template ids (global constants, not per-account). */
-export const TRUSTBOX = {
-  /** "Review us on Trustpilot" prompt — the right widget until reviews build up. */
-  reviewCollector: { templateId: "56278e9abfbbba0bdcd568bc", height: "52px" },
-  /** Compact "TrustScore x.x | n reviews" line — footer-friendly. */
-  microReviewCount: { templateId: "5419b6a8b0d04a076446a9ad", height: "24px" },
-} as const;
-
 /**
  * Trustpilot TrustBox embed. Renders nothing useful until the bootstrap script
  * initialises it; the fallback link inside keeps it accessible (and is what

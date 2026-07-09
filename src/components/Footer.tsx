@@ -2,7 +2,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { getActiveGames, getCategories, getSettings, setting } from "@/lib/data";
-import { TRUSTBOX, TrustBox } from "@/components/TrustBox";
+import { TrustBox } from "@/components/TrustBox";
+import { TRUSTBOX } from "@/lib/trustbox";
 
 export async function Footer() {
   const [games, categories, settings] = await Promise.all([
