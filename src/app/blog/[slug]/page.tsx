@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { createPublicClient } from "@/lib/supabase/public";
+import { getBlogPostPageData } from "@/lib/data";
 import { ArrowLeft, Clock } from "lucide-react";
 import { CoverImage } from "@/components/cards";
 import { Badge } from "@/components/ui";
@@ -9,7 +9,6 @@ import { Markdown } from "@/components/Markdown";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion";
 import { formatDate, readingTime, siteUrl } from "@/lib/utils";
-import type { BlogPost } from "@/lib/types";
 
 // No cookies are read here, so the page renders statically and revalidates —
 // crawls stop paying a full DB-bound render per hit.
@@ -21,20 +20,14 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const supabase = createPublicClient();
-  // select("*") so the optional meta_title/meta_description columns are picked
-  // up when present without breaking on pre-0021 schemas.
-  const { data } = await supabase
-    .from("blog_posts")
-    .select("*")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .maybeSingle<BlogPost>();
+  // Same cached unit the page body uses — no extra query.
+  const data = await getBlogPostPageData(slug);
   if (!data) return { title: "Post not found" };
-  const title = data.meta_title || data.title;
+  const { post } = data;
+  const title = post.meta_title || post.title;
   const description =
-    data.meta_description ||
-    (data.excerpt || data.content || "")
+    post.meta_description ||
+    (post.excerpt || post.content || "")
       .replace(/[#*_~>`[\]()]/g, "")
       .replace(/\s+/g, " ")
       .trim()
@@ -42,14 +35,14 @@ export async function generateMetadata({
   return {
     title,
     description,
-    alternates: { canonical: `/blog/${data.slug}` },
+    alternates: { canonical: `/blog/${post.slug}` },
     openGraph: {
       type: "article",
       title,
       description,
-      url: `/blog/${data.slug}`,
-      ...(data.published_at ? { publishedTime: data.published_at } : {}),
-      images: data.image_url ? [{ url: data.image_url }] : undefined,
+      url: `/blog/${post.slug}`,
+      ...(post.published_at ? { publishedTime: post.published_at } : {}),
+      images: post.image_url ? [{ url: post.image_url }] : undefined,
     },
   };
 }
@@ -60,29 +53,12 @@ export default async function BlogPostPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("blog_posts")
-    .select("*, author:profiles(username, avatar_url)")
-    .eq("slug", slug)
-    .eq("is_published", true)
-    .maybeSingle();
+  const data = await getBlogPostPageData(slug);
   if (!data) notFound();
-  const post = data as BlogPost;
+  const { post, pool } = data;
 
   // Related posts: newest others sharing a tag, padded with newest overall —
   // guides should pass equity to each other instead of dead-ending.
-  const { data: others } = await supabase
-    .from("blog_posts")
-    .select("slug, title, image_url, tags, excerpt, published_at, created_at")
-    .eq("is_published", true)
-    .neq("id", post.id)
-    .order("published_at", { ascending: false })
-    .limit(24);
-  const pool = (others as Pick<
-    BlogPost,
-    "slug" | "title" | "image_url" | "tags" | "excerpt" | "published_at" | "created_at"
-  >[]) ?? [];
   const shared = pool.filter((p) =>
     p.tags?.some((t) => post.tags?.includes(t))
   );

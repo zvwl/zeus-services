@@ -19,10 +19,14 @@ const chipClass = (active: boolean) =>
 // The full product list is already in the page payload, so game filtering is a
 // pure in-memory operation. Doing it client-side makes chip clicks instant —
 // as <Link> navigations they each cost a full dynamic server render (the page
-// was flagged for poor INP). The chips stay real links so open-in-new-tab and
-// crawling of ?game= URLs keep working; a plain click intercepts and syncs the
-// URL via history.replaceState without a server round trip. The active filter
-// is derived from useSearchParams — never duplicated into state — so it stays
+// was flagged for poor INP). The game chips are real links to the curated
+// /games/[slug]/[category] landing pages, so crawlers and modified clicks
+// (new tab etc.) reach the SEO pages instead of the thin ?game= URLs — which
+// thereby drop out of the crawl graph. No 404 risk: chips derive from active
+// products, the same condition under which getGameCategoryLanding publishes
+// the landing page. A plain click still intercepts and syncs a ?game= filter
+// via history.replaceState without a server round trip. The active filter is
+// derived from useSearchParams — never duplicated into state — so it stays
 // correct when a navigation (e.g. the navbar category link) changes only the
 // search params without remounting this component. Next syncs native
 // history.replaceState calls back into useSearchParams.
@@ -70,7 +74,7 @@ export function CategoryGrid({
           {games.map((g) => (
             <Link
               key={g.id}
-              href={`/category/${categorySlug}?game=${g.slug}`}
+              href={`/games/${g.slug}/${categorySlug}`}
               onClick={(e) => select(e, g.slug)}
               className={chipClass(gameFilter === g.slug)}
             >

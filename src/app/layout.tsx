@@ -10,6 +10,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { CookieConsent } from "@/components/CookieConsent";
 import { JsonLd } from "@/components/JsonLd";
+import { SvgDefs } from "@/components/ui";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { getRates, getSettings, setting } from "@/lib/data";
@@ -98,6 +99,14 @@ export default async function RootLayout({
     getUser(),
   ]);
   const initialCurrency = cookieStore.get("currency")?.value ?? "USD";
+  // Server-read consent so the banner is part of the first HTML flush —
+  // CookieConsent's old mount-effect gate made it the LCP element on thin
+  // pages (it only painted after full hydration).
+  const consentCookie = cookieStore.get("cookie_consent")?.value;
+  const initialConsent =
+    consentCookie === "accepted" || consentCookie === "declined"
+      ? consentCookie
+      : null;
   // Show a warning bar on any non-production (preview/dev) deployment.
   const isPreview =
     Boolean(process.env.VERCEL_ENV) && process.env.VERCEL_ENV !== "production";
@@ -135,6 +144,7 @@ export default async function RootLayout({
   return (
     <html lang="en" className={`dark ${inter.variable}`}>
       <body className="flex min-h-screen flex-col font-sans">
+        <SvgDefs />
         <JsonLd data={organizationJsonLd} />
         <JsonLd data={websiteJsonLd} />
         <MotionProvider>
@@ -149,7 +159,7 @@ export default async function RootLayout({
             <Navbar />
             <main className="flex-1">{children}</main>
             <Footer />
-            <CookieConsent />
+            <CookieConsent initialConsent={initialConsent} />
             <CartDrawer />
           </CartProvider>
         </CurrencyProvider>

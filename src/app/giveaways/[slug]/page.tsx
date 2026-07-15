@@ -87,12 +87,14 @@ export default async function GiveawayPage({
           a legibility veil */}
       <div className="relative overflow-hidden border-b border-edge">
         {/* Plain img: giveaway art can live on any host, and this is purely
-            decorative background art. */}
+            decorative background art. It's still the LCP element, so fetch it
+            at high priority. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={giveaway.image_url || "/media/giveaway-banner.webp"}
           alt=""
           aria-hidden
+          fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="art-veil" />

@@ -5,6 +5,15 @@
   "engines": {
     "node": ">=20"
   },
+  "browserslist": [
+    "chrome >= 90",
+    "edge >= 90",
+    "firefox >= 90",
+    "safari >= 14.1",
+    "ios_saf >= 14.5",
+    "opera >= 76",
+    "not dead"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -16,7 +25,6 @@
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "clsx": "^2.1.1",
-    "framer-motion": "^12.42.2",
     "lucide-react": "^0.468.0",
     "next": "^15.1.6",
     "react": "^19.0.0",

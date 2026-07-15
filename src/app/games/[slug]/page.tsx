@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 import { createPublicClient } from "@/lib/supabase/public";
+import { CARD_EMBEDS } from "@/lib/data";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { Badge, EmptyState } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
@@ -69,9 +70,11 @@ export default async function GamePage({
     .maybeSingle();
   if (!game) notFound();
 
+  // Card-grid embeds only — the game's own full row (hero, intro) is the
+  // separate fetch above.
   const { data: products } = await supabase
     .from("products")
-    .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
+    .select(`*, ${CARD_EMBEDS}`)
     .eq("game_id", game.id)
     .eq("is_active", true)
     .order("sort_order");

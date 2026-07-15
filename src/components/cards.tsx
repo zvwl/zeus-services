@@ -200,9 +200,30 @@ export function GameCard({
   );
 }
 
+// Mirrors next.config.mjs images.remotePatterns. Avatar URLs are user data
+// (OAuth metadata), and next/image throws at render time for hosts outside
+// remotePatterns — one bad avatar row would take down every page that renders
+// review cards. Returns null when the URL doesn't parse.
+function isOptimizableAvatar(src: string): boolean | null {
+  try {
+    const url = new URL(src);
+    return (
+      url.protocol === "https:" &&
+      (url.hostname.endsWith(".supabase.co") ||
+        url.hostname === "cdn.discordapp.com" ||
+        url.hostname === "lh3.googleusercontent.com")
+    );
+  } catch {
+    return null;
+  }
+}
+
 export function ReviewCard({ review }: { review: Review }) {
   const name = review.profile?.username ?? review.author_name ?? "Customer";
-  const avatar = review.author_avatar ?? review.profile?.avatar_url ?? null;
+  const rawAvatar = review.author_avatar ?? review.profile?.avatar_url ?? null;
+  const optimizable = rawAvatar ? isOptimizableAvatar(rawAvatar) : null;
+  // Non-parseable URLs fall through to the initial-letter fallback.
+  const avatar = optimizable === null ? null : rawAvatar;
   return (
     <div className="glass flex h-full flex-col p-5">
       <div className="flex items-center justify-between">
@@ -216,9 +237,19 @@ export function ReviewCard({ review }: { review: Review }) {
         “{review.content}”
       </p>
       <div className="mt-4 flex items-center gap-2 border-t border-edge pt-3">
-        {avatar ? (
-          // Raw <img>: avatar hosts vary (Discord/Google/manual), so the
-          // next/image host allowlist can't cover them.
+        {avatar && optimizable ? (
+          <Image
+            src={avatar}
+            alt=""
+            width={28}
+            height={28}
+            sizes="28px"
+            loading="lazy"
+            className="h-7 w-7 rounded-full object-cover"
+          />
+        ) : avatar ? (
+          // Host outside remotePatterns: plain <img> instead of crashing the
+          // render — unoptimized, but it's a 28px avatar.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={avatar}
@@ -226,7 +257,6 @@ export function ReviewCard({ review }: { review: Review }) {
             width={28}
             height={28}
             loading="lazy"
-            decoding="async"
             className="h-7 w-7 rounded-full object-cover"
           />
         ) : (

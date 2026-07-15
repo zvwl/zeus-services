@@ -7,8 +7,9 @@ import { JsonLd } from "@/components/JsonLd";
 import { Markdown } from "@/components/Markdown";
 import { Reveal } from "@/components/motion";
 import { categoryVisual } from "@/lib/category-art";
+import { CATEGORY_COPY } from "@/lib/category-copy";
 import { metaText, siteUrl } from "@/lib/utils";
-import type { Game } from "@/lib/types";
+import type { Game, Product } from "@/lib/types";
 
 export async function generateMetadata({
   params,
@@ -57,28 +58,52 @@ export default async function CategoryPage({
   // The grid derives the active ?game= filter from useSearchParams (correct on
   // both SSR deep links and client-side filtering), so the page itself doesn't
   // read searchParams.
+  // Explicit picks, not null-ed spreads: everything here crosses into the
+  // "use client" grid, so spreads still shipped meta/timestamps/UUIDs per
+  // chip. The chips render id/slug/name and are sorted by sort_order.
+  // Inactive games are skipped: their chips link to /games/[slug]/[category]
+  // landings that 404 (getGameCategoryLanding requires an active game). Their
+  // products still get cards below — deactivating a game hides the game, not
+  // its products.
   const games = [...new Map(
-    all.filter((p) => p.game).map((p) => [p.game!.id, p.game as Game])
+    all
+      .filter((p) => p.game?.is_active === true)
+      .map((p) => [p.game!.id, p.game as Game])
   ).values()]
     .sort((a, b) => a.sort_order - b.sort_order)
-    // Chips only need id/slug/name — keep long text out of the client payload.
-    .map((g) => ({ ...g, description: null, intro: null }));
+    .map((g) => ({
+      id: g.id,
+      slug: g.slug,
+      name: g.name,
+      sort_order: g.sort_order,
+    })) as Game[];
 
-  // Likewise slim the products handed to the client grid: the cards never
-  // render long text, and inactive variants (with their pricing/stock) should
-  // not ship in the page source at all.
+  // Likewise pick exactly what ProductCard, fromPrice and the game filter
+  // read; inactive variants (with their pricing/stock) must not ship in the
+  // page source at all.
   const cards = all.map((p) => ({
-    ...p,
-    description: null,
-    delivery_instructions: null,
-    variants: p.variants?.filter((v) => v.is_active),
-    fields: undefined,
-    addons: undefined,
-    game: p.game ? { ...p.game, description: null, intro: null } : p.game,
-    category: p.category
-      ? { ...p.category, description: null, intro: null }
-      : p.category,
-  }));
+    id: p.id,
+    slug: p.slug,
+    name: p.name,
+    image_url: p.image_url,
+    base_price: p.base_price,
+    compare_at_price: p.compare_at_price,
+    stock: p.stock,
+    delivery_type: p.delivery_type,
+    pricing_mode: p.pricing_mode,
+    custom_price_per_unit: p.custom_price_per_unit,
+    custom_min: p.custom_min,
+    variants: (p.variants ?? [])
+      .filter((v) => v.is_active)
+      .map((v) => ({
+        id: v.id,
+        price: v.price,
+        stock: v.stock,
+        is_active: v.is_active,
+      })),
+    game: p.game ? { name: p.game.name, slug: p.game.slug } : null,
+    category: p.category ? { name: p.category.name } : null,
+  })) as Product[];
 
   const base = siteUrl();
   const breadcrumbJsonLd = {
@@ -165,10 +190,12 @@ export default async function CategoryPage({
       )}
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-        {category.intro && (
+        {/* Admin-editable intro wins; the in-repo copy keeps the page from
+            shipping thin when the DB field is empty. */}
+        {(category.intro || CATEGORY_COPY[category.slug]) && (
           <Reveal y={16}>
             <div className="mb-10 max-w-3xl">
-              <Markdown>{category.intro}</Markdown>
+              <Markdown>{category.intro || CATEGORY_COPY[category.slug]}</Markdown>
             </div>
           </Reveal>
         )}

@@ -2,6 +2,7 @@ import { unstable_cache } from "next/cache";
 import { createPublicClient } from "@/lib/supabase/public";
 import { FALLBACK_RATES } from "@/lib/currency";
 import type {
+  BlogPost,
   Category,
   ExchangeRate,
   Faq,
@@ -51,9 +52,11 @@ export const getCategories = unstable_cache(
 export const getRates = unstable_cache(
   async (): Promise<ExchangeRate[]> => {
     const supabase = createPublicClient();
+    // Only the ExchangeRate fields — this list crosses into the client-side
+    // CurrencyProvider on every page, so extra columns ship with every view.
     const { data } = await supabase
       .from("exchange_rates")
-      .select("*")
+      .select("code, rate, symbol, label")
       .order("code");
     const rates = (data as ExchangeRate[]) ?? [];
     return rates.length > 0 ? rates : FALLBACK_RATES;
@@ -98,12 +101,22 @@ export const getSections = unstable_cache(
 // anonymous page view. They change at most a few times a day and are busted
 // immediately by revalidateTag("site") whenever an admin saves.
 
+// Embeds for queries that feed product-card grids: only what the cards, chips
+// and price helpers actually read. Full-row embeds (`games(*)` etc.) dragged
+// every game/category intro and timestamp along per product. Pages that render
+// the full row (product page's own product, a game's hero) keep their own
+// full fetches.
+// The game embed carries is_active so pages can drop chips/links to games
+// deactivated in admin (their landing pages 404) without hiding the products.
+export const CARD_EMBEDS =
+  "game:games(id, name, slug, sort_order, is_active), category:categories(id, name, slug, sort_order), variants:product_variants(id, price, stock, is_active, sort_order)";
+
 export const getFeaturedProducts = unstable_cache(
   async (limit: number): Promise<Product[]> => {
     const supabase = createPublicClient();
     const { data } = await supabase
       .from("products")
-      .select("*, game:games(*), category:categories(*), variants:product_variants(*)")
+      .select(`*, ${CARD_EMBEDS}`)
       .eq("is_active", true)
       .eq("is_featured", true)
       .order("sort_order")
@@ -145,15 +158,19 @@ export const getApprovedReviews = unstable_cache(
   CACHE_OPTS
 );
 
+// No limit → all active rows (the FAQ page). The limit is part of the cache
+// key, so the homepage's limited entry and the full list are cached separately;
+// admin FAQ saves bust each through its page's implicit path tag.
 export const getActiveFaqs = unstable_cache(
-  async (limit: number): Promise<Faq[]> => {
+  async (limit?: number): Promise<Faq[]> => {
     const supabase = createPublicClient();
-    const { data } = await supabase
+    let query = supabase
       .from("faqs")
       .select("*")
       .eq("is_active", true)
-      .order("sort_order")
-      .limit(limit);
+      .order("sort_order");
+    if (limit !== undefined) query = query.limit(limit);
+    const { data } = await query;
     return (data as Faq[]) ?? [];
   },
   ["active-faqs"],
@@ -201,9 +218,7 @@ export const getCategoryWithProducts = unstable_cache(
     if (!category) return { category: null, products: [] };
     const { data: products } = await supabase
       .from("products")
-      .select(
-        "*, game:games(*), category:categories(*), variants:product_variants(*)"
-      )
+      .select(`*, ${CARD_EMBEDS}`)
       .eq("category_id", category.id)
       .eq("is_active", true)
       .order("sort_order");
@@ -246,9 +261,7 @@ export const getGameCategoryLanding = unstable_cache(
     if (!game || !category) return { game: null, category: null, products: [] };
     const { data: products } = await supabase
       .from("products")
-      .select(
-        "*, game:games(*), category:categories(*), variants:product_variants(*)"
-      )
+      .select(`*, ${CARD_EMBEDS}`)
       .eq("game_id", game.id)
       .eq("category_id", category.id)
       .eq("is_active", true)
@@ -302,9 +315,7 @@ export const getProductPageData = unstable_cache(
           .eq("is_approved", true),
         supabase
           .from("products")
-          .select(
-            "*, game:games(*), category:categories(*), variants:product_variants(*)"
-          )
+          .select(`*, ${CARD_EMBEDS}`)
           .eq("game_id", product.game_id)
           .eq("is_active", true)
           .neq("id", product.id)
@@ -322,22 +333,123 @@ export const getProductPageData = unstable_cache(
   CACHE_OPTS
 );
 
-// Rating summary from approved reviews, computed in-database so we never
-// transfer every review row just to average them.
+// Rating summary from approved reviews — five head-only exact counts, zero
+// rows transferred. Fetching rating rows hit PostgREST's 1000-row cap, so the
+// distribution/avg silently diverged from the exact count past 1000 reviews.
+// `byStar` gives the all-time 1–5 distribution, so /reviews' bars stay correct
+// however few reviews it loads.
 export const getReviewStats = unstable_cache(
-  async (): Promise<{ avg: number; count: number }> => {
+  async (): Promise<{
+    avg: number;
+    count: number;
+    byStar: Record<1 | 2 | 3 | 4 | 5, number>;
+  }> => {
     const supabase = createPublicClient();
-    const { data, count } = await supabase
-      .from("reviews")
-      .select("rating", { count: "exact" })
-      .eq("is_approved", true);
-    const rows = (data as { rating: number }[]) ?? [];
-    if (rows.length === 0) return { avg: 0, count: count ?? 0 };
-    const avg =
-      Math.round((rows.reduce((s, r) => s + r.rating, 0) / rows.length) * 10) / 10;
-    return { avg, count: count ?? rows.length };
+    const stars = [1, 2, 3, 4, 5] as const;
+    const counts = await Promise.all(
+      stars.map(async (star) => {
+        const { count } = await supabase
+          .from("reviews")
+          .select("*", { count: "exact", head: true })
+          .eq("is_approved", true)
+          .eq("rating", star);
+        return count ?? 0;
+      })
+    );
+    const byStar: Record<1 | 2 | 3 | 4 | 5, number> = {
+      1: counts[0],
+      2: counts[1],
+      3: counts[2],
+      4: counts[3],
+      5: counts[4],
+    };
+    const count = counts.reduce((total, n) => total + n, 0);
+    if (count === 0) return { avg: 0, count, byStar };
+    const sum = stars.reduce((total, star, i) => total + star * counts[i], 0);
+    const avg = Math.round((sum / count) * 10) / 10;
+    return { avg, count, byStar };
   },
   ["review-stats"],
+  CACHE_OPTS
+);
+
+// Only the fields ReviewCard renders. Full review rows carry UUIDs and
+// moderation flags that would double-ship in HTML + RSC flight for every card.
+export type SlimReview = Pick<
+  Review,
+  | "id"
+  | "rating"
+  | "title"
+  | "content"
+  | "created_at"
+  | "admin_reply"
+  | "author_name"
+  | "author_avatar"
+  | "profile"
+>;
+
+export const REVIEW_CARD_COLUMNS =
+  "id, rating, title, content, created_at, admin_reply, author_name, author_avatar, profile:profiles(username, avatar_url)";
+
+// First page of /reviews. Review approval busts this immediately through
+// revalidatePath("/reviews") (unstable_cache's implicit path tag); the shared
+// 5-minute revalidate is the safety net everywhere else.
+export const getLatestReviews = unstable_cache(
+  async (limit: number): Promise<SlimReview[]> => {
+    const supabase = createPublicClient();
+    const { data } = await supabase
+      .from("reviews")
+      .select(REVIEW_CARD_COLUMNS)
+      .eq("is_approved", true)
+      .order("created_at", { ascending: false })
+      // id tiebreaker keeps the order deterministic across equal timestamps —
+      // /api/reviews pages with range() and must sort identically, or rows
+      // duplicate/vanish at the page-1/page-2 boundary.
+      .order("id")
+      .limit(limit);
+    // Double cast: without generated DB types the query parser can't know the
+    // profiles embed is to-one and infers an array.
+    return (data as unknown as SlimReview[]) ?? [];
+  },
+  ["latest-reviews"],
+  CACHE_OPTS
+);
+
+// Everything the blog post page needs in one cached unit (also serves its
+// generateMetadata, which previously ran a duplicate select). select("*") so
+// the optional meta_title/meta_description columns are picked up when present
+// without breaking on pre-0021 schemas. The pool feeds the related-posts
+// picker: cards render only title/image/date, plus tags for the matching.
+export type BlogPoolPost = Pick<
+  BlogPost,
+  "slug" | "title" | "image_url" | "tags" | "published_at" | "created_at"
+>;
+
+export const getBlogPostPageData = unstable_cache(
+  async (
+    slug: string
+  ): Promise<{ post: BlogPost; pool: BlogPoolPost[] } | null> => {
+    const supabase = createPublicClient();
+    const { data: post } = await supabase
+      .from("blog_posts")
+      .select("*, author:profiles(username, avatar_url)")
+      .eq("slug", slug)
+      .eq("is_published", true)
+      .maybeSingle();
+    if (!post) return null;
+    const { data: pool } = await supabase
+      .from("blog_posts")
+      .select("slug, title, image_url, tags, published_at, created_at")
+      .eq("is_published", true)
+      .neq("id", post.id)
+      .order("published_at", { ascending: false })
+      .limit(24);
+    return {
+      post: post as BlogPost,
+      pool: (pool as BlogPoolPost[]) ?? [],
+    };
+  },
+  ["blog-post-page"],
   CACHE_OPTS
 );
 

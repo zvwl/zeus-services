@@ -22,6 +22,39 @@ const TRUST = [
   { icon: Headphones, label: "24/7 support" },
 ] as const;
 
+const HUB_FAQS = [
+  {
+    q: "How fast are orders delivered across games?",
+    a: "Most orders complete within minutes to a few hours; instant-delivery items send credentials the moment payment clears. Each product page shows its current delivery window, and your dashboard tracks every order live until it lands.",
+  },
+  {
+    q: "What's the difference between a top-up, a boost and an account?",
+    a: "A top-up adds in-game currency to the account you already own. A boost is a service performed for you — ranks, levels, unlocks — again on your own account. An account is a separate ready-made account delivered with full email access, so you can change the credentials and keep it permanently.",
+  },
+  {
+    q: "Is it safe to buy here?",
+    a: "Payments run entirely through Stripe, so your card details never touch our servers. Every order carries our warranty, support is available around the clock on Discord and via tickets, and our reviews page collects verified feedback from completed orders.",
+  },
+  {
+    q: "My game isn't listed — can you still help?",
+    a: "Possibly. New titles are added based on what the community asks for, so tell us on Discord — if there's enough demand for a game, we stock it.",
+  },
+  {
+    q: "Which platforms do you support?",
+    a: "It depends on the product, not the game. Currency top-ups usually work across PC and consoles, while accounts and some boosts are platform-specific. Where a service is platform-specific, the product page or its options say so — and if you're unsure, ask on Discord or open a ticket and support will confirm before you buy.",
+  },
+];
+
+const hubFaqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: HUB_FAQS.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export default async function GamesPage() {
   const { games, counts } = await getActiveGamesWithCounts();
 
@@ -46,6 +79,7 @@ export default async function GamesPage() {
   return (
     <div>
       {itemListJsonLd && <JsonLd data={itemListJsonLd} />}
+      <JsonLd data={hubFaqJsonLd} />
 
       {/* Cinematic hub hero — Higgsfield ultra-wide art behind a legibility veil */}
       <div className="relative overflow-hidden border-b border-edge">
@@ -158,16 +192,29 @@ export default async function GamesPage() {
             </p>
             <p>
               Whichever game you pick — from{" "}
-              <Link href="/games/gta-5" className="text-primary-light hover:underline">
-                GTA 5 modded accounts and money boosts
+              <Link
+                href="/games/gta-5/accounts"
+                className="text-primary-light hover:underline"
+              >
+                GTA 5 modded accounts
+              </Link>{" "}
+              and{" "}
+              <Link
+                href="/games/gta-5/topups"
+                className="text-primary-light hover:underline"
+              >
+                money boosts
               </Link>{" "}
               to{" "}
-              <Link href="/games/fortnite" className="text-primary-light hover:underline">
+              <Link
+                href="/games/fortnite/topups"
+                className="text-primary-light hover:underline"
+              >
                 cheap Fortnite V-Bucks
               </Link>{" "}
               and{" "}
               <Link
-                href="/games/forza-horizon-6"
+                href="/games/forza-horizon-6/topups"
                 className="text-primary-light hover:underline"
               >
                 Forza Horizon 6 credits
@@ -178,8 +225,57 @@ export default async function GamesPage() {
               titles are added based on what the community asks for, so if your
               game isn't here yet, tell us on Discord.
             </p>
+            <p>
+              Platform coverage varies by product rather than by game: currency
+              like V-Bucks lands on whatever platform your account plays on,
+              while modded accounts and some boosts are prepared per platform.
+              Where a service is platform-specific, the product page or its
+              options say so — and if anything is unclear, support on Discord
+              or via tickets will confirm before you buy.
+            </p>
+            <p>
+              The full flow from this page: pick your game, choose between
+              top-ups, boosting and accounts, then pick the exact product. Pay
+              by card through Stripe, watch the order move through your
+              dashboard, and delivery arrives there and in your inbox. The{" "}
+              <Link href="/reviews" className="text-primary-light hover:underline">
+                reviews page
+              </Link>{" "}
+              collects verified feedback from orders that went through exactly
+              that flow, and any active{" "}
+              <Link
+                href="/discount-codes"
+                className="text-primary-light hover:underline"
+              >
+                discount codes
+              </Link>{" "}
+              apply on top at the Stripe payment page.
+            </p>
           </div>
         </Reveal>
+
+        <section className="mt-14 max-w-3xl">
+          <Reveal y={14}>
+            <h2 className="mb-6 text-2xl font-bold text-white">
+              Buying from Zeuservices — FAQ
+            </h2>
+          </Reveal>
+          <div className="space-y-4">
+            {HUB_FAQS.map((f) => (
+              <details
+                key={f.q}
+                className="glass group rounded-xl p-5 open:border-primary/40"
+              >
+                <summary className="cursor-pointer list-none text-[15px] font-semibold text-white marker:content-none">
+                  {f.q}
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                  {f.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
       </div>
     </div>
   );

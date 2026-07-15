@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
+import { DiscordIcon } from "@/components/ui";
 import { getActiveGames, getCategories, getSettings, setting } from "@/lib/data";
 
 export async function Footer() {
@@ -14,12 +15,12 @@ export async function Footer() {
   const logoUrl = setting(settings, "logo_url");
 
   // Social profiles are admin-managed (Admin → Settings); only render the ones
-  // that are actually set.
-  const socials = [
+  // that are actually set. Discord renders via the shared sprite (SvgDefs);
+  // the rest are one-off paths kept inline.
+  const socials: { label: string; href: string; path?: string }[] = [
     {
       label: "Discord",
       href: discord,
-      path: "M20.32 4.37a19.8 19.8 0 0 0-4.93-1.51 13.8 13.8 0 0 0-.64 1.28 18.3 18.3 0 0 0-5.5 0 13.8 13.8 0 0 0-.64-1.28c-1.71.29-3.37.8-4.93 1.51A20.3 20.3 0 0 0 .1 18.06a19.9 19.9 0 0 0 6.07 3.03c.49-.66.93-1.37 1.3-2.1a12.9 12.9 0 0 1-2.05-.98c.17-.12.34-.25.5-.38a14.2 14.2 0 0 0 12.16 0c.17.13.33.26.5.38-.65.39-1.34.72-2.05.98.37.73.81 1.44 1.3 2.1a19.9 19.9 0 0 0 6.07-3.03 20.3 20.3 0 0 0-3.58-13.69ZM8.02 15.33c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.95-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.95 2.42-2.16 2.42Zm7.96 0c-1.18 0-2.16-1.08-2.16-2.42 0-1.33.95-2.42 2.16-2.42 1.21 0 2.18 1.1 2.16 2.42 0 1.34-.95 2.42-2.16 2.42Z",
     },
     {
       label: "X (Twitter)",
@@ -103,7 +104,12 @@ export async function Footer() {
                   alt={siteName}
                   width={40}
                   height={40}
-                  loading="lazy"
+                  // Eager, not priority: on short pages (/support, /refunds)
+                  // the footer is in the first viewport and this logo becomes
+                  // the LCP element — lazy-loading it tanked LCP. `priority`
+                  // would preload it on every page, hurting long pages where
+                  // it's far below the fold.
+                  loading="eager"
                   className="h-10 w-auto max-w-[200px] object-contain"
                 />
               ) : (
@@ -143,7 +149,8 @@ export async function Footer() {
                   alt="Check zeuservices.com on ScamAdviser.com — rated Very Likely Safe"
                   width={156}
                   height={30}
-                  loading="lazy"
+                  // Eager for the same short-page-LCP reason as the logo above.
+                  loading="eager"
                   className="h-[26px] w-auto"
                 />
               </a>
@@ -223,9 +230,13 @@ export async function Footer() {
                 aria-label={s.label}
                 className="text-zinc-600 transition hover:text-primary-light"
               >
-                <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden>
-                  <path d={s.path} />
-                </svg>
+                {s.path ? (
+                  <svg viewBox="0 0 24 24" className="h-[18px] w-[18px]" fill="currentColor" aria-hidden>
+                    <path d={s.path} />
+                  </svg>
+                ) : (
+                  <DiscordIcon className="h-[18px] w-[18px]" />
+                )}
               </a>
             ))}
             <span className="text-xs text-zinc-600">

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Headphones, ShieldCheck, Truck, Zap } from "lucide-react";
-import { getProductPageData } from "@/lib/data";
+import { getProductPageData, type SlimReview } from "@/lib/data";
 import { getUser } from "@/lib/auth";
 import { CoverImage, ProductCard } from "@/components/cards";
 import { Badge, SectionHeading, Stars } from "@/components/ui";
@@ -124,6 +124,21 @@ export default async function ProductPage({
         10
       : null;
 
+  // Only the fields ReviewCard renders cross into the "use client" grid — the
+  // raw rows carry UUIDs and moderation flags that would ship per card in the
+  // RSC flight payload.
+  const reviewCards: SlimReview[] = productReviews.map((r) => ({
+    id: r.id,
+    rating: r.rating,
+    title: r.title,
+    content: r.content,
+    created_at: r.created_at,
+    admin_reply: r.admin_reply,
+    author_name: r.author_name,
+    author_avatar: r.author_avatar,
+    profile: r.profile ?? null,
+  }));
+
   const variants = (product.variants ?? [])
     .filter((v) => v.is_active)
     .sort((a, b) => a.sort_order - b.sort_order);
@@ -196,7 +211,7 @@ export default async function ProductPage({
     name: product.name,
     ...(product.image_url ? { image: product.image_url } : {}),
     ...(product.description
-      ? { description: stripMd(product.description).slice(0, 500) }
+      ? { description: stripMd(product.description).slice(0, 300) }
       : {}),
     ...(product.game?.name
       ? { brand: { "@type": "Brand", name: product.game.name } }
@@ -224,7 +239,7 @@ export default async function ProductPage({
               name: r.profile?.username ?? r.author_name ?? "Verified buyer",
             },
             datePublished: r.created_at?.slice(0, 10),
-            ...(r.content ? { reviewBody: r.content.slice(0, 500) } : {}),
+            ...(r.content ? { reviewBody: r.content.slice(0, 200) } : {}),
           })),
         }
       : {}),
@@ -446,10 +461,10 @@ export default async function ProductPage({
                 reviews={productReviews}
               />
             </Reveal>
-            <ProductReviews reviews={productReviews} total={totalReviews} />
+            <ProductReviews reviews={reviewCards} total={totalReviews} />
           </div>
         ) : (
-          <ProductReviews reviews={productReviews} total={totalReviews} />
+          <ProductReviews reviews={reviewCards} total={totalReviews} />
         )}
         <Reveal y={16}>
           <div className="mt-8 max-w-xl">

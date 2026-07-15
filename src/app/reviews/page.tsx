@@ -1,15 +1,20 @@
 import type { Metadata } from "next";
-import { createPublicClient } from "@/lib/supabase/public";
 import { getUser } from "@/lib/auth";
-import { getReviewStats, getSettings, setting } from "@/lib/data";
+import {
+  getLatestReviews,
+  getReviewStats,
+  getSettings,
+  setting,
+} from "@/lib/data";
 import { ReviewCard } from "@/components/cards";
 import { ReviewForm } from "@/components/ReviewForm";
+import { LoadMoreReviews } from "./LoadMoreReviews";
 import { JsonLd } from "@/components/JsonLd";
 import { TrustBox } from "@/components/TrustBox";
 import { TRUSTBOX } from "@/lib/trustbox";
 import { Star } from "lucide-react";
 import { SectionHeading, Stars } from "@/components/ui";
-import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
+import { Reveal } from "@/components/motion";
 import type { Review } from "@/lib/types";
 
 export const metadata: Metadata = {
@@ -18,29 +23,28 @@ export const metadata: Metadata = {
     "Real reviews from verified Zeuservices customers across top-ups, boosting and accounts.",
   alternates: { canonical: "/reviews" },
 };
-export const revalidate = 0;
+// The page stays dynamic (getUser for the review form), but the review/stat
+// queries hit the tag-invalidated cache in lib/data.ts — review approval busts
+// it via revalidatePath("/reviews"), with this window as the safety net.
+export const revalidate = 300;
+
+const FIRST_PAGE = 12;
 
 export default async function ReviewsPage() {
-  const supabase = createPublicClient();
-  const [{ data }, stats, settings, user] = await Promise.all([
-    supabase
-      .from("reviews")
-      .select("*, profile:profiles(username, avatar_url)")
-      .eq("is_approved", true)
-      .order("created_at", { ascending: false })
-      .limit(60),
+  const [reviews, stats, settings, user] = await Promise.all([
+    getLatestReviews(FIRST_PAGE),
     getReviewStats(),
     getSettings(),
     getUser(),
   ]);
   const trustpilotId = setting(settings, "trustpilot_business_unit_id");
-  const reviews = (data as Review[]) ?? [];
-  // All-time stats (cached, DB-computed) so the headline number matches the
-  // homepage badge and the structured data — not just the 60 loaded reviews.
+  // All-time stats (cached, DB-computed) so the headline number and the
+  // distribution bars match the homepage badge and the structured data — not
+  // just the first page of loaded reviews.
   const avg = stats.count > 0 ? stats.avg : 0;
   const distribution = [5, 4, 3, 2, 1].map((star) => ({
     star,
-    count: reviews.filter((r) => r.rating === star).length,
+    count: stats.byStar[star as 1 | 2 | 3 | 4 | 5],
   }));
 
   // Review snippets for the trust page. Each review is about a purchased
@@ -53,7 +57,7 @@ export default async function ReviewsPage() {
           "@type": "ItemList",
           name: "Zeuservices customer reviews",
           numberOfItems: stats.count,
-          itemListElement: reviews.slice(0, 12).map((r, i) => ({
+          itemListElement: reviews.slice(0, 6).map((r, i) => ({
             "@type": "ListItem",
             position: i + 1,
             item: {
@@ -69,7 +73,7 @@ export default async function ReviewsPage() {
                 name: r.profile?.username ?? r.author_name ?? "Verified buyer",
               },
               datePublished: r.created_at?.slice(0, 10),
-              ...(r.content ? { reviewBody: r.content.slice(0, 500) } : {}),
+              ...(r.content ? { reviewBody: r.content.slice(0, 200) } : {}),
             },
           })),
         }
@@ -120,7 +124,7 @@ export default async function ReviewsPage() {
                     className="h-full rounded-full bg-gradient-to-r from-primary to-fuchsia-500"
                     style={{
                       width: `${
-                        reviews.length ? (d.count / reviews.length) * 100 : 0
+                        stats.count ? (d.count / stats.count) * 100 : 0
                       }%`,
                     }}
                   />
@@ -140,13 +144,26 @@ export default async function ReviewsPage() {
               No reviews yet — be the first to share your experience!
             </p>
           ) : (
-            <RevealGroup className="grid gap-5 md:grid-cols-2" stagger={0.05}>
-              {reviews.map((r) => (
-                <RevealItem key={r.id} y={16} className="h-full">
-                  <ReviewCard review={r} />
-                </RevealItem>
-              ))}
-            </RevealGroup>
+            <>
+              {/* CSS-only stagger — cards paint at first paint instead of
+                  waiting for framer hydration; disabled under
+                  prefers-reduced-motion via globals.css. */}
+              <div className="grid gap-5 md:grid-cols-2">
+                {reviews.map((r, i) => (
+                  <div
+                    key={r.id}
+                    className="h-full animate-fade-up"
+                    style={{ animationDelay: `${Math.min(i, 8) * 60}ms` }}
+                  >
+                    <ReviewCard review={r as Review} />
+                  </div>
+                ))}
+              </div>
+              <LoadMoreReviews
+                initialIds={reviews.map((r) => r.id)}
+                total={stats.count}
+              />
+            </>
           )}
         </div>
       </div>

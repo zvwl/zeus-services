@@ -6,6 +6,7 @@ import { getUser } from "@/lib/auth";
 import { getSettings, setting } from "@/lib/data";
 import { Badge, ButtonLink, Card, SectionHeading, statusBadgeVariant } from "@/components/ui";
 import { TicketForm } from "@/components/TicketForm";
+import { JsonLd } from "@/components/JsonLd";
 import { Reveal, RevealGroup, RevealItem } from "@/components/motion";
 import { formatDateTime } from "@/lib/utils";
 import type { SupportTicket } from "@/lib/types";
@@ -17,6 +18,39 @@ export const metadata: Metadata = {
   alternates: { canonical: "/support" },
 };
 export const revalidate = 0;
+
+const SUPPORT_FAQS = [
+  {
+    q: "How fast will I get a reply?",
+    a: "Tickets are usually answered within a few hours. Discord is live chat, so it's typically the fastest way to reach a human. For common questions — delivery times, payment methods, how boosts work — the FAQ answers instantly.",
+  },
+  {
+    q: "What should I include in a ticket?",
+    a: "Your order number (it's in your account dashboard and confirmation email), the game and platform, and the email you used at checkout. For payment problems, add roughly when you paid and the amount — that's enough for us to find the Stripe payment without you ever sharing card details.",
+  },
+  {
+    q: "How do I track a ticket I've opened?",
+    a: "Log in and come back to this page: every ticket you've opened is listed with its number and a status badge, and clicking one opens the full conversation thread where you and the team reply to each other.",
+  },
+  {
+    q: "My order hasn't arrived — should I open a ticket?",
+    a: "Check your account dashboard first — it shows live order status, and most orders complete within minutes to a few hours. If the delivery window shown on the product page has clearly passed, open a ticket with the order number and we'll chase it up.",
+  },
+  {
+    q: "How do refunds work?",
+    a: "Open a ticket with the category set to Refund request and include your order number. In short: paid but undelivered orders are fully refundable, delivered orders aren't, and accounts come with 7 days of cover instead — the refund policy has the full breakdown.",
+  },
+];
+
+const supportFaqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: SUPPORT_FAQS.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
 
 export default async function SupportPage() {
   const [user, settings] = await Promise.all([getUser(), getSettings()]);
@@ -36,6 +70,7 @@ export default async function SupportPage() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-14 sm:px-6">
+      <JsonLd data={supportFaqJsonLd} />
       <Reveal y={14}>
         <SectionHeading
           as="h1"
@@ -162,6 +197,72 @@ export default async function SupportPage() {
           )}
         </Reveal>
       </div>
+
+      <Reveal y={16}>
+        <section className="mt-14 max-w-3xl border-t border-edge pt-10">
+          <div className="space-y-4 text-sm leading-relaxed text-zinc-400">
+            <h2 className="text-xl font-bold text-white">
+              How support works at Zeuservices
+            </h2>
+            <p>
+              There are three ways to reach us, roughly ordered by speed: the{" "}
+              <Link href="/faq" className="text-primary-light hover:underline">
+                FAQ
+              </Link>{" "}
+              answers the most common questions instantly, Discord gets you a
+              live human fastest, and a ticket is the right channel for
+              anything tied to a specific order — tickets are usually answered
+              within a few hours and keep the whole conversation in one
+              thread.
+              {supportEmail && (
+                <>
+                  {" "}
+                  Prefer email?{" "}
+                  <a
+                    href={`mailto:${supportEmail}`}
+                    className="text-primary-light hover:underline"
+                  >
+                    {supportEmail}
+                  </a>{" "}
+                  reaches the same team.
+                </>
+              )}
+            </p>
+            <p>
+              When you open a ticket, pick the category that fits — Order
+              issue, Delivery question, Refund request, Account &amp; login or
+              Payment problem — and include your order number, the game and
+              platform, and the email you used at checkout. That&apos;s
+              usually everything we need to sort it in one reply. Refunds are
+              covered in detail in the{" "}
+              <Link href="/refunds" className="text-primary-light hover:underline">
+                refund policy
+              </Link>
+              , and live order status is always visible in{" "}
+              <Link href="/account" className="text-primary-light hover:underline">
+                your account
+              </Link>{" "}
+              — worth a look before opening a delivery ticket, since most
+              orders complete within minutes to a few hours.
+            </p>
+          </div>
+          <div className="mt-8 space-y-4">
+            {SUPPORT_FAQS.map((f) => (
+              <details
+                key={f.q}
+                className="glass group rounded-xl p-5 open:border-primary/40"
+              >
+                <summary className="cursor-pointer list-none text-[15px] font-semibold text-white marker:content-none">
+                  {f.q}
+                </summary>
+                <p className="mt-3 text-sm leading-relaxed text-zinc-400">
+                  {f.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </section>
+      </Reveal>
     </div>
   );
 }

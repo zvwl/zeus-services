@@ -1,6 +1,7 @@
-// Lightweight Google Analytics 4 helpers. Completely inert until
-// NEXT_PUBLIC_GA_ID is set AND the visitor has accepted analytics cookies
-// (the CookieConsent component only injects gtag after consent).
+// Lightweight Google Analytics 4 helpers. Inert until NEXT_PUBLIC_GA_ID is
+// set. The tag itself always loads (Consent Mode v2, storage denied by
+// default) — CookieConsent upgrades analytics_storage when the visitor
+// accepts.
 export const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "";
 export const analyticsEnabled = Boolean(GA_ID);
 

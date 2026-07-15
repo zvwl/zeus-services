@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { m } from "framer-motion";
 import { Lock, Minus, Plus, ShoppingCart, Zap } from "lucide-react";
 import { Button } from "@/components/ui";
 import { BuyBoxSlider } from "@/components/BuyBoxSlider";
@@ -44,15 +43,17 @@ function AnimatedPrice({
 }) {
   return (
     <span className={cn("inline-flex overflow-hidden", className)}>
-      <m.span
+      {/* key remount re-runs the fade-up keyframes on every price change.
+          Inline overrides (not arbitrary variants) because Tailwind emits
+          arbitrary properties before named utilities, so the animate-fade-up
+          shorthand would win over a [animation-duration:…] class. */}
+      <span
         key={text}
-        initial={{ y: 10, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.18, ease: "easeOut" }}
-        className="inline-block tabular-nums"
+        className="inline-block animate-fade-up tabular-nums"
+        style={{ animationDuration: "0.18s", animationTimingFunction: "ease-out" }}
       >
         {text}
-      </m.span>
+      </span>
     </span>
   );
 }

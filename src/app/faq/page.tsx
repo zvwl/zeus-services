@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Plus } from "lucide-react";
-import { createPublicClient } from "@/lib/supabase/public";
+import { getActiveFaqs } from "@/lib/data";
 import { ButtonLink, SectionHeading } from "@/components/ui";
 import { JsonLd } from "@/components/JsonLd";
 import { Reveal } from "@/components/motion";
@@ -12,16 +12,12 @@ export const metadata: Metadata = {
     "Answers to common questions about delivery times, payments, boosting safety and our 7-day account cover.",
   alternates: { canonical: "/faq" },
 };
-export const revalidate = 0;
-
+// The render stays dynamic (the root layout reads cookies), but the data is
+// cached in lib/data.ts — admin FAQ saves bust it immediately via
+// revalidatePath("/faq") (unstable_cache's implicit path tag), with the shared
+// 5-minute TTL as the safety net.
 export default async function FaqPage() {
-  const supabase = createPublicClient();
-  const { data } = await supabase
-    .from("faqs")
-    .select("*")
-    .eq("is_active", true)
-    .order("sort_order");
-  const faqs = (data as Faq[]) ?? [];
+  const faqs = await getActiveFaqs();
 
   const groups = new Map<string, Faq[]>();
   for (const f of faqs) {

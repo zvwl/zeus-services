@@ -1,37 +1,23 @@
 "use client";
 
-/* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import Image from "next/image";
 import { Zap } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { useState, type ReactNode } from "react";
 import { Reveal } from "@/components/motion";
 import { Button } from "@/components/ui";
 
 export function AuthShell({
   title,
   subtitle,
+  logoUrl,
   children,
 }: {
   title: string;
   subtitle?: ReactNode;
+  logoUrl?: string | null;
   children: ReactNode;
 }) {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
-
-  useEffect(() => {
-    (async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("site_settings")
-        .select("value")
-        .eq("key", "logo_url")
-        .maybeSingle();
-      if (typeof data?.value === "string" && data.value) setLogoUrl(data.value);
-    })();
-  }, []);
-
   return (
     <div className="relative isolate overflow-hidden">
       {/* Storm backdrop — pure atmosphere. Veiled + faded into the page bg at
@@ -42,6 +28,9 @@ export function AuthShell({
           alt=""
           fill
           priority
+          // Next 15.1/React 19 no longer emits fetchpriority from `priority`
+          // alone — set it explicitly so the backdrop keeps its head start.
+          fetchPriority="high"
           sizes="100vw"
           className="object-cover object-center"
         />
@@ -59,11 +48,18 @@ export function AuthShell({
             className="mx-auto mb-6 flex h-11 w-fit items-center gap-2"
           >
             {logoUrl ? (
-              <img
+              // Optimizer-served: the raw admin upload (a 1.5MB PNG) was
+              // downloading full-size on every auth page via a plain <img>.
+              // Square intrinsic hint — the upload is roughly square (see
+              // NavClient); a wide hint pre-reserves ~176px and visibly
+              // re-centers on decode. Eager, but no `priority`: the backdrop
+              // owns the preload.
+              <Image
                 src={logoUrl}
                 alt="Logo"
-                width={176}
+                width={44}
                 height={44}
+                loading="eager"
                 className="h-11 w-auto max-w-[200px] object-contain"
               />
             ) : (
@@ -90,14 +86,27 @@ export function AuthShell({
 }
 
 export function OAuthButtons({ next = "/" }: { next?: string }) {
+  const [error, setError] = useState<string | null>(null);
+
   async function signInWith(provider: "discord" | "google") {
-    const supabase = createClient();
-    await supabase.auth.signInWithOAuth({
-      provider,
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
-      },
-    });
+    setError(null);
+    try {
+      // supabase-js (~64KB gz) loads on demand — it's only needed at click
+      // time, so it stays off the hydration critical path.
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`,
+        },
+      });
+      if (error) setError(error.message);
+    } catch {
+      // Chunk-load failure (deploy skew, dropped connection) — surface it
+      // instead of a silent dead button.
+      setError("Couldn't reach the authentication service — try again.");
+    }
   }
 
   return (
@@ -139,6 +148,11 @@ export function OAuthButtons({ next = "/" }: { next?: string }) {
         </svg>
         Continue with Google
       </Button>
+      {error && (
+        <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
+          {error}
+        </p>
+      )}
       <div className="flex items-center gap-3 py-1">
         <span className="h-px flex-1 bg-edge" />
         <span className="text-xs uppercase tracking-wider text-zinc-500">or</span>

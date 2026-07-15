@@ -1,30 +1,92 @@
 "use client";
 
 import {
-  LazyMotion,
-  MotionConfig,
-  m,
-  useReducedMotion,
-} from "framer-motion";
-import type { ReactNode } from "react";
+  createContext,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from "react";
+import { cn } from "@/lib/utils";
 
-// LazyMotion + `m` keeps the animation runtime ~5kb instead of shipping the
-// full framer-motion bundle on every page. The feature bundle MUST be loaded
-// via a dynamic import — a static domAnimation import would pull it back into
-// every page's critical chunks (measured ~29KB gz of homepage TBT).
-// `reducedMotion="user"` disables animation for prefers-reduced-motion.
-const loadFeatures = () =>
-  import("./motion-features").then((mod) => mod.default);
+// IntersectionObserver + CSS reveals. This used to be framer-motion behind
+// LazyMotion, which still cost ~29KB gz on every page (eager core + feature
+// bundle fetched on mount) purely for these decorative entrances. The sheet
+// below ships inline with the SSR HTML via MotionProvider, so the hidden
+// state applies from first paint — no flash of un-revealed content.
+const EASE = "cubic-bezier(0.21, 0.47, 0.32, 0.98)";
+
+const MOTION_CSS = `
+.mo-reveal {
+  opacity: 0;
+  transform: translateY(var(--mo-y, 20px));
+  transition:
+    opacity 0.55s ${EASE} var(--mo-delay, 0s),
+    transform 0.55s ${EASE} var(--mo-delay, 0s);
+}
+.mo-nofade { opacity: 1; }
+.mo-reveal.mo-in { opacity: 1; transform: none; }
+@keyframes mo-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(calc(-1 * var(--mo-amp, 8px))); }
+}
+.mo-float { animation: mo-float 6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .mo-reveal { opacity: 1; transform: none; transition: none; }
+  .mo-float { animation: none; }
+}
+`;
 
 export function MotionProvider({ children }: { children: ReactNode }) {
   return (
-    <LazyMotion features={loadFeatures} strict>
-      <MotionConfig reducedMotion="user">{children}</MotionConfig>
-    </LazyMotion>
+    <>
+      <style dangerouslySetInnerHTML={{ __html: MOTION_CSS }} />
+      {/* Reveals SSR in their hidden state and only un-hide via JS, so with
+          scripting off the content would stay invisible forever. */}
+      <noscript
+        dangerouslySetInnerHTML={{
+          __html: "<style>.mo-reveal{opacity:1;transform:none}</style>",
+        }}
+      />
+      {children}
+    </>
   );
 }
 
-const EASE = [0.21, 0.47, 0.32, 0.98] as const;
+function useInView(once: boolean, disabled = false) {
+  const ref = useRef<HTMLDivElement | null>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    if (disabled) return;
+    const el = ref.current;
+    if (!el) return;
+    // No IntersectionObserver (ancient browsers, some JS-executing bots):
+    // reveal immediately — content must never be permanently hidden.
+    if (typeof IntersectionObserver === "undefined") {
+      setInView(true);
+      return;
+    }
+    const io = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setInView(true);
+        if (once) io.disconnect();
+      } else if (!once) {
+        setInView(false);
+      }
+    });
+    // Default rootMargin (0px) on purpose: a shrunken root (-60px) can never
+    // fire for content sitting in the last strip of a page too short to
+    // scroll, leaving it stuck hidden. The observer fires immediately for
+    // elements already on screen, so above-the-fold content reveals right
+    // after hydration.
+    io.observe(el);
+    return () => io.disconnect();
+  }, [once, disabled]);
+  return { ref, inView };
+}
 
 /**
  * Fade-up entrance when the element scrolls into view. Server components can
@@ -51,21 +113,30 @@ export function Reveal({
    */
   fade?: boolean;
 }) {
+  const { ref, inView } = useInView(once);
   return (
-    <m.div
-      className={className}
-      initial={fade ? { opacity: 0, y } : { y }}
-      // margin 0: a shrunken root (-60px) can never fire for content sitting
-      // in the last strip of a page too short to scroll, leaving it stuck at
-      // opacity 0. Triggering right at the viewport edge is visually the same.
-      whileInView={fade ? { opacity: 1, y: 0 } : { y: 0 }}
-      viewport={{ once, margin: "0px" }}
-      transition={{ duration: 0.55, delay, ease: EASE }}
+    <div
+      ref={ref}
+      className={cn("mo-reveal", !fade && "mo-nofade", inView && "mo-in", className)}
+      style={
+        {
+          "--mo-y": `${y}px`,
+          "--mo-delay": delay > 0 ? `${delay}s` : undefined,
+        } as CSSProperties
+      }
     >
       {children}
-    </m.div>
+    </div>
   );
 }
+
+interface GroupState {
+  shown: boolean;
+  stagger: number;
+  delay: number;
+}
+
+const GroupContext = createContext<GroupState | null>(null);
 
 /**
  * Container that staggers its RevealItem children as they enter the viewport.
@@ -82,17 +153,15 @@ export function RevealGroup({
   stagger?: number;
   delay?: number;
 }) {
+  const { ref, inView } = useInView(true);
+  const ctx = useMemo(
+    () => ({ shown: inView, stagger, delay }),
+    [inView, stagger, delay]
+  );
   return (
-    <m.div
-      className={className}
-      initial="hidden"
-      whileInView="show"
-      viewport={{ once: true, margin: "0px" }}
-      transition={{ staggerChildren: stagger, delayChildren: delay }}
-      variants={{ hidden: {}, show: {} }}
-    >
-      {children}
-    </m.div>
+    <div ref={ref} data-mo-group="" className={className}>
+      <GroupContext.Provider value={ctx}>{children}</GroupContext.Provider>
+    </div>
   );
 }
 
@@ -105,26 +174,47 @@ export function RevealItem({
   className?: string;
   y?: number;
 }) {
+  const group = useContext(GroupContext);
+  // Outside a group the item observes itself; inside one, the group's
+  // observer drives every item so the whole grid staggers as a unit.
+  const { ref, inView } = useInView(true, group !== null);
+  const [index, setIndex] = useState(0);
+  useEffect(() => {
+    const el = ref.current;
+    const grp = el?.closest("[data-mo-group]");
+    if (!el || !grp) return;
+    // Stagger order = DOM order within the nearest group (framer derived the
+    // same order from the React tree). Idempotent, so StrictMode re-runs and
+    // nested groups are safe.
+    const items = Array.from(grp.querySelectorAll("[data-mo-item]")).filter(
+      (item) => item.closest("[data-mo-group]") === grp
+    );
+    const i = items.indexOf(el);
+    if (i > 0) setIndex(i);
+  }, [ref]);
+  const shown = group ? group.shown : inView;
+  const itemDelay = group ? group.delay + index * group.stagger : 0;
   return (
-    <m.div
-      className={className}
-      variants={{
-        hidden: { opacity: 0, y },
-        show: {
-          opacity: 1,
-          y: 0,
-          transition: { duration: 0.5, ease: EASE },
-        },
-      }}
+    <div
+      ref={ref}
+      data-mo-item=""
+      className={cn("mo-reveal", shown && "mo-in", className)}
+      style={
+        {
+          "--mo-y": `${y}px`,
+          "--mo-delay": itemDelay > 0 ? `${itemDelay}s` : undefined,
+          transitionDuration: "0.5s",
+        } as CSSProperties
+      }
     >
       {children}
-    </m.div>
+    </div>
   );
 }
 
 /**
  * Slow vertical float for decorative elements (hero showcase card, badges).
- * Disabled automatically for reduced-motion users.
+ * Disabled for reduced-motion users by the media query in MOTION_CSS.
  */
 export function Float({
   children,
@@ -137,15 +227,17 @@ export function Float({
   amplitude?: number;
   duration?: number;
 }) {
-  const reduced = useReducedMotion();
-  if (reduced) return <div className={className}>{children}</div>;
   return (
-    <m.div
-      className={className}
-      animate={{ y: [0, -amplitude, 0] }}
-      transition={{ duration, repeat: Infinity, ease: "easeInOut" }}
+    <div
+      className={cn("mo-float", className)}
+      style={
+        {
+          "--mo-amp": `${amplitude}px`,
+          animationDuration: `${duration}s`,
+        } as CSSProperties
+      }
     >
       {children}
-    </m.div>
+    </div>
   );
 }

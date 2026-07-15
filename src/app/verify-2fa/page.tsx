@@ -1,134 +1,33 @@
-"use client";
-
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { ShieldCheck } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
-import { AuthShell } from "@/components/AuthShell";
-import { Button } from "@/components/ui";
+import type { Metadata } from "next";
+import { getSettings, setting } from "@/lib/data";
 import { safeNextPath } from "@/lib/utils";
+import { VerifyForm } from "./VerifyForm";
 
-function VerifyForm() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const next = safeNextPath(searchParams.get("next"));
+// Auth screens are thin, session-specific pages — keep them out of the index.
+export const metadata: Metadata = {
+  title: "Two-factor verification",
+  robots: { index: false, follow: true },
+};
 
-  const [code, setCode] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+// Duplicated params arrive as arrays — mirror useSearchParams().get()'s
+// first-value semantics (safeNextPath would throw on an array).
+const first = (v: string | string[] | undefined) =>
+  Array.isArray(v) ? v[0] : v;
 
-  async function verify() {
-    if (loading) return;
-    setError(null);
-    setLoading(true);
-    const supabase = createClient();
-    const { data: factors, error: factorsError } =
-      await supabase.auth.mfa.listFactors();
-    if (factorsError) {
-      setError("Couldn't reach the authentication service — try again.");
-      setLoading(false);
-      return;
-    }
-    const totp = factors?.totp?.[0];
-    if (!totp) {
-      // No usable factor — nothing to step up to; send them on their way.
-      window.location.assign(next);
-      return;
-    }
-    const { error } = await supabase.auth.mfa.challengeAndVerify({
-      factorId: totp.id,
-      code: code.trim(),
-    });
-    if (error) {
-      setError("Invalid code — try again.");
-      setCode("");
-      setLoading(false);
-      return;
-    }
-    // Full-document navigation on purpose. A soft router navigation can replay
-    // a prefetched middleware redirect from before the step-up (the client
-    // router caches the AAL1-era 307 for `next` for up to 5 minutes), landing
-    // back on this page and leaving the form stuck on "Verifying…". A document
-    // request always re-runs middleware against the fresh AAL2 cookies.
-    window.location.assign(next);
-  }
-
-  // Auto-submit once all six digits are entered.
-  useEffect(() => {
-    if (code.length === 6 && !loading) verify();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [code]);
-
-  async function signOut() {
-    const supabase = createClient();
-    await supabase.auth.signOut();
-    router.replace("/login");
-  }
-
+export default async function Verify2FAPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  const params = await searchParams;
+  const settings = await getSettings();
+  // `next` arrives as a server prop — deliberately no Suspense boundary (the
+  // old useSearchParams boundary's empty fallback caused the same
+  // footer-shove CLS footgun as /login: measured 0.775 in lab).
   return (
-    <AuthShell
-      title="Two-factor authentication"
-      subtitle="Enter the 6-digit code from your authenticator app to continue."
-    >
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          verify();
-        }}
-        className="space-y-5"
-      >
-        <div className="flex justify-center">
-          <span className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/15">
-            <ShieldCheck className="h-7 w-7 text-primary-light" />
-          </span>
-        </div>
-        <div>
-          <label htmlFor="verify-2fa-code" className="sr-only">
-            6-digit authentication code
-          </label>
-          <input
-            id="verify-2fa-code"
-            className="input min-h-[52px] text-center font-mono text-2xl tracking-[0.5em]"
-            inputMode="numeric"
-            maxLength={6}
-            placeholder="000000"
-            value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-            autoComplete="one-time-code"
-            autoFocus
-          />
-        </div>
-        {error && (
-          <p className="rounded-xl border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">
-            {error}
-          </p>
-        )}
-        <Button
-          size="lg"
-          className="w-full"
-          disabled={loading || code.length !== 6}
-        >
-          {loading ? "Verifying…" : "Verify"}
-        </Button>
-        <button
-          type="button"
-          onClick={signOut}
-          className="min-h-[44px] w-full rounded-xl text-center text-sm text-zinc-400 transition hover:text-primary-light"
-        >
-          Sign in with a different account
-        </button>
-      </form>
-    </AuthShell>
-  );
-}
-
-export default function Verify2FAPage() {
-  return (
-    // Height-reserving fallback — same footer-shove CLS footgun as /login.
-    <Suspense
-      fallback={<div className="min-h-[calc(100svh-4rem)]" aria-hidden />}
-    >
-      <VerifyForm />
-    </Suspense>
+    <VerifyForm
+      next={safeNextPath(first(params.next))}
+      logoUrl={setting(settings, "logo_url") || null}
+    />
   );
 }
