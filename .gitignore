@@ -31,3 +31,6 @@ yarn-error.log*
 
 .vercel
 .env*
+
+# local agent boot config — points at the private Obsidian knowledge vault
+CLAUDE.md
