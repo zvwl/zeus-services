@@ -114,6 +114,52 @@ export function ticketReplyEmail(opts: {
   return layout(`New reply on ticket #${opts.ticketNumber}`, body);
 }
 
+/**
+ * Staff opened a thread WITH the customer about one of their orders. Distinct
+ * from ticketReplyEmail because the customer never opened this ticket — telling
+ * them we "replied to your ticket" would be nonsense.
+ */
+export function ticketOpenedByStaffEmail(opts: {
+  ticketNumber: number | string;
+  subject: string;
+  /** First ~300 chars of the staff message, plain text (already trimmed). */
+  snippet: string;
+  ticketId: string;
+  /** Human order reference, e.g. "ZS-1042" or "#17". */
+  orderRef: string;
+}) {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const body = `
+    <p style="margin:0 0 16px;color:#a1a1aa;line-height:1.6">Our support team has got in touch about your order <strong style="color:#fff">${esc(opts.orderRef)}</strong>:</p>
+    <p style="margin:0 0 20px;padding:12px 14px;background:rgba(167,139,250,.08);border-left:3px solid #a78bfa;border-radius:8px;color:#d4d4d8;line-height:1.6">${esc(opts.snippet)}${opts.snippet.length >= 300 ? "…" : ""}</p>
+    <p style="margin:0 0 20px;color:#a1a1aa;line-height:1.6">This has been opened as ticket <strong style="color:#fff">#${opts.ticketNumber}</strong> so the whole conversation stays in one place — reply on the site and we'll pick it straight up.</p>
+    <p style="margin:0"><a href="${siteUrl()}/support/${opts.ticketId}" style="display:inline-block;padding:10px 18px;background:#7c3aed;border-radius:10px;color:#fff;text-decoration:none;font-weight:600">Read &amp; reply →</a></p>`;
+  return layout(`About your order ${esc(opts.orderRef)}`, body);
+}
+
+/**
+ * The guest-order fallback for the same action. A guest checkout has no
+ * profile (orders.user_id is null), and support_tickets.user_id is NOT NULL,
+ * so there is no account to hang a thread on — this is a plain email and the
+ * customer's reply goes back to the support inbox rather than into a ticket.
+ */
+export function orderMessageEmail(opts: {
+  subject: string;
+  /** Full staff message, plain text. */
+  message: string;
+  /** Human order reference, e.g. "ZS-1042" or "#17". */
+  orderRef: string;
+}) {
+  const esc = (s: string) =>
+    s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const body = `
+    <p style="margin:0 0 16px;color:#a1a1aa;line-height:1.6">Our support team has got in touch about your order <strong style="color:#fff">${esc(opts.orderRef)}</strong>:</p>
+    <p style="margin:0 0 20px;padding:12px 14px;background:rgba(167,139,250,.08);border-left:3px solid #a78bfa;border-radius:8px;color:#d4d4d8;line-height:1.6;white-space:pre-wrap">${esc(opts.message)}</p>
+    <p style="margin:0;color:#a1a1aa;line-height:1.6">You checked out as a guest, so there's no ticket thread to open — just reply to this email and it reaches the same team. Prefer to track it on the site? <a href="${siteUrl()}/signup" style="color:#a78bfa">Create an account</a> with this address and future orders keep their full history.</p>`;
+  return layout(`About your order ${esc(opts.orderRef)}`, body);
+}
+
 export function orderConfirmationEmail(opts: {
   orderNumber: number | string;
   total: number;

@@ -7,11 +7,14 @@ import { siteUrl, slugify } from "@/lib/utils";
 import { notifyDiscord } from "@/lib/discord";
 import {
   orderDeliveredEmail,
+  orderMessageEmail,
   orderStatusEmail,
   orderStatusSubject,
   sendEmail,
+  ticketOpenedByStaffEmail,
   type SendResult,
 } from "@/lib/email";
+import { rateLimit } from "@/lib/rate-limit";
 import { getStripe, stripeConfigured } from "@/lib/stripe";
 import { formatMoney } from "@/lib/currency";
 import {
@@ -1077,6 +1080,184 @@ export async function updateTicketMeta(formData: FormData): Promise<AdminResult>
   revalidatePath("/admin/support");
   revalidatePath(`/admin/support/${id}`);
   return ok("Ticket updated.");
+}
+
+/**
+ * Opens a support thread WITH a customer about one of their orders — the
+ * mirror of the customer-initiated createTicket in src/app/actions.ts. Until
+ * this existed the ticket system was one-directional: staff could only reply
+ * to a thread the customer had already started.
+ *
+ * The service role is mandatory here, not a shortcut. The tickets_insert_own
+ * RLS policy is `with check (user_id = auth.uid())`, so a staff member
+ * physically cannot insert a ticket owned by somebody else through the
+ * RLS-scoped client — the insert would be rejected, not silently misfiled.
+ *
+ * Guest orders take a different path: /api/checkout allows logged-out checkout
+ * (orders.user_id is null) but support_tickets.user_id is NOT NULL, so there is
+ * no account to own a thread. Those get a plain email with the support address
+ * as reply-to, and the result message says so rather than implying a thread
+ * exists.
+ */
+export async function contactCustomerAboutOrder(
+  formData: FormData
+): Promise<AdminResult> {
+  let actorId: string;
+  try {
+    const me = await requireCapability("manage_support");
+    actorId = me.id;
+  } catch {
+    return fail("Unauthorized");
+  }
+
+  const orderId = String(formData.get("order_id") ?? "");
+  const subjectInput = String(formData.get("subject") ?? "").slice(0, 150).trim();
+  const message = String(formData.get("message") ?? "").slice(0, 4000).trim();
+  const rawPriority = String(formData.get("priority") ?? "normal");
+  const priority = ["low", "normal", "high"].includes(rawPriority)
+    ? rawPriority
+    : "normal";
+
+  if (!orderId) return fail("Missing order.");
+  if (message.length < 10) return fail("Message is too short.");
+
+  // Every send fires an email at a real customer — cap the blast radius per
+  // staff member the same way createTicket does for customers.
+  if (!rateLimit(`admin-contact:${actorId}`, 30, 60 * 60 * 1000)) {
+    return fail("Too many customer contacts in the last hour — give it a moment.");
+  }
+
+  const supabase = await actionDb();
+  const { data: order } = await supabase
+    .from("orders")
+    .select("id, order_number, reference, user_id, email")
+    .eq("id", orderId)
+    .maybeSingle();
+  if (!order) return fail("Order not found.");
+
+  const orderRef = order.reference ?? `#${order.order_number}`;
+  const subject = subjectInput || `About your order ${orderRef}`;
+
+  // ── Guest order: email only, no thread ──────────────────────────────────
+  if (!order.user_id) {
+    if (!order.email) {
+      return fail(
+        "This guest order has no email address on file, so there's no way to reach the customer."
+      );
+    }
+    // Read the support address directly rather than through the cached
+    // getSettings() wrapper — a guest's reply has nowhere else to go, so it
+    // must not be served from a 5-minute-stale cache.
+    const { data: supportRow } = await supabase
+      .from("site_settings")
+      .select("value")
+      .eq("key", "support_email")
+      .maybeSingle();
+    const supportEmail =
+      typeof supportRow?.value === "string" ? supportRow.value : "";
+    const res = await sendEmail({
+      to: order.email,
+      subject: `${subject} — Zeuservices`,
+      html: orderMessageEmail({ subject, message, orderRef }),
+      ...(supportEmail ? { replyTo: supportEmail } : {}),
+    });
+    if (res.skipped) {
+      return fail(
+        `Nothing was sent — email is not configured in this deployment (${res.error ?? "RESEND_API_KEY unset"}).`
+      );
+    }
+    if (!res.ok) return fail(`Email failed: ${res.error ?? "unknown error"}`);
+
+    await audit("order.contact_guest", "order", orderId, { subject });
+    return ok(
+      `Emailed ${order.email}. They checked out as a guest, so there's no ticket thread — their reply lands in the support inbox.`
+    );
+  }
+
+  // ── Registered customer: real ticket, owned by them ─────────────────────
+  // actionDb() degrades to the RLS-scoped client when no service key is set,
+  // and that client CANNOT insert a ticket for another user — tickets_insert_own
+  // is `with check (user_id = auth.uid())`. Say so plainly instead of surfacing
+  // a raw policy-violation string.
+  if (!hasAdminClient()) {
+    return fail(
+      "SUPABASE_SERVICE_ROLE_KEY isn't set in this deployment, so a ticket can't be opened on the customer's behalf."
+    );
+  }
+  const { data: ticket, error } = await supabase
+    .from("support_tickets")
+    .insert({
+      user_id: order.user_id,
+      order_id: order.id,
+      subject,
+      category: "Order issue",
+      // Staff spoke last, so the thread opens in the state a staff reply would
+      // leave it in. Opening it as "open" would park it in the admin work
+      // queue as if it were waiting on us.
+      status: "answered",
+      priority,
+    })
+    .select("id, ticket_number")
+    .single();
+  if (error || !ticket) return fail(error?.message ?? "Could not open the ticket.");
+
+  const { error: msgError } = await supabase.from("ticket_messages").insert({
+    ticket_id: ticket.id,
+    sender_id: actorId,
+    is_staff: true,
+    message,
+  });
+  // Same reasoning as createTicket's rollback: an empty thread is worse than no
+  // thread, and here the customer would also be emailed about a message that
+  // isn't there when they arrive.
+  if (msgError) {
+    await supabase.from("support_tickets").delete().eq("id", ticket.id);
+    return fail("Could not send the message. Please try again.");
+  }
+
+  // Tell them — they never opened this thread, so without the email they'd
+  // only find it by wandering into /support.
+  const { data: owner } = await supabase
+    .from("profiles")
+    .select("email")
+    .eq("id", order.user_id)
+    .maybeSingle();
+  const to = owner?.email ?? order.email;
+
+  let emailNote = "";
+  if (!to) {
+    emailNote = " No email address on file, so they'll only see it on the site.";
+  } else {
+    const res = await sendEmail({
+      to,
+      subject: `${subject} — Zeuservices`,
+      html: ticketOpenedByStaffEmail({
+        ticketNumber: ticket.ticket_number,
+        subject,
+        snippet: message.slice(0, 300),
+        ticketId: ticket.id,
+        orderRef,
+      }),
+    });
+    if (res.skipped) {
+      emailNote = " Email isn't configured here, so they'll only see it on the site.";
+    } else if (!res.ok) {
+      emailNote = ` The notification email failed to send (${res.error ?? "unknown error"}).`;
+    }
+  }
+
+  await audit("order.contact_customer", "support_ticket", ticket.id, {
+    order_id: orderId,
+    subject,
+  });
+  revalidatePath(`/admin/orders/${orderId}`);
+  revalidatePath("/admin/support");
+  revalidatePath(`/admin/support/${ticket.id}`);
+  revalidatePath("/support");
+  revalidatePath(`/support/${ticket.id}`);
+  return ok(
+    `Ticket #${ticket.ticket_number} opened with the customer.${emailNote}`
+  );
 }
 
 /* ──────────────────────── Sections ──────────────────────── */

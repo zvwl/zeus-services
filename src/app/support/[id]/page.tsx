@@ -30,6 +30,19 @@ export default async function TicketPage({
   const ticket = data as SupportTicket & { messages: TicketMessage[] };
   if (ticket.user_id !== profile.id && !isStaff(profile)) notFound();
 
+  // Threads opened by staff from the order page carry the order they're about
+  // (migration 0023) — surface it so the customer isn't left guessing.
+  let order: { id: string; order_number: number; reference: string | null } | null =
+    null;
+  if (ticket.order_id) {
+    const { data: row } = await supabase
+      .from("orders")
+      .select("id, order_number, reference")
+      .eq("id", ticket.order_id)
+      .maybeSingle();
+    order = row;
+  }
+
   const messages = [...(ticket.messages ?? [])].sort(
     (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
   );
@@ -48,7 +61,20 @@ export default async function TicketPage({
             <h1 className="text-2xl font-extrabold text-white">
               #{ticket.ticket_number} — {ticket.subject}
             </h1>
-            <p className="mt-1 text-sm text-zinc-500">{ticket.category}</p>
+            <p className="mt-1 text-sm text-zinc-500">
+              {ticket.category}
+              {order && (
+                <>
+                  {" · "}
+                  <Link
+                    href={`/account/orders/${order.id}`}
+                    className="text-primary-light hover:underline"
+                  >
+                    Order {order.reference ?? `#${order.order_number}`}
+                  </Link>
+                </>
+              )}
+            </p>
           </div>
           <Badge variant={statusBadgeVariant(ticket.status)}>{ticket.status}</Badge>
         </div>

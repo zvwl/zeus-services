@@ -4,11 +4,17 @@ import { createClient } from "@/lib/supabase/server";
 import { Badge, Card, statusBadgeVariant } from "@/components/ui";
 import { ActionButton, ActionSelect } from "@/components/admin/ActionControls";
 import { DeliverItemForm } from "@/components/admin/DeliverItemForm";
+import { ContactCustomerForm } from "@/components/admin/ContactCustomerForm";
 import { refundOrder, updateOrderStatus } from "@/app/admin/actions";
 import { can, getProfile } from "@/lib/auth";
 import { formatMoney } from "@/lib/currency";
 import { formatDateTime } from "@/lib/utils";
-import type { Order, OrderItem, Profile } from "@/lib/types";
+import type { Order, OrderItem, Profile, SupportTicket } from "@/lib/types";
+
+type OrderTicket = Pick<
+  SupportTicket,
+  "id" | "ticket_number" | "subject" | "status" | "updated_at"
+>;
 
 export const revalidate = 0;
 
@@ -27,6 +33,18 @@ export default async function AdminOrderDetail({
     .maybeSingle();
   if (!data) notFound();
   const order = data as Order & { items: OrderItem[]; profile: Profile | null };
+
+  // Threads already open about this order (migration 0023 added the FK).
+  const canSupport = can(me, "manage_support");
+  let tickets: OrderTicket[] = [];
+  if (canSupport) {
+    const { data: rows } = await supabase
+      .from("support_tickets")
+      .select("id, ticket_number, subject, status, updated_at")
+      .eq("order_id", id)
+      .order("updated_at", { ascending: false });
+    tickets = (rows ?? []) as OrderTicket[];
+  }
 
   return (
     <div className="max-w-4xl">
@@ -156,6 +174,39 @@ export default async function AdminOrderDetail({
           </Card>
         ))}
       </div>
+
+      {canSupport && (
+        <>
+          <h2 className="mt-8 mb-3 font-bold text-white">Support</h2>
+          {tickets.length > 0 && (
+            <div className="mb-4 space-y-2">
+              {tickets.map((t) => (
+                <Link
+                  key={t.id}
+                  href={`/admin/support/${t.id}`}
+                  className="glass flex flex-wrap items-center justify-between gap-3 p-4 transition hover:border-primary/40"
+                >
+                  <span className="font-medium text-primary-light">
+                    #{t.ticket_number} — {t.subject}
+                  </span>
+                  <span className="flex items-center gap-3">
+                    <span className="text-xs text-zinc-500">
+                      updated {formatDateTime(t.updated_at)}
+                    </span>
+                    <Badge variant={statusBadgeVariant(t.status)}>{t.status}</Badge>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+          <ContactCustomerForm
+            orderId={order.id}
+            orderRef={order.reference ?? `#${order.order_number}`}
+            isGuest={!order.user_id}
+            customerEmail={order.profile?.email ?? order.email}
+          />
+        </>
+      )}
     </div>
   );
 }

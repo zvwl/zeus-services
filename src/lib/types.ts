@@ -272,6 +272,8 @@ export interface SupportTicket {
   id: string;
   ticket_number: number;
   user_id: string;
+  /** Set when the thread is about a specific order (migration 0023). */
+  order_id: string | null;
   subject: string;
   category: string;
   status: TicketStatus;
