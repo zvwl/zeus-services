@@ -238,16 +238,23 @@ export async function replyToTicket(formData: FormData): Promise<ActionResult> {
   if (!staff && ticket.user_id !== profile.id) {
     return { ok: false, message: "Not your ticket." };
   }
+  // Owning the ticket makes you the CUSTOMER, whatever your role. Deciding this
+  // from the capability alone meant a staff member replying on their own ticket
+  // was treated as support: they emailed themselves, their own message rendered
+  // as "Zeuservices Support" in their own thread, the status flipped to
+  // "answered" so their question never entered the work queue, and Discord was
+  // never pinged. Staff powers apply on OTHER people's tickets.
+  const actingAsStaff = staff && ticket.user_id !== profile.id;
   // Customers can't post into a closed thread; a STAFF reply re-opens it (so
   // support never has to flip the status dropdown before answering).
-  if (ticket.status === "closed" && !staff) {
+  if (ticket.status === "closed" && !actingAsStaff) {
     return { ok: false, message: "This ticket is closed." };
   }
 
   const { error } = await supabase.from("ticket_messages").insert({
     ticket_id: ticketId,
     sender_id: profile.id,
-    is_staff: staff,
+    is_staff: actingAsStaff,
     message,
   });
   if (error) return { ok: false, message: "Could not send reply." };
@@ -259,12 +266,12 @@ export async function replyToTicket(formData: FormData): Promise<ActionResult> {
   await db
     .from("support_tickets")
     .update({
-      status: staff ? "answered" : "open",
+      status: actingAsStaff ? "answered" : "open",
       updated_at: new Date().toISOString(),
     })
     .eq("id", ticketId);
 
-  if (staff) {
+  if (actingAsStaff) {
     // Tell the customer — otherwise they only find out by re-visiting /support.
     if (hasAdminClient()) {
       const { data: owner } = await createAdminClient()
