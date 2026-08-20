@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
-import { getProfile } from "@/lib/auth";
+import { can, getProfile } from "@/lib/auth";
 import { isStaff } from "@/lib/auth";
 import { Badge, statusBadgeVariant } from "@/components/ui";
 import { TicketThread } from "@/components/TicketThread";
@@ -84,6 +84,7 @@ export default async function TicketPage({
           ticketId={ticket.id}
           status={ticket.status}
           currentUserId={profile.id}
+          amStaff={can(profile, "manage_support") && ticket.user_id !== profile.id}
           messages={messages.map((m) => ({
             id: m.id,
             isStaff: m.is_staff,

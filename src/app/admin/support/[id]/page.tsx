@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { getProfile } from "@/lib/auth";
+import { can, getProfile } from "@/lib/auth";
 import { Badge, statusBadgeVariant } from "@/components/ui";
 import { ActionSelect } from "@/components/admin/ActionControls";
 import { TicketThread } from "@/components/TicketThread";
@@ -83,6 +83,7 @@ export default async function AdminTicketPage({
           ticketId={ticket.id}
           status={ticket.status}
           currentUserId={profile?.id ?? null}
+          amStaff={can(profile, "manage_support") && ticket.user_id !== profile?.id}
           messages={messages.map((m) => ({
             id: m.id,
             isStaff: m.is_staff,

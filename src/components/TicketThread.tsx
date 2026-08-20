@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { Zap } from "lucide-react";
 import { closeTicket, replyToTicket, type ActionResult } from "@/app/actions";
 import { createClient } from "@/lib/supabase/client";
@@ -30,18 +31,27 @@ export function TicketThread({
   status,
   messages,
   currentUserId,
+  amStaff,
 }: {
   ticketId: string;
   status: string;
   messages: ThreadMessage[];
   /** Used to decide which side of the thread a live message renders on. */
   currentUserId: string | null;
+  /** Whether the viewer is acting as support here — same rule as replyToTicket:
+   *  staff capability AND not the ticket's owner. Labels our typing events. */
+  amStaff: boolean;
 }) {
   const router = useRouter();
   const [text, setText] = useState("");
   const [result, setResult] = useState<ActionResult | null>(null);
   const [pending, startTransition] = useTransition();
   const [live, setLive] = useState<ThreadMessage[]>([]);
+  const [peerTyping, setPeerTyping] = useState<{ isStaff: boolean } | null>(null);
+  const typingChannel = useRef<RealtimeChannel | null>(null);
+  const lastAnnounced = useRef(0);
+  const peerClearTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const idleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Messages that arrived over the socket since this page was rendered. Both
   // sides of the thread subscribe, so a reply shows up without a reload.
@@ -96,6 +106,86 @@ export function TicketThread({
     };
   }, [ticketId, currentUserId]);
 
+  // Typing indicators ride a SEPARATE private channel, `ticket:<uuid>`, matching
+  // the policies in 0025. Client broadcast is ephemeral — Realtime authorizes by
+  // querying realtime.messages and rolling back, never inserting — so this works
+  // despite the dead partitions that killed broadcast-from-database.
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+
+    const channel = supabase.channel(`ticket:${ticketId}`, {
+      // self:false so our own keystrokes don't echo back as "they're typing".
+      config: { private: true, broadcast: { self: false } },
+    });
+
+    channel.on("broadcast", { event: "typing" }, ({ payload }) => {
+      if (cancelled) return;
+      setPeerTyping({
+        isStaff: Boolean((payload as { isStaff?: boolean })?.isStaff),
+      });
+      if (peerClearTimer.current) clearTimeout(peerClearTimer.current);
+      // Self-clearing. A "stopped" event can be lost to a closed tab or a
+      // dropped connection, so the indicator must never depend on receiving one.
+      peerClearTimer.current = setTimeout(() => setPeerTyping(null), 4000);
+    });
+
+    channel.on("broadcast", { event: "stopped" }, () => {
+      if (cancelled) return;
+      if (peerClearTimer.current) clearTimeout(peerClearTimer.current);
+      setPeerTyping(null);
+    });
+
+    void supabase.realtime.setAuth().then(() => {
+      if (!cancelled) channel.subscribe();
+    });
+    typingChannel.current = channel;
+
+    return () => {
+      cancelled = true;
+      if (peerClearTimer.current) clearTimeout(peerClearTimer.current);
+      if (idleTimer.current) clearTimeout(idleTimer.current);
+      typingChannel.current = null;
+      void supabase.removeChannel(channel);
+    };
+  }, [ticketId]);
+
+  function announceStopped() {
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    lastAnnounced.current = 0;
+    void typingChannel.current?.send({
+      type: "broadcast",
+      event: "stopped",
+      payload: {},
+    });
+  }
+
+  function handleTyping(value: string) {
+    setText(value);
+    const channel = typingChannel.current;
+    if (!channel) return;
+
+    if (value.length === 0) {
+      announceStopped();
+      return;
+    }
+
+    // One event per 1.5s keeps the peer's 4s indicator alive without
+    // broadcasting on every keystroke.
+    const now = Date.now();
+    if (now - lastAnnounced.current > 1500) {
+      lastAnnounced.current = now;
+      void channel.send({
+        type: "broadcast",
+        event: "typing",
+        payload: { isStaff: amStaff },
+      });
+    }
+
+    if (idleTimer.current) clearTimeout(idleTimer.current);
+    idleTimer.current = setTimeout(announceStopped, 2500);
+  }
+
   // Server-rendered history wins on id collisions -- after router.refresh() the
   // same message arrives both ways. Re-sorted by time so a live message can't
   // jump ahead of one that was already on the page.
@@ -149,6 +239,19 @@ export function TicketThread({
         ))}
       </div>
 
+      {peerTyping && (
+        <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
+          <span className="flex gap-1">
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.3s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500 [animation-delay:-0.15s]" />
+            <span className="h-1.5 w-1.5 animate-bounce rounded-full bg-zinc-500" />
+          </span>
+          {peerTyping.isStaff
+            ? "Zeuservices Support is typing…"
+            : "Customer is typing…"}
+        </div>
+      )}
+
       {status === "closed" ? (
         <p className="mt-8 rounded-xl border border-edge bg-raised p-4 text-center text-sm text-zinc-500">
           This ticket is closed. Open a new one if you still need help.
@@ -165,6 +268,7 @@ export function TicketThread({
               setResult(res);
               if (res.ok) {
                 setText("");
+                announceStopped();
                 router.refresh();
               }
             })
@@ -174,7 +278,8 @@ export function TicketThread({
             className="input min-h-[100px]"
             placeholder="Write a reply…"
             value={text}
-            onChange={(e) => setText(e.target.value)}
+            onChange={(e) => handleTyping(e.target.value)}
+            onBlur={announceStopped}
             maxLength={4000}
           />
           {result && !result.ok && (
