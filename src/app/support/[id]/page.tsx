@@ -83,6 +83,7 @@ export default async function TicketPage({
         <TicketThread
           ticketId={ticket.id}
           status={ticket.status}
+          currentUserId={profile.id}
           messages={messages.map((m) => ({
             id: m.id,
             isStaff: m.is_staff,
